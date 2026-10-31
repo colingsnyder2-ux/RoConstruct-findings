@@ -1,23 +1,5 @@
-// from server: 27% by colin
-struct CXTPReportSelectedRows {
-    struct USELECTED_BLOCK {
-        struct CArray {
-            void* m_pData;
-            int m_nSize;
-            int m_nGrowBy;
-            CArray();
-        };
-    };
-};
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl construct_array(void* p);
-
-CXTPReportSelectedRows::USELECTED_BLOCK::CArray::CArray()
-{
-    void* p = operator_new(0x140);
-    if (p != 0)
-    {
-        construct_array(p);
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_30c6bb8123422869.cpp

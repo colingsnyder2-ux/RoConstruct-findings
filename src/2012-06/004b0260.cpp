@@ -1,27 +1,20 @@
-// from server: 31% by atomic.potato
-struct VideoControl_004b0260
+// from server: 53% by Intel
+struct VideoControl
 {
-    void f(void*);
-    void* m_10c;
-    void* m_11c;
+    void f(int);
 };
 
-void VideoControl_004b0260::f(void* argument)
+void VideoControl::f(int arg)
 {
-    struct V
+    int vtable_ptr = *(int*)((char*)this + 0x10c);
+    int vtable = *(int*)vtable_ptr;
+    int (__thiscall *func1)(void*) = (int (__thiscall*)(void*))*(int*)(vtable + 0xc);
+    int result = func1((void*)vtable_ptr);
+    if (result)
     {
-        void** vtable;
-    };
-
-    typedef int (__thiscall *Check)(void*);
-    typedef void (__thiscall *Apply)(void*, void*);
-
-    void* object = m_10c;
-    Check check = (Check)((*(V*)object).vtable)[3];
-
-    if (check(object))
-    {
-        Apply apply = (Apply)((*(V*)object).vtable)[5];
-        apply(object, argument);
+        int arg2 = *(int*)((char*)this + 0x11c);
+        int vtable2 = *(int*)vtable_ptr;
+        int (__thiscall *func2)(void*, int, int) = (int (__thiscall*)(void*, int, int))*(int*)(vtable2 + 0x14);
+        func2((void*)vtable_ptr, arg2, arg);
     }
 }

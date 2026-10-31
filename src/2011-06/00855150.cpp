@@ -1,222 +1,1730 @@
 // from server: 100% by tester
-// roc 2008-06 006f0060  unit: CXTPPopupBar  size: 652 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006f0060
-//
-// 006f0060  83ec4c               sub esp, 0x4c
-// 006f0063  53                   push ebx
-// 006f0064  8b1dac2d8000         mov ebx, dword ptr [0x802dac]
-// 006f006a  57                   push edi
-// 006f006b  8bf9                 mov edi, ecx
-// 006f006d  ffd3                 call ebx
-// 006f006f  85c0                 test eax, eax
-// 006f0071  0f852f020000         jne 0x6f02a6
-// 006f0077  8b8ffc000000         mov ecx, dword ptr [edi + 0xfc]
-// 006f007d  56                   push esi
-// 006f007e  50                   push eax
-// 006f007f  6a01                 push 1
-// 006f0081  6aff                 push -1
-// 006f0083  6a0a                 push 0xa
-// 006f0085  e8961b0000           call 0x6f1c20
-// 006f008a  8bf0                 mov esi, eax
-// 006f008c  85f6                 test esi, esi
-// 006f008e  0f8411020000         je 0x6f02a5
-// 006f0094  8b86c0000000         mov eax, dword ptr [esi + 0xc0]
-// 006f009a  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
-// 006f00a0  8b96c8000000         mov edx, dword ptr [esi + 0xc8]
-// 006f00a6  8944242c             mov dword ptr [esp + 0x2c], eax
-// 006f00aa  8b86cc000000         mov eax, dword ptr [esi + 0xcc]
-// 006f00b0  2bc1                 sub eax, ecx
-// 006f00b2  89542434             mov dword ptr [esp + 0x34], edx
-// 006f00b6  8b9660010000         mov edx, dword ptr [esi + 0x160]
-// 006f00bc  89442420             mov dword ptr [esp + 0x20], eax
-// 006f00c0  89442428             mov dword ptr [esp + 0x28], eax
-// 006f00c4  8b06                 mov eax, dword ptr [esi]
-// 006f00c6  8954241c             mov dword ptr [esp + 0x1c], edx
-// 006f00ca  89542424             mov dword ptr [esp + 0x24], edx
-// 006f00ce  8b9020010000         mov edx, dword ptr [eax + 0x120]
-// 006f00d4  55                   push ebp
-// 006f00d5  8bce                 mov ecx, esi
-// 006f00d7  ffd2                 call edx
-// 006f00d9  89442414             mov dword ptr [esp + 0x14], eax
-// 006f00dd  8b06                 mov eax, dword ptr [esi]
-// 006f00df  8b901c010000         mov edx, dword ptr [eax + 0x11c]
-// 006f00e5  8bce                 mov ecx, esi
-// 006f00e7  ffd2                 call edx
-// 006f00e9  6a00                 push 0
-// 006f00eb  6aff                 push -1
-// 006f00ed  8bcf                 mov ecx, edi
-// 006f00ef  89442438             mov dword ptr [esp + 0x38], eax
-// 006f00f3  e8d86dfcff           call 0x6b6ed0
-// 006f00f8  8b07                 mov eax, dword ptr [edi]
-// 006f00fa  8b9050010000         mov edx, dword ptr [eax + 0x150]
-// 006f0100  6a00                 push 0
-// 006f0102  6aff                 push -1
-// 006f0104  8bcf                 mov ecx, edi
-// 006f0106  ffd2                 call edx
-// 006f0108  8b87d4010000         mov eax, dword ptr [edi + 0x1d4]
-// 006f010e  8be8                 mov ebp, eax
-// 006f0110  83e002               and eax, 2
-// 006f0113  89442410             mov dword ptr [esp + 0x10], eax
-// 006f0117  8b4720               mov eax, dword ptr [edi + 0x20]
-// 006f011a  50                   push eax
-// 006f011b  83e501               and ebp, 1
-// 006f011e  ff15a82d8000         call dword ptr [0x802da8]
-// 006f0124  50                   push eax
-// 006f0125  e8b40afbff           call 0x6a0bde
-// 006f012a  33c0                 xor eax, eax
-// 006f012c  8d4c2418             lea ecx, [esp + 0x18]
-// 006f0130  51                   push ecx
-// 006f0131  8944241c             mov dword ptr [esp + 0x1c], eax
-// 006f0135  89442420             mov dword ptr [esp + 0x20], eax
-// 006f0139  ff159c2d8000         call dword ptr [0x802d9c]
-// 006f013f  ffd3                 call ebx
-// 006f0141  3b4720               cmp eax, dword ptr [edi + 0x20]
-// 006f0144  0f8554010000         jne 0x6f029e
-// 006f014a  8d9b00000000         lea ebx, [ebx]
-// 006f0150  8b1db02d8000         mov ebx, dword ptr [0x802db0]
-// 006f0156  6a00                 push 0
-// 006f0158  6a0f                 push 0xf
-// 006f015a  6a0f                 push 0xf
-// 006f015c  6a00                 push 0
-// 006f015e  8d542450             lea edx, [esp + 0x50]
-// 006f0162  52                   push edx
-// 006f0163  ffd3                 call ebx
-// 006f0165  85c0                 test eax, eax
-// 006f0167  743a                 je 0x6f01a3
-// 006f0169  8da42400000000       lea esp, [esp]
-// 006f0170  6a0f                 push 0xf
-// 006f0172  6a0f                 push 0xf
-// 006f0174  6a00                 push 0
-// 006f0176  8d44244c             lea eax, [esp + 0x4c]
-// 006f017a  50                   push eax
-// 006f017b  ff15782c8000         call dword ptr [0x802c78]
-// 006f0181  85c0                 test eax, eax
-// 006f0183  741e                 je 0x6f01a3
-// 006f0185  8d4c2440             lea ecx, [esp + 0x40]
-// 006f0189  51                   push ecx
-// 006f018a  ff15c82c8000         call dword ptr [0x802cc8]
-// 006f0190  6a00                 push 0
-// 006f0192  6a0f                 push 0xf
-// 006f0194  6a0f                 push 0xf
-// 006f0196  6a00                 push 0
-// 006f0198  8d542450             lea edx, [esp + 0x50]
-// 006f019c  52                   push edx
-// 006f019d  ffd3                 call ebx
-// 006f019f  85c0                 test eax, eax
-// 006f01a1  75cd                 jne 0x6f0170
-// 006f01a3  6a00                 push 0
-// 006f01a5  6a00                 push 0
-// 006f01a7  6a00                 push 0
-// 006f01a9  8d44244c             lea eax, [esp + 0x4c]
-// 006f01ad  50                   push eax
-// 006f01ae  ff15782c8000         call dword ptr [0x802c78]
-// 006f01b4  85c0                 test eax, eax
-// 006f01b6  0f8418010000         je 0x6f02d4
-// 006f01bc  8b442444             mov eax, dword ptr [esp + 0x44]
-// 006f01c0  3d02020000           cmp eax, 0x202
-// 006f01c5  0f84d3000000         je 0x6f029e
-// 006f01cb  3d00020000           cmp eax, 0x200
-// 006f01d0  0f8586000000         jne 0x6f025c
-// 006f01d6  8b542418             mov edx, dword ptr [esp + 0x18]
-// 006f01da  8b442454             mov eax, dword ptr [esp + 0x54]
-// 006f01de  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 006f01e2  8b4c2458             mov ecx, dword ptr [esp + 0x58]
-// 006f01e6  3bd0                 cmp edx, eax
-// 006f01e8  7508                 jne 0x6f01f2
-// 006f01ea  3bd9                 cmp ebx, ecx
-// 006f01ec  0f84ba000000         je 0x6f02ac
-// 006f01f2  2bc2                 sub eax, edx
-// 006f01f4  8b542420             mov edx, dword ptr [esp + 0x20]
-// 006f01f8  2bcb                 sub ecx, ebx
-// 006f01fa  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 006f01fe  03d0                 add edx, eax
-// 006f0200  03d9                 add ebx, ecx
-// 006f0202  89542420             mov dword ptr [esp + 0x20], edx
-// 006f0206  895c2424             mov dword ptr [esp + 0x24], ebx
-// 006f020a  85ed                 test ebp, ebp
-// 006f020c  7417                 je 0x6f0225
-// 006f020e  8b442430             mov eax, dword ptr [esp + 0x30]
-// 006f0212  3bd0                 cmp edx, eax
-// 006f0214  7f02                 jg 0x6f0218
-// 006f0216  8bd0                 mov edx, eax
-// 006f0218  8b06                 mov eax, dword ptr [esi]
-// 006f021a  52                   push edx
-// 006f021b  8b90c0000000         mov edx, dword ptr [eax + 0xc0]
-// 006f0221  8bce                 mov ecx, esi
-// 006f0223  ffd2                 call edx
-// 006f0225  837c241000           cmp dword ptr [esp + 0x10], 0
-// 006f022a  7417                 je 0x6f0243
-// 006f022c  8b442414             mov eax, dword ptr [esp + 0x14]
-// 006f0230  3bd8                 cmp ebx, eax
-// 006f0232  7f02                 jg 0x6f0236
-// 006f0234  8bd8                 mov ebx, eax
-// 006f0236  8b06                 mov eax, dword ptr [esi]
-// 006f0238  8b90c4000000         mov edx, dword ptr [eax + 0xc4]
-// 006f023e  53                   push ebx
-// 006f023f  8bce                 mov ecx, esi
-// 006f0241  ffd2                 call edx
-// 006f0243  8bcf                 mov ecx, edi
-// 006f0245  e876e7ffff           call 0x6ee9c0
-// 006f024a  8b442454             mov eax, dword ptr [esp + 0x54]
-// 006f024e  8b4c2458             mov ecx, dword ptr [esp + 0x58]
-// 006f0252  89442418             mov dword ptr [esp + 0x18], eax
-// 006f0256  894c241c             mov dword ptr [esp + 0x1c], ecx
-// 006f025a  eb5b                 jmp 0x6f02b7
-// 006f025c  3d00010000           cmp eax, 0x100
-// 006f0261  7549                 jne 0x6f02ac
-// 006f0263  837c24481b           cmp dword ptr [esp + 0x48], 0x1b
-// 006f0268  754d                 jne 0x6f02b7
-// 006f026a  85ed                 test ebp, ebp
-// 006f026c  7411                 je 0x6f027f
-// 006f026e  8b16                 mov edx, dword ptr [esi]
-// 006f0270  8b442428             mov eax, dword ptr [esp + 0x28]
-// 006f0274  8b92c0000000         mov edx, dword ptr [edx + 0xc0]
-// 006f027a  50                   push eax
-// 006f027b  8bce                 mov ecx, esi
-// 006f027d  ffd2                 call edx
-// 006f027f  837c241000           cmp dword ptr [esp + 0x10], 0
-// 006f0284  7411                 je 0x6f0297
-// 006f0286  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 006f028a  8b06                 mov eax, dword ptr [esi]
-// 006f028c  8b90c4000000         mov edx, dword ptr [eax + 0xc4]
-// 006f0292  51                   push ecx
-// 006f0293  8bce                 mov ecx, esi
-// 006f0295  ffd2                 call edx
-// 006f0297  8bcf                 mov ecx, edi
-// 006f0299  e822e7ffff           call 0x6ee9c0
-// 006f029e  ff15b42d8000         call dword ptr [0x802db4]
-// 006f02a4  5d                   pop ebp
-// 006f02a5  5e                   pop esi
-// 006f02a6  5f                   pop edi
-// 006f02a7  5b                   pop ebx
-// 006f02a8  83c44c               add esp, 0x4c
-// 006f02ab  c3                   ret 
-// 006f02ac  8d542440             lea edx, [esp + 0x40]
-// 006f02b0  52                   push edx
-// 006f02b1  ff15c82c8000         call dword ptr [0x802cc8]
-// 006f02b7  ff15ac2d8000         call dword ptr [0x802dac]
-// 006f02bd  3b4720               cmp eax, dword ptr [edi + 0x20]
-// 006f02c0  0f848afeffff         je 0x6f0150
-// 006f02c6  ff15b42d8000         call dword ptr [0x802db4]
-// 006f02cc  5d                   pop ebp
-// 006f02cd  5e                   pop esi
-// 006f02ce  5f                   pop edi
-// 006f02cf  5b                   pop ebx
-// 006f02d0  83c44c               add esp, 0x4c
-// 006f02d3  c3                   ret 
-// 006f02d4  8b442448             mov eax, dword ptr [esp + 0x48]
-// 006f02d8  50                   push eax
-// 006f02d9  e87c0efbff           call 0x6a115a
-// 006f02de  ff15b42d8000         call dword ptr [0x802db4]
-// 006f02e4  5d                   pop ebp
-// 006f02e5  5e                   pop esi
-// 006f02e6  5f                   pop edi
-// 006f02e7  5b                   pop ebx
-// 006f02e8  83c44c               add esp, 0x4c
-// 006f02eb  c3                   ret 
-// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPPopupBar.cpp (function ?TrackResize@CXTPPopupBar@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPPopupBar.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPopupBar.cpp : implementation of the CXTPPopupBar class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPPopupBar.h"
+#include "XTPPaintManager.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPControlButton.h"
+#include "XTPShortcutManager.h"
+#include "XTPControlPopup.h"
+#include "XTPShadowsManager.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPMouseManager.h"
+#include "XTPSoundManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+double CXTPPopupBar::m_dMaxWidthDivisor = 1.0/3.0;
+
+#ifndef EVENT_SYSTEM_MENUPOPUPSTART
+#define EVENT_SYSTEM_MENUPOPUPSTART     0x0006
+#define EVENT_SYSTEM_MENUPOPUPEND       0x0007
+#define OBJID_MENU 0xFFFFFFFD
+#endif
+
+#define TID_HOVERUP 5001
+#define TID_HOVERDOWN 5002
+#define TID_TEAROFFSELECTED 5003
+#define TID_EXPANDHOVER 5004
+
+
+class CXTPPopupBar::CControlExpandButton: public CXTPControlButton
+{
+public:
+	CControlExpandButton()
+	{
+		m_controlType = xtpControlButton;
+		m_dwFlags = xtpFlagManualUpdate | xtpFlagNoMovable | xtpFlagSkipFocus | xtpFlagShowPopupBarTip;
+	}
+	void Draw(CDC* pDC);
+	virtual void OnExecute();
+};
+
+void CXTPPopupBar::CControlExpandButton::Draw(CDC* pDC)
+{
+	GetPaintManager()->DrawSpecialControl(pDC, xtpButtonExpandMenu, this, m_pParent, TRUE, NULL);
+}
+
+void CXTPPopupBar::CControlExpandButton::OnExecute()
+{
+	((CXTPPopupBar*)m_pParent)->ExpandBar();
+}
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPPopupBar, CXTPCommandBar)
+
+CXTPPopupBar::CXTPPopupBar()
+{
+	m_scrollInfo.Init(this, TID_HOVERUP, TID_HOVERDOWN);
+
+	m_barType = xtpBarTypePopup;
+	m_barPosition = xtpBarPopup;
+
+	m_pControlPopup = 0;
+	m_ptPopup = 0;
+	m_rcExclude.SetRectEmpty();
+	m_rcTearOffGripper.SetRectEmpty();
+	m_rcResizeGripper.SetRectEmpty();
+	m_bResizable = FALSE;
+	m_popupFlags = xtpPopupRight;
+	m_bDynamicLayout = FALSE;
+
+	m_bTearOffPopup = FALSE;
+	m_bTearOffTracking = FALSE;
+	m_nTearOffID = 0;
+	m_nTearOffWidth = 0;
+
+	m_bShowShadow = TRUE;
+	m_rcBorders = CRect(2, 4, 2, 4);
+	m_bExpanding = FALSE;
+
+	m_nMRUWidth = 0;
+	m_bDoubleGripper = FALSE;
+
+	m_pTearOffBar = NULL;
+	m_szTearOffBar = CSize(0, 0);
+	m_nTearOffTimer = 0;
+
+	m_bContextMenu = FALSE;
+
+}
+
+CXTPPopupBar* CXTPPopupBar::CreatePopupBar(CXTPCommandBars* pCommandBars)
+{
+	CXTPPopupBar* pPopupBar = (CXTPPopupBar*)CXTPCommandBars::m_pPopupBarClass->CreateObject();
+	pPopupBar->SetCommandBars(pCommandBars);
+	return pPopupBar;
+}
+
+CXTPPopupBar::~CXTPPopupBar()
+{
+}
+
+void CXTPPopupBar::SetTearOffPopup(LPCTSTR strCaption, UINT nID, int nWidth)
+{
+	if (nID == 0)
+	{
+		m_bTearOffPopup = FALSE;
+	}
+	else
+	{
+		m_bTearOffPopup = TRUE;
+		m_strTearOffCaption = strCaption;
+		m_nTearOffID = nID;
+		m_nTearOffWidth = nWidth;
+	}
+}
+BOOL CXTPPopupBar::IsTearOffPopup(CString& strCaption, UINT& nID, int& nWidth)
+{
+	strCaption = m_strTearOffCaption;
+	nID = m_nTearOffID;
+	nWidth = m_nTearOffWidth;
+
+	return m_bTearOffPopup;
+}
+
+BOOL CXTPPopupBar::IsVisible() const
+{
+	return (m_hWnd != 0) && IsWindowVisible();
+}
+
+void CXTPPopupBar::ExpandBar()
+{
+	if (m_bExpanded == FALSE && m_bCollapsed == TRUE)
+	{
+		SAFE_CALLPTR(m_pToolTipContext, CancelToolTips());
+
+		m_bExpanding = TRUE;
+		m_bExpanded = TRUE;
+		SetPopuped(-1);
+		SetSelected(-1);
+		OnRecalcLayout();
+		XTPMouseManager()->SetForceExpanded(TRUE);
+		XTPMouseManager()->IgnoreLButtonUp();
+	}
+}
+
+BOOL CXTPPopupBar::Create()
+{
+	if (m_hWnd)
+		return TRUE;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	UINT nClassStyle = !pCommandBars || pCommandBars->GetCommandBarsOptions()->bUseSystemSaveBitsStyle ? CS_SAVEBITS | CS_DBLCLKS : CS_DBLCLKS;
+
+	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPPopupBar"), nClassStyle);
+
+	int nLayoutRTL = pCommandBars && pCommandBars->IsLayoutRTL() ? WS_EX_LAYOUTRTL : 0;
+	if (!pCommandBars && GetImageManager()->IsDrawReverted() == 1) nLayoutRTL = WS_EX_LAYOUTRTL;
+
+	if (!CreateEx(WS_EX_TOOLWINDOW | nLayoutRTL, _T("XTPPopupBar"), 0, MFS_SYNCACTIVE | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), GetSite(), 0))
+		return FALSE;
+
+	SetWindowText(m_strTitle);
+
+	return TRUE;
+}
+
+#ifndef SPI_GETMENUANIMATION
+#define SPI_GETMENUANIMATION                0x1002
+#endif
+
+#ifndef SPI_GETMENUFADE
+#define SPI_GETMENUFADE                     0x1012
+#endif
+
+
+XTPAnimationType CXTPPopupBar::GetAnimationType() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+	{
+		if (GetWindow(GW_CHILD))
+			return xtpAnimateNone;
+
+		XTPAnimationType animationType = pCommandBars->GetCommandBarsOptions()->animationType;
+
+		switch (animationType)
+		{
+			case xtpAnimateWindowsDefault:
+			{
+				BOOL bEnabled = FALSE;
+				if (!SystemParametersInfo(SPI_GETMENUANIMATION, 0, &bEnabled, 0))
+					return xtpAnimateNone;
+
+				if (!bEnabled)
+					return xtpAnimateNone;
+
+				BOOL bFadeAnimation = FALSE;
+
+				if (!SystemParametersInfo(SPI_GETMENUFADE, 0, &bFadeAnimation, 0))
+					return xtpAnimateSlide;
+
+				animationType = bFadeAnimation ? xtpAnimateFade : xtpAnimateSlide;
+			}
+			break;
+
+			// choose any animation based on a random number
+			case xtpAnimateRandom:
+			{
+				switch (RAND_S() % 3)
+				{
+					case 0:
+						animationType = xtpAnimateFade;
+						break;
+
+					case 1:
+						animationType = xtpAnimateSlide;
+						break;
+
+					default:
+						animationType = xtpAnimateUnfold;
+						break;
+				}
+			}
+			break;
+		}
+
+		return animationType;
+	}
+	return xtpAnimateNone;
+
+}
+
+void CXTPPopupBar::OnControlsChanged()
+{
+	m_nSelected = -1;
+	m_nPopuped = -1;
+
+	OnRecalcLayout();
+}
+
+void CXTPPopupBar::RecalcSizeLayout()
+{
+	if (!m_bDynamicLayout && GetSafeHwnd() && IsTrackingMode())
+	{
+		CRect rc = CalculatePopupRect(CalcDynamicLayout(0, 0));
+		CXTPWindowRect rcWindow(this);
+
+		if (rc == rcWindow)
+		{
+			Redraw();
+			return;
+		}
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		BOOL bShowKeyboardTips = IsKeyboardTipsVisible();
+		if (bShowKeyboardTips && pCommandBars) pCommandBars->HideKeyboardTips();
+
+		SetWindowRgn(NULL, FALSE);
+
+		SetWindowPos(0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOMOVE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		GetPaintManager()->SetCommandBarRegion(this);
+
+		XTPShadowsManager()->OffsetShadow(this, rc.Size() - rcWindow.Size());
+
+		Redraw();
+	}
+}
+
+void CXTPPopupBar::OnRecalcLayout()
+{
+	if (!m_bDynamicLayout && GetSafeHwnd() && IsTrackingMode())
+	{
+
+		UpdateShortcuts();
+		UpdateFlags();
+
+		CRect rc = CalculatePopupRect(CalcDynamicLayout(0, 0));
+		CXTPWindowRect rcWindow(this);
+
+		if (!m_bExpanding && rc == rcWindow)
+		{
+			Redraw();
+			return;
+		}
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		BOOL bShowKeyboardTips = IsKeyboardTipsVisible();
+		if (bShowKeyboardTips && pCommandBars) pCommandBars->HideKeyboardTips();
+
+		XTPShadowsManager()->RemoveShadow(this);
+
+		BOOL bChanged = FALSE;
+
+		if (m_bExpanding)
+		{
+			BOOL bExpandDown = rcWindow.bottom < rc.bottom;
+
+			XTPAnimationType animationType = GetAnimationType();
+			if (IsAnimateType(animationType))
+			{
+				CDC* pDC = GetDesktopWindow()->GetDC();
+
+				CBitmap bmp;
+				bmp.CreateCompatibleBitmap(pDC, rc.Width(), rc.Height());
+				CXTPCompatibleDC dcWindow(pDC, &bmp);
+
+				dcWindow.BitBlt(0, 0, rc.Width(), rc.Height(), pDC, rc.left, rc.top, SRCCOPY);
+				GetDesktopWindow()->ReleaseDC(pDC);
+
+				ShowWindow(SW_HIDE);
+				GetSite()->UpdateWindow();
+
+				SetWindowPos(0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOREDRAW);
+				GetPaintManager()->SetCommandBarRegion(this);
+				bChanged = TRUE;
+
+				CWindowDC paintDC(this);
+				CXTPClientRect rcClientPost(this);
+
+				BOOL dwLayout = CXTPDrawHelpers::IsContextRTL(&paintDC);
+				CXTPDrawHelpers::SetContextRTL(&paintDC, FALSE);
+				paintDC.BitBlt(0, 0, rc.Width(), rc.Height(), &dcWindow, 0, 0, SRCCOPY);
+				CXTPDrawHelpers::SetContextRTL(&paintDC, dwLayout);
+
+
+				CXTPBufferDC animationDC(paintDC, rcClientPost);
+				DrawCommandBar(&animationDC, rcClientPost);
+
+				// Animation
+				GetPaintManager()->AnimateExpanding(this, &paintDC, &animationDC, bExpandDown);
+			}
+			XTPSoundManager()->PlaySystemSound(xtpSoundMenuPopup);
+		}
+
+		if (!bChanged)
+		{
+			SetWindowPos(0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			GetPaintManager()->SetCommandBarRegion(this);
+		}
+
+		if (m_barPosition == xtpBarPopup && m_bShowShadow)
+			XTPShadowsManager()->SetShadow(this, m_rcExclude);
+
+		if (m_pControlPopup)
+			m_pControlPopup->UpdateShadow();
+
+		Redraw();
+
+		if (bShowKeyboardTips)
+		{
+			PostMessage(WM_TIMER, XTP_TID_SHOWKEYBOARDTIPS);
+		}
+
+		m_bExpanding = FALSE;
+	}
+}
+
+void CXTPPopupBar::_MakeSameWidth(int nStart, int nLast, int nWidth)
+{
+	for (int i = nStart; i < nLast; i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl || pControl->GetParent() != this || !pControl->IsVisible())
+			continue;
+
+		CRect rc = pControl->GetRect();
+		pControl->SetRect(CRect(rc.left, rc.top, rc.left + nWidth, rc.bottom));
+	}
+}
+
+CRect CXTPPopupBar::GetBorders()
+{
+	if (m_barType == xtpBarTypeNormal)
+		return m_rcBorders;
+
+	return GetPaintManager()->GetCommandBarBorders(this);
+}
+
+CSize CXTPPopupBar::CalcDynamicLayout(int nLength, DWORD /*nMode*/)
+{
+	m_bDynamicLayout = TRUE;
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	RECT rcWork;
+	SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWork, 0);
+
+	CRect rcBorders = GetBorders();
+	CSize szTearOffGripper(0);
+	if (m_bTearOffPopup)
+	{
+		szTearOffGripper = GetPaintManager()->DrawTearOffGripper(&dc, 0, FALSE, FALSE);
+		rcBorders.top += szTearOffGripper.cy;
+	}
+
+	if (m_barType == xtpBarTypeNormal)
+	{
+		UpdateShortcuts();
+
+		CSize sz = m_pControls->CalcDynamicSize(&dc, GetWidth(), LM_COMMIT | LM_HORZ | LM_POPUP, rcBorders);
+
+		m_rcTearOffGripper.SetRect(rcBorders.left, rcBorders.top - szTearOffGripper.cy, sz.cx - rcBorders.right, rcBorders.top);
+		m_rcResizeGripper.SetRectEmpty();
+
+		m_bDynamicLayout = FALSE;
+
+		return sz;
+	}
+
+	CXTPControl* pControlGallery = GetControls()->FindControl(xtpControlGallery, -1, TRUE, FALSE);
+
+	m_bResizable = pControlGallery ? pControlGallery->IsCustomizeResizeAllow() : 0;
+	CSize szResizeGripper(0);
+	if (m_bResizable)
+	{
+		szResizeGripper.cy = m_bResizable != 2 ? 11 : 8;
+		rcBorders.bottom += szResizeGripper.cy;
+	}
+
+	if (nLength == 0)
+	{
+		for (int i = 0; i < GetControlCount(); i++)
+		{
+			CXTPControl* pControl = GetControl(i);
+			if (!pControl || pControl->GetParent() != this)
+				continue;
+
+			pControl->OnCalcDynamicSize(0);
+		}
+
+		UpdateExpandingState();
+		UpdateShortcuts();
+	}
+
+
+	CXTPControl* pButtonExpand = m_pControls->FindControl(XTP_ID_POPUPBAR_EXPAND);
+	CSize szButtonExpand(0);
+	if (m_bCollapsed)
+	{
+		szButtonExpand = GetPaintManager()->DrawSpecialControl(&dc, xtpButtonExpandMenu, NULL, this, FALSE, NULL);
+		rcBorders.bottom += szButtonExpand.cy;
+
+		if (!pButtonExpand)
+			pButtonExpand = m_pControls->Add(new CControlExpandButton(), XTP_ID_POPUPBAR_EXPAND, _T(""), -1, TRUE);
+		pButtonExpand->SetHideFlags(xtpHideGeneric);
+	}
+	else if (pButtonExpand) pButtonExpand->SetHideFlags(xtpHideGeneric);
+
+	CSize sz = m_pControls->CalcPopupSize(&dc, nLength, rcBorders);
+
+	if (m_bCollapsed)
+	{
+		pButtonExpand->SetHideFlags(xtpNoHide);
+		pButtonExpand->SetRect(CRect(rcBorders.left, sz.cy - rcBorders.bottom, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom + szButtonExpand.cy));
+	}
+
+	m_rcTearOffGripper.SetRect(rcBorders.left, rcBorders.top - szTearOffGripper.cy, sz.cx - rcBorders.right, rcBorders.top);
+	m_rcResizeGripper.SetRect(rcBorders.left, sz.cy - rcBorders.bottom, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom + szResizeGripper.cy);
+
+	m_bDynamicLayout = FALSE;
+
+	return sz;
+}
+
+CRect CXTPPopupBar::CalculatePopupRect(CSize sz)
+{
+	RECT rcWork = m_rcExclude.IsRectEmpty() ? XTPMultiMonitor()->GetWorkArea(m_ptPopup) : XTPMultiMonitor()->GetWorkArea(m_rcExclude);
+	RECT rcScreen = m_rcExclude.IsRectEmpty() ? XTPMultiMonitor()->GetScreenArea(m_ptPopup) : XTPMultiMonitor()->GetScreenArea(m_rcExclude);
+
+	// If point is on the screen, but not in the work area, then the point
+	// must be inside an AppBar.
+	if (m_rcExclude.IsRectEmpty() && PtInRect(&rcScreen, m_ptPopup) && !PtInRect(&rcWork, m_ptPopup))
+	{
+		rcWork = rcScreen;
+	}
+
+	rcWork.bottom -= 5;  // for shadow
+
+	CPoint ptCenterRect = m_rcExclude.CenterPoint();
+	BOOL bScroll = FALSE, bWrap = FALSE;
+	CXTPCommandBars* pCommandars = GetCommandBars();
+	BOOL bNoScroll = (pCommandars ? pCommandars->GetCommandBarsOptions()->bWrapLargePopups : FALSE) || m_bMultiLine;
+
+
+	if (m_rcExclude.Height() == 0 && m_ptPopup.y > rcWork.bottom)
+	{
+		m_ptPopup.y = m_ptPopup.y - sz.cy;
+	}
+	else if (m_ptPopup.y + sz.cy > rcWork.bottom)
+	{
+		if (m_rcExclude.Height() == 0)
+		{
+			m_ptPopup.y = (m_ptPopup.y < (rcWork.bottom - rcWork.top)/2 ? rcWork.bottom : m_ptPopup.y)- sz.cy;
+		}
+		else
+		{
+			if (m_popupFlags & xtpPopupDown)
+			{
+				m_ptPopup.y = m_rcExclude.top - sz.cy;
+
+				if (m_ptPopup.y < rcWork.top)
+				{
+					if (bNoScroll)
+					{
+						m_popupFlags &= ~xtpPopupDown;
+						if (m_pControlPopup && (m_pControlPopup->GetType() != xtpControlComboBox || GetParentCommandBar()->GetType() == xtpBarTypePopup))
+						{
+							m_rcExclude = m_pControlPopup->GetRect();
+
+							AdjustExcludeRect(m_rcExclude, TRUE);
+							GetParentCommandBar()->ClientToScreen(m_rcExclude);
+						}
+
+						if (m_popupFlags & xtpPopupLeft)
+						{
+							m_ptPopup.y = rcWork.bottom - sz.cy;
+						}
+						else
+						{
+							m_ptPopup.x = m_rcExclude.right;
+							m_ptPopup.y = rcWork.bottom - sz.cy;
+						}
+					}
+					else
+					{
+						bScroll = TRUE;
+						if (ptCenterRect.y > (rcWork.bottom - rcWork.top)/2)
+						{
+							m_ptPopup.y = rcWork.top;
+							sz.cy = m_rcExclude.top - rcWork.top;
+						}
+						else
+						{
+							m_ptPopup.y = m_rcExclude.bottom;
+							sz.cy = rcWork.bottom - m_ptPopup.y;
+						}
+					}
+				}
+			}
+			else
+			{
+				m_ptPopup.y = rcWork.bottom - sz.cy;
+			}
+		}
+
+		if (m_ptPopup.y < rcWork.top) m_ptPopup.y = rcWork.top;
+
+		if (m_ptPopup.y + sz.cy > rcWork.bottom)
+		{
+			ASSERT(m_ptPopup.y == rcWork.top);
+
+			if (bNoScroll)
+			{
+				bWrap = TRUE;
+			}
+			else
+			{
+				sz.cy = rcWork.bottom - m_ptPopup.y;
+				bScroll = TRUE;
+			}
+		}
+	}
+
+	if (bWrap && !m_bMultiLine && (GetType() == xtpBarTypePopup))
+	{
+		sz = CalcDynamicLayout(rcWork.bottom - rcWork.top, 0);
+	}
+
+	if (m_popupFlags == (xtpPopupLeft | xtpPopupDown) && m_rcExclude.Width() != 0)
+		m_ptPopup.x = m_rcExclude.right - sz.cx;
+	else if (m_popupFlags & xtpPopupLeft && m_rcExclude.Width() != 0)
+		m_ptPopup.x = m_rcExclude.left - sz.cx;
+	else if ((m_popupFlags & xtpPopupLeft) && m_rcExclude.Width() == 0)
+		m_ptPopup.x -= sz.cx;
+
+	if (m_ptPopup.x + sz.cx > rcWork.right)
+	{
+		if (m_rcExclude.Width() == 0 && m_ptPopup.x > rcWork.right)
+			m_ptPopup.x = m_ptPopup.x - sz.cx;
+		else if (m_rcExclude.Width() == 0)
+			m_ptPopup.x = rcWork.right - sz.cx;
+		else
+		{
+			m_ptPopup.x = (m_popupFlags & xtpPopupDown ? rcWork.right : m_rcExclude.left) - sz.cx ;
+			m_popupFlags |= xtpPopupLeft;
+		}
+		if (m_ptPopup.x < rcWork.left)
+			m_ptPopup.x = rcWork.left;
+	}
+	else if (m_ptPopup.x < rcWork.left)
+	{
+		if (m_rcExclude.Width() != 0)
+		{
+			m_ptPopup.x = m_popupFlags & xtpPopupDown ? rcWork.left : m_rcExclude.right;
+			m_popupFlags &= ~xtpPopupLeft;
+		}
+		else if (m_popupFlags & xtpPopupLeft)
+		{
+			m_ptPopup.x = rcWork.left;
+			m_popupFlags &= ~xtpPopupLeft;
+		}
+	}
+
+	m_scrollInfo.bScroll = bScroll && (GetType() == xtpBarTypePopup && GetPosition() == xtpBarPopup);
+	if (m_scrollInfo.bScroll)
+	{
+		m_scrollInfo.nScrollFirst = 0;
+		AdjustScrolling(&sz);
+	}
+
+	return CRect(m_ptPopup, sz);
+}
+
+void CXTPPopupBar::UpdateLocation(CSize sz)
+{
+	CRect rc = CalculatePopupRect(sz);
+	SetWindowPos(&CWnd::wndTopMost, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW | (IsWindowVisible() ? SWP_NOZORDER : 0));
+}
+
+void CXTPPopupBar::AdjustScrolling(LPSIZE lpSize, BOOL bDown, BOOL bInvalidate)
+{
+	CSize sz = lpSize ? *lpSize : CXTPWindowRect(this).Size();
+
+	m_scrollInfo.btnDown.m_rc.SetRectEmpty();
+	m_scrollInfo.btnUp.m_rc.SetRectEmpty();
+	int nCount = GetControlCount();
+	CRect rcBorders = GetBorders();
+
+	int nSeparator = GetPaintManager()->DrawCommandBarSeparator(NULL, this, NULL, FALSE).cy;
+
+	CSize szTearOffGripper(0);
+	if (m_bTearOffPopup)
+	{
+		szTearOffGripper = GetPaintManager()->DrawTearOffGripper(NULL, 0, FALSE, FALSE);
+		rcBorders.top += szTearOffGripper.cy;
+	}
+	if (m_bResizable)
+	{
+		rcBorders.bottom += m_rcResizeGripper.Height();
+	}
+
+	CXTPControl* pButtonExpand = m_pControls->FindControl(XTP_ID_POPUPBAR_EXPAND);
+	CSize szButtonExpand(0);
+
+	if (m_bCollapsed)
+	{
+		szButtonExpand = GetPaintManager()->DrawSpecialControl(NULL, xtpButtonExpandMenu, NULL, this, FALSE, NULL);
+		rcBorders.bottom += szButtonExpand.cy;
+
+		if (!pButtonExpand)
+			pButtonExpand = m_pControls->Add(new CControlExpandButton(), XTP_ID_POPUPBAR_EXPAND, _T(""), -1, TRUE);
+		pButtonExpand->SetHideFlags(xtpHideGeneric);
+	}
+	else if (pButtonExpand) pButtonExpand->SetHideFlags(xtpHideGeneric);
+
+
+	int nScrollHeight = 16;
+	int i;
+
+	if (!bDown)
+	{
+		if (m_scrollInfo.nScrollFirst == 1)
+			m_scrollInfo.nScrollFirst = 0;
+
+		int nPos = rcBorders.top;
+		if (m_scrollInfo.nScrollFirst != 0)
+		{
+			nPos += nScrollHeight;
+			m_scrollInfo.btnDown.m_rc.SetRect(rcBorders.left, rcBorders.top, sz.cx - rcBorders.right, nPos);
+		}
+
+		ASSERT(m_scrollInfo.nScrollFirst < nCount && m_scrollInfo.nScrollFirst >= 0);
+
+		BOOL bFirst = TRUE;
+		for (i = m_scrollInfo.nScrollFirst; i < nCount ; i++)
+		{
+			CXTPControl* pControl = GetControl(i);
+			pControl->SetHideFlag(xtpHideScroll, FALSE);
+
+			if (!pControl->IsVisible())
+				continue;
+
+			int nItemHeight = pControl->GetRect().Height();
+			if (pControl->GetBeginGroup()) nPos += nSeparator;
+
+			if (sz.cy - (nPos + nItemHeight) < nScrollHeight + rcBorders.bottom)
+			{
+				if (!bFirst)
+					break;
+				else
+					nItemHeight = sz.cy - rcBorders.bottom - rcBorders.top;
+			}
+
+			bFirst = FALSE;
+			pControl->SetRect(CRect(rcBorders.left, nPos, sz.cx - rcBorders.right, nPos + nItemHeight));
+
+			nPos += nItemHeight;
+		}
+		for (int j = i; j < nCount; j++)
+		{
+			GetControl(j)->SetHideFlag(xtpHideScroll, TRUE);
+		}
+
+		m_scrollInfo.nScrollLast = i;
+
+		if (i != nCount)
+		{
+			m_scrollInfo.btnUp.m_rc.SetRect(rcBorders.left, sz.cy - rcBorders.bottom - nScrollHeight, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom);
+		}
+	}
+	else
+	{
+		if (m_scrollInfo.nScrollLast == nCount - 1)
+			m_scrollInfo.nScrollLast = nCount;
+
+		int nPos = sz.cy - rcBorders.bottom;
+		if (m_scrollInfo.nScrollLast != nCount)
+		{
+			nPos -= nScrollHeight;
+			m_scrollInfo.btnUp.m_rc.SetRect(rcBorders.left, sz.cy - rcBorders.bottom - nScrollHeight, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom);
+		}
+
+		ASSERT(m_scrollInfo.nScrollLast <= nCount && m_scrollInfo.nScrollLast > 0);
+
+		for (i = m_scrollInfo.nScrollLast - 1 ; i >= 0 ; i--)
+		{
+			CXTPControl* pControl = GetControl(i);
+			pControl->SetHideFlag(xtpHideScroll, FALSE);
+
+			if (!pControl->IsVisible())
+				continue;
+
+			int nItemHeight = pControl->GetRect().Height();
+
+			if (nPos - nItemHeight < nScrollHeight)
+			{
+				break;
+			}
+			pControl->SetRect(CRect(rcBorders.left, nPos - nItemHeight, sz.cx - rcBorders.right, nPos));
+
+			nPos -= nItemHeight;
+			if (pControl->GetBeginGroup()) nPos -= nSeparator;
+		}
+
+		for (int j = i; j >= 0; j--)
+		{
+			GetControl(j)->SetHideFlag(xtpHideScroll, TRUE);
+		}
+
+		m_scrollInfo.nScrollFirst = i + 1;
+
+		if (i != -1)
+		{
+			m_scrollInfo.btnDown.m_rc.SetRect(rcBorders.left, rcBorders.top, sz.cx - rcBorders.right, rcBorders.top + nScrollHeight);
+		}
+	}
+	if (m_bCollapsed)
+	{
+		pButtonExpand->SetHideFlags(xtpNoHide);
+		pButtonExpand->SetRect(CRect(rcBorders.left, sz.cy - rcBorders.bottom, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom +  szButtonExpand.cy));
+	}
+	m_rcTearOffGripper.SetRect(rcBorders.left, rcBorders.top - szTearOffGripper.cy, sz.cx - rcBorders.right, rcBorders.top);
+	if (m_bResizable) m_rcResizeGripper.SetRect(rcBorders.left, sz.cy - rcBorders.bottom, sz.cx - rcBorders.right, sz.cy - rcBorders.bottom + m_rcResizeGripper.Height());
+
+	if (bInvalidate) Redraw();
+}
+
+void CXTPCommandBar::UpdateShortcuts()
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	if (!pCommandBars->GetCommandBarsOptions()->bAutoUpdateShortcuts)
+		return;
+
+	for (int i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl || pControl->GetParent() != this || !pControl->IsVisible())
+			continue;
+
+		CString strShortcut;
+		if (pControl->GetID() != 0)
+		{
+			pCommandBars->GetShortcutManager()->FindDefaultAccelerator(pControl->GetID(), strShortcut);
+			pControl->m_strShortcutTextAuto = strShortcut;
+		}
+	}
+}
+
+void CXTPPopupBar::AdjustExcludeRect(CRect& rc, BOOL bVertical)
+{
+	m_pControlPopup->AdjustExcludeRect(rc, bVertical);
+}
+
+AFX_INLINE BOOL IsVerticalPosition(CXTPCommandBar* pCommandBar)
+{
+	return IsVerticalPosition(pCommandBar->GetPosition()) ||
+		(pCommandBar->GetType() == xtpBarTypePopup && pCommandBar->GetPosition() == xtpBarFloating);
+}
+
+void CXTPPopupBar::UpdateFlags()
+{
+	if (m_pControlPopup)
+	{
+		BOOL bLayoutRTL = IsLayoutRTL();
+
+
+		CXTPCommandBar* pParent = GetParentCommandBar();
+		ASSERT(pParent);
+		if (!pParent)
+			return;
+
+		m_popupFlags = xtpPopupRight;
+
+		if (m_pControlPopup->m_dwFlags & xtpFlagLeftPopup || bLayoutRTL) m_popupFlags |= xtpPopupLeft;
+
+		if (pParent->GetFlags() & xtpFlagSmartLayout && pParent->GetPosition() == xtpBarPopup)
+		{
+			m_popupFlags |= xtpPopupDown;
+		}
+		else if (!IsVerticalPosition(pParent))
+		{
+			m_popupFlags |= xtpPopupDown;
+		}
+		else
+		{
+			if (pParent->GetPosition() == xtpBarRight || (pParent->GetType() == xtpBarTypePopup &&
+				pParent->IsPopupBar() && ((CXTPPopupBar*)pParent)->m_popupFlags & xtpPopupLeft))
+				m_popupFlags = xtpPopupLeft;
+		}
+
+		m_rcExclude = m_pControlPopup->GetRect();
+
+		if (m_pControlPopup->GetType() == xtpControlComboBox && pParent->GetType() != xtpBarTypePopup)
+		{
+			m_popupFlags |= xtpPopupDown;
+		}
+		else AdjustExcludeRect(m_rcExclude, IsVerticalPosition(pParent));
+
+		pParent->ClientToScreen(m_rcExclude);
+
+		m_ptPopup.x = (m_popupFlags & xtpPopupDown) ? m_rcExclude.left : m_rcExclude.right;
+		m_ptPopup.y = (m_popupFlags & xtpPopupDown) ? m_rcExclude.bottom : m_rcExclude.top;
+	}
+}
+
+
+void CXTPPopupBar::UpdateExpandingState()
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	int i;
+
+	if (pCommandBars->GetCommandBarsOptions()->bAlwaysShowFullMenus)
+	{
+		for (i = 0; i < GetControlCount(); i++)
+		{
+			CXTPControl* pControl = GetControl(i);
+			if (!pControl || pControl->GetParent() != this)
+				continue;
+
+			pControl->SetExpanded(FALSE);
+		}
+		m_bExpanded = TRUE;
+		return;
+	}
+
+	m_bCollapsed = FALSE;
+
+	BOOL bCollapsedExists = FALSE;
+	for (i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl || pControl->GetParent() != this)
+			continue;
+
+		BOOL bVisible = pControl->IsVisible(xtpHideExpand | xtpHideScroll);
+
+		if (pCommandBars->IsControlHidden(pControl))
+		{
+			pControl->SetExpanded(bVisible);
+		}
+		else
+		{
+			pControl->SetExpanded(FALSE);
+
+			if (pControl->GetID() != XTP_ID_POPUPBAR_EXPAND && bVisible)
+				bCollapsedExists = TRUE;
+		}
+	}
+
+	for (i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl || pControl->GetParent() != this)
+			continue;
+
+		pControl->SetHideFlag(xtpHideExpand, FALSE);
+
+		if (pControl->GetExpanded())
+		{
+			if (!m_bExpanded && bCollapsedExists)
+			{
+				pControl->SetHideFlag(xtpHideExpand, TRUE);
+				m_bCollapsed = TRUE;
+			}
+		}
+	}
+}
+
+void CXTPPopupBar::Animate()
+{
+	CXTPCommandBar* pParentCommandBar = GetParentCommandBar();
+
+	BOOL bAnimate = pParentCommandBar ? pParentCommandBar->m_bAnimatePopup : TRUE;
+
+	if (bAnimate)
+	{
+		if (IsCustomizeMode() || GetWindow(GW_CHILD))
+			bAnimate = FALSE;
+	}
+
+	BOOL bRegionChanged = FALSE;
+
+
+	if (bAnimate)
+	{
+		XTPAnimationType animationType = GetAnimationType();
+		if (IsAnimateType(animationType))
+		{
+
+			if (m_pControlPopup)
+			{
+				m_pControlPopup->RedrawParent();
+				m_pControlPopup->GetParent()->UpdateWindow();
+			}
+
+			GetSite()->UpdateWindow();
+
+			CClientDC paintDC(this);
+			CXTPClientRect rcClient(this);
+			CXTPWindowRect rcWindow(this);
+
+			CXTPBufferDC animationDC(paintDC, rcClient);
+			DrawCommandBar(&animationDC, rcClient);
+
+			CDC* pDC = GetDesktopWindow()->GetDC();
+
+			BOOL dwLayout = CXTPDrawHelpers::IsContextRTL(&paintDC);
+			CXTPDrawHelpers::SetContextRTL(&paintDC, FALSE);
+			paintDC.BitBlt(0, 0, rcClient.Width(), rcClient.Height(), pDC, rcWindow.left, rcWindow.top, SRCCOPY);
+			GetDesktopWindow()->ReleaseDC(pDC);
+			CXTPDrawHelpers::SetContextRTL(&paintDC, dwLayout);
+
+			GetPaintManager()->SetCommandBarRegion(this);
+			bRegionChanged = TRUE;
+			// Animation
+			GetPaintManager()->Animate(&paintDC, &animationDC, rcClient, animationType);
+		}
+	}
+
+	if (pParentCommandBar) pParentCommandBar->m_bAnimatePopup = FALSE;
+	if (!bRegionChanged) GetPaintManager()->SetCommandBarRegion(this);
+
+}
+
+
+
+BOOL CXTPPopupBar::Popup(CXTPControlPopup* pControlPopup, BOOL bSelectFirst)
+{
+	m_pControlPopup = pControlPopup;
+
+	if (!Create())
+		return FALSE;
+
+	if (m_pToolTipContext)
+	{
+		m_pToolTipContext->CancelToolTips();
+	}
+
+	LockRedraw();
+
+	CWnd* pWndOwner = GetOwnerSite();
+	if (pWndOwner) pWndOwner->SendMessage(WM_XTP_INITCOMMANDSPOPUP, 0, (LPARAM)this);
+
+	m_bTearOffSelected = FALSE;
+
+	m_bCollapsed = FALSE;
+	m_bExpanded = IsCustomizeMode() || XTPMouseManager()->IsForceExpanded();
+
+	UpdateFlags();
+
+	UpdateLocation(CalcDynamicLayout(0, 0));
+
+	if (!m_hWnd)
+	{
+		UnlockRedraw();
+		return FALSE;
+	}
+
+	if (m_pControlPopup && m_pControlPopup->m_pParent->GetSafeHwnd() == NULL)
+	{
+		UnlockRedraw();
+		DestroyWindow();
+		return FALSE;
+	}
+
+	SetTrackingMode(TRUE, bSelectFirst, bSelectFirst);
+
+	m_nIdleFlags &= ~xtpIdleLayout;
+	OnIdleUpdateCmdUI(TRUE, 0L);
+
+	if (!m_hWnd)
+	{
+		UnlockRedraw();
+		return FALSE;
+	}
+
+	Animate();
+	XTPSoundManager()->PlaySystemSound(xtpSoundMenuPopup);
+
+	if (m_barPosition == xtpBarPopup && m_bShowShadow)
+	{
+		XTPShadowsManager()->RemoveShadow(this);
+		XTPShadowsManager()->SetShadow(this, m_rcExclude);
+	}
+
+	m_nIdleFlags |= xtpIdleLayout;
+	UnlockRedraw();
+
+	return TRUE;
+}
+
+BOOL CXTPPopupBar::Popup(int x, int y, LPCRECT rcExclude)
+{
+	m_ptPopup = CPoint(x, y);
+	if (rcExclude) m_rcExclude = *rcExclude;
+	return Popup(NULL);
+}
+
+BEGIN_MESSAGE_MAP(CXTPPopupBar, CXTPCommandBar)
+	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_SETCURSOR()
+	ON_WM_TIMER()
+	ON_WM_NCACTIVATE()
+	ON_WM_NCCREATE()
+	ON_MESSAGE(WM_FLOATSTATUS, OnFloatStatus)
+END_MESSAGE_MAP()
+
+void CXTPPopupBar::SwitchTearOffTracking(BOOL bShow, CPoint point)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	ASSERT(pCommandBars);
+	if (!pCommandBars)
+		return;
+
+	ShowWindow(bShow ? SW_SHOWNA : SW_HIDE);
+
+	if (!bShow)
+	{
+		if (m_pTearOffBar == NULL)
+		{
+			m_pTearOffBar = pCommandBars->GetToolBar(m_nTearOffID);
+			if (m_pTearOffBar != NULL)
+			{
+				m_pTearOffBar->SetPosition(xtpBarFloating);
+				m_pTearOffBar->SetVisible(TRUE);
+				pCommandBars->RecalcFrameLayout();
+			}
+		}
+		if (m_pTearOffBar == NULL)
+		{
+
+			m_pTearOffBar = pCommandBars->AddCustomBar(m_strTearOffCaption, m_nTearOffID, TRUE);
+			m_pTearOffBar->m_nMRUWidth = m_nTearOffWidth;
+
+			for (int i = 0; i < GetControlCount(); i++)
+			{
+				CXTPControl* pControl = GetControl(i);
+				if (!pControl || pControl->GetParent() != this)
+					continue;
+
+				if (pControl->GetID() != XTP_ID_POPUPBAR_EXPAND)
+				{
+					CXTPControl* pControlClone = m_pTearOffBar->GetControls()->AddClone(pControl);
+					pControlClone->SetHideFlags(pControlClone->GetHideFlags() & ~(xtpHideScroll | xtpHideExpand));
+				}
+			}
+
+		}
+		ASSERT(m_pTearOffBar);
+
+		pCommandBars->GetSite()->SendMessage(WM_XTP_TEAROFFDONE, (WPARAM)m_pTearOffBar, (LPARAM)this);
+
+		m_szTearOffBar = m_pTearOffBar->CalcDynamicLayout(-1, LM_MRUWIDTH | LM_HORZ | LM_COMMIT);
+		CPoint pt(point.x - m_szTearOffBar.cx / 2, point.y - 10);
+		m_pTearOffBar->MoveWindow(pt.x, pt.y, m_szTearOffBar.cx, m_szTearOffBar.cy);
+		m_pTearOffBar->OnInitialUpdate();
+		m_pTearOffBar->Redraw();
+
+
+	}
+	else
+	{
+		if (m_pTearOffBar)
+		{
+			m_pTearOffBar->SetVisible(FALSE);
+			m_pTearOffBar = 0;
+		}
+
+	}
+}
+
+void CXTPPopupBar::TrackResize()
+{
+	// don't handle if capture already set
+	if (::GetCapture() != NULL)
+		return;
+
+	CXTPControl* pControl = GetControls()->FindControl(xtpControlGallery, -1, TRUE, FALSE);
+	if (!pControl)
+		return;
+	CSize szControl(pControl->GetWidth(), pControl->GetRect().Height());
+	CSize szControlInit = szControl;
+	CSize szControlMin(pControl->GetCustomizeMinWidth(), pControl->GetCustomizeMinHeight());
+
+	SetPopuped(-1);
+	SetSelected(-1);
+
+	BOOL bResizeWidth = m_bResizable & 1;
+	BOOL bResizeHeight = m_bResizable & 2;
+
+	// set capture to the window which received this message
+	SetCapture();
+	ASSERT(m_hWnd == ::GetCapture());
+
+	CPoint pt(0, 0);
+	GetCursorPos(&pt);
+
+	// get messages until capture lost or cancelled/accepted
+	while (::GetCapture() == m_hWnd)
+	{
+		MSG msg;
+
+		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+		{
+			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+				break;
+			DispatchMessage(&msg);
+		}
+
+		if (!::GetMessage(&msg, NULL, 0, 0))
+		{
+			AfxPostQuitMessage((int)msg.wParam);
+			break;
+		}
+
+		if (msg.message == WM_LBUTTONUP)
+			break;
+		else if (msg.message == WM_MOUSEMOVE && pt != msg.pt)
+		{
+			szControl += CPoint(msg.pt) - pt;
+
+			if (bResizeWidth) pControl->SetWidth(max(szControl.cx, szControlMin.cx));
+			if (bResizeHeight) pControl->SetHeight(max(szControl.cy, szControlMin.cy));
+			RecalcSizeLayout();
+
+			pt = msg.pt;
+		}
+		else if (msg.message == WM_KEYDOWN)
+		{
+			if (msg.wParam == VK_ESCAPE)
+			{
+				if (bResizeWidth) pControl->SetWidth(szControlInit.cx);
+				if (bResizeHeight) pControl->SetHeight(szControlInit.cy);
+				RecalcSizeLayout();
+				break;
+			}
+		}
+		else
+			DispatchMessage(&msg);
+
+	}
+
+	ReleaseCapture();
+}
+
+void CXTPPopupBar::TrackTearOff()
+{
+	m_pTearOffBar = NULL;
+	CRect rcGripper = m_rcTearOffGripper;
+	ClientToScreen(&rcGripper);
+
+	BOOL bShow = TRUE;
+	// don't handle if capture already set
+	if (::GetCapture() != NULL)
+		return;
+
+	// set capture to the window which received this message
+	SetCapture();
+	ASSERT(this == CWnd::GetCapture());
+
+	CPoint pt(0, 0);
+	// get messages until capture lost or cancelled/accepted
+	while (CWnd::GetCapture() == this)
+	{
+		MSG msg;
+
+		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+		{
+			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+				break;
+			DispatchMessage(&msg);
+		}
+
+		if (!::GetMessage(&msg, NULL, 0, 0))
+		{
+			AfxPostQuitMessage((int)msg.wParam);
+			break;
+		}
+
+		if (msg.message == WM_LBUTTONUP)
+			break;
+		else if (msg.message == WM_MOUSEMOVE && pt != msg.pt)
+		{
+			pt = msg.pt;
+			BOOL bState = !(pt.x > rcGripper.right + 10 || pt.x < rcGripper.left - 10 ||
+				pt.y > rcGripper.bottom + 10 || pt.y < rcGripper.top - 10);
+			if (bState != bShow)
+			{
+				bShow = bState;
+				SwitchTearOffTracking(bState, pt);
+			}
+
+			if (m_pTearOffBar != NULL)
+			{
+				CPoint point(pt.x - m_szTearOffBar.cx / 2, pt.y - 10);
+				m_pTearOffBar->MoveWindow(point.x, point.y, m_szTearOffBar.cx, m_szTearOffBar.cy);
+
+			}
+
+		}
+		else if (msg.message == WM_KEYDOWN)
+		{
+			if (msg.wParam == VK_ESCAPE)
+			{
+				break;
+			}
+		}
+		else
+			DispatchMessage(&msg);
+
+	}
+
+	ReleaseCapture();
+	if (m_pTearOffBar)
+	{
+		GetCommandBars()->ClosePopups();
+	}
+}
+
+BOOL CXTPPopupBar::_MouseInResizeGripper(const POINT& pt)
+{
+	if (m_rcResizeGripper.PtInRect(pt))
+	{
+		if (m_bResizable == 2)
+		{
+			return TRUE;
+		}
+
+		CRect rcResizeGripper(m_rcResizeGripper);
+		rcResizeGripper.left = rcResizeGripper.right - rcResizeGripper.Height();
+		if (rcResizeGripper.PtInRect(pt))
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL CXTPPopupBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (m_bResizable)
+	{
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
+
+		if (_MouseInResizeGripper(pt))
+		{
+			SetCursor(AfxGetApp()->LoadStandardCursor(m_bResizable == 2 ? IDC_SIZENS : IDC_SIZENWSE));
+			return TRUE;
+		}
+	}
+
+	return CXTPCommandBar::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CXTPPopupBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_bTearOffPopup && m_rcTearOffGripper.PtInRect(point) && !IsCustomizeMode())
+	{
+		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
+
+		CXTPMouseManager* pMouseManager = XTPMouseManager();
+
+		pMouseManager->LockMouseMove();
+		m_bTearOffTracking = TRUE;
+		TrackTearOff();
+		m_bTearOffTracking = FALSE;
+		pMouseManager->UnlockMouseMove();
+
+		pMouseManager->RefreshCursor();
+		return;
+	}
+
+	if (m_bResizable && _MouseInResizeGripper(point))
+	{
+		CXTPMouseManager* pMouseManager = XTPMouseManager();
+
+		pMouseManager->LockMouseMove();
+		TrackResize();
+		pMouseManager->UnlockMouseMove();
+
+		pMouseManager->RefreshCursor();
+		return;
+	}
+
+	CXTPCommandBar::OnLButtonDown(nFlags, point);
+}
+
+BOOL CXTPPopupBar::DestroyWindow()
+{
+	if (!GetSafeHwnd())
+		return CXTPCommandBar::DestroyWindow();
+
+	CWnd* pWnd = GetWindow(GW_CHILD);
+	if (!pWnd)
+		return CXTPCommandBar::DestroyWindow();
+
+	CWnd* pWndParent = GetSite();
+
+	while (pWnd)
+	{
+		CWnd* pWndNext = pWnd->GetWindow(GW_HWNDNEXT);
+
+		pWnd->ShowWindow(SW_HIDE);
+		pWnd->SetParent(pWndParent);
+
+		pWnd = pWndNext;
+	}
+	return CXTPCommandBar::DestroyWindow();
+}
+
+BOOL CXTPPopupBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	if (!CXTPCommandBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard))
+		return FALSE;
+
+	CWnd* pWnd = GetSite();
+
+	if (!bMode)
+	{
+		AccessibleNotifyWinEvent(EVENT_SYSTEM_MENUPOPUPEND, m_hWnd, OBJID_MENU, 0);
+
+		DestroyWindow();
+
+		CXTPCommandBar* pParentCommandBar = GetParentCommandBar();
+		if (pParentCommandBar)
+			pParentCommandBar->SetPopuped(-1);
+
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_UNINITCOMMANDSPOPUP, 0, (LPARAM)this);
+
+		Sleep(1);
+
+		m_pControlPopup = 0;
+
+	}
+	else
+	{
+		AccessibleNotifyWinEvent(EVENT_SYSTEM_MENUPOPUPSTART, m_hWnd, OBJID_MENU, 0);
+	}
+	if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->UpdateWindow();
+
+	return TRUE;
+}
+
+
+void CXTPPopupBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_nLockRecurse > 0)
+		return;
+
+	if (GetParentCommandBar() != NULL && CXTPClientRect(this).PtInRect(point))
+	{
+		// restore selection
+		GetParentCommandBar()->SetSelected(m_pControlPopup->GetIndex());
+	}
+
+	if (m_scrollInfo.bScroll)
+	{
+		if (m_scrollInfo.btnUp.OnMouseMove(point) ||
+			m_scrollInfo.btnDown.OnMouseMove(point))
+		{
+			SetPopuped(-1);
+		}
+	}
+
+	if (m_bTearOffPopup && !IsCustomizeMode() && m_rcTearOffGripper.PtInRect(point) && !m_bTearOffSelected)
+	{
+		SetSelected(-1);
+		SetPopuped(-1);
+		m_nTearOffTimer = SetTimer(TID_TEAROFFSELECTED, 80, NULL);
+	}
+
+	CXTPCommandBar::OnMouseMove(nFlags, point);
+}
+
+CXTPCommandBar* CXTPPopupBar::GetParentCommandBar() const
+{
+	return m_pControlPopup ? m_pControlPopup->GetParent() : NULL;
+}
+
+int CXTPPopupBar::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+BOOL CXTPPopupBar::OnNcActivate(BOOL bActive)
+{
+	return bActive ? FALSE : CWnd::OnNcActivate(bActive);
+}
+
+BOOL CXTPPopupBar::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (!CXTPCommandBar::OnNcCreate(lpCreateStruct))
+		return FALSE;
+
+	if (GetStyle() & MFS_SYNCACTIVE)
+	{
+		// syncronize activation state with top level parent
+		CWnd* pParentWnd = GetTopLevelParent();
+		ASSERT(pParentWnd != NULL);
+		if (!pParentWnd)
+			return FALSE;
+
+		CWnd* pActiveWnd = GetForegroundWindow();
+		BOOL bActive = (pParentWnd == pActiveWnd) ||
+			(pParentWnd->GetLastActivePopup() == pActiveWnd &&
+			pActiveWnd->SendMessage(WM_FLOATSTATUS, FS_SYNCACTIVE) != 0);
+
+		// the WM_FLOATSTATUS does the actual work
+		SendMessage(WM_FLOATSTATUS, bActive ? FS_ACTIVATE : FS_DEACTIVATE);
+	}
+
+
+	return TRUE;
+}
+
+
+LRESULT CXTPPopupBar::OnFloatStatus(WPARAM wParam, LPARAM)
+{
+	// FS_SYNCACTIVE is used to detect MFS_SYNCACTIVE windows
+	LRESULT lResult = ((GetStyle() & MFS_SYNCACTIVE) && (wParam & FS_SYNCACTIVE));
+	return lResult;
+}
+
+
+
+void CXTPPopupBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
+{
+	CXTPCommandBar::DrawCommandBar(pDC, rcClipBox);
+
+	if (m_scrollInfo.bScroll)
+	{
+		if (!m_scrollInfo.btnUp.m_rc.IsRectEmpty())
+		{
+			CPoint pt = m_scrollInfo.btnUp.m_rc.CenterPoint();
+			GetPaintManager()->Triangle(pDC, CPoint(pt.x - 3, pt.y), CPoint(pt.x + 3, pt.y), CPoint(pt.x, pt.y + 3), GetXtremeColor(COLOR_BTNTEXT));
+		}
+		if (!m_scrollInfo.btnDown.m_rc.IsRectEmpty())
+		{
+			CPoint pt = m_scrollInfo.btnDown.m_rc.CenterPoint();
+			GetPaintManager()->Triangle(pDC, CPoint(pt.x - 3, pt.y), CPoint(pt.x + 3, pt.y), CPoint(pt.x, pt.y - 3), GetXtremeColor(COLOR_BTNTEXT));
+		}
+	}
+
+	if (m_bTearOffPopup && GetControlCount() > 0)
+	{
+		GetPaintManager()->DrawTearOffGripper(pDC, m_rcTearOffGripper, m_bTearOffSelected, TRUE);
+	}
+
+	if (!m_rcResizeGripper.IsRectEmpty() && m_bResizable)
+	{
+		GetPaintManager()->DrawPopupResizeGripper(pDC, m_rcResizeGripper, m_bResizable);
+	}
+}
+
+
+BOOL CXTPPopupBar::SetSelected(int nSelected, BOOL bKeyboard)
+{
+	if (!CXTPCommandBar::SetSelected(nSelected, bKeyboard))
+		return FALSE;
+
+	if (m_nSelected != -1 && !bKeyboard && (GetControl(m_nSelected)->GetID() == XTP_ID_POPUPBAR_EXPAND))
+	{
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		ASSERT(pCommandBars);
+
+		if (pCommandBars->GetCommandBarsOptions()->bShowFullAfterDelay)
+		{
+			SetTimer(TID_EXPANDHOVER, s_nExpandHoverDelay, NULL);
+		}
+	}
+	else
+	{
+		KillTimer(TID_EXPANDHOVER);
+
+	}
+
+	if (m_scrollInfo.bScroll && m_nSelected != -1)
+	{
+		if (GetControl(m_nSelected)->GetHideFlags() & xtpHideScroll)
+		{
+			if (m_nSelected >= m_scrollInfo.nScrollLast)
+			{
+				m_scrollInfo.nScrollLast = m_nSelected + 1;
+				AdjustScrolling(NULL, TRUE, TRUE);
+			}
+			else
+			{
+				m_scrollInfo.nScrollFirst = m_nSelected;
+				AdjustScrolling(NULL, FALSE, TRUE);
+			}
+		}
+	}
+
+	return TRUE;
+}
+
+void CXTPPopupBar::OnTimer(UINT_PTR nIDEvent)
+{
+	int nCount = GetControlCount();
+
+	switch (nIDEvent)
+	{
+		case TID_HOVERUP:
+			if (m_scrollInfo.nScrollLast == nCount)
+			{
+				m_scrollInfo.btnUp.KillTimer();
+				return;
+			}
+			m_scrollInfo.nScrollLast++;
+			AdjustScrolling(NULL, TRUE, TRUE);
+
+			break;
+
+		case TID_HOVERDOWN:
+			if (m_scrollInfo.nScrollFirst == 0)
+			{
+				m_scrollInfo.btnDown.KillTimer() ;
+				return;
+			}
+			m_scrollInfo.nScrollFirst--;
+			AdjustScrolling(NULL, FALSE, TRUE);
+			break;
+
+		case TID_TEAROFFSELECTED:
+			{
+				CPoint pt;
+				GetCursorPos(&pt);
+				ScreenToClient(&pt);
+				if (!m_bTearOffSelected && m_rcTearOffGripper.PtInRect(pt))
+				{
+					m_bTearOffSelected = TRUE;
+					Redraw();
+				}
+				if (m_bTearOffSelected && !m_rcTearOffGripper.PtInRect(pt) && !m_bTearOffTracking)
+				{
+					m_bTearOffSelected = FALSE;
+					Redraw();
+					KillTimer(m_nTearOffTimer);
+				}
+			}
+			break;
+
+		case TID_EXPANDHOVER:
+			if (m_nSelected != -1 && GetControl(m_nSelected)->GetID() == XTP_ID_POPUPBAR_EXPAND)
+			{
+				GetControl(m_nSelected)->OnExecute();
+			}
+
+			KillTimer(TID_EXPANDHOVER);
+			break;
+	}
+
+	CXTPCommandBar::OnTimer(nIDEvent);
+}
+
+BOOL CXTPPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	if (m_bCollapsed)
+	{
+		if (nChar == VK_DOWN)
+		{
+			if (GetKeyState(VK_CONTROL) < 0 || m_pControls->GetNext(m_nSelected, +1) <= m_nSelected)
+			{
+				ExpandBar();
+			}
+		}
+	}
+	return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+}
+
+void CXTPPopupBar::SetDefaultItem(UINT uItem, BOOL fByPos)
+{
+	CXTPControl* pControl = fByPos ? m_pControls->GetAt(uItem) : m_pControls->FindControl(xtpControlError, uItem, TRUE, FALSE);
+	if (pControl)
+	{
+		pControl->SetItemDefault(TRUE);
+	}
+}
+
+UINT CXTPPopupBar::GetDefaultItem(UINT /*gmdiFlags*/, BOOL fByPos)
+{
+	for (int i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl || pControl->GetParent() != this || !pControl->IsVisible())
+			continue;
+
+		if (pControl->IsItemDefault())
+		{
+			return fByPos ? pControl->GetIndex() : pControl->GetID();
+		}
+	}
+	return (UINT)-1;
+}
+
+void CXTPPopupBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	ASSERT_KINDOF(CXTPPopupBar, pCommandBar);
+
+	CXTPCommandBar::Copy(pCommandBar, bRecursive);
+
+	m_bTearOffPopup = ((CXTPPopupBar*)pCommandBar)->m_bTearOffPopup;
+	m_strTearOffCaption = ((CXTPPopupBar*)pCommandBar)->m_strTearOffCaption;
+	m_nTearOffID = ((CXTPPopupBar*)pCommandBar)->m_nTearOffID;
+	m_nTearOffWidth = ((CXTPPopupBar*)pCommandBar)->m_nTearOffWidth;
+
+	m_bShowShadow = ((CXTPPopupBar*)pCommandBar)->m_bShowShadow;
+	m_rcBorders = ((CXTPPopupBar*)pCommandBar)->m_rcBorders;
+	m_bContextMenu = ((CXTPPopupBar*)pCommandBar)->m_bContextMenu;
+}
+
+void CXTPPopupBar::SetPopupToolBar(BOOL bToolBarType)
+{
+	m_barType = bToolBarType ? xtpBarTypeNormal : xtpBarTypePopup;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPPopupToolBar, CXTPPopupBar)
+
+CXTPPopupToolBar::CXTPPopupToolBar()
+{
+	m_barType = xtpBarTypeNormal;
+}
+
+CSize CXTPPopupToolBar::CalcDynamicLayout(int, DWORD /*nMode*/)
+{
+	return CXTPPopupBar::CalcDynamicLayout(0, 0);
+}
+
+CXTPPopupToolBar* CXTPPopupToolBar::CreatePopupToolBar(CXTPCommandBars* pCommandBars)
+{
+	CXTPPopupToolBar* pPopupBar = (CXTPPopupToolBar*)CXTPCommandBars::m_pPopupToolBarClass->CreateObject();
+	pPopupBar->SetCommandBars(pCommandBars);
+	return pPopupBar;
+}
+
+

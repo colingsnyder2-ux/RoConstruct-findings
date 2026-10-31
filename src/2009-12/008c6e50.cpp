@@ -1,161 +1,787 @@
-// roc 2009-12 008c6e50  unit: VCEdit::?$CXTMaskEditT  size: 570 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008c6e50
-//
-// 008c6e50  6aff                 push -1
-// 008c6e52  68d2469600           push 0x9646d2
-// 008c6e57  64a100000000         mov eax, dword ptr fs:[0]
-// 008c6e5d  50                   push eax
-// 008c6e5e  83ec1c               sub esp, 0x1c
-// 008c6e61  53                   push ebx
-// 008c6e62  55                   push ebp
-// 008c6e63  56                   push esi
-// 008c6e64  57                   push edi
-// 008c6e65  a10052b600           mov eax, dword ptr [0xb65200]
-// 008c6e6a  33c4                 xor eax, esp
-// 008c6e6c  50                   push eax
-// 008c6e6d  8d442430             lea eax, [esp + 0x30]
-// 008c6e71  64a300000000         mov dword ptr fs:[0], eax
-// 008c6e77  8bf1                 mov esi, ecx
-// 008c6e79  33ff                 xor edi, edi
-// 008c6e7b  897c241c             mov dword ptr [esp + 0x1c], edi
-// 008c6e7f  39bea8000000         cmp dword ptr [esi + 0xa8], edi
-// 008c6e85  0f84eb010000         je 0x8c7076
-// 008c6e8b  39beb8000000         cmp dword ptr [esi + 0xb8], edi
-// 008c6e91  0f85df010000         jne 0x8c7076
-// 008c6e97  8b8ea0000000         mov ecx, dword ptr [esi + 0xa0]
-// 008c6e9d  3bcf                 cmp ecx, edi
-// 008c6e9f  0f84b7010000         je 0x8c705c
-// 008c6ea5  39be9c000000         cmp dword ptr [esi + 0x9c], edi
-// 008c6eab  0f84ab010000         je 0x8c705c
-// 008c6eb1  8b01                 mov eax, dword ptr [ecx]
-// 008c6eb3  8b5058               mov edx, dword ptr [eax + 0x58]
-// 008c6eb6  ffd2                 call edx
-// 008c6eb8  85c0                 test eax, eax
-// 008c6eba  0f859c010000         jne 0x8c705c
-// 008c6ec0  8b86a0000000         mov eax, dword ptr [esi + 0xa0]
-// 008c6ec6  39b8c8000000         cmp dword ptr [eax + 0xc8], edi
-// 008c6ecc  0f848a010000         je 0x8c705c
-// 008c6ed2  39787c               cmp dword ptr [eax + 0x7c], edi
-// 008c6ed5  0f8581010000         jne 0x8c705c
-// 008c6edb  39beb4000000         cmp dword ptr [esi + 0xb4], edi
-// 008c6ee1  0f8475010000         je 0x8c705c
-// 008c6ee7  89beb4000000         mov dword ptr [esi + 0xb4], edi
-// 008c6eed  8ba8c4000000         mov ebp, dword ptr [eax + 0xc4]
-// 008c6ef3  397d28               cmp dword ptr [ebp + 0x28], edi
-// 008c6ef6  0f8460010000         je 0x8c705c
-// 008c6efc  8d4c2420             lea ecx, [esp + 0x20]
-// 008c6f00  ff1574de9800         call dword ptr [0x98de74]
-// 008c6f06  8d442420             lea eax, [esp + 0x20]
-// 008c6f0a  50                   push eax
-// 008c6f0b  8bce                 mov ecx, esi
-// 008c6f0d  897c243c             mov dword ptr [esp + 0x3c], edi
-// 008c6f11  e832cff2ff           call 0x7f3e48
-// 008c6f16  8d4c2420             lea ecx, [esp + 0x20]
-// 008c6f1a  ff15b4dd9800         call dword ptr [0x98ddb4]
-// 008c6f20  8d4c2424             lea ecx, [esp + 0x24]
-// 008c6f24  51                   push ecx
-// 008c6f25  8d54242c             lea edx, [esp + 0x2c]
-// 008c6f29  52                   push edx
-// 008c6f2a  8bce                 mov ecx, esi
-// 008c6f2c  8bd8                 mov ebx, eax
-// 008c6f2e  897c2430             mov dword ptr [esp + 0x30], edi
-// 008c6f32  897c242c             mov dword ptr [esp + 0x2c], edi
-// 008c6f36  e8452cf3ff           call 0x7f9b80
-// 008c6f3b  8b442424             mov eax, dword ptr [esp + 0x24]
-// 008c6f3f  39442428             cmp dword ptr [esp + 0x28], eax
-// 008c6f43  0f8501010000         jne 0x8c704a
-// 008c6f49  3bd8                 cmp ebx, eax
-// 008c6f4b  0f85f9000000         jne 0x8c704a
-// 008c6f51  3bdf                 cmp ebx, edi
-// 008c6f53  0f8ef1000000         jle 0x8c704a
-// 008c6f59  397d28               cmp dword ptr [ebp + 0x28], edi
-// 008c6f5c  0f8ee6000000         jle 0x8c7048
-// 008c6f62  57                   push edi
-// 008c6f63  8d44241c             lea eax, [esp + 0x1c]
-// 008c6f67  50                   push eax
-// 008c6f68  8bcd                 mov ecx, ebp
-// 008c6f6a  e8d1edf9ff           call 0x865d40
-// 008c6f6f  8d4c2418             lea ecx, [esp + 0x18]
-// 008c6f73  c644243801           mov byte ptr [esp + 0x38], 1
-// 008c6f78  ff15b4dd9800         call dword ptr [0x98ddb4]
-// 008c6f7e  3bc3                 cmp eax, ebx
-// 008c6f80  7e31                 jle 0x8c6fb3
-// 008c6f82  53                   push ebx
-// 008c6f83  8d4c2430             lea ecx, [esp + 0x30]
-// 008c6f87  51                   push ecx
-// 008c6f88  8d4c2420             lea ecx, [esp + 0x20]
-// 008c6f8c  ff1544cf9800         call dword ptr [0x98cf44]
-// 008c6f92  834c241c01           or dword ptr [esp + 0x1c], 1
-// 008c6f97  8bc8                 mov ecx, eax
-// 008c6f99  ff1580de9800         call dword ptr [0x98de80]
-// 008c6f9f  50                   push eax
-// 008c6fa0  8d4c2424             lea ecx, [esp + 0x24]
-// 008c6fa4  ff15d4cf9800         call dword ptr [0x98cfd4]
-// 008c6faa  c644241701           mov byte ptr [esp + 0x17], 1
-// 008c6faf  85c0                 test eax, eax
-// 008c6fb1  7405                 je 0x8c6fb8
-// 008c6fb3  c644241700           mov byte ptr [esp + 0x17], 0
-// 008c6fb8  f644241c01           test byte ptr [esp + 0x1c], 1
-// 008c6fbd  740f                 je 0x8c6fce
-// 008c6fbf  8364241cfe           and dword ptr [esp + 0x1c], 0xfffffffe
-// 008c6fc4  8d4c242c             lea ecx, [esp + 0x2c]
-// 008c6fc8  ff15c0de9800         call dword ptr [0x98dec0]
-// 008c6fce  807c241700           cmp byte ptr [esp + 0x17], 0
-// 008c6fd3  8d4c2418             lea ecx, [esp + 0x18]
-// 008c6fd7  7517                 jne 0x8c6ff0
-// 008c6fd9  c644243800           mov byte ptr [esp + 0x38], 0
-// 008c6fde  ff15c0de9800         call dword ptr [0x98dec0]
-// 008c6fe4  47                   inc edi
-// 008c6fe5  3b7d28               cmp edi, dword ptr [ebp + 0x28]
-// 008c6fe8  0f8c74ffffff         jl 0x8c6f62
-// 008c6fee  eb58                 jmp 0x8c7048
-// 008c6ff0  c786b800000001000000 mov dword ptr [esi + 0xb8], 1
-// 008c6ffa  ff1580de9800         call dword ptr [0x98de80]
-// 008c7000  50                   push eax
-// 008c7001  8bce                 mov ecx, esi
-// 008c7003  e80cccf2ff           call 0x7f3c14
-// 008c7008  8d4c2418             lea ecx, [esp + 0x18]
-// 008c700c  ff15b4dd9800         call dword ptr [0x98ddb4]
-// 008c7012  8b5620               mov edx, dword ptr [esi + 0x20]
-// 008c7015  8b3dc4cb9800         mov edi, dword ptr [0x98cbc4]
-// 008c701b  53                   push ebx
-// 008c701c  50                   push eax
-// 008c701d  68b1000000           push 0xb1
-// 008c7022  52                   push edx
-// 008c7023  ffd7                 call edi
-// 008c7025  8b4620               mov eax, dword ptr [esi + 0x20]
-// 008c7028  6a00                 push 0
-// 008c702a  6a00                 push 0
-// 008c702c  68b7000000           push 0xb7
-// 008c7031  50                   push eax
-// 008c7032  ffd7                 call edi
-// 008c7034  8d4c2418             lea ecx, [esp + 0x18]
-// 008c7038  c786b800000000000000 mov dword ptr [esi + 0xb8], 0
-// 008c7042  ff15c0de9800         call dword ptr [0x98dec0]
-// 008c7048  33ff                 xor edi, edi
-// 008c704a  8d4c2420             lea ecx, [esp + 0x20]
-// 008c704e  c7442438ffffffff     mov dword ptr [esp + 0x38], 0xffffffff
-// 008c7056  ff15c0de9800         call dword ptr [0x98dec0]
-// 008c705c  39bea0000000         cmp dword ptr [esi + 0xa0], edi
-// 008c7062  7412                 je 0x8c7076
-// 008c7064  8b8e9c000000         mov ecx, dword ptr [esi + 0x9c]
-// 008c706a  3bcf                 cmp ecx, edi
-// 008c706c  7408                 je 0x8c7076
-// 008c706e  56                   push esi
-// 008c706f  6a04                 push 4
-// 008c7071  e89a08faff           call 0x867910
-// 008c7076  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 008c707a  64890d00000000       mov dword ptr fs:[0], ecx
-// 008c7081  59                   pop ecx
-// 008c7082  5f                   pop edi
-// 008c7083  5e                   pop esi
-// 008c7084  5d                   pop ebp
-// 008c7085  5b                   pop ebx
-// 008c7086  83c428               add esp, 0x28
-// 008c7089  c3                   ret 
-// copied from an identical function in another client (function ?OnEnChange@CXTPPropertyGridInplaceEdit@@IAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen-rtm Source/PropertyGrid/XTPPropertyGridInplaceEdit.cpp
+
+// Candidate translation unit (score above; library headers required).
+// PropertyGripInplaceEdit.cpp : implementation of the CPropertyGripInplaceEdit class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceEdit
+
+CXTPPropertyGridInplaceEdit::CXTPPropertyGridInplaceEdit()
+: m_pItem(0)
+, m_pGrid(0)
+{
+	m_clrBack = 0;
+	m_bDelayCreate = FALSE;
+	m_bCreated = FALSE;
+	m_bCancel = FALSE;
+	m_bEditMode = FALSE;
+	m_bCheckAutoComplete = FALSE;
+	m_bIgnoreEditChanged = FALSE;
+}
+
+CXTPPropertyGridInplaceEdit::~CXTPPropertyGridInplaceEdit()
+{
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridInplaceEdit, CEdit)
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceEdit, CXTMaskEditT<CEdit>)
+	ON_MASKEDIT_REFLECT()
+	//{{AFX_MSG_MAP(CXTPPropertyGridInplaceEdit)
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_CONTROL_REFLECT(EN_KILLFOCUS, OnEnKillfocus)
+	ON_CONTROL_REFLECT(EN_SETFOCUS, OnEnSetfocus)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEnChange)
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KEYDOWN()
+	ON_WM_GETDLGCODE()
+	ON_WM_CHAR()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_STYLECHANGED()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceEdit message handlers
+
+void CXTPPropertyGridInplaceEdit::SetValue(LPCTSTR strValue)
+{
+	m_strValue = strValue;
+}
+
+void CXTPPropertyGridInplaceEdit::HideWindow()
+{
+	if (m_hWnd)
+	{
+		ShowWindow(SW_HIDE);
+	}
+}
+
+void CXTPPropertyGridInplaceEdit::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
+{
+	if (nStyleType == GWL_EXSTYLE && lpStyleStruct->styleNew & WS_EX_LAYOUTRTL)
+	{
+		HideWindow();
+		m_bDelayCreate = TRUE;
+	}
+
+	CEdit::OnStyleChanged(nStyleType, lpStyleStruct);
+}
+
+void CXTPPropertyGridInplaceEdit::Create(CXTPPropertyGridItem* pItem, CRect rect)
+{
+	ASSERT(pItem && pItem->GetGrid());
+	if (!pItem || !pItem->GetGrid())
+		return;
+
+	m_pGrid = pItem->GetGrid();
+	m_pItem = pItem;
+	m_bCreated = FALSE;
+	m_bEditMode = FALSE;
+	m_bCancel = FALSE;
+	m_bCheckAutoComplete = FALSE;
+
+	DWORD dwEditStyle = m_pItem->GetEditStyle();
+
+	if (m_hWnd)
+	{
+		DWORD dwStyle = (WS_CHILD | WS_VISIBLE | ES_READONLY) | (m_pGrid->GetExStyle() & WS_EX_LAYOUTRTL ? ES_RIGHT : 0);
+
+		if ((GetStyle() | dwStyle) != (dwEditStyle | dwStyle))
+			m_bDelayCreate = TRUE;
+
+		if (GetExStyle() & WS_EX_LAYOUTRTL)
+			m_bDelayCreate = TRUE;
+
+		if (m_bDelayCreate)
+			DestroyWindow();
+	}
+
+	if (!m_hWnd)
+	{
+		CEdit::Create(dwEditStyle, rect, m_pGrid, 0);
+	}
+
+	m_bDelayCreate = FALSE;
+
+	if (m_pItem->m_bPassword)
+		CEdit::SetPasswordChar(pItem->m_chPrompt);
+
+	if (m_pItem->GetMetrics(TRUE, FALSE))
+	{
+		CEdit::SetLimitText(m_pItem->GetMetrics(TRUE, FALSE)->m_nMaxLength);
+	}
+	else
+	{
+		CEdit::SetLimitText(0);
+	}
+
+	SetFont(m_pGrid->GetPaintManager()->GetItemFont(pItem, TRUE));
+	SetWindowText(m_strValue);
+	SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+
+	SetMargins(3, 3);
+
+	SetUseMask(m_pItem->m_bUseMask);
+	if (m_pItem->m_bUseMask)
+	{
+		SetEditMask(m_pItem->m_strMask, m_pItem->m_strLiteral, m_pItem->m_strValue);
+		SetPromptChar(m_pItem->m_chPrompt);
+	}
+
+	m_bCreated = TRUE;
+}
+
+HBRUSH CXTPPropertyGridInplaceEdit::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid ? m_pGrid->GetPaintManager() : 0;
+
+	if (!m_pItem || !pPaintManager)
+		return 0;
+
+	pDC->SetTextColor(pPaintManager->GetItemTextColor(m_pItem, TRUE));
+
+	COLORREF clr = pPaintManager->GetItemBackColor(m_pItem, TRUE);
+
+	if (clr != m_clrBack || !m_brBack.GetSafeHandle())
+	{
+		m_brBack.DeleteObject();
+		m_brBack.CreateSolidBrush(clr);
+		m_clrBack = clr;
+
+	}
+
+	pDC->SetBkColor(m_clrBack);
+
+
+	return m_brBack;
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnSetfocus()
+{
+	if (!m_pGrid)
+		return;
+
+	m_pGrid->Invalidate(FALSE);
+
+
+	if (m_pItem && !m_pItem->OnRequestEdit())
+		m_pGrid->SetFocus();
+
+	m_bEditMode = TRUE;
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnKillfocus()
+{
+	if (!m_pGrid)
+		return;
+
+	if (m_pItem)
+	{
+		m_pItem->OnValidateEdit();
+		if (m_pGrid) m_pGrid->Invalidate(FALSE);
+	}
+
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnChange()
+{
+	if (!m_bCreated || m_bIgnoreEditChanged)
+		return;
+
+	if (m_pItem && m_pGrid && !m_pItem->GetReadOnly() && m_pItem->m_bAutoComplete
+		&& !m_pItem->GetConstraintEdit() && m_bCheckAutoComplete)
+	{
+		m_bCheckAutoComplete = FALSE;
+
+		CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+		if (!pList->IsEmpty())
+		{
+			CString strWindowText;
+			GetWindowText(strWindowText);
+			int nLength = strWindowText.GetLength();
+
+
+			// Currently selected range
+			int nStart = 0, nEnd = 0;
+			GetSel(nStart, nEnd);
+			if (nStart == nEnd && nLength == nEnd && nLength > 0)
+			{
+				for (int nIndex = 0; nIndex < pList->GetCount(); nIndex += 1)
+				{
+					CString strWindowTextNew = pList->GetAt(nIndex);
+
+					if (strWindowTextNew.GetLength() > nLength &&
+						strWindowText.CompareNoCase(strWindowTextNew.Left(nLength)) == 0)
+					{
+						m_bIgnoreEditChanged = TRUE;
+						SetWindowText(strWindowTextNew);
+						SetSel(strWindowTextNew.GetLength(), nLength);
+						m_bIgnoreEditChanged = FALSE;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (m_pItem && m_pGrid)
+	{
+		ASSERT(m_pItem);
+		m_pGrid->SendNotifyMessage(XTP_PGN_EDIT_CHANGED, (LPARAM)this);
+	}
+}
+
+UINT CXTPPropertyGridInplaceEdit::OnGetDlgCode()
+{
+	return DLGC_WANTALLKEYS;
+}
+
+void CXTPPropertyGridInplaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB) return;
+
+	if ((nChar == VK_RETURN) && (GetStyle() & ES_WANTRETURN))
+	{
+		CXTMaskEditT<CEdit>::OnChar(nChar, nRepCnt, nFlags);
+		return;
+	}
+
+	if (nChar == VK_ESCAPE || nChar == VK_RETURN)
+	{
+		m_pGrid->SetFocus();
+		return;
+	}
+
+	if (m_pItem && !m_pItem->GetReadOnly() && m_pItem->GetConstraintEdit())
+	{
+		CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+		if (!pList->IsEmpty())
+		{
+
+			CString strWindowText;
+			GetWindowText(strWindowText);
+			int nIndex = pList->FindConstraint(strWindowText);
+			int nIndexStart = nIndex == -1 ? pList->GetCount() - 1 : nIndex;
+
+			CString strSeach ((TCHAR)nChar);
+
+			do
+			{
+
+				nIndex = nIndex < pList->GetCount() - 1 ? nIndex + 1 : 0;
+				CString str = pList->GetAt(nIndex);
+
+				if (strSeach.CompareNoCase(str.Left(1)) == 0)
+				{
+					SetWindowText(str);
+					pList->SetCurrent(nIndex);
+					SetSel(0, -1);
+					return;
+				}
+
+			}
+			while (nIndex != nIndexStart);
+
+			return;
+		}
+	}
+
+	m_bCheckAutoComplete = (nChar != VK_DELETE) && (nChar != VK_BACK);
+
+	CXTMaskEditT<CEdit>::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (!m_pItem)
+		return;
+
+	if (nChar == VK_TAB && m_pGrid)
+	{
+		((CXTPPropertyGrid*)m_pGrid->GetParent())->OnNavigate(
+			xtpGridUIInplaceEdit, GetKeyState(VK_SHIFT) >= 0, m_pItem);
+		return;
+	}
+	else if (nChar == VK_ESCAPE)
+	{
+		m_bCancel = TRUE;
+		m_bCheckAutoComplete = FALSE;
+		SetWindowText(m_strValue);
+		return ;
+	}
+	else if (nChar == VK_RETURN)
+	{
+		return ;
+	}
+	else if (nChar == VK_F4)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pItem->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pItem->OnInplaceButtonDown(pButton);
+	}
+	else if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		if (m_pItem != NULL && !m_pItem->GetReadOnly())
+		{
+			if (SelectConstraint(nChar == VK_DOWN ? +1 : -1, FALSE))
+			{
+				SetSel(0, -1);
+				return ;
+			}
+		}
+	}
+	m_bCheckAutoComplete = (nChar != VK_DELETE) && (nChar != VK_BACK);
+
+	CXTMaskEditT<CEdit>::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceEdit::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if ((nChar == VK_DOWN || nChar == VK_UP) && m_pItem)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pItem->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pItem->OnInplaceButtonDown(pButton);
+	}
+
+	CXTMaskEditT<CEdit>::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPPropertyGridInplaceEdit::SelectConstraint(int nDirection, BOOL bCircle)
+{
+	CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+	if (pList->IsEmpty())
+		return FALSE;
+
+	CString str;
+	GetWindowText(str);
+	int nIndex = pList->FindConstraint(str);
+
+	if (nIndex == -1)
+		return FALSE;
+
+	nIndex += nDirection;
+	if (nIndex >= pList->GetCount()) nIndex = bCircle ? 0 : (ULONG)pList->GetCount() - 1;
+	if (nIndex < 0) nIndex = bCircle ? (ULONG)pList->GetCount() - 1 : 0;
+
+	m_bCheckAutoComplete = FALSE;
+	SetWindowText(pList->GetAt(nIndex));
+	pList->SetCurrent(nIndex);
+
+	return TRUE;
+}
+
+void CXTPPropertyGridInplaceEdit::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_pGrid && m_pItem != NULL && !m_pItem->GetReadOnly() && SelectConstraint(+1, TRUE))
+	{
+		m_pGrid->SetFocus();
+		return;
+	}
+	CXTMaskEditT<CEdit>::OnLButtonDblClk(nFlags, point);
+}
+
+void CXTPPropertyGridInplaceEdit::DestroyItem()
+{
+	// reset variables to defaults.
+	m_pItem = NULL;
+	m_pGrid = NULL;
+	m_strValue.Empty();
+	m_brBack.DeleteObject();
+
+	// destroy the window.
+	//DestroyWindow();
+	if (::IsWindow(m_hWnd)) ShowWindow(SW_HIDE);
+}
+
+
+BOOL CXTPPropertyGridInplaceEdit::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && IsDialogMessage(pMsg))
+		return TRUE;
+
+	return CXTMaskEditT<CEdit>::PreTranslateMessage(pMsg);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceControl
+
+CXTPPropertyGridInplaceControl::CXTPPropertyGridInplaceControl(CXTPPropertyGridItem* pItem)
+{
+	m_pItem = pItem;
+	m_nWidth = 0;
+}
+
+void CXTPPropertyGridInplaceControl::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
+
+void CXTPPropertyGridInplaceControl::OnDestroyWindow()
+{
+	DestroyWindow();
+}
+
+void CXTPPropertyGridInplaceControl::OnValueChanged()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceControl, CWnd)
+	ON_WM_CHAR()
+	ON_WM_KEYDOWN()
+	ON_WM_GETDLGCODE()
+END_MESSAGE_MAP()
+
+
+UINT CXTPPropertyGridInplaceControl::OnGetDlgCode()
+{
+	return CWnd::OnGetDlgCode() | DLGC_WANTTAB;
+}
+
+void CXTPPropertyGridInplaceControl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB) return;
+
+	CWnd::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB && m_pItem)
+	{
+		((CXTPPropertyGrid*)m_pItem->GetGrid()->GetParent())->OnNavigate(
+			xtpGridUIInplaceControl, GetKeyState(VK_SHIFT) >= 0, m_pItem);
+		return;
+	}
+
+	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceSlider
+
+CXTPPropertyGridInplaceSlider::CXTPPropertyGridInplaceSlider(CXTPPropertyGridItem* pItem)
+	: CXTPPropertyGridInplaceControl(pItem)
+{
+	m_nMin = 0;
+	m_nMax = 100;
+
+	m_nValue = 0;
+
+	m_clrBack = COLORREF_NULL;
+
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceSlider, CXTPPropertyGridInplaceControl)
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
+END_MESSAGE_MAP()
+
+int CXTPPropertyGridInplaceSlider::CalcualteEditWidth()
+{
+	if (m_nWidth != 0)
+		return m_nWidth;
+
+	CWindowDC dc(m_pItem->GetGrid());
+	CXTPFontDC font (&dc, m_pItem->GetGrid()->GetFont());
+
+	CString strMax;
+	strMax.Format(_T("%i"), m_nMax);
+
+	CString strMin;
+	strMin.Format(_T("%i"), m_nMin);
+
+	int nWidth = max(dc.GetTextExtent(strMax).cx, dc.GetTextExtent(strMin).cx) + 6;
+
+	return nWidth;
+}
+
+void CXTPPropertyGridInplaceSlider::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMCUSTOMDRAW lpCustDraw = (LPNMCUSTOMDRAW)pNMHDR;
+
+	if(lpCustDraw->dwDrawStage == CDDS_PREPAINT)
+	{
+		int nValue = GetSliderCtrl()->GetPos();
+		if (nValue != m_nValue)
+		{
+			m_nValue = nValue;
+			CString strValue;
+			strValue.Format(_T("%i"), nValue);
+
+			m_pItem->SetValue(strValue);
+			m_pItem->OnValueChanged(strValue);
+
+			m_pItem->GetGrid()->Invalidate(FALSE);
+		}
+	}
+
+	*pResult = CDRF_DODEFAULT;
+}
+
+void CXTPPropertyGridInplaceSlider::OnCreateWindow(CRect& rcValue)
+{
+	CRect rcSlider(rcValue);
+
+	if (m_nWidth > 0)
+	{
+		rcSlider.left = rcSlider.right - m_nWidth;
+
+		if (rcSlider.left < rcValue.left)
+			return;
+
+		rcValue.right -= m_nWidth;
+	}
+	else
+	{
+		int nWidth = CalcualteEditWidth();
+		rcSlider.left += nWidth;
+
+		if (rcSlider.right < rcSlider.left)
+			return;
+
+		rcValue.right = rcValue.left + nWidth;
+	}
+
+	if (!m_hWnd)
+	{
+		VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_BAR_REG));
+
+		Create(TRACKBAR_CLASS, NULL, WS_CHILD | TBS_HORZ | WS_TABSTOP, rcSlider, (CWnd*)m_pItem->GetGrid(), 0);
+	}
+
+	m_nValue = _ttol(m_pItem->GetValue());
+	GetSliderCtrl()->SetRange(m_nMin, m_nMax, TRUE);
+	GetSliderCtrl()->SetPos(m_nValue);
+	GetSliderCtrl()->EnableWindow(!m_pItem->GetReadOnly());
+
+	MoveWindow(rcSlider);
+	ShowWindow(SW_SHOW);
+}
+
+HBRUSH CXTPPropertyGridInplaceSlider::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	CXTPPropertyGridView* pGrid = m_pItem ? m_pItem->GetGrid() : 0;
+	CXTPPropertyGridPaintManager* pPaintManager = pGrid ? pGrid->GetPaintManager() : 0;
+
+	if (!m_pItem || !pPaintManager)
+		return 0;
+
+	pDC->SetTextColor(pPaintManager->GetItemTextColor(m_pItem, TRUE));
+
+	COLORREF clr = pPaintManager->GetItemBackColor(m_pItem, TRUE);
+
+	if (clr != m_clrBack || !m_brBack.GetSafeHandle())
+	{
+		m_brBack.DeleteObject();
+		m_brBack.CreateSolidBrush(clr);
+		m_clrBack = clr;
+	}
+
+	pDC->SetBkColor(m_clrBack);
+
+
+	return m_brBack;
+}
+
+void CXTPPropertyGridInplaceSlider::OnAdjustValueRect(CRect& rcValue)
+{
+	if (!m_hWnd)
+		return;
+
+	if (m_nWidth > 0)
+	{
+		rcValue.right -= m_nWidth;
+		return;
+	}
+
+	int nWidth = CalcualteEditWidth();
+
+	if (rcValue.left + nWidth > rcValue.right)
+		return;
+
+	rcValue.right = rcValue.left + nWidth;
+}
+
+void CXTPPropertyGridInplaceSlider::OnValueChanged()
+{
+	int nValue = _ttol(m_pItem->GetValue());
+	int nValueRange = max(m_nMin, min(m_nMax, nValue));
+
+	if (nValueRange != m_nValue || nValueRange != nValue)
+	{
+		m_nValue = nValueRange;
+
+		CString str;
+		str.Format(_T("%i"), nValueRange);
+		m_pItem->SetValue(str);
+
+		if (m_hWnd) GetSliderCtrl()->SetPos(m_nValue);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceSpinButton
+
+CXTPPropertyGridInplaceSpinButton::CXTPPropertyGridInplaceSpinButton(CXTPPropertyGridItem* pItem)
+	: CXTPPropertyGridInplaceControl(pItem)
+{
+	m_nMin = 0;
+	m_nMax = 100;
+	m_nWidth = GetSystemMetrics(SM_CXVSCROLL);
+
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceSpinButton, CXTPPropertyGridInplaceControl)
+	ON_NOTIFY_REFLECT(UDN_DELTAPOS, OnDeltapos)
+END_MESSAGE_MAP()
+
+#define AFX_WNDCOMMCTL_UPDOWN_REG 0x00040
+
+void CXTPPropertyGridInplaceSpinButton::OnCreateWindow(CRect& rcValue)
+{
+	CRect rcButton(rcValue);
+
+	rcButton.left = rcButton.right - m_nWidth;
+	rcValue.right -= m_nWidth;
+
+	if (!m_hWnd)
+	{
+		VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_UPDOWN_REG));
+
+		Create(UPDOWN_CLASS, NULL, WS_CHILD | UDS_ARROWKEYS, rcButton, (CWnd*)m_pItem->GetGrid(), 0);
+	}
+
+	int nValue = _ttol(m_pItem->GetValue());
+	GetSpinButtonCtrl()->SetPos(nValue);
+	GetSpinButtonCtrl()->SendMessage(UDM_SETRANGE32, (WPARAM)m_nMin, (LPARAM)m_nMax);
+	GetSpinButtonCtrl()->EnableWindow(!m_pItem->GetReadOnly());
+
+	MoveWindow(rcButton);
+	ShowWindow(SW_SHOW);
+}
+
+void CXTPPropertyGridInplaceSpinButton::OnDeltapos(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+
+	m_pItem->OnValidateEdit();
+	long nValue = _ttol(m_pItem->GetValue()) + pNMUpDown->iDelta;
+
+	nValue = max(m_nMin, min(m_nMax, nValue));
+
+	CString str;
+	str.Format(_T("%i"), nValue);
+	m_pItem->OnValueChanged(str);
+
+	*pResult = 1;
+}
+
+
+void CXTPPropertyGridInplaceSpinButton::OnAdjustValueRect(CRect& rcValue)
+{
+	if (m_hWnd)
+	{
+		rcValue.right -= m_nWidth;
+	}
+}
+
+void CXTPPropertyGridInplaceSpinButton::OnValueChanged()
+{
+	int nValue = _ttol(m_pItem->GetValue());
+	int nValueRange = max(m_nMin, min(m_nMax, nValue));
+
+	if (nValue != nValueRange)
+	{
+		CString str;
+		str.Format(_T("%i"), nValueRange);
+
+		m_pItem->SetValue(str);
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceControls
+
+
+CXTPPropertyGridInplaceControls::CXTPPropertyGridInplaceControls()
+{
+
+}
+
+CXTPPropertyGridInplaceControls::~CXTPPropertyGridInplaceControls()
+{
+	RemoveAll();
+}
+
+void CXTPPropertyGridInplaceControls::RemoveAll()
+{
+	for (int i = 0; i < (int)m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->InternalRelease();
+	}
+	m_arrControls.RemoveAll();
+}
+
+int CXTPPropertyGridInplaceControls::GetCount() const
+{
+	return (int)m_arrControls.GetSize();
+}
+
+void CXTPPropertyGridInplaceControls::Add(CXTPPropertyGridInplaceControl* pWindow)
+{
+	m_arrControls.Add(pWindow);
+}
+
+CXTPPropertyGridInplaceControl* CXTPPropertyGridInplaceControls::GetAt(int nIndex)
+{
+	return m_arrControls[nIndex];
+}
+
+

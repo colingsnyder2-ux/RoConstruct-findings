@@ -1,24 +1,5 @@
-// from server: 83% by tester
-struct CXTPPropExchangeXMLNode {
-    int __thiscall ExchangeArchive(void* pArchive);
-    int __thiscall Exchange(void* pArchive);
-};
-
-extern "C" int __stdcall sub_6319A0(int hr);
-
-int CXTPPropExchangeXMLNode::ExchangeArchive(void* pArchive)
-{
-    int* p = (int*)pArchive;
-    int* obj = (int*)*p;
-    int* local = obj;
-    if (obj) {
-        int* vtbl = (int*)*obj;
-        void (__stdcall *fn)(int*) = (void (__stdcall *)(int*))vtbl[1];
-        fn(obj);
-    }
-    int hr = Exchange(&local);
-    if (hr < 0 && hr != (int)0x80004002) {
-        sub_6319A0(hr);
-    }
-    return (int)this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_8e59254efc93533a.cpp

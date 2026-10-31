@@ -1,18 +1,5 @@
-// from server: 32% by colin
-extern "C" void* __cdecl sub_0062FEF6(unsigned int size);
-extern "C" void __cdecl sub_0067A190(void* p);
-
-struct CXTPControlComboBoxPopupBar
-{
-    void* CreateInstance();
-};
-
-void* CXTPControlComboBoxPopupBar::CreateInstance()
-{
-    void* p = sub_0062FEF6(0x248);
-    if (p != 0)
-    {
-        sub_0067A190(p);
-    }
-    return p;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_027087a08bf466dc.cpp

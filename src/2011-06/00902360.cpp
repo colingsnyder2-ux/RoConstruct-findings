@@ -1,219 +1,936 @@
-// roc 2011-06 00902360  unit: CXTCaptionButtonTheme  size: 614 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00902360
-//
-// 00902360  6aff                 push -1
-// 00902362  6859f7a000           push 0xa0f759
-// 00902367  64a100000000         mov eax, dword ptr fs:[0]
-// 0090236d  50                   push eax
-// 0090236e  83ec1c               sub esp, 0x1c
-// 00902371  53                   push ebx
-// 00902372  55                   push ebp
-// 00902373  56                   push esi
-// 00902374  57                   push edi
-// 00902375  a12058c900           mov eax, dword ptr [0xc95820]
-// 0090237a  33c4                 xor eax, esp
-// 0090237c  50                   push eax
-// 0090237d  8d442430             lea eax, [esp + 0x30]
-// 00902381  64a300000000         mov dword ptr fs:[0], eax
-// 00902387  8be9                 mov ebp, ecx
-// 00902389  8d4c2414             lea ecx, [esp + 0x14]
-// 0090238d  ff15b42da400         call dword ptr [0xa42db4]
-// 00902393  8b742454             mov esi, dword ptr [esp + 0x54]
-// 00902397  8d442414             lea eax, [esp + 0x14]
-// 0090239b  50                   push eax
-// 0090239c  8bce                 mov ecx, esi
-// 0090239e  c744243c00000000     mov dword ptr [esp + 0x3c], 0
-// 009023a6  e89b82f0ff           call 0x80a646
-// 009023ab  e8d0c9f5ff           call 0x85ed80
-// 009023b0  8d4c2414             lea ecx, [esp + 0x14]
-// 009023b4  51                   push ecx
-// 009023b5  e8269af5ff           call 0x85bde0
-// 009023ba  83c404               add esp, 4
-// 009023bd  8d542418             lea edx, [esp + 0x18]
-// 009023c1  52                   push edx
-// 009023c2  8d4c2418             lea ecx, [esp + 0x18]
-// 009023c6  ff15a826a400         call dword ptr [0xa426a8]
-// 009023cc  50                   push eax
-// 009023cd  8d4c241c             lea ecx, [esp + 0x1c]
-// 009023d1  ff15c82da400         call dword ptr [0xa42dc8]
-// 009023d7  50                   push eax
-// 009023d8  8b442450             mov eax, dword ptr [esp + 0x50]
-// 009023dc  8b4808               mov ecx, dword ptr [eax + 8]
-// 009023df  51                   push ecx
-// 009023e0  ff153801a400         call dword ptr [0xa40138]
-// 009023e6  8b7c244c             mov edi, dword ptr [esp + 0x4c]
-// 009023ea  8b17                 mov edx, dword ptr [edi]
-// 009023ec  8b5c2440             mov ebx, dword ptr [esp + 0x40]
-// 009023f0  8913                 mov dword ptr [ebx], edx
-// 009023f2  8b4704               mov eax, dword ptr [edi + 4]
-// 009023f5  8bce                 mov ecx, esi
-// 009023f7  894304               mov dword ptr [ebx + 4], eax
-// 009023fa  e819a20c00           call 0x9cc618
-// 009023ff  837e7800             cmp dword ptr [esi + 0x78], 0
-// 00902403  89442454             mov dword ptr [esp + 0x54], eax
-// 00902407  7418                 je 0x902421
-// 00902409  8d4c2418             lea ecx, [esp + 0x18]
-// 0090240d  51                   push ecx
-// 0090240e  8bce                 mov ecx, esi
-// 00902410  e88b08ffff           call 0x8f2ca0
-// 00902415  8b10                 mov edx, dword ptr [eax]
-// 00902417  8913                 mov dword ptr [ebx], edx
-// 00902419  8b4004               mov eax, dword ptr [eax + 4]
-// 0090241c  e980010000           jmp 0x9025a1
-// 00902421  8b4d00               mov ecx, dword ptr [ebp]
-// 00902424  8d542420             lea edx, [esp + 0x20]
-// 00902428  894c2444             mov dword ptr [esp + 0x44], ecx
-// 0090242c  52                   push edx
-// 0090242d  8bce                 mov ecx, esi
-// 0090242f  e82c08ffff           call 0x8f2c60
-// 00902434  8b4804               mov ecx, dword ptr [eax + 4]
-// 00902437  8b10                 mov edx, dword ptr [eax]
-// 00902439  8b442444             mov eax, dword ptr [esp + 0x44]
-// 0090243d  56                   push esi
-// 0090243e  51                   push ecx
-// 0090243f  52                   push edx
-// 00902440  8b5040               mov edx, dword ptr [eax + 0x40]
-// 00902443  53                   push ebx
-// 00902444  8bcd                 mov ecx, ebp
-// 00902446  ffd2                 call edx
-// 00902448  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 0090244b  8903                 mov dword ptr [ebx], eax
-// 0090244d  8b16                 mov edx, dword ptr [esi]
-// 0090244f  8b8268010000         mov eax, dword ptr [edx + 0x168]
-// 00902455  8bce                 mov ecx, esi
-// 00902457  ffd0                 call eax
-// 00902459  8d4c2414             lea ecx, [esp + 0x14]
-// 0090245d  a804                 test al, 4
-// 0090245f  0f84af000000         je 0x902514
-// 00902465  ff15b026a400         call dword ptr [0xa426b0]
-// 0090246b  84c0                 test al, al
-// 0090246d  751a                 jne 0x902489
-// 0090246f  8b4670               mov eax, dword ptr [esi + 0x70]
-// 00902472  99                   cdq 
-// 00902473  2bc2                 sub eax, edx
-// 00902475  8bc8                 mov ecx, eax
-// 00902477  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0090247b  99                   cdq 
-// 0090247c  2bc2                 sub eax, edx
-// 0090247e  d1f8                 sar eax, 1
-// 00902480  d1f9                 sar ecx, 1
-// 00902482  f7d8                 neg eax
-// 00902484  2bc1                 sub eax, ecx
-// 00902486  014304               add dword ptr [ebx + 4], eax
-// 00902489  8bce                 mov ecx, esi
-// 0090248b  e888a10c00           call 0x9cc618
-// 00902490  2500030000           and eax, 0x300
-// 00902495  3d00010000           cmp eax, 0x100
-// 0090249a  0f8404010000         je 0x9025a4
-// 009024a0  8bce                 mov ecx, esi
-// 009024a2  3d00020000           cmp eax, 0x200
-// 009024a7  7450                 je 0x9024f9
-// 009024a9  8b6f08               mov ebp, dword ptr [edi + 8]
-// 009024ac  2b2f                 sub ebp, dword ptr [edi]
-// 009024ae  8d542420             lea edx, [esp + 0x20]
-// 009024b2  52                   push edx
-// 009024b3  e8a807ffff           call 0x8f2c60
-// 009024b8  8bc8                 mov ecx, eax
-// 009024ba  8bc5                 mov eax, ebp
-// 009024bc  2b01                 sub eax, dword ptr [ecx]
-// 009024be  99                   cdq 
-// 009024bf  2bc2                 sub eax, edx
-// 009024c1  d1f8                 sar eax, 1
-// 009024c3  790d                 jns 0x9024d2
-// 009024c5  8b0f                 mov ecx, dword ptr [edi]
-// 009024c7  33c0                 xor eax, eax
-// 009024c9  03c8                 add ecx, eax
-// 009024cb  890b                 mov dword ptr [ebx], ecx
-// 009024cd  e9d2000000           jmp 0x9025a4
-// 009024d2  8b6f08               mov ebp, dword ptr [edi + 8]
-// 009024d5  2b2f                 sub ebp, dword ptr [edi]
-// 009024d7  8d442418             lea eax, [esp + 0x18]
-// 009024db  50                   push eax
-// 009024dc  8bce                 mov ecx, esi
-// 009024de  e87d07ffff           call 0x8f2c60
-// 009024e3  8bc8                 mov ecx, eax
-// 009024e5  8bc5                 mov eax, ebp
-// 009024e7  2b01                 sub eax, dword ptr [ecx]
-// 009024e9  8b0f                 mov ecx, dword ptr [edi]
-// 009024eb  99                   cdq 
-// 009024ec  2bc2                 sub eax, edx
-// 009024ee  d1f8                 sar eax, 1
-// 009024f0  03c8                 add ecx, eax
-// 009024f2  890b                 mov dword ptr [ebx], ecx
-// 009024f4  e9ab000000           jmp 0x9025a4
-// 009024f9  8b6e6c               mov ebp, dword ptr [esi + 0x6c]
-// 009024fc  8d542428             lea edx, [esp + 0x28]
-// 00902500  52                   push edx
-// 00902501  e85a07ffff           call 0x8f2c60
-// 00902506  8b4f08               mov ecx, dword ptr [edi + 8]
-// 00902509  2b08                 sub ecx, dword ptr [eax]
-// 0090250b  2bcd                 sub ecx, ebp
-// 0090250d  890b                 mov dword ptr [ebx], ecx
-// 0090250f  e990000000           jmp 0x9025a4
-// 00902514  ff15b026a400         call dword ptr [0xa426b0]
-// 0090251a  84c0                 test al, al
-// 0090251c  0f8482000000         je 0x9025a4
-// 00902522  8b442454             mov eax, dword ptr [esp + 0x54]
-// 00902526  8bd0                 mov edx, eax
-// 00902528  81e200030000         and edx, 0x300
-// 0090252e  81fa00030000         cmp edx, 0x300
-// 00902534  7532                 jne 0x902568
-// 00902536  8b6f08               mov ebp, dword ptr [edi + 8]
-// 00902539  2b2f                 sub ebp, dword ptr [edi]
-// 0090253b  8d442428             lea eax, [esp + 0x28]
-// 0090253f  50                   push eax
-// 00902540  8bce                 mov ecx, esi
-// 00902542  e81907ffff           call 0x8f2c60
-// 00902547  3b28                 cmp ebp, dword ptr [eax]
-// 00902549  7c19                 jl 0x902564
-// 0090254b  8d4c2428             lea ecx, [esp + 0x28]
-// 0090254f  51                   push ecx
-// 00902550  8bce                 mov ecx, esi
-// 00902552  e80907ffff           call 0x8f2c60
-// 00902557  8bc8                 mov ecx, eax
-// 00902559  8bc5                 mov eax, ebp
-// 0090255b  2b01                 sub eax, dword ptr [ecx]
-// 0090255d  99                   cdq 
-// 0090255e  2bc2                 sub eax, edx
-// 00902560  d1f8                 sar eax, 1
-// 00902562  8903                 mov dword ptr [ebx], eax
-// 00902564  8b442454             mov eax, dword ptr [esp + 0x54]
-// 00902568  25000c0000           and eax, 0xc00
-// 0090256d  3d000c0000           cmp eax, 0xc00
-// 00902572  7530                 jne 0x9025a4
-// 00902574  8b6f0c               mov ebp, dword ptr [edi + 0xc]
-// 00902577  2b6f04               sub ebp, dword ptr [edi + 4]
-// 0090257a  8d542428             lea edx, [esp + 0x28]
-// 0090257e  52                   push edx
-// 0090257f  8bce                 mov ecx, esi
-// 00902581  e8da06ffff           call 0x8f2c60
-// 00902586  3b6804               cmp ebp, dword ptr [eax + 4]
-// 00902589  7c19                 jl 0x9025a4
-// 0090258b  8d442428             lea eax, [esp + 0x28]
-// 0090258f  50                   push eax
-// 00902590  8bce                 mov ecx, esi
-// 00902592  e8c906ffff           call 0x8f2c60
-// 00902597  2b6804               sub ebp, dword ptr [eax + 4]
-// 0090259a  8bc5                 mov eax, ebp
-// 0090259c  99                   cdq 
-// 0090259d  2bc2                 sub eax, edx
-// 0090259f  d1f8                 sar eax, 1
-// 009025a1  894304               mov dword ptr [ebx + 4], eax
-// 009025a4  8d4c2414             lea ecx, [esp + 0x14]
-// 009025a8  ff15082ea400         call dword ptr [0xa42e08]
-// 009025ae  8bc3                 mov eax, ebx
-// 009025b0  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 009025b4  64890d00000000       mov dword ptr fs:[0], ecx
-// 009025bb  59                   pop ecx
-// 009025bc  5f                   pop edi
-// 009025bd  5e                   pop esi
-// 009025be  5d                   pop ebp
-// 009025bf  5b                   pop ebx
-// 009025c0  83c428               add esp, 0x28
-// 009025c3  c21800               ret 0x18
-// copied from an identical function in another client (function ?CalculateImagePosition@CXTButtonTheme@@MAE?AVCPoint@@PAVCDC@@IAAVCRect@@_NPAVCXTButton@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTButtonTheme.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTButtonTheme.cpp: implementation of the CXTButtonTheme class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPWinThemeWrapper.h"
+
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTButton.h"
+#include "XTHelpers.h"
+#include "XTFunctions.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+#ifndef ODS_NOFOCUSRECT
+#define ODS_NOFOCUSRECT 0x0200
+#endif
+
+IMPLEMENT_THEME_FACTORY(CXTButtonTheme)
+
+//===========================================================================
+// CXTButtonTheme class
+//===========================================================================
+
+CXTButtonTheme::CXTButtonTheme()
+: m_bShowIcon(TRUE)
+, m_bOffsetHiliteText(TRUE)
+, m_pFont(NULL)
+{
+}
+
+CXTButtonTheme::~CXTButtonTheme()
+{
+
+}
+
+void CXTButtonTheme::RefreshMetrics()
+{
+	CXTThemeManagerStyle::RefreshMetrics();
+
+	RefreshXtremeColors();
+
+	m_themeWrapper.OpenThemeData(0, L"BUTTON");
+
+	// background colors.
+	m_crBack.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
+
+	// text colors.
+	m_crText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_crTextDisabled.SetStandardValue(GetXtremeColor(COLOR_GRAYTEXT));
+
+	// border colors.
+	m_crBorderHilite.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
+	m_crBorderShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_crBorder3DHilite.SetStandardValue(GetXtremeColor(COLOR_3DHILIGHT));
+	m_crBorder3DShadow.SetStandardValue(GetXtremeColor(COLOR_3DDKSHADOW));
+}
+
+CFont* CXTButtonTheme::GetThemeFont(CXTButton* pButton) const
+{
+	if (m_pFont && m_pFont->GetSafeHandle())
+		return m_pFont;
+
+	if (pButton)
+		return pButton->GetFont();
+
+	return NULL;
+}
+
+void CXTButtonTheme::SetThemeFont(CFont* pFont)
+{
+	if (pFont && pFont->GetSafeHandle())
+		m_pFont = pFont;
+}
+
+void CXTButtonTheme::SetAlternateColors(COLORREF clr3DFace, COLORREF clr3DHilight, COLORREF clr3DShadow, COLORREF clrBtnText)
+{
+	SetColorFace(clr3DFace);
+	SetColorText(clrBtnText);
+	SetColorHilite(clr3DHilight);
+	SetColorShadow(clr3DShadow);
+}
+
+void CXTButtonTheme::SetColorFace(COLORREF clrFace)
+{
+	m_crBack.SetCustomValue(clrFace);
+}
+
+COLORREF CXTButtonTheme::GetColorFace()
+{
+	return m_crBack;
+}
+
+void CXTButtonTheme::SetColorHilite(COLORREF clrHilite)
+{
+	m_crBorderHilite.SetCustomValue(clrHilite);
+}
+
+void CXTButtonTheme::SetColorShadow(COLORREF clrShadow)
+{
+	m_crBorderShadow.SetCustomValue(clrShadow);
+}
+
+void CXTButtonTheme::SetColorText(COLORREF clrText)
+{
+	m_crText.SetCustomValue(clrText);
+}
+
+void CXTButtonTheme::OffsetPoint(CPoint& point, CSize size, CXTButton* pButton)
+{
+	CXTPClientRect rcClient(pButton);
+
+	if (pButton->GetXButtonStyle() & BS_XT_TWOROWS)
+	{
+		point.x = __max(0, ((rcClient.Width()-size.cx)/2));
+		point.y = __max(0, ((rcClient.Height()-size.cy)/2));
+	}
+	else
+	{
+		point.x = pButton->GetBorderGap();
+		point.y = __max(0, ((rcClient.Height()-size.cy)/2));
+	}
+}
+
+CPoint CXTButtonTheme::GetTextPosition(UINT /*nState*/, CRect& rcItem, CSize& sizeText, CXTButton* pButton)
+{
+	CRect rcText = rcItem;
+	rcText.DeflateRect(2, 0);
+
+	CPoint point = rcText.TopLeft();
+
+	if (pButton->GetUserPosition())
+	{
+		point = pButton->GetTextPoint();
+	}
+	else
+	{
+		OffsetPoint(point, sizeText, pButton);
+		point.x = pButton->GetBorderGap();
+
+		if (pButton->GetXButtonStyle() & BS_XT_TWOROWS)
+		{
+			point.y += (pButton->GetImageSize().cy/2)+(pButton->GetImageGap()/2);
+		}
+
+		switch (pButton->GetStyle() & (BS_CENTER | BS_LEFT | BS_RIGHT))
+		{
+		case BS_LEFT:
+			if (!(pButton->GetXButtonStyle() & BS_XT_TWOROWS))
+			{
+				point.x += pButton->GetImageSize().cx + pButton->GetImageGap();
+			}
+			break;
+
+		case BS_RIGHT:
+			point.x = rcItem.right - pButton->GetBorderGap() - sizeText.cx;
+			break;
+
+		default:
+			if (!(pButton->GetXButtonStyle() & BS_XT_TWOROWS))
+			{
+				point.x += pButton->GetImageSize().cx;
+			}
+			point.x += (rcItem.right - point.x - sizeText.cx - pButton->GetBorderGap()) / 2;
+			break;
+		}
+	}
+
+	return point;
+}
+
+COLORREF CXTButtonTheme::GetTextColor(UINT nState, CXTButton* pButton)
+{
+	if (UseWinXPThemes(pButton))
+	{
+		int iStateId = PBS_NORMAL;
+
+		if (pButton->GetButtonStyle() == BS_DEFPUSHBUTTON)
+			iStateId = PBS_DEFAULTED;
+
+		if (pButton->GetHilite())
+			iStateId = PBS_HOT;
+
+		if ((nState & ODS_SELECTED) || pButton->GetChecked())
+			iStateId = PBS_PRESSED;
+
+		if (nState & ODS_DISABLED)
+			iStateId = PBS_DISABLED;
+
+		COLORREF clr = m_crText;
+		if (SUCCEEDED(m_themeWrapper.GetThemeColor(BP_PUSHBUTTON, iStateId, TMT_TEXTCOLOR, &clr)))
+		{
+			return clr;
+		}
+	}
+
+	if (nState & ODS_DISABLED)
+	{
+		return m_crTextDisabled;
+	}
+	return m_crText;
+}
+
+void CXTButtonTheme::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	CString strText;
+	pButton->GetWindowText(strText);
+
+	// if the string is empty just return.
+	if (strText.IsEmpty())
+		return;
+
+	// Remove ampersand
+	XTPDrawHelpers()->StripMnemonics(strText);
+
+	// select font into device context.
+	CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
+
+	// get the text size.
+	CSize sizeText = pDC->GetTextExtent(strText);
+
+	CPoint pt = GetTextPosition(nState, rcItem, sizeText, pButton);
+
+	BOOL  bSelected = pButton->GetChecked() || (nState & ODS_SELECTED);
+
+	if (bSelected && m_bOffsetHiliteText)
+		pt.Offset(1, 1);
+
+	// Set the draw state flags.
+	DWORD dwFlags = DST_PREFIXTEXT;
+
+	pDC->SetTextColor(GetTextColor(nState, pButton));
+
+	// draw the text, and select the original font.
+	if ((nState & 0x0100/*ODS_NOACCEL*/) == 0)
+		pButton->GetWindowText(strText);
+
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->DrawState(pt, sizeText, strText, dwFlags, TRUE, strText.GetLength(), (HBRUSH)NULL);
+}
+
+CPoint CXTButtonTheme::CalculateImagePosition(CDC* pDC, UINT /*nState*/,
+	CRect& rcItem, bool /*bHasPushedImage*/, CXTButton* pButton)
+{
+	// Get the window text.
+	CString strText;
+	pButton->GetWindowText(strText);
+
+	// Remove ampersand
+	XTPDrawHelpers()->StripMnemonics(strText);
+
+	CSize   sizeText = pDC->GetTextExtent(strText);
+	CPoint  point = rcItem.TopLeft();
+
+	DWORD dwStyle = pButton->GetStyle();
+
+	if (pButton->GetUserPosition())
+	{
+		point = pButton->GetImagePoint();
+	}
+	else
+	{
+		OffsetPoint(point, pButton->GetImageSize(), pButton);
+		point.x = pButton->GetBorderGap();
+
+		if (pButton->GetXButtonStyle() & BS_XT_TWOROWS)
+		{
+			if (!strText.IsEmpty())
+			{
+				point.y -= ((sizeText.cy/2)+(pButton->GetImageGap()/2));
+			}
+
+			// horz. alignment - only for two-row mode, otherwise always
+			// on left edge
+			switch (pButton->GetStyle() & (BS_CENTER | BS_LEFT | BS_RIGHT))
+			{
+			case BS_LEFT:
+				break;
+			case BS_RIGHT:
+				point.x = rcItem.right - pButton->GetBorderGap() - pButton->GetImageSize().cx;
+				break;
+			default:
+				point.x = rcItem.left + __max(0, ((rcItem.Width()-pButton->GetImageSize().cx)/2));
+				break;
+			}
+		}
+		else
+		{
+			if (strText.IsEmpty())
+			{
+				if ((dwStyle & BS_CENTER) == BS_CENTER)
+				{
+					int cx = rcItem.Width();
+					if (cx >= pButton->GetImageSize().cx)
+					{
+						point.x = (cx - pButton->GetImageSize().cx)/2;
+					}
+				}
+				if ((dwStyle & BS_VCENTER) == BS_VCENTER)
+				{
+					int cy = rcItem.Height();
+					if (cy >= pButton->GetImageSize().cy)
+					{
+						point.y = (cy - pButton->GetImageSize().cy)/2;
+					}
+				}
+			}
+		}
+	}
+
+	return point;
+}
+
+void CXTButtonTheme::DrawButtonIcon(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	if (pButton == NULL || m_bShowIcon == FALSE)
+		return;
+
+	CXTPImageManagerIcon* pIcon = pButton->GetIcon();
+	if (pIcon == NULL)
+		return;
+
+	CPoint pt = CalculateImagePosition(
+		pDC, nState, rcItem, (pButton->GetSelectedIcon() != NULL), pButton);
+
+	BOOL  bSelected = pButton->GetChecked() || (nState & ODS_SELECTED);
+
+	if (bSelected)
+		pt.Offset(1, 1);
+
+	if (nState & ODS_DISABLED)
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetDisabledIcon(), pButton->GetImageSize());
+	}
+	else if (pButton->GetHilite() || bSelected)
+	{
+		pIcon->Draw(pDC, pt, pButton->GetChecked() ? pIcon->GetCheckedIcon() :
+			(nState & ODS_SELECTED) ? pIcon->GetPressedIcon() : pIcon->GetHotIcon(), pButton->GetImageSize());
+	}
+	else
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetIcon(), pButton->GetImageSize());
+	}
+}
+
+BOOL CXTButtonTheme::UseWinXPThemes(CXTButton* pButton)
+{
+	// if the button should not use Windows XP themes return FALSE.
+	if (!pButton || (pButton->GetXButtonStyle() & BS_XT_WINXP_COMPAT) == 0)
+		return FALSE;
+
+	// if we got this far then we try to load the theme data for
+	// this control if it is not currently open.
+	if (!m_themeWrapper.ThemeDataOpen())
+		m_themeWrapper.OpenThemeData(0, L"BUTTON");
+
+	// if our application is not "Theme Ready" meaning that we cannot
+	// display Windows XP themes, then return FALSE.
+	if (!m_themeWrapper.IsAppThemeReady())
+		return FALSE;
+
+	// this will return TRUE if we can display visual styles.
+	return m_themeWrapper.ThemeDataOpen();
+}
+
+BOOL CXTButtonTheme::CanHilite(CXTButton* pButton)
+{
+	if (UseWinXPThemes(pButton))
+		return TRUE;
+
+	return ((pButton->GetXButtonStyle() & BS_XT_FLAT_ANY) != 0);
+}
+
+BOOL CXTButtonTheme::DrawWinThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	if (UseWinXPThemes(pButton))
+	{
+		CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+		CRect rcItem = lpDIS->rcItem;
+		int   nState = lpDIS->itemState;
+
+		bool  bSelected = ((nState & ODS_SELECTED) != 0);
+		bool  bDisabled = ((nState & ODS_DISABLED) != 0);
+
+		int iStateId = PBS_NORMAL;
+
+		if (pButton->GetButtonStyle() == BS_DEFPUSHBUTTON)
+			iStateId = PBS_DEFAULTED;
+
+		if (pButton->GetHilite())
+			iStateId = PBS_HOT;
+
+		if (bSelected || pButton->GetChecked())
+			iStateId = PBS_PRESSED;
+
+		if (bDisabled)
+			iStateId = PBS_DISABLED;
+
+		HBRUSH hBrush = (HBRUSH)pButton->GetParent()->SendMessage(WM_CTLCOLORBTN, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pButton->GetSafeHwnd());
+		if (hBrush)
+		{
+			::FillRect(pDC->GetSafeHdc(), rcItem, hBrush);
+		}
+		else
+		{
+			pDC->FillSolidRect(rcItem, GetXtremeColor(COLOR_3DFACE));
+		}
+
+		if (m_themeWrapper.DrawThemeBackground(pDC->GetSafeHdc(),
+			BP_PUSHBUTTON, iStateId, &rcItem, NULL) != S_OK)
+		{
+			TRACE0("Error drawing background using WinTheme API.\n");
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+
+	BOOL  bSelected = pButton->GetChecked() || (nState & ODS_SELECTED);
+
+	// get the cursor position.
+	CXTPClientCursorPos pt(pButton);
+
+	// Paint the background.
+	pDC->FillSolidRect(rcItem, m_crBack);
+
+	DWORD dwxStyle = pButton->GetXButtonStyle();
+	if (dwxStyle & BS_XT_HILITEPRESSED)
+	{
+		if ((pButton->GetChecked() && !rcItem.PtInRect(pt)) || bSelected)
+		{
+			XTFuncDrawShadedRect(pDC, rcItem);
+		}
+	}
+
+	if (dwxStyle & BS_XT_FLAT)
+	{
+		if (pButton->GetHilite() || bSelected)
+		{
+			pDC->Draw3dRect(rcItem,
+				bSelected ? m_crBorderShadow : m_crBorder3DHilite,
+				bSelected ? m_crBorder3DHilite : m_crBorderShadow);
+		}
+	}
+	else if (dwxStyle & BS_XT_SEMIFLAT)
+	{
+		pDC->Draw3dRect(rcItem,
+			bSelected ? m_crBorderShadow : m_crBorder3DHilite,
+			bSelected ? m_crBorder3DHilite : m_crBorderShadow);
+	}
+	else // classic button
+	{
+		if (pButton->GetButtonStyle() == BS_DEFPUSHBUTTON)
+		{
+			pDC->Draw3dRect(rcItem, m_crBorder3DShadow, m_crBorder3DShadow);
+			rcItem.DeflateRect(1,1);
+		}
+
+		pDC->Draw3dRect(rcItem,
+			bSelected ? m_crBorder3DShadow : m_crBorder3DHilite,
+			bSelected ? m_crBorder3DHilite : m_crBorder3DShadow);
+
+		rcItem.DeflateRect(1, 1);
+
+		pDC->Draw3dRect(rcItem,
+			bSelected ? m_crBorderShadow : m_crBorderHilite,
+			bSelected ? m_crBorderHilite : m_crBorderShadow);
+	}
+
+	return TRUE;
+}
+
+void CXTButtonTheme::DrawFocusRect(CDC* pDC, UINT /*nState*/, CRect& rcItem, CXTButton* pButton)
+{
+	CXTContextTextColorHandler foreHandler(pDC,
+		m_crText);
+
+	if (pButton->GetXButtonStyle() & (BS_XT_FLAT|BS_XT_SEMIFLAT))
+		rcItem.DeflateRect(2, 2);
+	else
+		rcItem.DeflateRect(4, 4);
+
+	pDC->DrawFocusRect(rcItem);
+}
+
+void CXTButtonTheme::DrawItem(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	ASSERT(lpDIS != NULL);
+	if (!lpDIS)
+		return;
+
+	// Draw the button background.
+	if (!DrawWinThemeBackground(lpDIS, pButton))
+		DrawButtonThemeBackground(lpDIS, pButton);
+
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+
+	// Set the background mode to transparent.
+	CXTContextBkModeHandler modeHandler(pDC, TRANSPARENT);
+
+	// draw the button text, icon or bitmap.
+	DrawButtonText(pDC, nState, rcItem, pButton);
+	DrawButtonIcon(pDC, nState, rcItem, pButton);
+
+	// Draw the focus rect if style is set and we have focus.
+	if ((pButton->GetXButtonStyle() & BS_XT_SHOWFOCUS))
+	{
+		if ((lpDIS->itemState & ODS_FOCUS) && ((lpDIS->itemState & ODS_NOFOCUSRECT) == 0))
+		{
+			DrawFocusRect(pDC, nState, rcItem, pButton);
+		}
+	}
+}
+
+//===========================================================================
+// CXTButtonThemeOfficeXP class
+//===========================================================================
+
+CXTButtonThemeOfficeXP::CXTButtonThemeOfficeXP(BOOL bWordTheme/*= FALSE*/)
+{
+	m_bWordTheme = bWordTheme;
+	m_bOffsetHiliteText = FALSE;
+	m_bFadedIcon = TRUE;
+	m_bAnimateIcon = TRUE;
+}
+
+CXTButtonThemeOfficeXP::~CXTButtonThemeOfficeXP()
+{
+
+}
+
+void CXTButtonThemeOfficeXP::RefreshMetrics()
+{
+	CXTButtonTheme::RefreshMetrics();
+
+	m_crBack.SetStandardValue(GetXtremeColor(m_bWordTheme ? XPCOLOR_TOOLBAR_FACE : COLOR_BTNFACE));
+	m_crBackPushed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
+	m_crBackHilite.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT));
+	m_crBorderShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_crBorderHilite.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
+	m_crText.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_TEXT));
+	m_crTextHilite.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_TEXT));
+	m_crTextPushed.SetStandardValue(GetXtremeColor(XPCOLOR_PUSHED_TEXT));
+	m_crBackChecked.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+}
+
+COLORREF CXTButtonThemeOfficeXP::GetTextColor(UINT nState, CXTButton* pButton)
+{
+	if (UseWinXPThemes(pButton))
+	{
+		return CXTButtonTheme::GetTextColor(nState, pButton);
+	}
+
+	if (nState & ODS_DISABLED)
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+	if (nState & ODS_SELECTED)
+		return m_crTextPushed;
+
+	if (pButton->GetHilite())
+		return m_crTextHilite;
+
+	return m_crText;
+}
+
+void CXTButtonThemeOfficeXP::DrawButtonIcon(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	if (pButton == NULL || m_bShowIcon == FALSE)
+		return;
+
+	CXTPImageManagerIcon* pIcon = pButton->GetIcon();
+	if (pIcon == NULL)
+		return;
+
+	CPoint pt = CalculateImagePosition(
+		pDC, nState, rcItem, FALSE, pButton);
+
+	if (nState & ODS_DISABLED)
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetDisabledIcon(), pButton->GetImageSize());
+	}
+	else if (nState & ODS_SELECTED)
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetPressedIcon(), pButton->GetImageSize());
+	}
+	else if (pButton->GetHilite())
+	{
+		if (m_bAnimateIcon)
+		{
+			pIcon->Draw(pDC, CPoint(pt.x + 1, pt.y + 1), pIcon->GetShadowIcon(), pButton->GetImageSize());
+			pIcon->Draw(pDC, CPoint(pt.x - 1, pt.y - 1), pIcon->GetHotIcon(), pButton->GetImageSize());
+		}
+		else
+		{
+			pIcon->Draw(pDC, pt, pIcon->GetHotIcon(), pButton->GetImageSize());
+		}
+	}
+	else
+	{
+		pIcon->Draw(pDC, pt, m_bFadedIcon ? pIcon->GetFadedIcon() : pIcon->GetIcon(), pButton->GetImageSize());
+	}
+}
+
+BOOL CXTButtonThemeOfficeXP::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+	BOOL bPressed = (nState & ODS_SELECTED);
+
+	// Paint the background.
+	if (pButton->GetHilite() || bPressed || pButton->GetChecked())
+	{
+		pDC->FillSolidRect(rcItem, bPressed ? m_crBackPushed :
+			pButton->GetChecked() ? (pButton->GetHilite() ? m_crBackPushed : m_crBackChecked) : m_crBackHilite);
+
+		pDC->Draw3dRect(rcItem, m_crBorderHilite,
+			m_crBorderHilite);
+	}
+	else
+	{
+		pDC->FillSolidRect(rcItem, m_crBack);
+
+		if (m_bWordTheme)
+		{
+			pDC->Draw3dRect(rcItem,
+				m_crBorderShadow, m_crBorderShadow);
+
+		}
+	}
+
+	if (m_bWordTheme && pButton->GetButtonStyle() == BS_DEFPUSHBUTTON)
+	{
+		pDC->Draw3dRect(rcItem, GetXtremeColor(COLOR_HIGHLIGHT),
+			GetXtremeColor(COLOR_HIGHLIGHT));
+
+		rcItem.DeflateRect(1, 1);
+
+		pDC->Draw3dRect(rcItem, GetXtremeColor(COLOR_HIGHLIGHT),
+			GetXtremeColor(COLOR_HIGHLIGHT));
+	}
+
+	return TRUE;
+}
+
+BOOL CXTButtonThemeOfficeXP::CanHilite(CXTButton* /*pButton*/)
+{
+	return TRUE;
+}
+
+void CXTButtonThemeOfficeXP::DrawFocusRect(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	CXTButtonTheme::DrawFocusRect(pDC, nState, rcItem, pButton);
+}
+
+void CXTButtonThemeOfficeXP::SetBackPushedColor(COLORREF color)
+{
+	m_crBackPushed.SetCustomValue(color);
+}
+
+void CXTButtonThemeOfficeXP::SetBackHiliteColor(COLORREF color)
+{
+	m_crBackHilite.SetCustomValue(color);
+}
+
+void CXTButtonThemeOfficeXP::SetTextPushedColor(COLORREF color)
+{
+	m_crTextPushed.SetCustomValue(color);
+}
+
+void CXTButtonThemeOfficeXP::SetTextHiliteColor(COLORREF color)
+{
+	m_crTextHilite.SetCustomValue(color);
+}
+
+//===========================================================================
+// CXTButtonThemeOffice2003 class
+//===========================================================================
+
+CXTButtonThemeOffice2003::CXTButtonThemeOffice2003(BOOL bWordTheme/*= FALSE*/)
+{
+	m_bWordTheme = bWordTheme;
+	m_bOffsetHiliteText = FALSE;
+	m_bFadedIcon = FALSE;
+	m_bAnimateIcon = FALSE;
+}
+
+void CXTButtonThemeOffice2003::DrawButtonIcon(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	if (pButton == NULL || m_bShowIcon == FALSE)
+		return;
+
+	CXTPImageManagerIcon* pIcon = pButton->GetIcon();
+	if (pIcon == NULL)
+		return;
+
+	CPoint pt = CalculateImagePosition(
+		pDC, nState, rcItem, FALSE, pButton);
+
+	if (nState & ODS_DISABLED)
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetDisabledIcon(), pButton->GetImageSize());
+	}
+	else if (nState & ODS_SELECTED)
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetPressedIcon(), pButton->GetImageSize());
+	}
+	else
+	{
+		pIcon->Draw(pDC, pt, pIcon->GetIcon(), pButton->GetImageSize());
+	}
+}
+
+void CXTButtonThemeOffice2003::RefreshMetrics()
+{
+	CXTButtonThemeOfficeXP::RefreshMetrics();
+
+	XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+	m_crBack.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+
+	if (systemTheme != xtpSystemThemeUnknown)
+	{
+		m_crBackHilite.SetStandardValue(RGB(255, 238, 194));
+		m_crBackPushed.SetStandardValue(RGB(254, 128, 62));
+		m_crBackChecked.SetStandardValue(RGB(255, 192, 111));
+		m_crText.SetStandardValue(0);
+	}
+
+	m_crTextHilite.SetStandardValue(0);
+	m_crTextPushed.SetStandardValue(0);
+
+	switch (systemTheme)
+	{
+	case xtpSystemThemeBlue:
+	case xtpSystemThemeRoyale:
+	case xtpSystemThemeAero:
+		m_crBack.SetStandardValue(RGB(169, 199, 240));
+		m_crBorderShadow.SetStandardValue(RGB(127, 157, 185));
+		m_crBorderHilite.SetStandardValue(RGB(0, 0, 128));
+		break;
+
+	case xtpSystemThemeOlive:
+		m_crBack.SetStandardValue(RGB(197, 212, 159));
+		m_crBorderShadow.SetStandardValue(RGB(164, 185, 127));
+		m_crBorderHilite.SetStandardValue(RGB(63, 93, 56));
+		break;
+
+	case xtpSystemThemeSilver:
+		m_crBack.SetStandardValue(RGB(192, 192, 211));
+		m_crBorderShadow.SetStandardValue(RGB(165, 172, 178));
+		m_crBorderHilite.SetStandardValue(RGB(75, 75, 11));
+		break;
+	}
+
+	if (!m_bWordTheme) m_crBack.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
+}
+
+BOOL CXTButtonThemeOffice2003::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+
+	BOOL bChecked = pButton->GetChecked();
+	BOOL bHilight = pButton->GetHilite();
+	BOOL bPressed = (nState & ODS_SELECTED);
+
+	// Paint the background.
+	if (bChecked || bHilight || bPressed)
+	{
+		if (bPressed)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, &rcItem,
+				XTPColorManager()->grcLunaPushed, FALSE);
+		}
+		else if (bHilight)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, &rcItem,
+				XTPColorManager()->grcLunaSelected, FALSE);
+		}
+		else if (bChecked)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, &rcItem,
+				XTPColorManager()->grcLunaChecked, FALSE);
+		}
+
+		pDC->Draw3dRect(rcItem, m_crBorderHilite,
+			m_crBorderHilite);
+	}
+	else
+	{
+		pDC->FillSolidRect(rcItem, m_crBack);
+
+		if (m_bWordTheme)
+		{
+			pDC->Draw3dRect(rcItem,
+				m_crBorderShadow, m_crBorderShadow);
+
+		}
+	}
+
+	if (m_bWordTheme && pButton->GetButtonStyle() == BS_DEFPUSHBUTTON)
+	{
+		pDC->Draw3dRect(rcItem, GetXtremeColor(COLOR_HIGHLIGHT),
+			GetXtremeColor(COLOR_HIGHLIGHT));
+
+		rcItem.DeflateRect(1, 1);
+
+		pDC->Draw3dRect(rcItem, GetXtremeColor(COLOR_HIGHLIGHT),
+			GetXtremeColor(COLOR_HIGHLIGHT));
+	}
+
+
+
+	return TRUE;
+}
+
+//===========================================================================
+// CXTDisabledButtonTheme class
+//===========================================================================
+
+void CXTDisabledButtonTheme::DrawButtonIcon(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	if (pButton == NULL || m_bShowIcon == FALSE)
+		return;
+
+	CXTPImageManagerIcon* pIconManager = pButton->GetIcon();
+	if (pIconManager == NULL)
+		return;
+
+	CPoint pt = CalculateImagePosition(
+		pDC, nState, rcItem, (pButton->GetSelectedIcon() != NULL), pButton);
+
+	BOOL  bSelected = pButton->GetChecked() || (nState & ODS_SELECTED);
+
+	if (bSelected)
+		pt.Offset(1, 1);
+
+	if (nState & ODS_DISABLED)
+	{
+		pDC->DrawState(pt, pIconManager->GetExtent(),
+			pIconManager->GetIcon(), DSS_NORMAL | DSS_DISABLED, (HBRUSH)0);
+	}
+	else if (pButton->GetHilite() || bSelected)
+	{
+		pDC->DrawState(pt, pIconManager->GetExtent(),
+			(nState & ODS_SELECTED) ? pIconManager->GetPressedIcon() : pIconManager->GetHotIcon(), DSS_NORMAL, (HBRUSH)0);
+	}
+	else
+	{
+		pDC->DrawState(pt, 0,
+			pIconManager->GetIcon(), DSS_NORMAL, (HBRUSH)0);
+	}
+}
+
+//===========================================================================
+// CXTToolbarButtonTheme class
+//===========================================================================
+
+BOOL CXTToolbarButtonTheme::DrawWinThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	lpDIS->itemState &= ~ODS_FOCUS;
+	return CXTButtonTheme::DrawWinThemeBackground(lpDIS, pButton);
+}
+
+void CXTToolbarButtonTheme::RefreshMetrics()
+{
+	CXTDisabledButtonTheme::RefreshMetrics();
+
+	m_themeWrapper.OpenThemeData(0, L"TOOLBAR");
+}
+
+BOOL CXTToolbarButtonTheme::UseWinXPThemes(CXTButton* pButton)
+{
+	// if the button should not use Windows XP themes return FALSE.
+	if (!pButton || (pButton->GetXButtonStyle() & BS_XT_WINXP_COMPAT) == 0)
+		return FALSE;
+
+	// if we got this far then we try to load the theme data for
+	// this control if it is not currently open.
+	if (!m_themeWrapper.ThemeDataOpen())
+		m_themeWrapper.OpenThemeData(pButton->m_hWnd, L"TOOLBAR");
+
+	// if our application is not "Theme Ready" meaning that we cannot
+	// display Windows XP themes, then return FALSE.
+	if (!m_themeWrapper.IsAppThemeReady())
+		return FALSE;
+
+	// this will return TRUE if we can display visual styles.
+	return m_themeWrapper.ThemeDataOpen();
+}

@@ -1,48 +1,5 @@
-// from server: 67% by colin
-// roc 2007-08 00653ca0  unit: CInstanceRecord::CNameItem  size: 46 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00653ca0
-//
-// 00653ca0  85c9                 test ecx, ecx
-// 00653ca2  7427                 je 0x653ccb
-// 00653ca4  8b414c               mov eax, dword ptr [ecx + 0x4c]
-// 00653ca7  85c0                 test eax, eax
-// 00653ca9  7420                 je 0x653ccb
-// 00653cab  83784800             cmp dword ptr [eax + 0x48], 0
-// 00653caf  741a                 je 0x653ccb
-// 00653cb1  83794400             cmp dword ptr [ecx + 0x44], 0
-// 00653cb5  7414                 je 0x653ccb
-// 00653cb7  8b01                 mov eax, dword ptr [ecx]
-// 00653cb9  8b9000010000         mov edx, dword ptr [eax + 0x100]
-// 00653cbf  ffd2                 call edx
-// 00653cc1  85c0                 test eax, eax
-// 00653cc3  7406                 je 0x653ccb
-// 00653cc5  b801000000           mov eax, 1
-// 00653cca  c3                   ret 
-// 00653ccb  33c0                 xor eax, eax
-// 00653ccd  c3                   ret 
-
-struct CNameItem {
-    int field0;
-    char pad[0x40];
-    int field44;
-    char pad2[4];
-    int field4c;
-    bool method();
-};
-
-bool CNameItem::method() {
-    if (this == 0)
-        return false;
-    int* p = *(int**)((char*)this + 0x4c);
-    if (p == 0)
-        return false;
-    if (*(int*)((char*)p + 0x48) == 0)
-        return false;
-    if (*(int*)((char*)this + 0x44) == 0)
-        return false;
-    int* vtbl = *(int**)this;
-    int (*fn)() = *(int (**)())((char*)vtbl + 0x100);
-    if (fn() == 0)
-        return false;
-    return true;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_0243ccfb1725768c.cpp

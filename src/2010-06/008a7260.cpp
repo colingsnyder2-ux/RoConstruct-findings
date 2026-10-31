@@ -1,116 +1,378 @@
-// roc 2010-06 008a7260  unit: CXTPDockingPaneAutoHidePanel  size: 356 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 008a7260
-//
-// 008a7260  55                   push ebp
-// 008a7261  8bec                 mov ebp, esp
-// 008a7263  83e4c0               and esp, 0xffffffc0
-// 008a7266  d9ee                 fldz 
-// 008a7268  83ec40               sub esp, 0x40
-// 008a726b  dd4510               fld qword ptr [ebp + 0x10]
-// 008a726e  dde1                 fucom st(1)
-// 008a7270  dfe0                 fnstsw ax
-// 008a7272  ddd9                 fstp st(1)
-// 008a7274  f6c444               test ah, 0x44
-// 008a7277  0f8a9b000000         jp 0x8a7318
-// 008a727d  ddd8                 fstp st(0)
-// 008a727f  dd4518               fld qword ptr [ebp + 0x18]
-// 008a7282  d9c0                 fld st(0)
-// 008a7284  d9c1                 fld st(1)
-// 008a7286  d9c9                 fxch st(1)
-// 008a7288  d9ca                 fxch st(2)
-// 008a728a  d9c9                 fxch st(1)
-// 008a728c  dd058076a000         fld qword ptr [0xa07680]
-// 008a7292  d97c241e             fnstcw word ptr [esp + 0x1e]
-// 008a7296  0fb744241e           movzx eax, word ptr [esp + 0x1e]
-// 008a729b  dccb                 fmul st(3), st(0)
-// 008a729d  0d000c0000           or eax, 0xc00
-// 008a72a2  d9cb                 fxch st(3)
-// 008a72a4  89442420             mov dword ptr [esp + 0x20], eax
-// 008a72a8  d96c2420             fldcw word ptr [esp + 0x20]
-// 008a72ac  db5c2420             fistp dword ptr [esp + 0x20]
-// 008a72b0  0fb6442420           movzx eax, byte ptr [esp + 0x20]
-// 008a72b5  0fb6d0               movzx edx, al
-// 008a72b8  d96c241e             fldcw word ptr [esp + 0x1e]
-// 008a72bc  c1e208               shl edx, 8
-// 008a72bf  d97c241e             fnstcw word ptr [esp + 0x1e]
-// 008a72c3  d8ca                 fmul st(2)
-// 008a72c5  0fb744241e           movzx eax, word ptr [esp + 0x1e]
-// 008a72ca  0d000c0000           or eax, 0xc00
-// 008a72cf  89442420             mov dword ptr [esp + 0x20], eax
-// 008a72d3  d96c2420             fldcw word ptr [esp + 0x20]
-// 008a72d7  db5c2420             fistp dword ptr [esp + 0x20]
-// 008a72db  0fb6442420           movzx eax, byte ptr [esp + 0x20]
-// 008a72e0  0bd0                 or edx, eax
-// 008a72e2  c1e208               shl edx, 8
-// 008a72e5  d96c241e             fldcw word ptr [esp + 0x1e]
-// 008a72e9  d97c241e             fnstcw word ptr [esp + 0x1e]
-// 008a72ed  dec9                 fmulp st(1)
-// 008a72ef  0fb744241e           movzx eax, word ptr [esp + 0x1e]
-// 008a72f4  0d000c0000           or eax, 0xc00
-// 008a72f9  89442420             mov dword ptr [esp + 0x20], eax
-// 008a72fd  d96c2420             fldcw word ptr [esp + 0x20]
-// 008a7301  db5c2420             fistp dword ptr [esp + 0x20]
-// 008a7305  0fb6442420           movzx eax, byte ptr [esp + 0x20]
-// 008a730a  0bd0                 or edx, eax
-// 008a730c  8911                 mov dword ptr [ecx], edx
-// 008a730e  d96c241e             fldcw word ptr [esp + 0x1e]
-// 008a7312  8be5                 mov esp, ebp
-// 008a7314  5d                   pop ebp
-// 008a7315  c21800               ret 0x18
-// 008a7318  dd057850a100         fld qword ptr [0xa15078]
-// 008a731e  dd4518               fld qword ptr [ebp + 0x18]
-// 008a7321  d8d1                 fcom st(1)
-// 008a7323  dfe0                 fnstsw ax
-// 008a7325  ddd9                 fstp st(1)
-// 008a7327  f6c405               test ah, 5
-// 008a732a  7a0c                 jp 0x8a7338
-// 008a732c  d9c9                 fxch st(1)
-// 008a732e  dc054052a000         fadd qword ptr [0xa05240]
-// 008a7334  d8c9                 fmul st(1)
-// 008a7336  eb0c                 jmp 0x8a7344
-// 008a7338  d9c1                 fld st(1)
-// 008a733a  d8c1                 fadd st(1)
-// 008a733c  d9ca                 fxch st(2)
-// 008a733e  d8c9                 fmul st(1)
-// 008a7340  deea                 fsubp st(2)
-// 008a7342  d9c9                 fxch st(1)
-// 008a7344  dd542420             fst qword ptr [esp + 0x20]
-// 008a7348  83ec18               sub esp, 0x18
-// 008a734b  d9c9                 fxch st(1)
-// 008a734d  dcc0                 fadd st(0), st(0)
-// 008a734f  d8e1                 fsub st(1)
-// 008a7351  dd542440             fst qword ptr [esp + 0x40]
-// 008a7355  dd4508               fld qword ptr [ebp + 8]
-// 008a7358  dc05083ca700         fadd qword ptr [0xa73c08]
-// 008a735e  dd5c2410             fstp qword ptr [esp + 0x10]
-// 008a7362  d9c9                 fxch st(1)
-// 008a7364  dd5c2408             fstp qword ptr [esp + 8]
-// 008a7368  dd1c24               fstp qword ptr [esp]
-// 008a736b  e840feffff           call 0x8a71b0
-// 008a7370  dd5c2448             fstp qword ptr [esp + 0x48]
-// 008a7374  dd4508               fld qword ptr [ebp + 8]
-// 008a7377  dd5c2410             fstp qword ptr [esp + 0x10]
-// 008a737b  dd442438             fld qword ptr [esp + 0x38]
-// 008a737f  dd5c2408             fstp qword ptr [esp + 8]
-// 008a7383  dd442440             fld qword ptr [esp + 0x40]
-// 008a7387  dd1c24               fstp qword ptr [esp]
-// 008a738a  e821feffff           call 0x8a71b0
-// 008a738f  dd5c2450             fstp qword ptr [esp + 0x50]
-// 008a7393  dd4508               fld qword ptr [ebp + 8]
-// 008a7396  dc25083ca700         fsub qword ptr [0xa73c08]
-// 008a739c  dd5c2410             fstp qword ptr [esp + 0x10]
-// 008a73a0  dd442438             fld qword ptr [esp + 0x38]
-// 008a73a4  dd5c2408             fstp qword ptr [esp + 8]
-// 008a73a8  dd442440             fld qword ptr [esp + 0x40]
-// 008a73ac  dd1c24               fstp qword ptr [esp]
-// 008a73af  e8fcfdffff           call 0x8a71b0
-// 008a73b4  dd442448             fld qword ptr [esp + 0x48]
-// 008a73b8  83c418               add esp, 0x18
-// 008a73bb  dd442438             fld qword ptr [esp + 0x38]
-// 008a73bf  e9c8feffff           jmp 0x8a728c
-// library xtp-11.2.2/Source\Controls\XTColorRef.cpp (function ?setHSL@CXTColorRef@@QAEXNNN@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTColorRef.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTColorRef.cpp: implementation of the CXTColorRef class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include <math.h>
+#include "Common/XTPColorManager.h"
+
+#include "XTDefines.h"
+#include "XTColorRef.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+const CXTColorRef CXTColorRef::BLACK  (0, 0, 0);
+const CXTColorRef CXTColorRef::WHITE  (255, 255, 255);
+const CXTColorRef CXTColorRef::GRAY_25(64, 64, 64);
+const CXTColorRef CXTColorRef::GRAY_50(128, 128, 128);
+const CXTColorRef CXTColorRef::GRAY_75(192, 192, 192);
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+void CXTColorRef::toHSL(double& h, double& s, double& l) const
+{
+	double r = (double)getRValue()/255;
+	double g = (double)getGValue()/255;
+	double b = (double)getBValue()/255;
+
+	double maxcolor = __max(r, __max(g, b));
+	double mincolor = __min(r, __min(g, b));
+
+	l = (maxcolor + mincolor)/2;
+
+	if (maxcolor == mincolor)
+	{
+		h = 0;
+		s = 0;
+	}
+	else
+	{
+		if (l < 0.5)
+			s = (maxcolor-mincolor)/(maxcolor + mincolor);
+		else
+			s = (maxcolor-mincolor)/(2.0-maxcolor-mincolor);
+
+		if (r == maxcolor)
+			h = (g-b)/(maxcolor-mincolor);
+		else if (g == maxcolor)
+			h = 2.0+(b-r)/(maxcolor-mincolor);
+		else
+			h = 4.0+(r-g)/(maxcolor-mincolor);
+
+		h /= 6.0;
+		if (h < 0.0) h += 1;
+/*      h *= 60;
+		if (h < 0.0) h += 360;*/
+	}
+}
+
+void CXTColorRef::toHSB(double& h, double& s, double& b) const
+{
+	int red = getRValue();
+	int green = getGValue();
+	int blue = getBValue();
+
+	int cmax = __max(red, __max(green, blue));
+	int cmin = __min(red, __min(green, blue));
+
+	b = ((double) cmax) / 255.0;
+	if (cmax != 0)
+		s = ((double) (cmax - cmin)) / ((double) cmax);
+	else
+		s = 0;
+	if (s == 0)
+		h = 0;
+	else
+	{
+		double redc = ((double) (cmax - red))   / ((double) (cmax - cmin));
+		double greenc = ((double) (cmax - green)) / ((double) (cmax - cmin));
+		double bluec = ((double) (cmax - blue))  / ((double) (cmax - cmin));
+		if (red == cmax)
+			h = bluec - greenc;
+		else if (green == cmax)
+			h = 2.0 + redc - bluec;
+		else
+			h = 4.0 + greenc - redc;
+		h /= 6.0;
+		if (h < 0)
+			h = h + 1.0;
+	}
+}
+
+double CXTColorRef::HuetoRGB(double temp1, double temp2, double temp3)
+{
+	if (temp3 < 0)
+		temp3 = temp3 + 1.0;
+	if (temp3 > 1)
+		temp3 = temp3-1.0;
+
+	if (6.0*temp3 < 1)
+		return (temp1+(temp2-temp1)*temp3 * 6.0);
+
+	else if (2.0*temp3 < 1)
+		return temp2;
+
+	else if (3.0*temp3 < 2.0)
+		return (temp1+(temp2-temp1)*((2.0/3.0)-temp3)*6.0);
+
+	return temp1;
+}
+
+void CXTColorRef::setHSL(double h, double s, double l)
+{
+	double r, g, b;
+	double temp1, temp2;
+
+	if (s == 0)
+	{
+		r = g = b = l;
+	}
+	else
+	{
+		if (l < 0.5)
+			temp2 = l*(1.0 + s);
+		else
+			temp2 = l + s-l*s;
+
+		temp1 = 2.0*l-temp2;
+//      h /= 360;
+
+		r = HuetoRGB(temp1, temp2, h + 1.0/3.0);
+		g = HuetoRGB(temp1, temp2, h);
+		b = HuetoRGB(temp1, temp2, h-1.0/3.0);
+	}
+
+	*this = RGB((BYTE)(r * 255), (BYTE)(g * 255), (BYTE)(b * 255));
+}
+
+void CXTColorRef::setHSB(double hue, double saturation, double brightness)
+{
+	int r = 0, g = 0, b = 0;
+	if (saturation == 0)
+	{
+		r = g = b = (int) (brightness * 255.0 + 0.5);
+	}
+	else
+	{
+		double h = (hue - floor(hue)) * 6.0;
+		double f = h - floor(h);
+		double p = brightness * (1.0 - saturation);
+		double q = brightness * (1.0 - saturation * f);
+		double t = brightness * (1.0 - (saturation * (1.0 - f)));
+		switch ((int) h)
+		{
+			case 0:
+				r = (int) (brightness * 255.0 + 0.5);
+				g = (int) (t * 255.0 + 0.5);
+				b = (int) (p * 255.0 + 0.5);
+				break;
+			case 1:
+				r = (int) (q * 255.0 + 0.5);
+				g = (int) (brightness * 255.0 + 0.5);
+				b = (int) (p * 255.0 + 0.5);
+				break;
+			case 2:
+				r = (int) (p * 255.0 + 0.5);
+				g = (int) (brightness * 255.0 + 0.5);
+				b = (int) (t * 255.0 + 0.5);
+				break;
+			case 3:
+				r = (int) (p * 255.0 + 0.5);
+				g = (int) (q * 255.0 + 0.5);
+				b = (int) (brightness * 255.0 + 0.5);
+				break;
+			case 4:
+				r = (int) (t * 255.0 + 0.5);
+				g = (int) (p * 255.0 + 0.5);
+				b = (int) (brightness * 255.0 + 0.5);
+				break;
+			case 5:
+				r = (int) (brightness * 255.0 + 0.5);
+				g = (int) (p * 255.0 + 0.5);
+				b = (int) (q * 255.0 + 0.5);
+				break;
+		}
+	}
+	*this = RGB(r, g, b);
+}
+
+CXTColorRef CXTColorRef::fromHSB(double h, double s, double b)
+{
+	CXTColorRef cr;
+	cr.setHSB(h, s, b);
+	return cr;
+}
+
+CXTColorRef CXTColorRef::fromHSL(double h, double s, double l)
+{
+	CXTColorRef cr;
+	cr.setHSL(h, s, l);
+	return cr;
+}
+
+CXTColorRef& CXTColorRef::blend(const CXTColorRef& clr, int opacity)
+{
+	*this = RGB(BlendColor(clr.getRValue(), getRValue(), opacity),
+				BlendColor(clr.getGValue(), getGValue(), opacity),
+				BlendColor(clr.getBValue(), getBValue(), opacity));
+	return *this;
+}
+
+CXTColorRef& CXTColorRef::add(const CXTColorRef& clr)
+{
+	*this = RGB(addColorValue(clr.getRValue(), getRValue()),
+				addColorValue(clr.getGValue(), getGValue()),
+				addColorValue(clr.getBValue(), getBValue()));
+	return *this;
+}
+
+CXTColorRef& CXTColorRef::subtract(const CXTColorRef& clr)
+{
+	*this = RGB(addColorValue(-clr.getRValue(), getRValue()),
+				addColorValue(-clr.getGValue(), getGValue()),
+				addColorValue(-clr.getBValue(), getBValue()));
+	return *this;
+}
+
+COLORREF CXTColorRef::SafeRGB(int r, int g, int b)
+{
+	return RGB(fixColorValue(r), fixColorValue(g), fixColorValue(b));
+}
+
+CXTColorRef CXTColorRef::operator+(int val) const
+{
+	val = fixColorValue(val);
+	return operator+(RGB(val, val, val));
+}
+
+CXTColorRef CXTColorRef::operator-(int val) const
+{
+	val = fixColorValue(val);
+	return operator-(RGB(val, val, val));
+}
+
+CXTColorRef CXTColorRef::operator*(int val) const
+{
+	val = fixColorValue(val);
+	return operator*(RGB(val, val, val));
+}
+
+CXTColorRef CXTColorRef::operator/(int val) const
+{
+	val = fixColorValue(val);
+	return operator/(RGB(val, val, val));
+}
+
+CXTColorRef CXTColorRef::operator+(COLORREF cr) const
+{
+	CXTColorRef temp(*this);
+	return (temp += cr);
+}
+
+CXTColorRef CXTColorRef::operator-(COLORREF cr) const
+{
+	CXTColorRef temp(*this);
+	return (temp -= cr);
+}
+
+CXTColorRef CXTColorRef::operator*(COLORREF cr) const
+{
+	CXTColorRef temp(*this);
+	return (temp *= cr);
+}
+
+CXTColorRef CXTColorRef::operator/(COLORREF cr) const
+{
+	CXTColorRef temp(*this);
+	return (temp -= cr);
+}
+
+CXTColorRef& CXTColorRef::operator+=(int val)
+{
+	val = fixColorValue(val);
+	return operator+=(RGB(val, val, val));
+}
+
+CXTColorRef& CXTColorRef::operator-=(int val)
+{
+	val = fixColorValue(val);
+	return operator-=(RGB(val, val, val));
+}
+
+CXTColorRef& CXTColorRef::operator*=(int val)
+{
+	val = fixColorValue(val);
+	return operator*=(RGB(val, val, val));
+}
+
+CXTColorRef& CXTColorRef::operator/=(int val)
+{
+	val = fixColorValue(val);
+	return operator/=(RGB(val, val, val));
+}
+
+CXTColorRef& CXTColorRef::operator+=(COLORREF cr)
+{
+	m_ColorRef = SafeRGB(
+		getRValue() + GetRValue(cr),
+		getGValue() + GetGValue(cr),
+		getBValue() + GetBValue(cr));
+	return *this;
+}
+
+CXTColorRef& CXTColorRef::operator-=(COLORREF cr)
+{
+	m_ColorRef = SafeRGB(
+		getRValue() - GetRValue(cr),
+		getGValue() - GetGValue(cr),
+		getBValue() - GetBValue(cr));
+	return *this;
+}
+
+CXTColorRef& CXTColorRef::operator*=(COLORREF cr)
+{
+	m_ColorRef = SafeRGB(
+		getRValue() * GetRValue(cr),
+		getGValue() * GetGValue(cr),
+		getBValue() * GetBValue(cr));
+	return *this;
+}
+
+CXTColorRef& CXTColorRef::operator/=(COLORREF cr)
+{
+	m_ColorRef = SafeRGB(
+		getRValue() / GetRValue(cr),
+		getGValue() / GetGValue(cr),
+		getBValue() / GetBValue(cr));
+	return *this;
+}
+
+////  XP Colors Routings
+
+COLORREF CXTColorRef::GetColor(int nIndex)
+{
+	return XTPColorManager()->GetColor(nIndex);
+}
+
+void CXTColorRef::RefreshColors()
+{
+	RefreshXtremeColors();
+}

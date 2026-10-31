@@ -1,10 +1,11 @@
-// from server: 64% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d GLG3Dcpp/RenderDevice.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-g3d GLG3Dcpp/roc_header_eb65c08c2fe201ea.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\glg3dcpp\\RenderDevice.cpp"
 /**
  @file RenderDevice.cpp
  
@@ -2922,9 +2923,11 @@ void RenderDevice::endIndexedPrimitives() {
 void RenderDevice::setVARAreaFromVAR(const class VAR& v) {
 	debugAssert(inIndexedPrimitive);
 	debugAssert(! inPrimitive);
+#line 2920
     alwaysAssertM(currentVARArea.isNull() || (v.area == currentVARArea), 
         "All vertex arrays used within a single begin/endIndexedPrimitive"
         " block must share the same VARArea.");
+#line 2921
 
     majStateChange();
 

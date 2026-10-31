@@ -1,23 +1,5 @@
-// from server: 30% by colin
-struct CXTPReportRecordItemArray
-{
-    void* m_pArray;
-    void* EnsureArray();
-};
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl CXTPReportRecordItemArray_ctor(void* p, int n);
-
-void* CXTPReportRecordItemArray::EnsureArray()
-{
-    if (m_pArray == 0)
-    {
-        void* p = operator_new(0x48);
-        if (p != 0)
-            CXTPReportRecordItemArray_ctor(p, 0);
-        else
-            p = 0;
-        m_pArray = p;
-    }
-    return m_pArray;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_a9719fe493c6e114.cpp

@@ -1,111 +1,905 @@
-// roc 2009-12 008b53b0  unit: CXTPDockingPaneSplitterContainer  size: 311 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008b53b0
-//
-// 008b53b0  6aff                 push -1
-// 008b53b2  6828319600           push 0x963128
-// 008b53b7  64a100000000         mov eax, dword ptr fs:[0]
-// 008b53bd  50                   push eax
-// 008b53be  83ec20               sub esp, 0x20
-// 008b53c1  53                   push ebx
-// 008b53c2  55                   push ebp
-// 008b53c3  56                   push esi
-// 008b53c4  57                   push edi
-// 008b53c5  a10052b600           mov eax, dword ptr [0xb65200]
-// 008b53ca  33c4                 xor eax, esp
-// 008b53cc  50                   push eax
-// 008b53cd  8d442434             lea eax, [esp + 0x34]
-// 008b53d1  64a300000000         mov dword ptr fs:[0], eax
-// 008b53d7  8bd9                 mov ebx, ecx
-// 008b53d9  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 008b53dd  8d6b20               lea ebp, [ebx + 0x20]
-// 008b53e0  50                   push eax
-// 008b53e1  8bcd                 mov ecx, ebp
-// 008b53e3  e858b4ffff           call 0x8b0840
-// 008b53e8  8bc8                 mov ecx, eax
-// 008b53ea  e81133f8ff           call 0x838700
-// 008b53ef  83f801               cmp eax, 1
-// 008b53f2  740d                 je 0x8b5401
-// 008b53f4  c744244c00000000     mov dword ptr [esp + 0x4c], 0
-// 008b53fc  83f803               cmp eax, 3
-// 008b53ff  7508                 jne 0x8b5409
-// 008b5401  c744244c01000000     mov dword ptr [esp + 0x4c], 1
-// 008b5409  6a0a                 push 0xa
-// 008b540b  8d4c241c             lea ecx, [esp + 0x1c]
-// 008b540f  e8ac42f8ff           call 0x8396c0
-// 008b5414  8bcd                 mov ecx, ebp
-// 008b5416  c744243c00000000     mov dword ptr [esp + 0x3c], 0
-// 008b541e  e86d53faff           call 0x85a790
-// 008b5423  8b7c2448             mov edi, dword ptr [esp + 0x48]
-// 008b5427  89442414             mov dword ptr [esp + 0x14], eax
-// 008b542b  85c0                 test eax, eax
-// 008b542d  7450                 je 0x8b547f
-// 008b542f  90                   nop 
-// 008b5430  8d4c2414             lea ecx, [esp + 0x14]
-// 008b5434  51                   push ecx
-// 008b5435  8bcd                 mov ecx, ebp
-// 008b5437  e8d4da0300           call 0x8f2f10
-// 008b543c  8bf0                 mov esi, eax
-// 008b543e  8b16                 mov edx, dword ptr [esi]
-// 008b5440  8b4214               mov eax, dword ptr [edx + 0x14]
-// 008b5443  8bce                 mov ecx, esi
-// 008b5445  ffd0                 call eax
-// 008b5447  85c0                 test eax, eax
-// 008b5449  752d                 jne 0x8b5478
-// 008b544b  3bf7                 cmp esi, edi
-// 008b544d  7429                 je 0x8b5478
-// 008b544f  56                   push esi
-// 008b5450  8d4c241c             lea ecx, [esp + 0x1c]
-// 008b5454  e827e70000           call 0x8c3b80
-// 008b5459  3b742450             cmp esi, dword ptr [esp + 0x50]
-// 008b545d  7519                 jne 0x8b5478
-// 008b545f  837c244c00           cmp dword ptr [esp + 0x4c], 0
-// 008b5464  57                   push edi
-// 008b5465  8d4c241c             lea ecx, [esp + 0x1c]
-// 008b5469  50                   push eax
-// 008b546a  7407                 je 0x8b5473
-// 008b546c  e85ff6ffff           call 0x8b4ad0
-// 008b5471  eb05                 jmp 0x8b5478
-// 008b5473  e808f6ffff           call 0x8b4a80
-// 008b5478  837c241400           cmp dword ptr [esp + 0x14], 0
-// 008b547d  75b1                 jne 0x8b5430
-// 008b547f  8b4b3c               mov ecx, dword ptr [ebx + 0x3c]
-// 008b5482  8b5340               mov edx, dword ptr [ebx + 0x40]
-// 008b5485  8b742444             mov esi, dword ptr [esp + 0x44]
-// 008b5489  57                   push edi
-// 008b548a  83ec10               sub esp, 0x10
-// 008b548d  8bc4                 mov eax, esp
-// 008b548f  8908                 mov dword ptr [eax], ecx
-// 008b5491  8b4b44               mov ecx, dword ptr [ebx + 0x44]
-// 008b5494  895004               mov dword ptr [eax + 4], edx
-// 008b5497  8b5348               mov edx, dword ptr [ebx + 0x48]
-// 008b549a  894808               mov dword ptr [eax + 8], ecx
-// 008b549d  8b8b90000000         mov ecx, dword ptr [ebx + 0x90]
-// 008b54a3  89500c               mov dword ptr [eax + 0xc], edx
-// 008b54a6  8d44242c             lea eax, [esp + 0x2c]
-// 008b54aa  50                   push eax
-// 008b54ab  51                   push ecx
-// 008b54ac  56                   push esi
-// 008b54ad  e89ef2ffff           call 0x8b4750
-// 008b54b2  8b4b34               mov ecx, dword ptr [ebx + 0x34]
-// 008b54b5  83c420               add esp, 0x20
-// 008b54b8  56                   push esi
-// 008b54b9  e83ce9f3ff           call 0x7f3dfa
-// 008b54be  8d4c2418             lea ecx, [esp + 0x18]
-// 008b54c2  c744243cffffffff     mov dword ptr [esp + 0x3c], 0xffffffff
-// 008b54ca  e82142f8ff           call 0x8396f0
-// 008b54cf  8bc6                 mov eax, esi
-// 008b54d1  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 008b54d5  64890d00000000       mov dword ptr fs:[0], ecx
-// 008b54dc  59                   pop ecx
-// 008b54dd  5f                   pop edi
-// 008b54de  5e                   pop esi
-// 008b54df  5d                   pop ebp
-// 008b54e0  5b                   pop ebx
-// 008b54e1  83c42c               add esp, 0x2c
-// 008b54e4  c21000               ret 0x10
-// copied from an identical function in another client (function ?_CalculateResultDockingRectSelf@CXTPDockingPaneSplitterContainer@@AAE?AVCRect@@PAVCXTPDockingPaneBase@@W4XTPDockingPaneDirection@@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneSplitterContainer.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockingPaneSplitterContainer.cpp : implementation of the CXTPDockingPaneSplitterContainer class.
+//
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/Resource.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPResourceManager.h"
+
+#include "XTPDockingPaneBase.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneSplitterContainer.h"
+#include "XTPDockingPanePaintManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+
+CXTPDockingPaneSplitterWnd::CXTPDockingPaneSplitterWnd()
+{
+	m_hCursor = 0;
+	m_pFirst = 0;
+	m_pSecond = 0;
+	m_pContainer = 0;
+	m_pManager = 0;
+	m_bHoriz = FALSE;
+}
+
+void CXTPDockingPaneSplitterWnd::Create(CXTPDockingPaneManager* pManager, BOOL bHoriz)
+{
+	m_bHoriz = bHoriz;
+	m_pManager = pManager;
+	CWnd::Create(_T("XTPDockingPaneSplitter"), _T("Splitter"), WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pManager->GetSite(), 0);
+}
+
+void CXTPDockingPaneSplitterWnd::Create(CXTPDockingPaneSplitterContainer* pContainer, CXTPDockingPaneBase* pFirst, CXTPDockingPaneBase* pSecond)
+{
+	m_pFirst = pFirst;
+	m_pSecond = pSecond;
+	m_pContainer = pContainer;
+	m_bHoriz = !m_pContainer->IsHoriz();
+	m_pManager = m_pContainer->GetDockingPaneManager();
+
+	m_hCursor = XTPResourceManager()->LoadCursor(pContainer->m_bHoriz ? XTP_IDC_HSPLITBAR :  XTP_IDC_VSPLITBAR);
+
+	CWnd::Create(_T("XTPDockingPaneSplitter"), _T("Splitter"), WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pContainer->GetDockingSite(), 0);
+}
+
+CXTPDockingPaneSplitterWnd::~CXTPDockingPaneSplitterWnd()
+{
+	if (m_hWnd) DestroyWindow();
+}
+
+BEGIN_MESSAGE_MAP(CXTPDockingPaneSplitterWnd, CWnd)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_ERASEBKGND()
+	ON_WM_SETCURSOR()
+END_MESSAGE_MAP()
+
+BOOL CXTPDockingPaneSplitterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (m_pContainer == 0)
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	if (GetDockingPaneManager()->IsSplittersLocked())
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	CRect rcAvail, rcUnion;
+	if (!GetAvailableRect(rcAvail, rcUnion))
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	::SetCursor(m_hCursor);
+	return TRUE;
+}
+
+void CXTPDockingPaneSplitterWnd::OnPaint()
+{
+	CPaintDC dc(this);
+
+	if (m_pManager)
+		m_pManager->GetPaintManager()->DrawSplitter(dc, this);
+}
+
+LRESULT CXTPDockingPaneSplitterWnd::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC && m_pManager)
+	{
+		m_pManager->GetPaintManager()->DrawSplitter(*pDC, this);
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneSplitterWnd::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneSplitterWnd::IsHorizontal() const
+{
+	return m_bHoriz;
+}
+
+void CXTPDockingPaneSplitterWnd::Reposition(CRect rc, CRect rcAvail)
+{
+	int nSplitterSize = m_pContainer->GetDockingPaneManager()->GetPaintManager()->m_nSplitterSize;
+
+	if (m_pContainer->m_bHoriz)
+	{
+		double d = double(rc.left - rcAvail.left) / rcAvail.Width();
+		int nSum = m_pFirst->m_szDocking.cx + m_pSecond->m_szDocking.cx + nSplitterSize;
+		m_pFirst->m_szDocking.cx = GetExStyle() & WS_EX_LAYOUTRTL ? nSum - int(d * nSum) - nSplitterSize : int(d * nSum);
+		m_pSecond->m_szDocking.cx = nSum - m_pFirst->m_szDocking.cx - nSplitterSize;
+	}
+	else
+	{
+		double d = double(rc.top - rcAvail.top) / rcAvail.Height();
+		int nSum = m_pFirst->m_szDocking.cy + m_pSecond->m_szDocking.cy + nSplitterSize;
+		m_pFirst->m_szDocking.cy = int(d * nSum);
+		m_pSecond->m_szDocking.cy = nSum - m_pFirst->m_szDocking.cy - nSplitterSize;
+	}
+
+}
+
+void CXTPDockingPaneSplitterContainer::NormalizeDockingSize()
+{
+	if (m_bHoriz) m_szDocking.cx = m_rcWindow.Width();
+		else m_szDocking.cy = m_rcWindow.Height();
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (!pPane->IsEmpty())
+		{
+			if (m_bHoriz) pPane->m_szDocking.cx = pPane->m_rcWindow.Width();
+				else pPane->m_szDocking.cy = pPane->m_rcWindow.Height();
+		}
+	}
+}
+
+BOOL CXTPDockingPaneSplitterWnd::GetAvailableRect(CRect& rcAvail, CRect& rcUnion)
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	if (!pManager)
+		return FALSE;
+
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
+
+	BOOL bHoriz = m_pContainer->m_bHoriz;
+	ASSERT(m_pFirst && m_pSecond);
+	if (!m_pFirst || !m_pSecond)
+		return FALSE;
+
+	CRect rcFirst = m_pFirst->GetPaneWindowRect();
+	CRect rcSecond = m_pSecond->GetPaneWindowRect();
+
+	MINMAXINFO mmiFirst, mmiSecond;
+	m_pFirst->GetMinMaxInfo(&mmiFirst);
+	m_pSecond->GetMinMaxInfo(&mmiSecond);
+
+	rcAvail.UnionRect(rcFirst, rcSecond);
+	rcUnion = rcAvail;
+
+	int nGap = pManager->m_nSplitterGap;
+	if (bHoriz)
+	{
+		rcAvail.DeflateRect(max(mmiFirst.ptMinTrackSize.x, nGap), 0,
+			max(mmiSecond.ptMinTrackSize.x + nSplitterSize, nGap), 0);
+
+		if (rcUnion.Width() > mmiFirst.ptMaxTrackSize.x)
+			rcAvail.right = min(rcAvail.right, rcUnion.left + mmiFirst.ptMaxTrackSize.x);
+
+		if (rcUnion.Width() > mmiSecond.ptMaxTrackSize.x)
+			rcAvail.left = max(rcAvail.left, rcUnion.right - mmiSecond.ptMaxTrackSize.x - nSplitterSize);
+
+		if (rcAvail.left >= rcAvail.right)
+			return FALSE;
+	}
+	else
+	{
+		rcAvail.DeflateRect(0, max(mmiFirst.ptMinTrackSize.y, nGap),
+			0, max(mmiSecond.ptMinTrackSize.y + nSplitterSize, nGap));
+
+		if (rcUnion.Height() > mmiFirst.ptMaxTrackSize.y)
+			rcAvail.bottom = min(rcAvail.bottom, rcUnion.top + mmiFirst.ptMaxTrackSize.y);
+
+		if (rcUnion.Height() > mmiSecond.ptMaxTrackSize.y)
+			rcAvail.top = max(rcAvail.top, rcUnion.bottom - mmiSecond.ptMaxTrackSize.y - nSplitterSize);
+
+		if (rcAvail.top >= rcAvail.bottom)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+void CXTPDockingPaneSplitterWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	if (m_pContainer == 0)
+		return;
+
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+
+	if (pManager->IsSplittersLocked())
+		return;
+
+	CXTPWindowRect rc(this);
+
+	CRect rcAvail, rcUnion;
+	if (!GetAvailableRect(rcAvail, rcUnion))
+		return;
+
+	m_pContainer->NormalizeDockingSize();
+
+	BOOL bHoriz = m_pContainer->m_bHoriz;
+
+
+	//point = rc.TopLeft();
+	ClientToScreen(&point);
+
+	if (pManager->IsSplitterTrackerUsed())
+	{
+
+		CXTPSplitterTracker tracker;
+		BOOL bAccept = tracker.Track(this, rcAvail, rc, point, bHoriz);
+
+		if (bAccept)
+		{
+			Reposition(rc, rcUnion);
+
+
+			pManager->RecalcFrameLayout(m_pContainer, TRUE);
+		}
+	}
+	else
+	{
+		CPoint ptOffset = bHoriz ? CPoint(rc.left - point.x, 0) :
+			CPoint(0, rc.top - point.y);
+
+		SetCapture();
+
+		while (CWnd::GetCapture() == this)
+		{
+			MSG msg;
+
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+			{
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
+			}
+
+			if (!GetMessage(&msg, NULL, 0, 0))
+				break;
+
+			if (msg.message == WM_MOUSEMOVE)
+			{
+
+				point = CPoint(msg.lParam);
+				ClientToScreen(&point);
+				point += ptOffset;
+
+				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
+				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
+
+				if (bHoriz)
+				{
+					if (rc.left == point.x)
+						continue;
+					rc.OffsetRect(point.x - rc.left, 0);
+				}
+				else
+				{
+					if (rc.top == point.y)
+						continue;
+					rc.OffsetRect(0, point.y - rc.top);
+				}
+
+				Reposition(rc, rcUnion);
+
+				pManager->RecalcFrameLayout(m_pContainer);
+			}
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP) break;
+			else ::DispatchMessage(&msg);
+		}
+
+		if (CWnd::GetCapture() == this) ReleaseCapture();
+	}
+
+}
+
+CXTPDockingPaneManager* CXTPDockingPaneSplitterWnd::GetDockingPaneManager() const
+{
+	return m_pManager;
+}
+
+
+CXTPDockingPaneSplitterContainer::CXTPDockingPaneSplitterContainer(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBaseContainer(xtpPaneTypeSplitterContainer, pLayout)
+{
+	m_bRecalcLayout = FALSE;
+	m_bHoriz = FALSE;
+
+}
+
+void CXTPDockingPaneSplitterContainer::Init(CXTPDockingPaneBase* pPane, BOOL bHoriz, CWnd* pFrame)
+{
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	m_bHoriz = bHoriz;
+	m_pDockingSite = pFrame;
+	_InsertPane(pPane);
+
+	m_szDocking = pPane->m_szDocking;
+}
+
+void CXTPDockingPaneSplitterContainer::_UpdateSplitters()
+{
+	if (m_bRecalcLayout)
+		return;
+
+	if (m_pLayout->IsUserLayout())
+		return;
+
+	while (!m_lstSpliters.IsEmpty())
+	{
+		delete m_lstSpliters.RemoveTail();
+	}
+
+	if (m_lstPanes.GetCount() > 1)
+	{
+		POSITION posPane = GetHeadPosition();
+		CXTPDockingPaneBase* pFirstPane = NULL;
+
+		// Finding first nonempty pane
+		while (posPane)
+		{
+			pFirstPane = GetNext(posPane);
+			if (!pFirstPane->IsEmpty())
+				break;
+		}
+
+		// Splitting
+		while (posPane)
+		{
+			CXTPDockingPaneBase* pSecondPane = GetNext(posPane);
+			if (pSecondPane->IsEmpty())
+				continue;
+
+			CXTPDockingPaneSplitterWnd* pSplitter = OnCreateSplitter();
+			pSplitter->Create(this, pFirstPane, pSecondPane);
+
+			m_lstSpliters.AddTail(pSplitter);
+
+			pFirstPane = pSecondPane;
+		}
+	}
+}
+
+CXTPDockingPaneSplitterWnd* CXTPDockingPaneSplitterContainer::OnCreateSplitter()
+{
+	return new CXTPDockingPaneSplitterWnd();
+}
+
+void CXTPDockingPaneSplitterContainer::_Replace(CXTPDockingPaneBase* pPane, CXTPDockingPaneBase* pReplace)
+{
+	ASSERT(pPane && pReplace);
+
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.InsertAfter(pos, pReplace);
+	m_lstPanes.RemoveAt(pos);
+
+	pReplace->m_pParentContainer = this;
+
+	_UpdateSplitters();
+
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(this);
+	}
+}
+
+void CXTPDockingPaneSplitterContainer::_InsertPane(CXTPDockingPaneBase* pPane, CXTPDockingPaneBase* pNeighbour, BOOL bAfter)
+{
+	POSITION pos = pNeighbour ? m_lstPanes.Find(pNeighbour) : NULL;
+
+	if (bAfter)
+	{
+		if (pos == NULL) pos = m_lstPanes.GetTailPosition();
+		m_lstPanes.InsertAfter(pos, pPane);
+	}
+	else
+	{
+		if (pos == NULL) pos = GetHeadPosition();
+		m_lstPanes.InsertBefore(pos, pPane);
+	}
+	pPane->m_pParentContainer = this;
+	pPane->SetDockingSite(GetDockingSite());
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	_UpdateSplitters();
+
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(this);
+	}
+
+	pPane->OnParentContainerChanged(this);
+
+}
+
+void CXTPDockingPaneSplitterContainer::RemovePane(CXTPDockingPaneBase* pPane)
+{
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.RemoveAt(pos);
+	_UpdateSplitters();
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(this);
+	}
+
+	if (m_lstPanes.IsEmpty())
+	{
+		m_pParentContainer->RemovePane(this);
+	}
+
+	pPane->m_pParentContainer = NULL;
+}
+
+void CXTPDockingPaneSplitterContainer::OnChildContainerChanged(CXTPDockingPaneBase* pContainer)
+{
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(pContainer);
+	}
+
+	_UpdateSplitters();
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+}
+
+void CXTPDockingPaneSplitterContainer::OnParentContainerChanged(CXTPDockingPaneBase* pContainer)
+{
+	m_pDockingSite = pContainer->m_pDockingSite;
+	_UpdateSplitters();
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		GetNext(pos)->OnParentContainerChanged(pContainer);
+	}
+}
+
+
+CXTPDockingPaneSplitterContainer::~CXTPDockingPaneSplitterContainer()
+{
+	while (!m_lstSpliters.IsEmpty())
+	{
+		delete m_lstSpliters.RemoveTail();
+	}
+}
+
+void CXTPDockingPaneSplitterContainer::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
+{
+	int nSplitterSize = GetDockingPaneManager()->GetPaintManager()->m_nSplitterSize;
+	CXTPDockingPaneBase* pClient = GetDockingPaneManager()->GetClientPane();
+
+
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	m_pDockingSite = pParent;
+	m_rcWindow = rect;
+
+	BOOL bClientPane = !GetDockingPaneManager()->m_bHideClient;
+
+	// getting list of nonempty panes
+	CXTPDockingPaneBaseList lst;
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (!pPane->IsEmpty())
+			lst.AddTail(pPane);
+
+		if (!bClientPane && pPane->ContainPane(pClient))
+			bClientPane = TRUE;
+
+	}
+
+	if (!lst.IsEmpty() && bClientPane & GetDockingPaneManager()->m_bHideClient)
+	{
+		pClient->OnSizeParent(pParent, CXTPEmptyRect(), lParam);
+	}
+
+
+	if (lst.GetCount() == 0)
+		return;
+
+	if (lst.GetCount() == 1)
+	{
+		lst.GetHead()->OnSizeParent(pParent, rect, lParam);
+		return;
+	}
+
+	if (m_bRecalcLayout)
+		return;
+
+	m_bRecalcLayout = TRUE;
+
+	//ASSERT(m_lstSpliters.GetCount() == lst.GetCount() - 1);
+
+	int nTotalLength = 0;
+	int nLengthAvail = 0;
+
+	_AdjustPanesLength(GetDockingPaneManager(), lst, rect, m_bHoriz, TRUE, nTotalLength, nLengthAvail);
+
+	pos = lst.GetHeadPosition();
+	POSITION posSplitter = m_lstSpliters.GetHeadPosition();
+
+	CRect rcPane(rect);
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+		int nLength = -pPane->m_nLength;
+		if (pPane->m_nLength > 0)
+		{
+			nLength = nTotalLength == 0 ? 0 : int((nLengthAvail * pPane->m_nLength) / nTotalLength);
+
+			nTotalLength -= pPane->m_nLength;
+			nLengthAvail = max(nLengthAvail - nLength, 0);
+		}
+
+		CRect rcSplitter;
+
+		if (m_bHoriz)
+		{
+			rcPane.right = pos == NULL ? rect.right : rcPane.left + nLength;
+
+			pPane->OnSizeParent(pParent, rcPane, lParam);
+			rcSplitter.SetRect(rcPane.right, rect.top, rcPane.right + nSplitterSize, rect.bottom);
+			rcPane.left = rcPane.right + nSplitterSize;
+		}
+		else
+		{
+			rcPane.bottom = pos == NULL ? rect.bottom : rcPane.top + nLength;
+
+			pPane->OnSizeParent(pParent, rcPane, lParam);
+			rcSplitter.SetRect(rect.left, rcPane.bottom, rect.right, rcPane.bottom + nSplitterSize);
+			rcPane.top = rcPane.bottom + nSplitterSize;
+		}
+
+		if (lpLayout->hDWP != NULL && posSplitter)
+		{
+			CXTPDockingPaneSplitterWnd* pSplitter = m_lstSpliters.GetNext(posSplitter);
+			if (pSplitter)
+			{
+				rcSplitter.IntersectRect(rcSplitter, rect);
+				pSplitter->SetWindowPos(&CWnd::wndBottom, rcSplitter.left, rcSplitter.top, rcSplitter.Width(), rcSplitter.Height(), 0);
+				pSplitter->Invalidate(FALSE);
+			}
+		}
+	}
+
+	m_bRecalcLayout = FALSE;
+}
+
+void CXTPDockingPaneSplitterContainer::FindChildPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
+{
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+
+		if (pPane->GetType() == type && !pPane->IsEmpty())
+		{
+			pList->AddTail(pPane);
+		}
+	}
+}
+
+void CXTPDockingPaneSplitterContainer::Copy(CXTPDockingPaneSplitterContainer* pClone, CXTPPaneToPaneMap* pMap)
+{
+	ASSERT(pClone);
+	if (!pClone)
+		return;
+
+	m_bHoriz = pClone->m_bHoriz;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+
+	POSITION pos = pClone->GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)pClone->GetNext(pos);
+		if (!pPane->IsEmpty() || pMap)
+		{
+			_InsertPane(pPane->Clone(m_pLayout, pMap));
+		}
+	}
+	m_szDocking = pClone->m_szDocking;
+	m_rcWindow = pClone->m_rcWindow;
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneSplitterContainer::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	CXTPDockingPaneSplitterContainer* pPane = (CXTPDockingPaneSplitterContainer*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this, pMap);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+}
+
+BOOL CXTPDockingPaneSplitterContainer::_Before(const CXTPDockingPaneBase* pPane, POSITION pos) const
+{
+	POSITION p = GetHeadPosition();
+	while (p)
+	{
+		if (p == pos) return FALSE;
+		CXTPDockingPaneBase* pBase = GetNext(p);
+		if (pBase == pPane) return TRUE;
+	}
+
+	ASSERT(FALSE);
+	return FALSE;
+}
+
+void CXTPDockingPaneSplitterContainer::_AdjustPanesLength(CXTPDockingPaneManager* pManager, CXTPDockingPaneBaseList& lst, CRect rect, BOOL bHoriz, BOOL bApply, int& nTotalLength, int& nLengthAvail)
+{
+	nTotalLength = 0;
+	nLengthAvail = 0;
+
+	CXTPDockingPaneBase* pClientPane = NULL;
+	CXTPDockingPaneBase* pClient = pManager->GetClientPane();
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
+
+	POSITION pos = lst.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+		pPane->m_nLength = bHoriz ? pPane->m_szDocking.cx : pPane->m_szDocking.cy;
+
+		MINMAXINFO mmi;
+		pPane->GetMinMaxInfo(&mmi);
+		pPane->m_nLength = max(GetMinSize(&mmi, bHoriz), min(GetMaxSize(&mmi, bHoriz), pPane->m_nLength));
+
+		if (pClientPane == NULL && pPane->ContainPane(pClient))
+		{
+			if (!pManager->m_bHideClient || pPane->m_szDocking == CSize(0, 0))
+			{
+				pClientPane = pPane;
+				if (bApply) pClientPane->m_szDocking = CSize(0, 0);
+				pClientPane->m_nLength = 0;
+			}
+		}
+		nTotalLength += pPane->m_nLength;
+	}
+	nLengthAvail = (bHoriz ? rect.Width() : rect.Height()) - (nSplitterSize * ((int)lst.GetCount() - 1));
+
+
+	if (pClientPane && nTotalLength < nLengthAvail)
+	{
+		pClientPane->m_nLength = nLengthAvail - nTotalLength;
+		if (bApply)
+		{
+			if (bHoriz) pClientPane->m_szDocking.cx = pClientPane->m_nLength;
+			else pClientPane->m_szDocking.cy = pClientPane->m_nLength;
+		}
+		nTotalLength = nLengthAvail;
+	}
+
+	if (nLengthAvail > 0)
+	{
+		pos = lst.GetHeadPosition();
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+			if ((pPane->m_nLength < 0) || (nTotalLength == 0))
+				continue;
+
+			MINMAXINFO mmi;
+			pPane->GetMinMaxInfo(&mmi);
+
+			int nLength = pPane->m_nLength;
+
+			if (nLengthAvail * nLength / nTotalLength < GetMinSize(&mmi, bHoriz))
+				pPane->m_nLength = -GetMinSize(&mmi, bHoriz);
+			else if (nLengthAvail * nLength / nTotalLength > GetMaxSize(&mmi, bHoriz))
+				pPane->m_nLength = -GetMaxSize(&mmi, bHoriz);
+
+			if (pPane->m_nLength < 0)
+			{
+				nLengthAvail += pPane->m_nLength;
+				nTotalLength -= nLength;
+
+				if (nLengthAvail < 0)
+				{
+					pPane->m_nLength -= nLengthAvail;
+					nLengthAvail = 0;
+					break;
+				}
+
+				pos = lst.GetHeadPosition();
+			}
+		}
+	}
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRect(BOOL bHoriz, CXTPDockingPaneBaseList& lst, CRect rect, CXTPDockingPaneBase* pPaneI)
+{
+	CXTPDockingPaneManager* pManager = pPaneI->GetDockingPaneManager();
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
+
+	int nTotalLength = 0;
+	int nLengthAvail = 0;
+
+	_AdjustPanesLength(pManager, lst, rect, bHoriz, FALSE, nTotalLength, nLengthAvail);
+
+
+	POSITION pos = lst.GetHeadPosition();
+
+	CRect rcPane(rect);
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+		int nLength = -pPane->m_nLength;
+		if (pPane->m_nLength > 0)
+		{
+			nLength = nTotalLength == 0 ? 0 : int((nLengthAvail * pPane->m_nLength) / nTotalLength);
+
+			nTotalLength -= pPane->m_nLength;
+			nLengthAvail = max(nLengthAvail - nLength, 0);
+		}
+
+		if (bHoriz)
+		{
+			rcPane.right = pos == NULL ? rect.right : rcPane.left + nLength;
+
+			if (pPaneI == pPane)
+				break;
+
+			rcPane.left = rcPane.right + nSplitterSize;
+		}
+		else
+		{
+			rcPane.bottom = pos == NULL ? rect.bottom : rcPane.top + nLength;
+
+			if (pPaneI == pPane)
+				break;
+
+			rcPane.top = rcPane.bottom + nSplitterSize;
+		}
+	}
+
+	return rcPane;
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRectSelf(CXTPDockingPaneBase* pPaneI, XTPDockingPaneDirection direction, CXTPDockingPaneBase* pNeighbour)
+{
+	direction = GetDockingPaneManager()->GetRTLDirection(direction);
+
+	ASSERT(pNeighbour);
+
+	BOOL bAfter = (direction == xtpPaneDockRight || direction == xtpPaneDockBottom);
+
+	// getting list of nonempty panes
+	CXTPDockingPaneBaseList lst;
+	POSITION posPanes = GetHeadPosition();
+	while (posPanes)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(posPanes);
+		if (pPane->IsEmpty() || (pPane == pPaneI))
+			continue;
+
+		POSITION pos = lst.AddTail(pPane);
+
+		if (pPane == pNeighbour)
+		{
+			if (bAfter)
+				lst.InsertAfter(pos, pPaneI);
+			else
+				lst.InsertBefore(pos, pPaneI);
+		}
+	}
+
+	CRect rcResult = _CalculateResultDockingRect(m_bHoriz, lst, m_rcWindow, pPaneI);
+
+	m_pDockingSite->ClientToScreen(rcResult);
+
+	return rcResult;
+
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRectChild(CXTPDockingPaneBase* pSplitter, CXTPDockingPaneBase* pPane, XTPDockingPaneDirection direction)
+{
+	BOOL bAfter = (direction == xtpPaneDockRight || direction == xtpPaneDockBottom);
+	BOOL bHoriz = (direction == xtpPaneDockLeft || direction == xtpPaneDockRight);
+
+	CXTPDockingPaneBaseList lst;
+	lst.AddTail(pSplitter);
+
+	if (bAfter)
+		lst.AddTail(pPane);
+	else
+		lst.AddHead(pPane);
+
+	CRect rect = pSplitter->GetPaneWindowRect();
+
+	return _CalculateResultDockingRect(bHoriz, lst, rect, pPane);
+
+}
+
+void CXTPDockingPaneSplitterContainer::DeletePane()
+{
+	InternalRelease();
+}
+
+void CXTPDockingPaneSplitterContainer::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	CXTPDockingPaneBase::GetMinMaxInfo(pMinMaxInfo);
+
+	int nCount = 0;
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (pPane->IsEmpty())
+			continue;
+
+		nCount++;
+
+		MINMAXINFO info;
+		pPane->GetMinMaxInfo(&info);
+
+		if (nCount == 1)
+		{
+			*pMinMaxInfo = info;
+
+		}
+		else
+		{
+			GetMinSize(pMinMaxInfo, m_bHoriz) += GetMinSize(&info, m_bHoriz);
+			GetMaxSize(pMinMaxInfo, m_bHoriz) += GetMaxSize(&info, m_bHoriz);
+
+			GetMinSize(pMinMaxInfo, !m_bHoriz) = max(GetMinSize(pMinMaxInfo, !m_bHoriz), GetMinSize(&info, !m_bHoriz));
+			GetMaxSize(pMinMaxInfo, !m_bHoriz) = min(GetMaxSize(pMinMaxInfo, !m_bHoriz), GetMaxSize(&info, !m_bHoriz));
+		}
+	}
+
+	if (nCount > 0)
+	{
+		GetMinSize(pMinMaxInfo, m_bHoriz) += GetPaintManager()->m_nSplitterSize * (nCount - 1);
+		GetMaxSize(pMinMaxInfo, m_bHoriz) += GetPaintManager()->m_nSplitterSize * (nCount - 1);
+	}
+}
+

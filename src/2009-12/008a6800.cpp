@@ -1,104 +1,518 @@
-// roc 2009-12 008a6800  unit: CXTPReportNavigator  size: 250 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008a6800
-//
-// 008a6800  56                   push esi
-// 008a6801  8bf1                 mov esi, ecx
-// 008a6803  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 008a6806  85c9                 test ecx, ecx
-// 008a6808  0f84e8000000         je 0x8a68f6
-// 008a680e  57                   push edi
-// 008a680f  e84c7df7ff           call 0x81e560
-// 008a6814  837e2400             cmp dword ptr [esi + 0x24], 0
-// 008a6818  8bf8                 mov edi, eax
-// 008a681a  8b4620               mov eax, dword ptr [esi + 0x20]
-// 008a681d  743f                 je 0x8a685e
-// 008a681f  8b88f8000000         mov ecx, dword ptr [eax + 0xf8]
-// 008a6825  8b80d4010000         mov eax, dword ptr [eax + 0x1d4]
-// 008a682b  8b11                 mov edx, dword ptr [ecx]
-// 008a682d  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a6830  50                   push eax
-// 008a6831  57                   push edi
-// 008a6832  ffd2                 call edx
-// 008a6834  3bf8                 cmp edi, eax
-// 008a6836  750e                 jne 0x8a6846
-// 008a6838  6a00                 push 0
-// 008a683a  8bce                 mov ecx, esi
-// 008a683c  e88ffdffff           call 0x8a65d0
-// 008a6841  5f                   pop edi
-// 008a6842  5e                   pop esi
-// 008a6843  c20800               ret 8
-// 008a6846  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 008a684a  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 008a684e  51                   push ecx
-// 008a684f  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 008a6852  52                   push edx
-// 008a6853  50                   push eax
-// 008a6854  e8a7f2f7ff           call 0x825b00
-// 008a6859  5f                   pop edi
-// 008a685a  5e                   pop esi
-// 008a685b  c20800               ret 8
-// 008a685e  837e2800             cmp dword ptr [esi + 0x28], 0
-// 008a6862  742d                 je 0x8a6891
-// 008a6864  8b542410             mov edx, dword ptr [esp + 0x10]
-// 008a6868  8b88fc000000         mov ecx, dword ptr [eax + 0xfc]
-// 008a686e  8b80d4010000         mov eax, dword ptr [eax + 0x1d4]
-// 008a6874  52                   push edx
-// 008a6875  8b542410             mov edx, dword ptr [esp + 0x10]
-// 008a6879  52                   push edx
-// 008a687a  8b11                 mov edx, dword ptr [ecx]
-// 008a687c  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a687f  50                   push eax
-// 008a6880  57                   push edi
-// 008a6881  ffd2                 call edx
-// 008a6883  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 008a6886  50                   push eax
-// 008a6887  e874f2f7ff           call 0x825b00
-// 008a688c  5f                   pop edi
-// 008a688d  5e                   pop esi
-// 008a688e  c20800               ret 8
-// 008a6891  8b88e0000000         mov ecx, dword ptr [eax + 0xe0]
-// 008a6897  8b80d4010000         mov eax, dword ptr [eax + 0x1d4]
-// 008a689d  8b11                 mov edx, dword ptr [ecx]
-// 008a689f  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a68a2  50                   push eax
-// 008a68a3  57                   push edi
-// 008a68a4  ffd2                 call edx
-// 008a68a6  8bf8                 mov edi, eax
-// 008a68a8  85ff                 test edi, edi
-// 008a68aa  7449                 je 0x8a68f5
-// 008a68ac  8b07                 mov eax, dword ptr [edi]
-// 008a68ae  8b506c               mov edx, dword ptr [eax + 0x6c]
-// 008a68b1  53                   push ebx
-// 008a68b2  8b5e20               mov ebx, dword ptr [esi + 0x20]
-// 008a68b5  8bcf                 mov ecx, edi
-// 008a68b7  ffd2                 call edx
-// 008a68b9  39831c010000         cmp dword ptr [ebx + 0x11c], eax
-// 008a68bf  7521                 jne 0x8a68e2
-// 008a68c1  83bbf801000000       cmp dword ptr [ebx + 0x1f8], 0
-// 008a68c8  742a                 je 0x8a68f4
-// 008a68ca  83bb0c02000000       cmp dword ptr [ebx + 0x20c], 0
-// 008a68d1  7421                 je 0x8a68f4
-// 008a68d3  6a02                 push 2
-// 008a68d5  8bce                 mov ecx, esi
-// 008a68d7  e8f4fcffff           call 0x8a65d0
-// 008a68dc  5b                   pop ebx
-// 008a68dd  5f                   pop edi
-// 008a68de  5e                   pop esi
-// 008a68df  c20800               ret 8
-// 008a68e2  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008a68e6  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 008a68ea  50                   push eax
-// 008a68eb  51                   push ecx
-// 008a68ec  57                   push edi
-// 008a68ed  8bcb                 mov ecx, ebx
-// 008a68ef  e80cf2f7ff           call 0x825b00
-// 008a68f4  5b                   pop ebx
-// 008a68f5  5f                   pop edi
-// 008a68f6  5e                   pop esi
-// 008a68f7  c20800               ret 8
-// copied from an identical function in another client (function ?MoveDown@CXTPReportNavigator@@QAEXHH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportNavigator.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportNavigator.cpp : implementation of the CXTPReportNavigator class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+
+#include "XTPReportNavigator.h"
+#include "XTPReportControl.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportColumn.h"
+#include "XTPReportColumns.h"
+#include "XTPReportInplaceControls.h"
+
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPReportNavigator
+
+CXTPReportNavigator::CXTPReportNavigator(CXTPReportControl* pReportControl)
+	: m_pReportControl(pReportControl), m_bCurrentFocusInHeadersRows(FALSE), m_bCurrentFocusInFootersRows(FALSE)
+{
+
+}
+
+CXTPReportNavigator::~CXTPReportNavigator()
+{
+}
+
+void CXTPReportNavigator::MoveDown(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportRow* pNextRow = NULL;
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_bCurrentFocusInHeadersRows)
+	{
+		pNextRow = m_pReportControl->m_pHeaderRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		// from the last header row jump to the first visible body row
+		if (pFocusedRow == pNextRow)
+		{
+			MoveFirstVisibleRow(xtpRowTypeBody);
+		}
+		else
+		{
+			m_pReportControl->SetFocusedRow(pNextRow, bSelectBlock, bIgnoreSelection);
+		}
+	}
+	else if (m_bCurrentFocusInFootersRows)
+	{
+		m_pReportControl->SetFocusedRow(
+				m_pReportControl->m_pFooterRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus),
+				bSelectBlock,
+				bIgnoreSelection);
+	}
+	else
+	{
+		// body rows
+		pNextRow = m_pReportControl->m_pRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		if (pNextRow)
+		{
+			// from the last body row jump to the first header row
+			if (m_pReportControl->m_nFocusedRow == pNextRow->GetIndex())
+			{
+				if (m_pReportControl->IsFooterRowsVisible() && m_pReportControl->IsFooterRowsAllowAccess())
+					MoveFirstVisibleRow(xtpRowTypeFooter);
+			}
+			else
+			{
+				m_pReportControl->SetFocusedRow(pNextRow, bSelectBlock, bIgnoreSelection);
+			}
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveUp(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportRow* pPrevRow = NULL;
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_bCurrentFocusInHeadersRows)
+	{
+		m_pReportControl->SetFocusedRow(
+			m_pReportControl->m_pHeaderRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus),
+			bSelectBlock,
+			bIgnoreSelection);
+	}
+	else if (m_bCurrentFocusInFootersRows)
+	{
+		pPrevRow = m_pReportControl->m_pFooterRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		// from the first footer row jump to the last visible body row
+		if (pFocusedRow == pPrevRow)
+		{
+			MoveLastVisibleRow(xtpRowTypeBody);
+		}
+		else
+		{
+			m_pReportControl->SetFocusedRow(pPrevRow, bSelectBlock, bIgnoreSelection);
+		}
+	}
+	else
+	{
+		// body rows
+		pPrevRow = m_pReportControl->m_pRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		if (pPrevRow)
+		{
+			// from the first body row jump to the last header row
+			if (m_pReportControl->m_nFocusedRow == pPrevRow->GetIndex())
+			{
+				if (m_pReportControl->IsHeaderRowsVisible() && m_pReportControl->IsHeaderRowsAllowAccess())
+					MoveLastVisibleRow(xtpRowTypeHeader);
+			}
+			else
+			{
+				m_pReportControl->SetFocusedRow(pPrevRow, bSelectBlock, bIgnoreSelection);
+			}
+		}
+	}
+}
+
+void CXTPReportNavigator::MovePageDown(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = m_pReportControl->m_nFocusedRow != -1 ? m_pReportControl->m_nFocusedRow : 0;
+	nCurrentRowIndex = min(
+		m_pReportControl->m_pRows->GetCount() - 1,
+		nCurrentRowIndex + m_pReportControl->GetReportAreaRows(nCurrentRowIndex, true));
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MovePageUp(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = m_pReportControl->m_nFocusedRow != -1 ? m_pReportControl->m_nFocusedRow : 0;
+	nCurrentRowIndex = max(0, nCurrentRowIndex - m_pReportControl->GetReportAreaRows(nCurrentRowIndex, false));
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveFirstRow(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(0),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveLastRow(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(m_pReportControl->m_pRows->GetCount() - 1),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveToRow(int nRowIndex, BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = max(0, nRowIndex);
+	nCurrentRowIndex = min(nCurrentRowIndex, m_pReportControl->m_pRows->GetCount() - 1);
+	if (nCurrentRowIndex < 0)
+	{
+		return;
+	}
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+
+void CXTPReportNavigator::BeginEdit()
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->AdjustScrollBars();
+	m_pReportControl->RedrawControl();
+	m_pReportControl->UpdateWindow();
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_pReportControl->m_pFocusedColumn &&
+		pFocusedRow && pFocusedRow->GetRecord())
+	{
+		XTP_REPORTRECORDITEM_ARGS itemArgs(m_pReportControl, pFocusedRow, m_pReportControl->m_pFocusedColumn);
+
+		if (itemArgs.pItem && itemArgs.pItem->IsAllowEdit(&itemArgs))
+		{
+			if (!m_pReportControl->IsVirtualMode())
+			{
+				m_pReportControl->EnsureVisible(pFocusedRow);
+			}
+
+			m_pReportControl->EditItem(&itemArgs);
+
+			if (m_pReportControl->GetInplaceEdit()->GetSafeHwnd() &&
+				m_pReportControl->GetInplaceEdit()->GetItem() == itemArgs.pItem)
+			{
+				CXTPReportRecordItemEditOptions* pEditOptions = itemArgs.pItem->GetEditOptions(itemArgs.pColumn);
+				if (pEditOptions && pEditOptions->m_bSelectTextOnEdit)
+				{
+					m_pReportControl->GetInplaceEdit()->SetSel(0, -1);
+				}
+				else
+				{
+					CString str;
+					m_pReportControl->GetInplaceEdit()->GetWindowText(str);
+					m_pReportControl->GetInplaceEdit()->SetSel(str.GetLength(), str.GetLength());
+				}
+			}
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveLeftRight(BOOL bBack, BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow,
+		m_pReportControl->m_pFocusedColumn ? m_pReportControl->m_pFocusedColumn->GetIndex() : -1,
+		bBack ? -1 : 1);
+
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+	else
+	{
+		CXTPReportRows* pRows;
+		int nFocusedRow = m_pReportControl->GetFocusedRow() ? m_pReportControl->GetFocusedRow()->GetIndex() : -1;
+		switch(pFocusedRow->GetType())
+		{
+			case xtpRowTypeHeader : pRows = m_pReportControl->GetHeaderRows(); break;
+			case xtpRowTypeFooter : pRows = m_pReportControl->GetFooterRows(); break;
+			default : pRows = m_pReportControl->GetRows(); break;
+		}
+		CXTPReportRow* pRow = bBack ? pRows->GetPrev(pFocusedRow, FALSE) : pRows->GetNext(pFocusedRow, FALSE);
+		if (pRow && pRow->GetIndex() != nFocusedRow)
+		{
+			m_pReportControl->SetFocusedRow(pRow, bSelectBlock, bIgnoreSelection);
+			m_pReportControl->SetFocusedColumn(
+				m_pReportControl->GetNextFocusableColumn(
+					m_pReportControl->GetFocusedRow(),
+					bBack ? m_pReportControl->m_pColumns->GetCount() : -1,
+					bBack ? -1 : +1)
+				);
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveLeft(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	MoveLeftRight(TRUE, bSelectBlock, bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveRight(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	MoveLeftRight(FALSE, bSelectBlock, bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveFirstColumn()
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow, -1, +1);
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+}
+
+void CXTPReportNavigator::MoveLastColumn()
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow, m_pReportControl->GetColumns()->GetCount(), -1);
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+}
+
+void CXTPReportNavigator::MoveToColumn(int nColumnIndex, BOOL bClearIfNonFocusable)
+{
+	if (!m_pReportControl)
+	{
+		return;
+	}
+
+	nColumnIndex = max(0, nColumnIndex);
+	nColumnIndex = min(nColumnIndex, m_pReportControl->GetColumns()->GetCount()-1);
+	if (nColumnIndex < 0)
+	{
+		return;
+	}
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pColumn = m_pReportControl->GetColumns()->GetAt(nColumnIndex);
+	if (!pColumn)
+	{
+		return;
+	}
+
+	CXTPReportRecordItem* pItem = pFocusedRow->GetRecord()->GetItem(pColumn);
+
+	if (!pItem || !pItem->IsFocusable())
+	{
+		if (bClearIfNonFocusable)
+		{
+			pColumn = NULL;
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	m_pReportControl->SetFocusedColumn(pColumn);
+}
+
+void CXTPReportNavigator::SetCurrentFocusInHeadersRows(BOOL bCurrentFocusInHeadersRows)
+{
+	if(m_pReportControl->m_bHeaderRecordsVisible && m_pReportControl->m_bHeaderRowsAllowAccess)
+	{
+		m_bCurrentFocusInHeadersRows = bCurrentFocusInHeadersRows;
+	}
+	else
+	{
+		m_bCurrentFocusInHeadersRows = FALSE;
+	}
+
+
+	if (m_bCurrentFocusInHeadersRows)
+	{
+		MoveFirstVisibleRow(xtpRowTypeHeader);
+	}
+	else if (!m_bCurrentFocusInFootersRows && m_pReportControl->m_bHeaderRowsAllowAccess)
+	{
+		MoveFirstVisibleRow(xtpRowTypeBody);    // neither header nor footer is active
+	}
+}
+
+void CXTPReportNavigator::SetCurrentFocusInFootersRows(BOOL bCurrentFocusInFootersRows)
+{
+	if(m_pReportControl->m_bFooterRecordsVisible && m_pReportControl->m_bFooterRowsAllowAccess)
+	{
+		m_bCurrentFocusInFootersRows = bCurrentFocusInFootersRows;
+	}
+	else
+	{
+		m_bCurrentFocusInFootersRows = FALSE;
+	}
+
+	if (m_bCurrentFocusInFootersRows)
+	{
+		MoveFirstVisibleRow(xtpRowTypeFooter);
+	}
+	else if (!m_bCurrentFocusInHeadersRows && m_pReportControl->m_bFooterRowsAllowAccess)
+	{
+		MoveFirstVisibleRow(xtpRowTypeBody);    // neither header nor footer is active
+	}
+}
+
+BOOL CXTPReportNavigator::GetCurrentFocusInHeadersRows()
+{
+	return m_bCurrentFocusInHeadersRows;
+}
+
+BOOL CXTPReportNavigator::GetCurrentFocusInFootersRows()
+{
+	return m_bCurrentFocusInFootersRows;
+}
+
+void CXTPReportNavigator::SetMovePosition(XTPReportRowType RowType)
+{
+	switch(RowType)
+	{
+		case xtpRowTypeBody:    m_bCurrentFocusInHeadersRows = FALSE;   m_bCurrentFocusInFootersRows = FALSE; break;
+		case xtpRowTypeHeader:  m_bCurrentFocusInHeadersRows = TRUE;    m_bCurrentFocusInFootersRows = FALSE; break;
+		case xtpRowTypeFooter:  m_bCurrentFocusInHeadersRows = FALSE;   m_bCurrentFocusInFootersRows = TRUE; break;
+	}
+}
+
+void CXTPReportNavigator::MoveFirstVisibleRow(XTPReportRowType TargetType)
+{
+	switch(TargetType)
+	{
+		case xtpRowTypeBody:    m_pReportControl->SetFocusedRow(m_pReportControl->m_pRows->GetAt(m_pReportControl->m_nTopRow));
+
+								break;
+
+		case xtpRowTypeHeader:  if (m_pReportControl->m_pHeaderRows)
+								{
+									if (m_pReportControl->m_pHeaderRows->GetCount()>0)
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pHeaderRows->GetAt(0));
+								}
+								break;
+
+		case xtpRowTypeFooter:  if (m_pReportControl->m_pFooterRows)
+								{
+									if (m_pReportControl->m_pFooterRows->GetCount()>0)
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pFooterRows->GetAt(0));
+								}
+								break;
+	}
+}
+
+void CXTPReportNavigator::MoveLastVisibleRow(XTPReportRowType TargetType)
+{
+	switch(TargetType)
+	{
+		case xtpRowTypeBody:    {
+									int nRows = m_pReportControl->GetReportAreaRows(m_pReportControl->m_nTopRow, TRUE);
+
+									if (nRows > -1 && m_pReportControl->m_pRows->GetCount()>0)
+									{
+										int nIdx = min(m_pReportControl->m_nTopRow + nRows, m_pReportControl->m_pRows->GetCount()-1);
+
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pRows->GetAt(nIdx));
+									}
+								}
+								break;
+
+		case xtpRowTypeHeader:  if (m_pReportControl->m_pHeaderRows && m_pReportControl->m_pHeaderRows->GetCount()>0)
+								{
+									m_pReportControl->SetFocusedRow(
+										m_pReportControl->m_pHeaderRows->GetAt(m_pReportControl->m_pHeaderRows->GetCount()-1));
+
+								}
+								break;
+
+		case xtpRowTypeFooter:  if (m_pReportControl->m_pFooterRows && m_pReportControl->m_pFooterRows->GetCount()>0)
+								{
+									m_pReportControl->SetFocusedRow(
+										m_pReportControl->m_pFooterRows->GetAt(m_pReportControl->m_pFooterRows->GetCount()-1));
+								}
+								break;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+

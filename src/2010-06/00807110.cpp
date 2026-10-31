@@ -1,646 +1,2792 @@
-// roc 2010-06 00807110  unit: CXTPPropExchangeXMLNode  size: 1752 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00807110
-//
-// 00807110  55                   push ebp
-// 00807111  8bec                 mov ebp, esp
-// 00807113  83e4c0               and esp, 0xffffffc0
-// 00807116  6aff                 push -1
-// 00807118  68a93a9b00           push 0x9b3aa9
-// 0080711d  64a100000000         mov eax, dword ptr fs:[0]
-// 00807123  50                   push eax
-// 00807124  81eca8000000         sub esp, 0xa8
-// 0080712a  53                   push ebx
-// 0080712b  56                   push esi
-// 0080712c  57                   push edi
-// 0080712d  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 00807132  33c4                 xor eax, esp
-// 00807134  50                   push eax
-// 00807135  8d8424b8000000       lea eax, [esp + 0xb8]
-// 0080713c  64a300000000         mov dword ptr fs:[0], eax
-// 00807142  8bf1                 mov esi, ecx
-// 00807144  33db                 xor ebx, ebx
-// 00807146  395e28               cmp dword ptr [esi + 0x28], ebx
-// 00807149  0f843e030000         je 0x80748d
-// 0080714f  8b7d0c               mov edi, dword ptr [ebp + 0xc]
-// 00807152  0fb7c7               movzx eax, di
-// 00807155  83c0fe               add eax, -2
-// 00807158  83f863               cmp eax, 0x63
-// 0080715b  0f875d050000         ja 0x8076be
-// 00807161  0fb680f8768000       movzx eax, byte ptr [eax + 0x8076f8]
-// 00807168  ff2485d8768000       jmp dword ptr [eax*4 + 0x8076d8]
-// 0080716f  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00807172  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00807178  50                   push eax
-// 00807179  ff15a8a89e00         call dword ptr [0x9ea8a8]
-// 0080717f  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 00807182  83c404               add esp, 4
-// 00807185  8d4c244c             lea ecx, [esp + 0x4c]
-// 00807189  51                   push ecx
-// 0080718a  52                   push edx
-// 0080718b  57                   push edi
-// 0080718c  8bce                 mov ecx, esi
-// 0080718e  89442458             mov dword ptr [esp + 0x58], eax
-// 00807192  e809e4ffff           call 0x8055a0
-// 00807197  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 0080719e  64890d00000000       mov dword ptr fs:[0], ecx
-// 008071a5  59                   pop ecx
-// 008071a6  5f                   pop edi
-// 008071a7  5e                   pop esi
-// 008071a8  5b                   pop ebx
-// 008071a9  8be5                 mov esp, ebp
-// 008071ab  5d                   pop ebp
-// 008071ac  c21000               ret 0x10
-// 008071af  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 008071b2  8d44244c             lea eax, [esp + 0x4c]
-// 008071b6  50                   push eax
-// 008071b7  895c2450             mov dword ptr [esp + 0x50], ebx
-// 008071bb  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 008071c1  50                   push eax
-// 008071c2  ff1514a89e00         call dword ptr [0x9ea814]
-// 008071c8  d95c2468             fstp dword ptr [esp + 0x68]
-// 008071cc  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 008071cf  83c408               add esp, 8
-// 008071d2  8d4c2460             lea ecx, [esp + 0x60]
-// 008071d6  51                   push ecx
-// 008071d7  52                   push edx
-// 008071d8  57                   push edi
-// 008071d9  8bce                 mov ecx, esi
-// 008071db  e8c0e3ffff           call 0x8055a0
-// 008071e0  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008071e7  64890d00000000       mov dword ptr fs:[0], ecx
-// 008071ee  59                   pop ecx
-// 008071ef  5f                   pop edi
-// 008071f0  5e                   pop esi
-// 008071f1  5b                   pop ebx
-// 008071f2  8be5                 mov esp, ebp
-// 008071f4  5d                   pop ebp
-// 008071f5  c21000               ret 0x10
-// 008071f8  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 008071fb  8d442460             lea eax, [esp + 0x60]
-// 008071ff  50                   push eax
-// 00807200  895c2464             mov dword ptr [esp + 0x64], ebx
-// 00807204  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 0080720a  50                   push eax
-// 0080720b  ff1514a89e00         call dword ptr [0x9ea814]
-// 00807211  dd5c2454             fstp qword ptr [esp + 0x54]
-// 00807215  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 00807218  83c408               add esp, 8
-// 0080721b  8d4c244c             lea ecx, [esp + 0x4c]
-// 0080721f  51                   push ecx
-// 00807220  52                   push edx
-// 00807221  57                   push edi
-// 00807222  8bce                 mov ecx, esi
-// 00807224  e877e3ffff           call 0x8055a0
-// 00807229  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00807230  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807237  59                   pop ecx
-// 00807238  5f                   pop edi
-// 00807239  5e                   pop esi
-// 0080723a  5b                   pop ebx
-// 0080723b  8be5                 mov esp, ebp
-// 0080723d  5d                   pop ebp
-// 0080723e  c21000               ret 0x10
-// 00807241  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00807244  d9ee                 fldz 
-// 00807246  8d442460             lea eax, [esp + 0x60]
-// 0080724a  dd5c2460             fstp qword ptr [esp + 0x60]
-// 0080724e  50                   push eax
-// 0080724f  51                   push ecx
-// 00807250  8bce                 mov ecx, esi
-// 00807252  895c2470             mov dword ptr [esp + 0x70], ebx
-// 00807256  e865fdffff           call 0x806fc0
-// 0080725b  85c0                 test eax, eax
-// 0080725d  0f845b040000         je 0x8076be
-// 00807263  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 00807266  8b542460             mov edx, dword ptr [esp + 0x60]
-// 0080726a  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 0080726e  8910                 mov dword ptr [eax], edx
-// 00807270  8b542468             mov edx, dword ptr [esp + 0x68]
-// 00807274  894804               mov dword ptr [eax + 4], ecx
-// 00807277  895008               mov dword ptr [eax + 8], edx
-// 0080727a  b801000000           mov eax, 1
-// 0080727f  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00807286  64890d00000000       mov dword ptr fs:[0], ecx
-// 0080728d  59                   pop ecx
-// 0080728e  5f                   pop edi
-// 0080728f  5e                   pop esi
-// 00807290  5b                   pop ebx
-// 00807291  8be5                 mov esp, ebp
-// 00807293  5d                   pop ebp
-// 00807294  c21000               ret 0x10
-// 00807297  6683ff65             cmp di, 0x65
-// 0080729b  0f8582000000         jne 0x807323
-// 008072a1  8d442464             lea eax, [esp + 0x64]
-// 008072a5  50                   push eax
-// 008072a6  8d4c2464             lea ecx, [esp + 0x64]
-// 008072aa  51                   push ecx
-// 008072ab  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 008072ae  68f807a600           push 0xa607f8
-// 008072b3  895c246c             mov dword ptr [esp + 0x6c], ebx
-// 008072b7  895c2470             mov dword ptr [esp + 0x70], ebx
-// 008072bb  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 008072c1  50                   push eax
-// 008072c2  ff1564a79e00         call dword ptr [0x9ea764]
-// 008072c8  83c410               add esp, 0x10
-// 008072cb  83f802               cmp eax, 2
-// 008072ce  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 008072d1  7426                 je 0x8072f9
-// 008072d3  8b5514               mov edx, dword ptr [ebp + 0x14]
-// 008072d6  52                   push edx
-// 008072d7  50                   push eax
-// 008072d8  6a65                 push 0x65
-// 008072da  8bce                 mov ecx, esi
-// 008072dc  e8bfe2ffff           call 0x8055a0
-// 008072e1  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008072e8  64890d00000000       mov dword ptr fs:[0], ecx
-// 008072ef  59                   pop ecx
-// 008072f0  5f                   pop edi
-// 008072f1  5e                   pop esi
-// 008072f2  5b                   pop ebx
-// 008072f3  8be5                 mov esp, ebp
-// 008072f5  5d                   pop ebp
-// 008072f6  c21000               ret 0x10
-// 008072f9  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 008072fd  8b542464             mov edx, dword ptr [esp + 0x64]
-// 00807301  8908                 mov dword ptr [eax], ecx
-// 00807303  895004               mov dword ptr [eax + 4], edx
-// 00807306  b801000000           mov eax, 1
-// 0080730b  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00807312  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807319  59                   pop ecx
-// 0080731a  5f                   pop edi
-// 0080731b  5e                   pop esi
-// 0080731c  5b                   pop ebx
-// 0080731d  8be5                 mov esp, ebp
-// 0080731f  5d                   pop ebp
-// 00807320  c21000               ret 0x10
-// 00807323  6683ff64             cmp di, 0x64
-// 00807327  0f85a8000000         jne 0x8073d5
-// 0080732d  8d44246c             lea eax, [esp + 0x6c]
-// 00807331  50                   push eax
-// 00807332  8d4c246c             lea ecx, [esp + 0x6c]
-// 00807336  51                   push ecx
-// 00807337  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 0080733a  8d54246c             lea edx, [esp + 0x6c]
-// 0080733e  52                   push edx
-// 0080733f  8d44246c             lea eax, [esp + 0x6c]
-// 00807343  50                   push eax
-// 00807344  68e807a600           push 0xa607e8
-// 00807349  895c2474             mov dword ptr [esp + 0x74], ebx
-// 0080734d  895c2478             mov dword ptr [esp + 0x78], ebx
-// 00807351  895c247c             mov dword ptr [esp + 0x7c], ebx
-// 00807355  899c2480000000       mov dword ptr [esp + 0x80], ebx
-// 0080735c  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00807362  50                   push eax
-// 00807363  ff1564a79e00         call dword ptr [0x9ea764]
-// 00807369  83c418               add esp, 0x18
-// 0080736c  83f804               cmp eax, 4
-// 0080736f  7429                 je 0x80739a
-// 00807371  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 00807374  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 00807377  51                   push ecx
-// 00807378  52                   push edx
-// 00807379  6a64                 push 0x64
-// 0080737b  8bce                 mov ecx, esi
-// 0080737d  e81ee2ffff           call 0x8055a0
-// 00807382  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00807389  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807390  59                   pop ecx
-// 00807391  5f                   pop edi
-// 00807392  5e                   pop esi
-// 00807393  5b                   pop ebx
-// 00807394  8be5                 mov esp, ebp
-// 00807396  5d                   pop ebp
-// 00807397  c21000               ret 0x10
-// 0080739a  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 0080739d  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 008073a1  8b542464             mov edx, dword ptr [esp + 0x64]
-// 008073a5  8908                 mov dword ptr [eax], ecx
-// 008073a7  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 008073ab  895004               mov dword ptr [eax + 4], edx
-// 008073ae  8b54246c             mov edx, dword ptr [esp + 0x6c]
-// 008073b2  894808               mov dword ptr [eax + 8], ecx
-// 008073b5  89500c               mov dword ptr [eax + 0xc], edx
-// 008073b8  b801000000           mov eax, 1
-// 008073bd  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008073c4  64890d00000000       mov dword ptr fs:[0], ecx
-// 008073cb  59                   pop ecx
-// 008073cc  5f                   pop edi
-// 008073cd  5e                   pop esi
-// 008073ce  5b                   pop ebx
-// 008073cf  8be5                 mov esp, ebp
-// 008073d1  5d                   pop ebp
-// 008073d2  c21000               ret 0x10
-// 008073d5  8b7d08               mov edi, dword ptr [ebp + 8]
-// 008073d8  57                   push edi
-// 008073d9  e812d1ffff           call 0x8044f0
-// 008073de  8b4d10               mov ecx, dword ptr [ebp + 0x10]
-// 008073e1  57                   push edi
-// 008073e2  ff1580c59e00         call dword ptr [0x9ec580]
-// 008073e8  b801000000           mov eax, 1
-// 008073ed  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008073f4  64890d00000000       mov dword ptr fs:[0], ecx
-// 008073fb  59                   pop ecx
-// 008073fc  5f                   pop edi
-// 008073fd  5e                   pop esi
-// 008073fe  5b                   pop ebx
-// 008073ff  8be5                 mov esp, ebp
-// 00807401  5d                   pop ebp
-// 00807402  c21000               ret 0x10
-// 00807405  8b4508               mov eax, dword ptr [ebp + 8]
-// 00807408  50                   push eax
-// 00807409  8d4c2450             lea ecx, [esp + 0x50]
-// 0080740d  e8fedbffff           call 0x805010
-// 00807412  833d147fbe00ff       cmp dword ptr [0xbe7f14], -1
-// 00807419  899c24c0000000       mov dword ptr [esp + 0xc0], ebx
-// 00807420  7533                 jne 0x807455
-// 00807422  d9ee                 fldz 
-// 00807424  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00807427  dd5c2460             fstp qword ptr [esp + 0x60]
-// 0080742b  895c2468             mov dword ptr [esp + 0x68], ebx
-// 0080742f  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00807435  50                   push eax
-// 00807436  8d4c2464             lea ecx, [esp + 0x64]
-// 0080743a  51                   push ecx
-// 0080743b  e850faffff           call 0x806e90
-// 00807440  83c408               add esp, 8
-// 00807443  85c0                 test eax, eax
-// 00807445  740e                 je 0x807455
-// 00807447  8d542460             lea edx, [esp + 0x60]
-// 0080744b  52                   push edx
-// 0080744c  8d4c2450             lea ecx, [esp + 0x50]
-// 00807450  e8715f1700           call 0x97d3c6
-// 00807455  8b4d10               mov ecx, dword ptr [ebp + 0x10]
-// 00807458  8d44244c             lea eax, [esp + 0x4c]
-// 0080745c  50                   push eax
-// 0080745d  51                   push ecx
-// 0080745e  57                   push edi
-// 0080745f  8bce                 mov ecx, esi
-// 00807461  e83ae1ffff           call 0x8055a0
-// 00807466  8d54244c             lea edx, [esp + 0x4c]
-// 0080746a  52                   push edx
-// 0080746b  8bf0                 mov esi, eax
-// 0080746d  ff1564aa9e00         call dword ptr [0x9eaa64]
-// 00807473  8bc6                 mov eax, esi
-// 00807475  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 0080747c  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807483  59                   pop ecx
-// 00807484  5f                   pop edi
-// 00807485  5e                   pop esi
-// 00807486  5b                   pop ebx
-// 00807487  8be5                 mov esp, ebp
-// 00807489  5d                   pop ebp
-// 0080748a  c21000               ret 0x10
-// 0080748d  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
-// 00807490  0fb7c1               movzx eax, cx
-// 00807493  83c0fe               add eax, -2
-// 00807496  83f863               cmp eax, 0x63
-// 00807499  0f871f020000         ja 0x8076be
-// 0080749f  0fb68084778000       movzx eax, byte ptr [eax + 0x807784]
-// 008074a6  ff24855c778000       jmp dword ptr [eax*4 + 0x80775c]
-// 008074ad  51                   push ecx
-// 008074ae  8bce                 mov ecx, esi
-// 008074b0  895c2450             mov dword ptr [esp + 0x50], ebx
-// 008074b4  e867ccffff           call 0x804120
-// 008074b9  8b4d10               mov ecx, dword ptr [ebp + 0x10]
-// 008074bc  50                   push eax
-// 008074bd  51                   push ecx
-// 008074be  8d542454             lea edx, [esp + 0x54]
-// 008074c2  52                   push edx
-// 008074c3  e85e19faff           call 0x7a8e26
-// 008074c8  8b442458             mov eax, dword ptr [esp + 0x58]
-// 008074cc  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 008074cf  50                   push eax
-// 008074d0  684882a500           push 0xa58248
-// 008074d5  51                   push ecx
-// 008074d6  ff15acce9e00         call dword ptr [0x9eceac]
-// 008074dc  83c418               add esp, 0x18
-// 008074df  b801000000           mov eax, 1
-// 008074e4  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008074eb  64890d00000000       mov dword ptr fs:[0], ecx
-// 008074f2  59                   pop ecx
-// 008074f3  5f                   pop edi
-// 008074f4  5e                   pop esi
-// 008074f5  5b                   pop ebx
-// 008074f6  8be5                 mov esp, ebp
-// 008074f8  5d                   pop ebp
-// 008074f9  c21000               ret 0x10
-// 008074fc  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 008074ff  8b7d08               mov edi, dword ptr [ebp + 8]
-// 00807502  52                   push edx
-// 00807503  8bcf                 mov ecx, edi
-// 00807505  ff1580c59e00         call dword ptr [0x9ec580]
-// 0080750b  57                   push edi
-// 0080750c  8bce                 mov ecx, esi
-// 0080750e  e8ddcfffff           call 0x8044f0
-// 00807513  b801000000           mov eax, 1
-// 00807518  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 0080751f  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807526  59                   pop ecx
-// 00807527  5f                   pop edi
-// 00807528  5e                   pop esi
-// 00807529  5b                   pop ebx
-// 0080752a  8be5                 mov esp, ebp
-// 0080752c  5d                   pop ebp
-// 0080752d  c21000               ret 0x10
-// 00807530  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 00807533  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00807536  50                   push eax
-// 00807537  51                   push ecx
-// 00807538  8bce                 mov ecx, esi
-// 0080753a  e881faffff           call 0x806fc0
-// 0080753f  b801000000           mov eax, 1
-// 00807544  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 0080754b  64890d00000000       mov dword ptr fs:[0], ecx
-// 00807552  59                   pop ecx
-// 00807553  5f                   pop edi
-// 00807554  5e                   pop esi
-// 00807555  5b                   pop ebx
-// 00807556  8be5                 mov esp, ebp
-// 00807558  5d                   pop ebp
-// 00807559  c21000               ret 0x10
-// 0080755c  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0080755f  d902                 fld dword ptr [edx]
-// 00807561  83ec08               sub esp, 8
-// 00807564  dd1c24               fstp qword ptr [esp]
-// 00807567  687c08a600           push 0xa6087c
-// 0080756c  8b4508               mov eax, dword ptr [ebp + 8]
-// 0080756f  50                   push eax
-// 00807570  ff15acce9e00         call dword ptr [0x9eceac]
-// 00807576  83c410               add esp, 0x10
-// 00807579  b801000000           mov eax, 1
-// 0080757e  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00807585  64890d00000000       mov dword ptr fs:[0], ecx
-// 0080758c  59                   pop ecx
-// 0080758d  5f                   pop edi
-// 0080758e  5e                   pop esi
-// 0080758f  5b                   pop ebx
-// 00807590  8be5                 mov esp, ebp
-// 00807592  5d                   pop ebp
-// 00807593  c21000               ret 0x10
-// 00807596  8b4d10               mov ecx, dword ptr [ebp + 0x10]
-// 00807599  dd01                 fld qword ptr [ecx]
-// 0080759b  8b5508               mov edx, dword ptr [ebp + 8]
-// 0080759e  83ec08               sub esp, 8
-// 008075a1  dd1c24               fstp qword ptr [esp]
-// 008075a4  687c08a600           push 0xa6087c
-// 008075a9  52                   push edx
-// 008075aa  ff15acce9e00         call dword ptr [0x9eceac]
-// 008075b0  83c410               add esp, 0x10
-// 008075b3  b801000000           mov eax, 1
-// 008075b8  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008075bf  64890d00000000       mov dword ptr fs:[0], ecx
-// 008075c6  59                   pop ecx
-// 008075c7  5f                   pop edi
-// 008075c8  5e                   pop esi
-// 008075c9  5b                   pop ebx
-// 008075ca  8be5                 mov esp, ebp
-// 008075cc  5d                   pop ebp
-// 008075cd  c21000               ret 0x10
-// 008075d0  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 008075d3  8b4804               mov ecx, dword ptr [eax + 4]
-// 008075d6  8b10                 mov edx, dword ptr [eax]
-// 008075d8  51                   push ecx
-// 008075d9  52                   push edx
-// 008075da  68f807a600           push 0xa607f8
-// 008075df  eb8b                 jmp 0x80756c
-// 008075e1  8b4510               mov eax, dword ptr [ebp + 0x10]
-// 008075e4  8b480c               mov ecx, dword ptr [eax + 0xc]
-// 008075e7  8b5008               mov edx, dword ptr [eax + 8]
-// 008075ea  51                   push ecx
-// 008075eb  8b4804               mov ecx, dword ptr [eax + 4]
-// 008075ee  52                   push edx
-// 008075ef  8b10                 mov edx, dword ptr [eax]
-// 008075f1  8b4508               mov eax, dword ptr [ebp + 8]
-// 008075f4  51                   push ecx
-// 008075f5  52                   push edx
-// 008075f6  68e807a600           push 0xa607e8
-// 008075fb  50                   push eax
-// 008075fc  ff15acce9e00         call dword ptr [0x9eceac]
-// 00807602  83c418               add esp, 0x18
-// 00807605  e96fffffff           jmp 0x807579
-// 0080760a  8b35147fbe00         mov esi, dword ptr [0xbe7f14]
-// 00807610  8b7d10               mov edi, dword ptr [ebp + 0x10]
-// 00807613  83feff               cmp esi, -1
-// 00807616  7549                 jne 0x807661
-// 00807618  66833f07             cmp word ptr [edi], 7
-// 0080761c  7541                 jne 0x80765f
-// 0080761e  dd4708               fld qword ptr [edi + 8]
-// 00807621  8d4c2460             lea ecx, [esp + 0x60]
-// 00807625  51                   push ecx
-// 00807626  dd5c2464             fstp qword ptr [esp + 0x64]
-// 0080762a  8d542474             lea edx, [esp + 0x74]
-// 0080762e  52                   push edx
-// 0080762f  895c2470             mov dword ptr [esp + 0x70], ebx
-// 00807633  e8f8d9ffff           call 0x805030
-// 00807638  83c408               add esp, 8
-// 0080763b  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 0080763e  50                   push eax
-// 0080763f  c78424c400000001000000 mov dword ptr [esp + 0xc4], 1
-// 0080764a  ff1580c59e00         call dword ptr [0x9ec580]
-// 00807650  8d4c2470             lea ecx, [esp + 0x70]
-// 00807654  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 0080765a  e91affffff           jmp 0x807579
-// 0080765f  33f6                 xor esi, esi
-// 00807661  8d442474             lea eax, [esp + 0x74]
-// 00807665  50                   push eax
-// 00807666  e8b9591700           call 0x97d024
-// 0080766b  6a08                 push 8
-// 0080766d  53                   push ebx
-// 0080766e  56                   push esi
-// 0080766f  57                   push edi
-// 00807670  8d8c2484000000       lea ecx, [esp + 0x84]
-// 00807677  51                   push ecx
-// 00807678  c78424d400000002000000 mov dword ptr [esp + 0xd4], 2
-// 00807683  ff1518aa9e00         call dword ptr [0x9eaa18]
-// 00807689  85c0                 test eax, eax
-// 0080768b  7c26                 jl 0x8076b3
-// 0080768d  66837c247408         cmp word ptr [esp + 0x74], 8
-// 00807693  751e                 jne 0x8076b3
-// 00807695  8b54247c             mov edx, dword ptr [esp + 0x7c]
-// 00807699  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 0080769c  52                   push edx
-// 0080769d  ff15f4ca9e00         call dword ptr [0x9ecaf4]
-// 008076a3  8d442474             lea eax, [esp + 0x74]
-// 008076a7  50                   push eax
-// 008076a8  ff1564aa9e00         call dword ptr [0x9eaa64]
-// 008076ae  e9c6feffff           jmp 0x807579
-// 008076b3  8d4c2474             lea ecx, [esp + 0x74]
-// 008076b7  51                   push ecx
-// 008076b8  ff1564aa9e00         call dword ptr [0x9eaa64]
-// 008076be  33c0                 xor eax, eax
-// 008076c0  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008076c7  64890d00000000       mov dword ptr fs:[0], ecx
-// 008076ce  59                   pop ecx
-// 008076cf  5f                   pop edi
-// 008076d0  5e                   pop esi
-// 008076d1  5b                   pop ebx
-// 008076d2  8be5                 mov esp, ebp
-// 008076d4  5d                   pop ebp
-// 008076d5  c21000               ret 0x10
-// 008076d8  6f                   outsd dx, dword ptr [esi]
-// 008076d9  7180                 jno 0x80765b
-// 008076db  00af718000f8         add byte ptr [edi - 0x7ff7f8f], ch
-// 008076e1  7180                 jno 0x807663
-// 008076e3  004172               add byte ptr [ecx + 0x72], al
-// 008076e6  8000be               add byte ptr [eax], 0xbe
-// 008076e9  7680                 jbe 0x80766b
-// 008076eb  000574800097         add byte ptr [0x97008074], al
-// 008076f1  7280                 jb 0x807673
-// 008076f3  00be76800000         add byte ptr [esi + 0x8076], bh
-// 008076f9  0001                 add byte ptr [ecx], al
-// 008076fb  0207                 add al, byte ptr [edi]
-// 008076fd  030407               add eax, dword ptr [edi + eax]
-// 00807700  07                   pop es
-// 00807701  000507070707         add byte ptr [0x7070707], al
-// 00807707  0007                 add byte ptr [edi], al
-// 00807709  07                   pop es
-// 0080770a  07                   pop es
-// 0080770b  07                   pop es
-// 0080770c  07                   pop es
-// 0080770d  07                   pop es
-// 0080770e  07                   pop es
-// 0080770f  07                   pop es
-// 00807710  07                   pop es
-// 00807711  07                   pop es
-// 00807712  07                   pop es
-// 00807713  07                   pop es
-// 00807714  06                   push es
-// 00807715  07                   pop es
-// 00807716  07                   pop es
-// 00807717  07                   pop es
-// 00807718  07                   pop es
-// 00807719  07                   pop es
-// 0080771a  07                   pop es
-// 0080771b  07                   pop es
-// 0080771c  07                   pop es
-// 0080771d  07                   pop es
-// 0080771e  07                   pop es
-// 0080771f  07                   pop es
-// 00807720  07                   pop es
-// 00807721  07                   pop es
-// 00807722  07                   pop es
-// 00807723  07                   pop es
-// 00807724  07                   pop es
-// 00807725  07                   pop es
-// 00807726  07                   pop es
-// 00807727  07                   pop es
-// 00807728  07                   pop es
-// 00807729  07                   pop es
-// 0080772a  07                   pop es
-// 0080772b  07                   pop es
-// 0080772c  07                   pop es
-// 0080772d  07                   pop es
-// 0080772e  07                   pop es
-// 0080772f  07                   pop es
-// 00807730  07                   pop es
-// 00807731  07                   pop es
-// 00807732  07                   pop es
-// 00807733  07                   pop es
-// 00807734  07                   pop es
-// 00807735  07                   pop es
-// 00807736  07                   pop es
-// 00807737  07                   pop es
-// 00807738  07                   pop es
-// 00807739  07                   pop es
-// 0080773a  07                   pop es
-// 0080773b  07                   pop es
-// 0080773c  07                   pop es
-// 0080773d  07                   pop es
-// 0080773e  07                   pop es
-// 0080773f  07                   pop es
-// 00807740  07                   pop es
-// 00807741  07                   pop es
-// 00807742  07                   pop es
-// 00807743  07                   pop es
-// 00807744  07                   pop es
-// 00807745  07                   pop es
-// 00807746  07                   pop es
-// 00807747  07                   pop es
-// 00807748  07                   pop es
-// 00807749  07                   pop es
-// 0080774a  07                   pop es
-// 0080774b  07                   pop es
-// 0080774c  07                   pop es
-// 0080774d  07                   pop es
-// 0080774e  07                   pop es
-// 0080774f  07                   pop es
-// 00807750  07                   pop es
-// 00807751  07                   pop es
-// 00807752  07                   pop es
-// 00807753  07                   pop es
-// 00807754  07                   pop es
-// 00807755  07                   pop es
-// 00807756  07                   pop es
-// 00807757  07                   pop es
-// 00807758  07                   pop es
-// 00807759  07                   pop es
-// 0080775a  06                   push es
-// 0080775b  06                   push es
-// 0080775c  ad                   lodsd eax, dword ptr [esi]
-// 0080775d  7480                 je 0x8076df
-// 0080775f  005c7580             add byte ptr [ebp + esi*2 - 0x80], bl
-// 00807763  009675800030         add byte ptr [esi + 0x30008075], dl
-// 00807769  7580                 jne 0x8076eb
-// 0080776b  00be7680000a         add byte ptr [esi + 0xa008076], bh
-// 00807771  7680                 jbe 0x8076f3
-// 00807773  00fc                 add ah, bh
-// 00807775  7480                 je 0x8076f7
-// 00807777  00e1                 add cl, ah
-// 00807779  7580                 jne 0x8076fb
-// 0080777b  00d0                 add al, dl
-// 0080777d  7580                 jne 0x8076ff
-// 0080777f  00be76800000         add byte ptr [esi + 0x8076], bh
-// 00807785  0001                 add byte ptr [ecx], al
-// 00807787  0209                 add cl, byte ptr [ecx]
-// 00807789  030409               add eax, dword ptr [ecx + ecx]
-// 0080778c  0900                 or dword ptr [eax], eax
-// 0080778e  0509090909           add eax, 0x9090909
-// 00807793  0009                 add byte ptr [ecx], cl
-// 00807795  0909                 or dword ptr [ecx], ecx
-// 00807797  0909                 or dword ptr [ecx], ecx
-// 00807799  0909                 or dword ptr [ecx], ecx
-// 0080779b  0909                 or dword ptr [ecx], ecx
-// 0080779d  0909                 or dword ptr [ecx], ecx
-// 0080779f  0906                 or dword ptr [esi], eax
-// 008077a1  0909                 or dword ptr [ecx], ecx
-// 008077a3  0909                 or dword ptr [ecx], ecx
-// 008077a5  0909                 or dword ptr [ecx], ecx
-// 008077a7  0909                 or dword ptr [ecx], ecx
-// 008077a9  0909                 or dword ptr [ecx], ecx
-// 008077ab  0909                 or dword ptr [ecx], ecx
-// 008077ad  0909                 or dword ptr [ecx], ecx
-// 008077af  0909                 or dword ptr [ecx], ecx
-// 008077b1  0909                 or dword ptr [ecx], ecx
-// 008077b3  0909                 or dword ptr [ecx], ecx
-// 008077b5  0909                 or dword ptr [ecx], ecx
-// 008077b7  0909                 or dword ptr [ecx], ecx
-// 008077b9  0909                 or dword ptr [ecx], ecx
-// 008077bb  0909                 or dword ptr [ecx], ecx
-// 008077bd  0909                 or dword ptr [ecx], ecx
-// 008077bf  0909                 or dword ptr [ecx], ecx
-// 008077c1  0909                 or dword ptr [ecx], ecx
-// 008077c3  0909                 or dword ptr [ecx], ecx
-// 008077c5  0909                 or dword ptr [ecx], ecx
-// 008077c7  0909                 or dword ptr [ecx], ecx
-// 008077c9  0909                 or dword ptr [ecx], ecx
-// 008077cb  0909                 or dword ptr [ecx], ecx
-// 008077cd  0909                 or dword ptr [ecx], ecx
-// 008077cf  0909                 or dword ptr [ecx], ecx
-// 008077d1  0909                 or dword ptr [ecx], ecx
-// 008077d3  0909                 or dword ptr [ecx], ecx
-// 008077d5  0909                 or dword ptr [ecx], ecx
-// 008077d7  0909                 or dword ptr [ecx], ecx
-// 008077d9  0909                 or dword ptr [ecx], ecx
-// 008077db  0909                 or dword ptr [ecx], ecx
-// 008077dd  0909                 or dword ptr [ecx], ecx
-// 008077df  0909                 or dword ptr [ecx], ecx
-// 008077e1  0909                 or dword ptr [ecx], ecx
-// 008077e3  0909                 or dword ptr [ecx], ecx
-// 008077e5  0907                 or dword ptr [edi], eax
-// copied from an identical function in another client (function ?ExchangePropStringHelper@CXTPPropExchange@@IAEHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@GPAXPBX@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\Common\XTPPropExchange.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPropExchange.cpp: implementation of the CXTPPropExchange class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "XTPMacros.h"
+#include "XTPPropExchange.h"
+#include "XTPVC80Helpers.h"
+#include "XTPVC50Helpers.h"
+#include "XTPResourceManager.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+#pragma warning(disable : 4310)
+
+#ifdef _UNICODE
+#define CT2BSTR(x) (BSTR)(LPCWSTR)x
+#else
+#define CT2BSTR(x) (BSTR)XTP_CT2CW(x)
+#endif
+
+enum VARTYPE_EX
+{
+	VT_EX_RECT = 100,
+	VT_EX_SIZE = 101
+};
+
+LCID CXTPPropExchange::m_lcidDateTime = XTP_LOCALE_ISO8601;
+
+/////////////////////////////////////////////////////////////////////////////
+BOOL ParseDateTimeISO8601(COleDateTime& rDT, LPCTSTR pcszDateTime)
+{
+	SYSTEMTIME st;
+	ZeroMemory(&st, sizeof(SYSTEMTIME));
+
+	int nResult = SCANF_S(pcszDateTime, _T("%hu-%hu-%huT%hu:%hu:%hu"),
+		&st.wYear, &st.wDay, &st.wMonth, &st.wHour, &st.wMinute, &st.wSecond);
+
+	if (nResult == 3 || nResult == 5 || nResult == 6)
+	{
+		COleDateTime dtTemp(st);
+		if (dtTemp.GetStatus() != COleDateTime::valid)
+			return FALSE;
+
+		rDT = dtTemp;
+		return TRUE;
+	}
+
+	ZeroMemory(&st, sizeof(SYSTEMTIME));
+
+	nResult = SCANF_S(pcszDateTime, _T("%hu:%hu:%hu"),
+		&st.wHour, &st.wMinute, &st.wSecond);
+
+	if (nResult == 2 || nResult == 3)
+	{
+		double dblTime = (((long)st.wHour * 3600L) +  // hrs in seconds
+			((long)st.wMinute * 60L) +  // mins in seconds
+			((long)st.wSecond)) / 86400.;
+
+		rDT = dblTime;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+CString FormatDateTimeISO8601(const COleDateTime& dt)
+{
+	ASSERT(dt.m_status == COleDateTime::valid);
+
+	CString strValue;
+
+	if ((DWORD)dt == 0)
+	{
+		strValue = dt.Format(_T("%H:%M:%S"));
+	}
+	else if ((double)(DWORD)(dt) == (double)dt)
+	{
+		strValue = dt.Format(_T("%Y-%d-%m"));
+	}
+	else
+	{
+		strValue = dt.Format(_T("%Y-%d-%mT%H:%M:%S"));
+	}
+
+	return strValue;
+}
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropExchangeEnumerator
+
+CXTPPropExchangeEnumerator::CXTPPropExchangeEnumerator(CXTPPropExchange* pContainer, LPCTSTR lpszSection)
+{
+	m_pContainer = pContainer;
+	m_strSectionName = lpszSection;
+	m_nCount = 0;
+}
+
+CXTPPropExchangeEnumerator::~CXTPPropExchangeEnumerator()
+{
+
+}
+
+POSITION CXTPPropExchangeEnumerator::GetPosition(DWORD dwCount /*= 0*/, BOOL bCompactMode /*= TRUE*/)
+{
+	m_nCount = dwCount;
+
+	if (!m_pContainer)
+		return NULL;
+
+	if (!bCompactMode)
+	{
+		PX_DWord(m_pContainer, _T("Count"), m_nCount, 0);
+	}
+	else
+	{
+		if (m_pContainer->IsStoring())
+			m_pContainer->WriteCount(m_nCount);
+		else
+			m_nCount = m_pContainer->ReadCount();
+	}
+
+	return m_nCount == 0 ? NULL : (POSITION)1;
+}
+
+CXTPPropExchange* CXTPPropExchangeEnumerator::GetNext(POSITION& pos)
+{
+	CString strSection;
+	strSection.Format(_T("%s%i"), (LPCTSTR)m_strSectionName, (DWORD)(DWORD_PTR)pos - 1);
+
+	CXTPPropExchange* pSection = m_pContainer->GetSection(strSection);
+
+	pos++;
+	if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
+
+	return pSection;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_DYNAMIC(CXTPPropExchange, CCmdTarget)
+
+CXTPPropExchange::CXTPPropExchange()
+{
+	m_bLoading = FALSE;
+	m_dwData = 0;
+	m_pOwner = NULL;
+	m_nSchema = _XTP_SCHEMA_CURRENT;
+	m_bChildSection = FALSE;
+	m_bInitialized = FALSE;
+	m_bEmptySection = FALSE;
+	m_bUseDefaultOnLoad = TRUE;
+	m_bUseDefaultOnSave = TRUE;
+
+}
+
+CXTPPropExchange::~CXTPPropExchange()
+{
+
+}
+
+void CXTPPropExchange::InitSection(CXTPPropExchange* pRootSection)
+{
+	ASSERT(m_bLoading == pRootSection->m_bLoading);
+
+	m_bChildSection = TRUE;
+	m_nSchema = pRootSection->m_nSchema;
+	m_dwData = pRootSection->m_dwData;
+	m_bEmptySection = pRootSection->m_bEmptySection;
+	m_bUseDefaultOnLoad = pRootSection->m_bUseDefaultOnLoad;
+	m_bUseDefaultOnSave = pRootSection->m_bUseDefaultOnSave;
+}
+
+
+
+void CXTPPropExchange::EmptySection()
+{
+	m_bEmptySection = TRUE;
+}
+
+
+DWORD CXTPPropExchange::GetSizeOfVarType(VARTYPE vt)
+{
+	switch (vt)
+	{
+	case VT_BOOL: return sizeof(BOOL);
+	case VT_UI1: return sizeof(BYTE);
+	case VT_I2: return 2;
+	case VT_I4: return 4;
+	case VT_R4:
+		ASSERT(sizeof(float) == 4);
+		return 4;
+	case VT_R8:
+		ASSERT(sizeof(double) == 8);
+		return 8;
+	case VT_EX_RECT: return sizeof(RECT);
+	case VT_EX_SIZE: return sizeof(SIZE);
+	case VT_CY: return sizeof(CURRENCY);
+	case VT_BSTR:return sizeof(BSTR);
+	case VT_VARIANT: return sizeof(VARIANT);
+	case VT_DATE: return sizeof(COleDateTime);
+	}
+
+	return 0;
+}
+
+void CXTPPropExchange::Write (LPCTSTR pszPropName, const void* lpBuf, UINT nCount)
+{
+	ASSERT(IsStoring());
+	ASSERT(lpBuf != NULL);
+	ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount);
+}
+
+UINT CXTPPropExchange::Read (LPCTSTR pszPropName, void* lpBuf, UINT nCount)
+{
+	ASSERT(IsLoading());
+	ASSERT(lpBuf != NULL);
+	if (!ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount))
+		return 0;
+
+	return nCount;
+}
+
+AFX_INLINE int REPLACEW_S(BSTR& strReplace, LPCWSTR lpszOld, LPCWSTR lpszNew)
+{
+	int nOldLength = (strReplace == NULL) ? 0 : (int)wcslen(strReplace);
+	int nSourceLen = (lpszOld == NULL) ? 0 : (int)wcslen(lpszOld);
+
+	if (nSourceLen == 0 || nOldLength == 0)
+		return 0;
+
+	int nReplacementLen = (lpszNew == NULL) ? 0 : (int)wcslen(lpszNew);
+
+	// loop once to figure out the size of the result string
+	int nCount = 0;
+	LPWSTR lpszStart = strReplace;
+	LPWSTR lpszTarget;
+
+	while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
+	{
+		nCount++;
+		lpszStart = lpszTarget + nSourceLen;
+	}
+
+
+	// if any changes were made, make them
+	if (nCount > 0)
+	{
+		int nNewLength = nOldLength + (nReplacementLen-nSourceLen)*nCount;
+		ASSERT(nNewLength <= nOldLength); // not implemented
+
+		lpszStart = strReplace;
+
+		// loop again to actually do the work
+		while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
+		{
+			int nBalance = nOldLength - int(lpszTarget - strReplace + nSourceLen);
+			MEMMOVE_S(lpszTarget + nReplacementLen, lpszTarget + nSourceLen,
+				nBalance * sizeof(WORD));
+			MEMCPY_S(lpszTarget, lpszNew, nReplacementLen*sizeof(WORD));
+			lpszStart = lpszTarget + nReplacementLen;
+			lpszStart[nBalance] = '\0';
+			nOldLength += (nReplacementLen - nSourceLen);
+		}
+
+		ASSERT(strReplace[nNewLength] == '\0');
+	}
+
+	return nCount;
+}
+
+void CXTPPropExchange::PreformatString(BSTR bstrValue)
+{
+	ASSERT(bstrValue && m_bLoading);
+
+	REPLACEW_S(bstrValue, L"\\\\", L"\001\001");
+	REPLACEW_S(bstrValue, L"\\n", L"\n");
+	REPLACEW_S(bstrValue, L"\\r", L"\r");
+	REPLACEW_S(bstrValue, L"\\t", L"\t");
+	REPLACEW_S(bstrValue, L"\001\001", L"\\");
+}
+
+void CXTPPropExchange::PreformatString(CString& strValue, BOOL bLoading)
+{
+	if (bLoading)
+	{
+		if (strValue.Find(_T('\\')) == -1)
+			return;
+
+		REPLACE_S(strValue, _T("\\\\"), _T("\001\001"));
+		REPLACE_S(strValue, _T("\\n"), _T("\n"));
+		REPLACE_S(strValue, _T("\\r"), _T("\r"));
+		REPLACE_S(strValue, _T("\\t"), _T("\t"));
+		REPLACE_S(strValue, _T("\001\001"), _T("\\"));
+	}
+	else
+	{
+		REPLACE_S(strValue, _T("\\"), _T("\\\\"));
+		REPLACE_S(strValue, _T("\n"), _T("\\n"));
+		REPLACE_S(strValue, _T("\r"), _T("\\r"));
+		REPLACE_S(strValue, _T("\t"), _T("\\t"));
+	}
+}
+
+void CXTPPropExchange::PreformatString(CString& strValue)
+{
+	PreformatString(strValue, m_bLoading);
+}
+
+BOOL CXTPPropExchange::ExchangePropDateHelper(CString& strValue, COleDateTime& dt)
+{
+	if (m_lcidDateTime == XTP_LOCALE_ISO8601)
+	{
+		if (m_bLoading)
+		{
+			return ParseDateTimeISO8601(dt, strValue);
+		}
+		else
+		{
+			strValue = FormatDateTimeISO8601(dt);
+		}
+
+		return TRUE;
+
+	}
+
+	if (m_bLoading)
+	{
+		if (!dt.ParseDateTime(strValue, 0, m_lcidDateTime))
+			return FALSE;
+
+	}
+	else
+	{
+		TRY
+		{
+			strValue = dt.Format(0, m_lcidDateTime);
+		}
+		CATCH_ALL(e)
+		{
+			VERIFY(strValue.LoadString(AFX_IDS_INVALID_DATETIME));
+		}
+		END_CATCH_ALL
+
+	}
+
+	return TRUE;
+}
+
+
+BOOL CXTPPropExchange::ExchangePropStringHelper(CString& strValue, VARTYPE vtProp,
+	void* pvProp, const void* pvDefault)
+{
+	if (m_bLoading)
+	{
+		switch (vtProp)
+		{
+		case VT_UI1:
+		case VT_I2:
+		case VT_I4:
+		case VT_BOOL:
+			{
+				int dwValue = _ttoi(strValue);
+				return CopyPropValue(vtProp, pvProp, &dwValue);
+			}
+		case VT_R4:
+			{
+				TCHAR* pChar = NULL;
+				float fValue = (float)_tcstod(strValue, &pChar);
+				return CopyPropValue(vtProp, pvProp, &fValue);
+			}
+		case VT_R8:
+			{
+				TCHAR* pChar = NULL;
+				double fValue = _tcstod(strValue, &pChar);
+				return CopyPropValue(vtProp, pvProp, &fValue);
+			}
+		case VT_DATE:
+			{
+				COleDateTime dt;
+
+				if (!ExchangePropDateHelper(strValue, dt))
+					return FALSE;
+
+				*(COleDateTime*)pvProp = dt;
+				return TRUE;
+			}
+
+		case VT_BSTR:
+			ASSERT(FALSE);
+			return FALSE;
+
+		case VT_LPSTR:
+		case VT_EX_SIZE:
+		case VT_EX_RECT:
+			{
+				if (vtProp == VT_EX_SIZE)
+				{
+					SIZE sz = {0, 0};
+					if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
+						return CopyPropValue(vtProp, pvProp, pvDefault);
+
+					*((LPSIZE)pvProp) = sz;
+				}
+				else if (vtProp == VT_EX_RECT)
+				{
+					RECT rc = {0, 0, 0, 0};
+					if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
+						return CopyPropValue(vtProp, pvProp, pvDefault);
+
+					*((LPRECT)pvProp) = rc;
+				}
+				else
+				{
+					PreformatString(strValue);
+					*(CString*)pvProp = strValue;
+				}
+				return TRUE;
+			}
+		case VT_VARIANT:
+			{
+				COleVariant varValue(strValue);
+				if (m_lcidDateTime == XTP_LOCALE_ISO8601)
+				{
+					COleDateTime dt;
+					if (ParseDateTimeISO8601(dt, strValue))
+					{
+						varValue = dt;
+					}
+				}
+				return CopyPropValue(vtProp, pvProp, &varValue);
+			}
+		}
+
+	}
+	else
+	{
+		switch (vtProp)
+		{
+		case VT_UI1:
+		case VT_I2:
+		case VT_I4:
+		case VT_BOOL:
+			{
+				int nValue = 0;
+				memcpy(&nValue, pvProp, GetSizeOfVarType(vtProp));
+
+				strValue.Format(_T("%i"), nValue);
+
+			}
+			return TRUE;
+
+		case VT_BSTR:
+			ASSERT(FALSE);
+			return FALSE;
+
+		case VT_LPSTR:
+			{
+				strValue = *(CString*)pvProp;
+				PreformatString(strValue);
+			}
+			return TRUE;
+
+		case VT_DATE:
+			{
+				COleDateTime& dt = *(COleDateTime*)pvProp;
+				ExchangePropDateHelper(strValue, dt);
+			}
+			return TRUE;
+
+		case VT_R4:
+			{
+				double d = (double) *(float*)pvProp;
+				strValue.Format(_T("%g"), d);
+				return TRUE;
+			}
+
+		case VT_R8:
+
+			strValue.Format(_T("%g"), *(double*)pvProp);
+			return TRUE;
+
+		case VT_EX_SIZE:
+			{
+				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
+			}
+			return TRUE;
+
+		case VT_EX_RECT:
+			{
+				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
+			}
+			return TRUE;
+
+		case VT_VARIANT:
+
+			LCID lcidID = m_lcidDateTime;
+			COleVariant& varProp = *((COleVariant*)pvProp);
+
+			if (lcidID == XTP_LOCALE_ISO8601 && varProp.vt == VT_DATE)
+			{
+				strValue = FormatDateTimeISO8601(varProp.date);
+				return TRUE;
+			}
+			if (lcidID == XTP_LOCALE_ISO8601)
+			{
+				lcidID = LOCALE_NEUTRAL;
+			}
+			COleVariant var;
+			HRESULT hr = VariantChangeTypeEx(&var, &varProp, lcidID, 0, VT_BSTR);
+
+			if (FAILED(hr) || var.vt != VT_BSTR)
+				return FALSE;
+
+			strValue = var.bstrVal;
+
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
+
+BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
+{
+	if (IsStoring())
+	{
+		CString str;
+		if (nBytes > 0)
+		{
+			LPTSTR lpsz = new TCHAR[nBytes * 2 + 1];
+			for (UINT i = 0; i < nBytes; i++)
+			{
+				lpsz[i * 2] = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
+				lpsz[i * 2 + 1] = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
+			}
+			lpsz[nBytes * 2] = 0;
+
+			str = lpsz;
+			delete[] lpsz;
+		}
+		PX_String(this, pszPropName, str, _T(""));
+	}
+	else
+	{
+		CString str;
+		if (!PX_String(this, pszPropName, str))
+			return FALSE;
+
+		if (str.GetLength() > 0)
+		{
+			int nLen = str.GetLength();
+			if ((nLen == 0) || (nLen % 2 != 0))
+				return FALSE;
+
+			DWORD nCount = nLen/2;
+			if (pData == NULL)
+			{
+				pData = (BYTE*)malloc(nCount);
+				nBytes = nCount;
+			}
+			if (pData == NULL)
+				return FALSE;
+
+			if (nBytes < nCount)
+				return FALSE;
+
+			for (int i = 0; i < nLen; i += 2)
+			{
+				(pData)[i/2] = (BYTE)
+					(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
+			}
+		}
+	}
+	return TRUE;
+
+}
+
+
+BOOL CXTPPropExchange::IsSamePropValue(VARTYPE vtProp, const void* pv1, const void* pv2)
+{
+	if (pv1 == pv2)
+		return TRUE;
+
+	if ((pv1 == NULL) || (pv2 == NULL))
+		return FALSE;
+
+	BOOL bSame = FALSE;
+
+	switch (vtProp)
+	{
+	case VT_BSTR:
+		bSame = wcscmp(*(BSTR*)pv1, (BSTR)pv2) == 0;
+		break;
+
+	case VT_LPSTR:
+		bSame = ((CString*)pv1)->Compare((LPCTSTR)pv2) == 0;
+		break;
+
+	case VT_BOOL:
+	case VT_UI1:
+	case VT_I2:
+	case VT_I4:
+	case VT_CY:
+	case VT_R4:
+	case VT_R8:
+	case VT_EX_RECT:
+	case VT_EX_SIZE:
+		bSame = memcmp(pv1, pv2, GetSizeOfVarType(vtProp)) == 0;
+		break;
+
+	case VT_VARIANT:
+		bSame = *((COleVariant*)pv1) == *((COleVariant*)pv2);
+		break;
+
+	case VT_DATE:
+		bSame = *((COleDateTime*)pv1) == *((COleDateTime*)pv2);
+		break;
+	}
+
+	return bSame;
+}
+
+BOOL CXTPPropExchange::CopyPropValue(VARTYPE vtProp, void* pvDest, const void* pvSrc)
+{
+	ASSERT(AfxIsValidAddress(pvDest, 1));
+
+	if (pvSrc != NULL)
+	{
+		ASSERT(AfxIsValidAddress(pvSrc, 1, FALSE));
+
+		switch (vtProp)
+		{
+		case VT_UI1:
+			*(BYTE*)pvDest = *(BYTE*)pvSrc;
+			break;
+
+		case VT_I2:
+			*(short*)pvDest = *(short*)pvSrc;
+			break;
+
+		case VT_I4:
+			*(long*)pvDest = *(long*)pvSrc;
+			break;
+
+		case VT_BOOL:
+			*(BOOL*)pvDest = *(BOOL*)pvSrc;
+			break;
+
+		case VT_BSTR:
+			*(BSTR*)pvDest = SysAllocString((BSTR)pvSrc);
+			break;
+
+		case VT_LPSTR:
+			*(CString*)pvDest = (LPCTSTR)pvSrc;
+			break;
+
+		case VT_CY:
+			*(CY*)pvDest = *(CY*)pvSrc;
+			break;
+
+		case VT_R4:
+			*(float*)pvDest = *(float*)pvSrc;
+			break;
+
+		case VT_R8:
+			*(double*)pvDest = *(double*)pvSrc;
+			break;
+
+		case VT_EX_RECT:
+			*(RECT*)pvDest = *(RECT*)pvSrc;
+			break;
+
+		case VT_EX_SIZE:
+			*(SIZE*)pvDest = *(SIZE*)pvSrc;
+			break;
+
+		case VT_DATE:
+			*(COleDateTime*)pvDest = *(COleDateTime*)pvSrc;
+			break;
+
+		case VT_VARIANT:
+			TRY
+			{
+				*(COleVariant*)pvDest = *(COleVariant*)pvSrc;
+			}
+			CATCH_ALL(e)
+			{
+				return FALSE;
+			}
+			END_CATCH_ALL
+
+			return TRUE;
+
+		default:
+			return FALSE;
+		}
+	}
+	return pvSrc != NULL;
+}
+
+CRuntimeClass* CXTPPropExchange::FindRuntimeClass(LPCSTR szClassName)
+{
+
+	CRuntimeClass* pClass;
+	// search app specific classes
+	AFX_MODULE_STATE* pModuleState = AfxGetModuleState();
+
+	for (pClass = pModuleState->m_classList; pClass != NULL;
+	pClass = pClass->m_pNextClass)
+	{
+		if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
+		{
+			return pClass;
+		}
+	}
+
+#ifdef _AFXDLL
+	// search classes in shared DLLs
+	for (CDynLinkLibrary* pDLL = pModuleState->m_libraryList; pDLL != NULL;
+	pDLL = pDLL->m_pNextDLL)
+	{
+		for (pClass = pDLL->m_classList; pClass != NULL;
+		pClass = pClass->m_pNextClass)
+		{
+			if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
+			{
+				return pClass;
+			}
+		}
+	}
+#endif
+	ASSERT(FALSE);
+	return 0;
+}
+
+BOOL CXTPPropExchange::ExchangeRuntimeClass(LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
+{
+	CString strClassName;
+
+	if (!IsLoading())
+	{
+		strClassName = CString(pClass->m_lpszClassName);
+		PX_String(this, pszPropName, strClassName, CString(pDefaultClass->m_lpszClassName));
+	}
+	else
+	{
+		if (!PX_String(this, pszPropName, strClassName))
+		{
+			pClass = pDefaultClass;
+			return TRUE;
+		}
+
+		pClass = FindRuntimeClass(XTP_CT2CA(strClassName));
+		if (!pClass)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CXTPPropExchange::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
+{
+	if (!IsLoading())
+	{
+		CRuntimeClass* pClass = pObject->GetRuntimeClass();
+		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
+	}
+	else
+	{
+		CRuntimeClass* pClass = NULL;
+		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
+		if (!pClass)
+			return FALSE;
+
+		pObject = (CObject*)AfxDynamicDownCast(pObjectRuntime, pClass->CreateObject());
+		if (!pObject)
+			return FALSE;
+	}
+	return TRUE;
+}
+void CXTPPropExchange::WriteCount (DWORD dwCount)
+{
+	PX_DWord(this, _T("Count"), dwCount, 0);
+}
+
+DWORD CXTPPropExchange::ReadCount()
+{
+	DWORD nCount = 0;
+	PX_DWord(this, _T("Count"), nCount, 0);
+	return nCount;
+}
+
+CArchive* CXTPPropExchange::GetArchive(LPCTSTR pszPropName)
+{
+	if (IsStoring())
+	{
+
+		CMemFile* pMemFile = new CMemFile();
+		CArchive* pArchive = new CArchive(pMemFile, CArchive::store);
+
+		return pArchive;
+	}
+
+	DWORD nBytes = 0;
+	BYTE* pData = NULL;
+	PX_Blob(this, pszPropName, pData, nBytes);
+
+	if (nBytes == 0)
+		return NULL;
+
+	CMemFile* pMemFile = new CMemFile(pData, nBytes);
+	CArchive* pArchive = new CArchive(pMemFile, CArchive::load);
+
+	return pArchive;
+}
+
+void CXTPPropExchange::ReleaseArchive(LPCTSTR pszPropName, CArchive* pArchive)
+{
+	ASSERT(pArchive);
+	if (!pArchive)
+		return;
+
+	CMemFile* pFile = DYNAMIC_DOWNCAST(CMemFile, pArchive->GetFile());
+	ASSERT(pFile);
+	if (!pFile)
+		return;
+
+	BYTE* pData = NULL;
+	if (IsStoring())
+	{
+		pArchive->Flush();
+
+		DWORD nBytes = (DWORD)pFile->GetPosition();
+		pData = pFile->Detach();
+		PX_Blob(this, pszPropName, pData, nBytes);
+
+	}
+	else
+	{
+		pData = pFile->Detach();
+	}
+
+	pArchive->Abort();
+	pFile->Close();
+	free(pData);
+
+	delete pFile;
+	delete pArchive;
+}
+
+void CXTPPropExchange::ExchangeSchema()
+{
+	PX_Long(this, _T("Schema"), (long&)m_nSchema, _XTP_SCHEMA_CURRENT);
+}
+
+void CXTPPropExchange::ExchangeSchemaSafe()
+{
+	ExchangeSchema();
+}
+
+void CXTPPropExchange::ExchangeLocale()
+{
+	PX_DWord(this, _T("Locale"), (DWORD&)CXTPPropExchange::m_lcidDateTime, XTP_LOCALE_ISO8601);
+}
+
+
+
+CXTPPropExchangeEnumerator* CXTPPropExchange::GetEnumerator(LPCTSTR lpszSection)
+{
+	return new CXTPPropExchangeEnumerator(this, lpszSection);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropExchangeArchive
+
+IMPLEMENT_DYNAMIC(CXTPPropExchangeArchive, CXTPPropExchange)
+
+CXTPPropExchangeArchive::CXTPPropExchangeArchive(CArchive& ar) :
+	m_ar((CSelfArchive&)ar)
+{
+	ASSERT_POINTER(&ar, CArchive);
+	m_bLoading = m_ar.IsLoading();
+
+}
+
+CXTPPropExchange* CXTPPropExchangeArchive::GetSection(LPCTSTR /*pszSection*/)
+{
+	CXTPPropExchangeArchive* pSection = new CXTPPropExchangeArchive(m_ar);
+	pSection->InitSection(this);
+	return pSection;
+}
+
+
+BOOL CXTPPropExchangeArchive::ExchangeRuntimeClass(LPCTSTR /*pszPropName*/, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	if (!IsLoading())
+	{
+		m_ar.WriteClass(pClass);
+	}
+	else
+	{
+		pClass = m_ar.ReadClass(pDefaultClass, &m_nSchema);
+
+		if (!pClass)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeArchive::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
+{
+	if (!CXTPPropExchange::ExchangeObjectInstance(pObject, pObjectRuntime))
+		return FALSE;
+
+	if (IsLoading())
+	{
+		m_ar.CheckCount();
+		m_ar.m_pLoadArray->InsertAt(m_ar.m_nMapCount++, pObject);
+	}
+	else
+	{
+		m_ar.MapObject(NULL);
+		m_ar.CheckCount();
+		m_ar.m_pStoreMap->SetAt(pObject, (LPVOID)(DWORD_PTR)m_ar.m_nMapCount++);
+
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeArchive::ExchangeProp(LPCTSTR /*pszPropName*/, VARTYPE vtProp,
+		void* pvProp, const void* pvDefault)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	UNUSED(pvDefault);       // unused in release builds
+
+	ASSERT(AfxIsValidAddress(pvProp, 1, FALSE));
+	ASSERT((pvDefault == NULL) || AfxIsValidAddress(pvDefault, 1, FALSE));
+
+	if (m_bLoading)
+	{
+		switch (vtProp)
+		{
+		case VT_UI1:
+			m_ar >> *(BYTE*)pvProp;
+			break;
+		case VT_I2:
+			m_ar >> *(WORD*)pvProp;
+			break;
+		case VT_I4:
+			m_ar >> *(long*)pvProp;
+			break;
+		case VT_BOOL:
+			m_ar >> *(BOOL*)pvProp;
+			break;
+		case VT_BSTR:
+			ASSERT(FALSE);
+			break;
+		case VT_LPSTR:
+			m_ar >> *(CString*)pvProp;
+			break;
+		case VT_CY:
+			m_ar >> ((CY*)pvProp)->Lo;
+			m_ar >> ((CY*)pvProp)->Hi;
+			break;
+		case VT_R4:
+			m_ar >> *(float*)pvProp;
+			break;
+		case VT_R8:
+			m_ar >> *(double*)pvProp;
+			break;
+		case VT_EX_RECT:
+			m_ar >> *(RECT*)pvProp;
+			break;
+		case VT_EX_SIZE:
+			m_ar >> *(SIZE*)pvProp;
+			break;
+		case VT_VARIANT:
+			m_ar >> *(COleVariant*)pvProp;
+			break;
+		case VT_DATE:
+			m_ar >> *(COleDateTime*)pvProp;
+			break;
+		}
+	}
+	else
+	{
+		switch (vtProp)
+		{
+		case VT_UI1:
+			m_ar << *(BYTE*)pvProp;
+			break;
+		case VT_I2:
+			m_ar << *(WORD*)pvProp;
+			break;
+		case VT_I4:
+			m_ar << *(long*)pvProp;
+			break;
+		case VT_BOOL:
+			m_ar << *(BOOL*)pvProp;
+			break;
+		case VT_BSTR:
+			ASSERT(FALSE);
+			break;
+		case VT_LPSTR:
+			m_ar << *(CString*)pvProp;
+			break;
+		case VT_CY:
+			m_ar << ((CY*)pvProp)->Lo;
+			m_ar << ((CY*)pvProp)->Hi;
+			break;
+		case VT_R4:
+			m_ar << *(float*)pvProp;
+			break;
+		case VT_R8:
+			m_ar << *(double*)pvProp;
+			break;
+		case VT_EX_RECT:
+			m_ar << *(RECT*)pvProp;
+			break;
+		case VT_EX_SIZE:
+			m_ar << *(SIZE*)pvProp;
+			break;
+		case VT_VARIANT:
+			m_ar << *(COleVariant*)pvProp;
+			break;
+		case VT_DATE:
+			m_ar << *(COleDateTime*)pvProp;
+			break;
+		}
+	}
+
+	return TRUE;
+}
+
+void CXTPPropExchangeArchive::WriteCount (DWORD dwCount)
+{
+	m_ar.WriteCount(dwCount);
+}
+DWORD CXTPPropExchangeArchive::ReadCount()
+{
+	return (DWORD)m_ar.ReadCount();
+}
+void CXTPPropExchangeArchive::Write (LPCTSTR /*pszPropName*/, const void* lpBuf, UINT nCount)
+{
+	ASSERT(lpBuf);
+	m_ar.Write(lpBuf, nCount);
+}
+
+UINT CXTPPropExchangeArchive::Read (LPCTSTR /*pszPropName*/, void* lpBuf, UINT nCount)
+{
+	ASSERT(lpBuf);
+	return m_ar.Read(lpBuf, nCount);
+}
+
+BOOL CXTPPropExchangeArchive::ExchangeBlobProp(LPCTSTR /*pszPropName*/, BYTE*& pData, DWORD& nBytes)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	if (IsStoring())
+	{
+		WriteCount(nBytes);
+		m_ar.Write(pData, nBytes);
+	}
+	else
+	{
+		DWORD nCount = ReadCount();
+
+		if (pData == NULL)
+		{
+			pData = (BYTE*)malloc(nCount);
+			nBytes = nCount;
+		}
+
+		if (nBytes < nCount)
+			return FALSE;
+
+		return m_ar.Read(pData, nCount) == nCount;
+	}
+
+	return TRUE;
+}
+
+CArchive* CXTPPropExchangeArchive::GetArchive(LPCTSTR /*pszPropName*/)
+{
+	return &m_ar;
+}
+
+void CXTPPropExchangeArchive::ReleaseArchive(LPCTSTR /*pszPropName*/, CArchive* /*pArchive*/)
+{
+
+}
+
+void CXTPPropExchangeArchive::ExchangeSchemaSafe()
+{
+	DWORD dwSafe = 0xFF0ADBF;
+
+	if (IsStoring())
+	{
+		m_ar << dwSafe;
+		m_ar << m_nSchema;
+	}
+	else
+	{
+		m_ar.FillBuffer(sizeof(DWORD));
+		DWORD dw = *(DWORD*)m_ar.m_lpBufCur;
+
+		if (dw == dwSafe)
+		{
+			m_ar >> dwSafe;
+			m_ar >> m_nSchema;
+		}
+		else
+		{
+			m_nSchema = _XTP_SCHEMA_100;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropExchangeRegistry
+
+IMPLEMENT_DYNAMIC(CXTPPropExchangeRegistry, CXTPPropExchange)
+
+CXTPPropExchangeRegistry::CXTPPropExchangeRegistry(BOOL bLoading, HKEY hParentKey, LPCTSTR lpszSection)
+{
+	ASSERT(lpszSection != NULL);
+	if (hParentKey == 0)
+	{
+		m_hParentKey = AfxGetApp()->GetAppRegistryKey();
+		m_bCloseParentKey = TRUE;
+	}
+	else
+	{
+		m_hParentKey = hParentKey;
+		m_bCloseParentKey = FALSE;
+	}
+
+	m_bLoading = bLoading;
+	m_strSectionName = lpszSection;
+	m_hSectionKey = NULL;
+
+}
+
+CXTPPropExchangeRegistry::~CXTPPropExchangeRegistry()
+{
+	if (m_hSectionKey)
+	{
+		RegCloseKey(m_hSectionKey);
+	}
+	if (m_bCloseParentKey && m_hParentKey)
+	{
+		RegCloseKey(m_hParentKey);
+	}
+}
+
+CXTPPropExchange* CXTPPropExchangeRegistry::GetSection(LPCTSTR lpszSection)
+{
+	OnBeforeExchange();
+
+	CXTPPropExchangeRegistry* pSection = new CXTPPropExchangeRegistry(IsLoading(), m_hSectionKey, lpszSection);
+	pSection->InitSection(this);
+	return pSection;
+}
+
+BOOL CXTPPropExchangeRegistry::IsPropertyExists(LPCTSTR pszPropName)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	return RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
+}
+
+BOOL CXTPPropExchangeRegistry::IsSectionExists(LPCTSTR lpszSection)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	HKEY hSectionKey = 0;
+
+	if (RegOpenKeyEx(m_hSectionKey, lpszSection, 0, m_bLoading ? KEY_READ : KEY_WRITE, &hSectionKey) == ERROR_SUCCESS)
+	{
+		RegCloseKey(hSectionKey);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+BOOL CXTPPropExchangeRegistry::OnBeforeExchange()
+{
+	if (m_hParentKey == NULL)
+		return FALSE;
+
+	if (!m_bInitialized)
+	{
+		ASSERT(m_hSectionKey == 0);
+
+		VERIFY(RegCreateKeyEx(m_hParentKey, m_strSectionName, 0, REG_NONE, REG_OPTION_NON_VOLATILE, m_bLoading ? KEY_READ : KEY_WRITE, NULL, &m_hSectionKey, NULL) == ERROR_SUCCESS);
+
+		m_bInitialized = TRUE;
+	}
+	return m_hSectionKey != NULL;
+}
+
+void CXTPPropExchangeRegistry::EmptySection()
+{
+	CXTPPropExchange::EmptySection();
+
+	if (m_hSectionKey)
+	{
+		RegCloseKey(m_hSectionKey);
+		m_hSectionKey = 0;
+	}
+
+	AfxDelRegTreeHelper(m_hParentKey, m_strSectionName);
+	m_bInitialized = FALSE;
+}
+
+
+BOOL CXTPPropExchangeRegistry::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
+				void* pvProp, const void* pvDefault /*= NULL*/)
+{
+	if (m_bLoading)
+	{
+		if (!m_bUseDefaultOnLoad)
+			pvDefault = NULL;
+
+		if (!OnBeforeExchange())
+			return CopyPropValue(vtProp, pvProp, pvDefault);
+
+		ASSERT(m_hSectionKey);
+
+		switch (vtProp)
+		{
+		case VT_R4:
+		case VT_R8:
+		case VT_DATE:
+		case VT_BSTR:
+			ASSERT(FALSE); // Not Implemented
+			return FALSE;
+
+		case VT_VARIANT:
+			return FALSE; // Not Implemented
+
+		case VT_UI1:
+		case VT_I2:
+		case VT_I4:
+		case VT_BOOL:
+			{
+
+				DWORD dwValue;
+				DWORD dwType;
+				DWORD dwCount = sizeof(DWORD);
+				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
+					(LPBYTE)&dwValue, &dwCount);
+
+				if (lResult == ERROR_SUCCESS)
+				{
+					ASSERT(dwType == REG_DWORD);
+					ASSERT(dwCount == sizeof(DWORD));
+
+					return CopyPropValue(vtProp, pvProp, &dwValue);
+
+				}
+				else
+				{
+					return CopyPropValue(vtProp, pvProp, pvDefault);
+				}
+			}
+		case VT_LPSTR:
+		case VT_EX_SIZE:
+		case VT_EX_RECT:
+			{
+				CString strValue;
+				DWORD dwType, dwCount;
+				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
+					NULL, &dwCount);
+				if (lResult == ERROR_SUCCESS)
+				{
+					ASSERT(dwType == REG_SZ);
+					lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
+						(LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
+					strValue.ReleaseBuffer();
+				}
+				if (lResult == ERROR_SUCCESS)
+				{
+					ASSERT(dwType == REG_SZ);
+
+					if (vtProp == VT_EX_SIZE)
+					{
+						SIZE sz = {0, 0};
+						if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
+							return CopyPropValue(vtProp, pvProp, pvDefault);
+
+						*((LPSIZE)pvProp) = sz;
+					}
+					else if (vtProp == VT_EX_RECT)
+					{
+						RECT rc = {0, 0, 0, 0};
+						if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
+							return CopyPropValue(vtProp, pvProp, pvDefault);
+
+						*((LPRECT)pvProp) = rc;
+					}
+					else
+					{
+						*(CString*)pvProp = strValue;
+					}
+
+				}
+				else
+				{
+					return CopyPropValue(vtProp, pvProp, pvDefault);
+				}
+				return TRUE;
+			}
+		}
+	}
+	else
+	{
+		if (!m_bUseDefaultOnSave)
+			pvDefault = NULL;
+
+		if (!OnBeforeExchange())
+			return FALSE;
+
+		if (IsSamePropValue(vtProp, pvProp, pvDefault))
+		{
+			if (m_hSectionKey && !m_bEmptySection)
+				RegDeleteValue(m_hSectionKey, pszPropName);
+			return TRUE;
+		}
+
+		LONG lResult = -1;
+
+		switch (vtProp)
+		{
+		case VT_UI1:
+		case VT_I2:
+		case VT_I4:
+		case VT_BOOL:
+			{
+				DWORD dwValue = 0;
+				CopyPropValue(vtProp, &dwValue, pvProp);
+				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_DWORD, (LPBYTE)&dwValue, sizeof(DWORD));
+			}
+			break;
+
+		case VT_LPSTR:
+			{
+				CString& strValue = *(CString*)pvProp;
+				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
+					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
+			}
+			break;
+
+		case VT_R4:
+		case VT_R8:
+			lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY, (LPBYTE)pvProp, GetSizeOfVarType(vtProp));
+			break;
+
+		case VT_DATE:
+		case VT_VARIANT:
+		case VT_BSTR:
+			ASSERT(FALSE); // Not Implemented
+			break;
+
+		case VT_EX_SIZE:
+			{
+				CString strValue;
+				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
+				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
+					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
+			}
+			break;
+
+		case VT_EX_RECT:
+				CString strValue;
+				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
+				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
+					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
+			break;
+
+		}
+
+		return lResult == ERROR_SUCCESS;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTPPropExchangeRegistry::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	ASSERT(m_hSectionKey != 0);
+
+	if (IsStoring())
+	{
+		LONG lResult = ::RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY,
+			pData, nBytes);
+		return lResult == ERROR_SUCCESS;
+
+	}
+	else
+	{
+		DWORD dwType, dwCount;
+		LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+
+
+		if (pData == NULL)
+		{
+			pData = (BYTE*)malloc(dwCount);
+			nBytes = dwCount;
+		}
+
+		if (nBytes < dwCount)
+			return FALSE;
+
+		lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
+				(LPBYTE)pData, &dwCount);
+
+		if (lResult != ERROR_SUCCESS)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropExchangeXMLNode
+
+#ifndef _XTP_EXCLUDE_XML
+
+IMPLEMENT_DYNAMIC(CXTPPropExchangeXMLNode, CXTPPropExchange)
+
+CXTPPropExchangeXMLNode::CXTPPropExchangeXMLNode(BOOL bLoading, CXTPDOMNodePtr xmlParentNode, LPCTSTR lpszSection)
+{
+	m_bLoading = bLoading;
+	m_strSectionName = lpszSection;
+	m_xmlParentNode = xmlParentNode;
+	m_xmlSectionNode = NULL;
+	m_bCompactMode = TRUE;
+
+	if (xmlParentNode)
+	{
+		xmlParentNode->get_ownerDocument(&m_xmlDocPtr);
+
+		if (m_xmlDocPtr == 0)
+		{
+			m_xmlDocPtr = xmlParentNode;
+		}
+	}
+
+	m_strEncoding = _T("UTF-8");
+
+}
+
+BOOL CXTPPropExchangeXMLNode::IsXMLSupported()
+{
+	CXTPDOMDocumentPtr xmlDocPtr;
+
+	if (!SUCCEEDED(xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
+	{
+		return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeXMLNode::CreateDocumentInstance()
+{
+	if (m_xmlDocPtr == NULL)
+	{
+		if (!SUCCEEDED(m_xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
+		{
+			TRACE(_T("Warning: CreateDocumentInstance failed in CXTPPropExchangeXMLNode --\n"));
+			TRACE(_T("\tperhaps AfxOleInit() has not been called, or msxml3.dll not found."));
+
+			return FALSE;
+		}
+
+		m_xmlDocPtr->put_preserveWhiteSpace(VARIANT_TRUE);
+
+	}
+	return TRUE;
+}
+
+void CXTPPropExchangeXMLNode::TraceParseError()
+{
+#ifdef _DEBUG
+	XTPXML::IXMLDOMParseErrorPtr parseError = 0;
+	if (FAILED(m_xmlDocPtr->get_parseError(&parseError)))
+		return;
+
+	BSTR bstrReason = 0;
+	if (FAILED(parseError->get_reason(&bstrReason)))
+		return;
+
+	CString strReason(bstrReason);
+	TRACE(_T("Warning: CXTPPropExchangeXMLNode::LoadFromString failed. ParseError.Reason = %s"), (LPCTSTR)strReason);
+
+	SysFreeString(bstrReason);
+#endif
+}
+
+BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
+{
+	if (!lpszState)
+		return FALSE;
+
+	if (!CreateDocumentInstance())
+		return FALSE;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	VARIANT_BOOL bResult;
+
+	VARIANT va;
+	va.vt = VT_ARRAY | VT_UI1;
+
+	ULONG nLen = (ULONG)strlen(lpszState);
+	va.parray = SafeArrayCreateVector(VT_UI1, 0, nLen);
+	MEMCPY_S(va.parray->pvData, lpszState, nLen);
+
+	HRESULT hr = m_xmlDocPtr->load(va, &bResult);
+	VariantClear(&va);
+
+	if (FAILED(hr) || bResult == VARIANT_FALSE)
+	{
+		TraceParseError();
+		return FALSE;
+	}
+
+	m_xmlParentNode = m_xmlDocPtr;
+	m_xmlSectionNode = NULL;
+	m_bInitialized = FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCWSTR lpszState)
+{
+	return LoadFromString((BSTR)lpszState);
+}
+
+BOOL CXTPPropExchangeXMLNode::LoadFromString(BSTR lpszState)
+{
+	if (!CreateDocumentInstance())
+		return FALSE;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	VARIANT_BOOL bResult;
+	HRESULT hr = m_xmlDocPtr->loadXML(lpszState, &bResult);
+	if (FAILED(hr) || bResult == VARIANT_FALSE)
+	{
+		TraceParseError();
+		return FALSE;
+	}
+
+	m_xmlParentNode = m_xmlDocPtr;
+	m_xmlSectionNode = NULL;
+	m_bInitialized = FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeXMLNode::LoadFromResource(HINSTANCE hInstance, LPCTSTR lpszResourceName, LPCTSTR lpszResourceType)
+{
+	HRSRC hRsrc = ::FindResource(hInstance, lpszResourceName, lpszResourceType);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInstance, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	LPCSTR pData = (LPCSTR)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	DWORD dwSize = (DWORD)SizeofResource(hInstance, hRsrc);
+	if (dwSize == 0)
+		return FALSE;
+
+	LPSTR lpstr = (LPSTR)malloc(dwSize + 1);
+	if (!lpstr)
+		return FALSE;
+
+	MEMCPY_S(lpstr, pData, dwSize);
+	lpstr[dwSize] = 0;
+
+	BOOL bResult = LoadFromString(lpstr);
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	free(lpstr);
+
+	return bResult;
+}
+
+
+BOOL CXTPPropExchangeXMLNode::LoadFromFile(LPCTSTR strFileName)
+{
+	if (!FILEEXISTS_S(strFileName))
+		return FALSE;
+
+	if (!CreateDocumentInstance())
+		return FALSE;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	VARIANT_BOOL bResult;
+	HRESULT hr = m_xmlDocPtr->load(COleVariant(strFileName), &bResult);
+	if (FAILED(hr) || bResult == VARIANT_FALSE)
+	{
+		TraceParseError();
+		return FALSE;
+	}
+
+	m_xmlParentNode = m_xmlDocPtr;
+	m_xmlSectionNode = NULL;
+	m_bInitialized = FALSE;
+
+	return TRUE;
+}
+
+CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
+{
+	const LPCTSTR lpszCrLf = _T("\r\n");
+
+#define ADDINDENT(str, i, strOffset)\
+	INSERT_S(str, i, lpszCrLf);\
+	INSERT_S(str, i + 2, strOffset);\
+	i += strOffset.GetLength() + 2;
+
+	CString str;
+	if (!OnBeforeExchange())
+		return str;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	BSTR bstrXML = 0;
+
+	if (IsRootSection())
+	{
+		if (FAILED(m_xmlDocPtr->get_xml(&bstrXML)))
+			return str;
+	}
+	else
+	{
+		if (FAILED(m_xmlSectionNode->get_xml(&bstrXML)))
+			return str;
+	}
+
+	str = bstrXML;
+	SysFreeString(bstrXML);
+
+	if (bFormatted)
+	{
+		CString strOffset(_T('\t'));
+
+		for (int i = 1; i < str.GetLength(); i++)
+		{
+			if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
+			{
+				DELETE_S(strOffset, strOffset.GetLength() - 1);
+				if (str[i] == _T('<') && str[i - 1] == _T('>'))
+				{
+					ADDINDENT(str, i, strOffset);
+				}
+			}
+			else if (str[i] == _T('<'))
+			{
+				ADDINDENT(str, i, strOffset);
+				strOffset += _T('\t');
+
+			}
+		}
+	}
+
+	return str;
+
+}
+
+
+
+void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
+{
+	const LPCSTR lpszCrLf = "\r\n";
+	const LPCSTR lpszOffset = "\t";
+
+	#define WRITEINDENT\
+		file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - nWhiteSpace);\
+		file.Write(lpszCrLf, 2);\
+		for (int j = 0; j < nOffset; j++) file.Write(lpszOffset, 1);\
+		lpszBegin = lpszCurrent
+
+
+	CFile file;
+	if (!file.Open(lpszFileName, CFile::modeRead))
+		return;
+
+	DWORD dwLength = (DWORD)file.GetLength();
+
+	if (dwLength < 3)
+		return;
+
+	BYTE* lpszBuffer = new BYTE[dwLength + 1];
+
+	file.Read(lpszBuffer, dwLength);
+	lpszBuffer[dwLength] = 0;
+	file.Close();
+
+	if (!file.Open(lpszFileName, CFile::modeWrite | CFile::modeCreate))
+	{
+		delete[] lpszBuffer;
+		return;
+	}
+
+	int nOffset = 1, nWhiteSpace = 0;
+	if (dwLength > 2 && lpszBuffer[dwLength - 2] == '\r')
+		lpszBuffer[dwLength - 2] = 0;
+
+	BYTE *lpszCurrent = lpszBuffer + 1, *lpszBegin = lpszBuffer;
+
+	while (*lpszCurrent++)
+	{
+		BYTE& chCurrent = *lpszCurrent;
+
+		if (((chCurrent == _T('>')) && (*(lpszCurrent - 1) == '/' || *(lpszCurrent - 1) == '?'))
+			|| ((chCurrent == _T('<')) && (*(lpszCurrent + 1) == '/')))
+		{
+			nOffset--;
+			if (chCurrent == '<' && *(lpszCurrent - 1 - nWhiteSpace) == '>')
+			{
+				WRITEINDENT;
+			}
+		}
+		else if (chCurrent == '<')
+		{
+			WRITEINDENT;
+			nOffset++;
+		}
+
+		nWhiteSpace = (chCurrent == '\r' || chCurrent == '\n' || chCurrent == '\t') ? nWhiteSpace + 1 : 0;
+	}
+
+	file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - 1);
+	file.Write(lpszCrLf, 2);
+
+	file.Close();
+	delete[] lpszBuffer;
+}
+
+HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
+{
+	CString str;
+	if (!OnBeforeExchange())
+		return E_FAIL;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	CString strInstruction = _T("version=\"1.0\" encoding=\"") + m_strEncoding + _T("\"");
+
+	BOOL bInstructionExists = FALSE;
+
+	CXTPDOMNodePtr ptrBaseInstruction = 0;
+	if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &ptrBaseInstruction)) && ptrBaseInstruction != 0)
+	{
+		BSTR bstrNodeName = 0;
+		ptrBaseInstruction->get_nodeName(&bstrNodeName);
+
+		if (wcscmp(bstrNodeName, L"xml") == 0)
+		{
+			bInstructionExists = TRUE;
+		}
+
+		SysFreeString(bstrNodeName);
+	}
+
+	XTPXML::IXMLDOMProcessingInstructionPtr ptrInstruction = 0;
+	if (!bInstructionExists && SUCCEEDED(m_xmlDocPtr->createProcessingInstruction(L"xml", CT2BSTR(strInstruction), &ptrInstruction)))
+	{
+		CXTPDOMNodePtr xmlNodePtr;
+		if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &xmlNodePtr)))
+		{
+			m_xmlDocPtr->insertBefore(ptrInstruction, _variant_t(xmlNodePtr.GetInterfacePtr()), 0);
+		}
+	}
+
+	HRESULT hr = m_xmlDocPtr->save(COleVariant(strFileName));
+	if (FAILED(hr))
+		return hr;
+
+	if (bFormatted)
+	{
+		FormatFile(strFileName);
+	}
+
+	return S_OK;
+}
+
+CXTPPropExchange* CXTPPropExchangeXMLNode::GetSection(LPCTSTR lpszSection)
+{
+	OnBeforeExchange();
+
+	CXTPPropExchangeXMLNode* pSection = new CXTPPropExchangeXMLNode(IsLoading(), m_xmlSectionNode, lpszSection);
+	pSection->m_bCompactMode = m_bCompactMode;
+	pSection->InitSection(this);
+	return pSection;
+}
+
+BOOL CXTPPropExchangeXMLNode::OnBeforeExchange()
+{
+	if (!m_bInitialized)
+	{
+		m_bInitialized = TRUE;
+
+		if (m_xmlDocPtr == NULL && IsRootSection())
+		{
+			ASSERT(m_xmlParentNode == 0);
+
+			if (!CreateDocumentInstance())
+				return FALSE;
+
+			if (m_xmlDocPtr == 0)
+				return FALSE;
+
+			m_xmlParentNode = m_xmlDocPtr;
+			ASSERT(m_xmlParentNode != 0);
+		}
+
+		if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
+			return FALSE;
+
+		ASSERT(m_xmlSectionNode == 0);
+
+		m_xmlSectionNode = GetProfileNode(m_strSectionName);
+
+		if (m_xmlSectionNode != NULL && IsRootSection())
+		{
+			PX_Bool(this, _T("CompactMode"), m_bCompactMode, FALSE);
+		}
+	}
+
+	if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
+		return FALSE;
+
+	return m_xmlSectionNode != NULL;
+}
+
+void CXTPPropExchangeXMLNode::EmptySection()
+{
+	CXTPPropExchange::EmptySection();
+
+	OnBeforeExchange();
+
+	if (m_xmlSectionNode != 0 && m_xmlParentNode != 0)
+	{
+		m_xmlParentNode->removeChild(m_xmlSectionNode, NULL);
+		m_xmlSectionNode = 0;
+		m_bInitialized = FALSE;
+	}
+}
+
+void CXTPPropExchangeXMLNode::SetCompactMode(BOOL bCompactMode)
+{
+	m_bCompactMode = bCompactMode;
+}
+
+
+CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetProfileNode(LPCTSTR strSection)
+{
+	ASSERT(m_xmlParentNode != 0);
+	CXTPDOMNodePtr xmlNodePtr;
+	CXTPDOMElementPtr xmlElementPtr;
+
+	HRESULT hr = m_xmlParentNode->selectSingleNode(CT2BSTR(strSection), &xmlNodePtr);
+
+	if (FAILED(hr) || xmlNodePtr == NULL)
+	{
+		m_xmlDocPtr->createElement(CT2BSTR(strSection), &xmlElementPtr);
+		ASSERT(xmlElementPtr != 0);
+		if (xmlElementPtr)
+		{
+			m_xmlParentNode->appendChild(xmlElementPtr, &xmlNodePtr);
+		}
+	}
+
+	return xmlNodePtr;
+}
+
+CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetEntryNode(LPCTSTR lpszEntry, BOOL bCreate)
+{
+	ASSERT(m_xmlSectionNode != 0);
+
+	CXTPDOMNodePtr xmlNodeEntryPtr;
+
+	if (lpszEntry == 0 || _tcslen(lpszEntry) == 0)
+		return m_xmlSectionNode;
+
+	if (m_bCompactMode)
+	{
+		XTPXML::IXMLDOMNamedNodeMapPtr map;
+		m_xmlSectionNode->get_attributes(&map);
+		HRESULT hr = map->getNamedItem(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
+
+		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
+		{
+			if (bCreate)
+			{
+				XTPXML::IXMLDOMAttributePtr xmlElementPtr;
+				m_xmlDocPtr->createAttribute(CT2BSTR(lpszEntry), &xmlElementPtr);
+				if (xmlElementPtr)
+				{
+					map->setNamedItem(xmlElementPtr, &xmlNodeEntryPtr);
+				}
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	}
+	else
+	{
+		CXTPDOMNodePtr xmlNodeSectionPtr = m_xmlSectionNode;
+
+		HRESULT hr = xmlNodeSectionPtr->selectSingleNode(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
+		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
+		{
+			if (bCreate)
+			{
+
+				CXTPDOMElementPtr xmlElementPtr;
+				m_xmlDocPtr->createElement(CT2BSTR(lpszEntry), &xmlElementPtr);
+				ASSERT(xmlElementPtr != 0);
+				if (xmlElementPtr)
+				{
+					xmlNodeSectionPtr->appendChild(xmlElementPtr, &xmlNodeEntryPtr);
+				}
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+	}
+	ASSERT(xmlNodeEntryPtr != 0);
+	return xmlNodeEntryPtr;
+}
+
+CString CXTPPropExchangeXMLNode::BstrToString(BSTR bstrVal)
+{
+	return CString(XTP_CW2CT(bstrVal));
+}
+
+BOOL CXTPPropExchangeXMLNode::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
+	void* pvProp, const void* pvDefault)
+{
+	if (m_bLoading)
+	{
+		if (!m_bUseDefaultOnLoad)
+			pvDefault = NULL;
+
+		if (!OnBeforeExchange())
+			return CopyPropValue(vtProp, pvProp, pvDefault);
+
+		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, FALSE);
+		if (xmlEntryPtr == 0)
+			return CopyPropValue(vtProp, pvProp, pvDefault);
+
+		BSTR bstrValue = NULL;
+		xmlEntryPtr->get_text(&bstrValue);
+
+		if (vtProp == VT_BSTR)
+		{
+			PreformatString(bstrValue);
+			*(BSTR*)pvProp = bstrValue;
+			return TRUE;
+		}
+
+		CString strValue(BstrToString(bstrValue));
+		if (bstrValue) SysFreeString(bstrValue);
+
+		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
+	}
+	else
+	{
+		if (!m_bUseDefaultOnSave)
+			pvDefault = NULL;
+
+		if (IsSamePropValue(vtProp, pvProp, pvDefault))
+			return TRUE;
+
+		if (!OnBeforeExchange())
+			return FALSE;
+
+		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, TRUE);
+		ASSERT(xmlEntryPtr != 0);
+
+		if (vtProp == VT_BSTR)
+		{
+			xmlEntryPtr->put_text(*(BSTR*)pvProp);
+			return TRUE;
+		}
+
+		CString strValue;
+		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
+			return FALSE;
+
+		xmlEntryPtr->put_text(CT2BSTR(strValue));
+	}
+	return TRUE;
+
+}
+CString CXTPPropExchangeXMLNode::GetSectionName()
+{
+	if (!OnBeforeExchange())
+		return _T("");
+
+	BSTR bstrValue = NULL;
+	m_xmlSectionNode->get_nodeName(&bstrValue);
+
+	CString strValue(bstrValue);
+	if (bstrValue) SysFreeString(bstrValue);
+
+	return strValue;
+}
+
+BOOL CXTPPropExchangeXMLNode::IsSectionExists(LPCTSTR lpszSection)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	CXTPDOMNodePtr xmlNodePtr;
+
+	HRESULT hr = m_xmlSectionNode->selectSingleNode(CT2BSTR(lpszSection), &xmlNodePtr);
+
+	if (FAILED(hr) || xmlNodePtr == NULL)
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPPropExchangeXMLNode::PutSection(CXTPPropExchangeXMLNode* pNode)
+{
+	if (!pNode)
+		return FALSE;
+
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	if (!pNode || !pNode->OnBeforeExchange())
+		return FALSE;
+
+	ASSERT(m_xmlSectionNode != 0);
+
+	if (FAILED(m_xmlSectionNode->appendChild(pNode->m_xmlSectionNode, NULL)))
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTPPropExchangeXMLNode::SetLoading(BOOL bLoading)
+{
+	m_bLoading = bLoading;
+}
+
+BOOL CXTPPropExchangeXMLNode::IsPropertyExists(LPCTSTR pszPropName)
+{
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	if (GetEntryNode(pszPropName, FALSE) != NULL)
+		return TRUE;
+
+	return FALSE;
+}
+
+
+class CXTPPropExchangeXMLNode::CXMLEnumerator : public CXTPPropExchangeEnumerator
+{
+public:
+	CXMLEnumerator::CXMLEnumerator(CXTPPropExchangeXMLNode* pContainer, LPCTSTR lpszSection)
+		: CXTPPropExchangeEnumerator(pContainer, lpszSection)
+	{
+	}
+
+public:
+	CXTPDOMNodePtr GetProfileNode(POSITION pos)
+	{
+		CXTPDOMNodePtr xmlNodePtr;
+
+		CString strNode;
+		strNode.Format(_T("%s[%i]"), m_strSectionName.IsEmpty() ? _T("*") : (LPCTSTR)m_strSectionName, (int)(INT_PTR)pos);
+
+		if (SUCCEEDED(((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->selectSingleNode(CT2BSTR(strNode), &xmlNodePtr)))
+			return xmlNodePtr;
+
+		return 0;
+
+	}
+
+	POSITION GetPosition(DWORD dwCount = 0, BOOL /*bCompactMode*/ = TRUE)
+	{
+		m_nCount = dwCount;
+
+		if (!m_pContainer)
+			return NULL;
+
+		if (m_pContainer->IsLoading())
+		{
+			if (!m_pContainer->OnBeforeExchange())
+				return NULL;
+
+			m_xmNextNode = GetProfileNode(0);
+			if (m_xmNextNode == 0)
+				return NULL;
+		}
+
+		return (POSITION)1;
+	}
+
+	CXTPPropExchange* GetNext(POSITION& pos)
+	{
+		CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)m_pContainer->GetSection(m_strSectionName);
+
+		CXTPDOMNodePtr xmlNodePtr;
+		CXTPDOMElementPtr xmlElementPtr;
+
+
+		if (m_pContainer->IsStoring())
+		{
+			ASSERT((DWORD)(DWORD_PTR)pos <= m_nCount);
+
+			pSection->m_xmlDocPtr->createElement(CT2BSTR(m_strSectionName), &xmlElementPtr);
+			ASSERT(xmlElementPtr != 0);
+			if (xmlElementPtr)
+			{
+				((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->appendChild(xmlElementPtr, &xmlNodePtr);
+			}
+
+			pos++;
+			if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
+		}
+		else
+		{
+			ASSERT(m_xmNextNode != NULL);
+
+			xmlNodePtr = m_xmNextNode;
+
+			m_xmNextNode = GetProfileNode(pos);
+			if (m_xmNextNode == NULL)
+				pos = NULL;
+			else
+				pos++;
+
+		}
+
+		pSection->m_bInitialized = TRUE;
+		pSection->m_xmlSectionNode = xmlNodePtr;
+
+		return pSection;
+	}
+protected:
+	CXTPDOMNodePtr m_xmNextNode;
+};
+
+
+
+CXTPPropExchangeEnumerator* CXTPPropExchangeXMLNode::GetEnumerator(LPCTSTR lpszSection)
+{
+	if (IsStoring() || !IsPropertyExists(_T("Count")))
+		return new CXMLEnumerator(this, lpszSection);
+
+	return new CXTPPropExchangeEnumerator(this, lpszSection);
+}
+
+void CXTPPropExchangeXMLNode::SetEncoding(LPCTSTR lpszEncoding)
+{
+	m_strEncoding = lpszEncoding;
+}
+
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropExchangeIniFile
+
+IMPLEMENT_DYNAMIC(CXTPPropExchangeIniFile, CXTPPropExchange)
+
+CXTPPropExchangeIniFile::CXTPPropExchangeIniFile(BOOL bLoading, LPCTSTR lpszParentSection, LPCTSTR lpszSection)
+{
+	ASSERT(lpszSection != NULL);
+
+	m_bLoading = bLoading;
+	m_bTempFile = TRUE;
+	m_bEmptySection = TRUE;
+
+	if (lpszParentSection == NULL)
+	{
+		m_strSectionName = lpszSection;
+	}
+	else
+	{
+		m_strSectionName = CString(lpszParentSection) + _T("\\") + CString(lpszSection);
+	}
+
+}
+
+CXTPPropExchangeIniFile::~CXTPPropExchangeIniFile()
+{
+	if (IsRootSection() && !m_strFileName.IsEmpty() && m_bTempFile)
+	{
+		::DeleteFile((LPTSTR)(LPCTSTR)m_strFileName);
+	}
+
+}
+
+
+void CXTPPropExchangeIniFile::EmptySection()
+{
+	if (m_bEmptySection || m_strSectionName.IsEmpty())
+		return;
+
+	CXTPPropExchange::EmptySection();
+
+	size_t nLength = (size_t)m_strSectionName.GetLength();
+	LPTSTR lpszBuffer = 0;
+	int nSize = 8000;
+
+	do
+	{
+		lpszBuffer = new TCHAR[nSize];
+		int nResult = GetPrivateProfileSectionNames(lpszBuffer, nSize, m_strFileName);
+
+		if (nResult == 0)
+		{
+			delete[] lpszBuffer;
+			return;
+		}
+
+		if (nResult == nSize - 2)
+		{
+			nSize = nSize * 2;
+			delete[] lpszBuffer;
+			lpszBuffer = 0;
+		}
+	}
+	while (lpszBuffer == 0);
+
+	LPTSTR lpszSection = lpszBuffer;
+	size_t nSectionLen = _tcslen(lpszSection);
+
+	while (nSectionLen > 0)
+	{
+		if (nLength <= nSectionLen &&
+			(memcmp((LPCTSTR)m_strSectionName, lpszSection, nLength * sizeof(TCHAR)) == 0) &&
+			(nLength == nSectionLen || lpszSection[nLength] == _T('\\')))
+		{
+			WritePrivateProfileString(lpszSection, NULL, NULL, m_strFileName);
+		}
+
+		lpszSection = lpszSection + nSectionLen + 1;
+		nSectionLen = _tcslen(lpszSection);
+	}
+
+
+	delete[] lpszBuffer;
+}
+
+CXTPPropExchange* CXTPPropExchangeIniFile::GetSection(LPCTSTR lpszSection)
+{
+	OnBeforeExchange();
+
+	CXTPPropExchangeIniFile* pSection = new CXTPPropExchangeIniFile(IsLoading(), m_strSectionName, lpszSection);
+	pSection->InitSection(this);
+	pSection->m_strFileName = m_strFileName;
+	pSection->m_bTempFile = m_bTempFile;
+	return pSection;
+}
+
+BOOL CXTPPropExchangeIniFile::OnBeforeExchange()
+{
+	if (!m_bInitialized)
+	{
+		if (m_strFileName.IsEmpty())
+		{
+			TCHAR lpszTempPath[MAX_PATH];
+			TCHAR lpszTempFileName[MAX_PATH];
+
+			if (GetTempPath(MAX_PATH, lpszTempPath) == 0)
+				return FALSE;
+
+			if (GetTempFileName(lpszTempPath, _T("xtp"), 0, lpszTempFileName) == 0)
+				return FALSE;
+
+			m_strFileName = lpszTempFileName;
+			m_bTempFile = TRUE;
+		}
+
+		m_bInitialized = TRUE;
+	}
+	return !m_strFileName.IsEmpty();
+}
+
+
+BOOL CXTPPropExchangeIniFile::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
+				void* pvProp, const void* pvDefault /*= NULL*/)
+{
+	if (m_bLoading)
+	{
+		if (!m_bUseDefaultOnLoad)
+			pvDefault = NULL;
+
+		if (!OnBeforeExchange())
+			return CopyPropValue(vtProp, pvProp, pvDefault);
+
+		CString strValue;
+
+		DWORD dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(256), 256, m_strFileName);
+
+		if (dwSize == 0)
+			return CopyPropValue(vtProp, pvProp, pvDefault);
+
+		if (dwSize == 256 - 1)
+		{
+			dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(16000), 16000, m_strFileName);
+			ASSERT(dwSize < 16000 - 1);
+		}
+
+		strValue.ReleaseBuffer(dwSize);
+
+		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
+	}
+	else
+	{
+		if (!m_bUseDefaultOnSave)
+			pvDefault = NULL;
+
+		if (!OnBeforeExchange())
+			return FALSE;
+
+		if (IsSamePropValue(vtProp, pvProp, pvDefault))
+		{
+			if (!m_bEmptySection)
+				WritePrivateProfileString (m_strSectionName, pszPropName, NULL, m_strFileName);
+
+			return TRUE;
+		}
+
+		CString strValue;
+		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
+			return FALSE;
+
+		if (!WritePrivateProfileString (m_strSectionName, pszPropName, strValue, m_strFileName))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+void CXTPPropExchangeIniFile::SaveToFile(LPCTSTR strFileName)
+{
+	ASSERT(IsRootSection() && IsStoring());
+
+	if (m_strFileName.Compare(strFileName) != 0 && !m_strFileName.IsEmpty())
+	{
+		::DeleteFile(strFileName);
+		::CopyFile(m_strFileName, strFileName, FALSE);
+	}
+}
+
+BOOL CXTPPropExchangeIniFile::LoadFromFile(LPCTSTR strFileName)
+{
+	ASSERT(IsRootSection() && IsLoading());
+
+	if (!FILEEXISTS_S(strFileName))
+		return FALSE;
+
+	if (!OnBeforeExchange())
+		return FALSE;
+
+	return ::CopyFile(strFileName, m_strFileName, FALSE);
+}
+
+void CXTPPropExchangeIniFile::AssignFile(LPCTSTR strFileName)
+{
+	m_strFileName = strFileName;
+	m_bTempFile = FALSE;
+	m_bEmptySection = FALSE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// PX_ functions
+
+BOOL AFX_CDECL PX_Byte(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE& nValue, BYTE nDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&nValue, short);
+	if (!pPX)
+		return FALSE;
+
+	return  pPX->ExchangeProp(pszPropName, VT_UI1, &nValue, &nDefault);
+}
+
+BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&sValue, short);
+	if (!pPX)
+		return FALSE;
+
+	return  pPX->ExchangeProp(pszPropName, VT_I2, &sValue);
+}
+
+BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue,
+	short sDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&sValue, short);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I2, &sValue, &sDefault);
+}
+
+BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&usValue, USHORT);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue);
+}
+
+BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue,
+	USHORT usDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&usValue, USHORT);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue, &usDefault);
+}
+
+BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&lValue, long);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue);
+}
+
+BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue,
+	long lDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&lValue, long);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue, &lDefault);
+}
+
+BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&dwValue, DWORD);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue);
+}
+
+BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue,
+	DWORD dwDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&dwValue, DWORD);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue, &dwDefault);
+}
+
+BOOL AFX_CDECL PX_UI8(CXTPPropExchange* pPX, LPCTSTR pszPropName,
+	ULONGLONG& ullValue, ULONGLONG ullDefault)
+{
+	POINT ptData64 = {(LONG)(DWORD)(ullValue >> 32), (LONG)(DWORD)ullValue};
+	POINT ptDefault = {(LONG)(DWORD)(ullDefault >> 32), (LONG)(DWORD)ullDefault};
+
+	BOOL bResult = PX_Point(pPX, pszPropName, ptData64, ptDefault);
+
+	if (bResult && pPX->IsLoading())
+	{
+		ullValue = (DWORD)ptData64.x;
+		ullValue = ullValue << 32;
+		ullValue += (DWORD)ptData64.y;
+	}
+
+	return bResult;
+}
+
+BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&nValue, int);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue);
+}
+
+BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue,
+	int nDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&nValue, int);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue, &nDefault);
+}
+
+BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&ulValue, ULONG);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue);
+}
+
+BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue,
+	ULONG ulDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&ulValue, ULONG);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue, &ulDefault);
+}
+
+BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&bValue, BOOL);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue);
+}
+
+BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue,
+	BOOL bDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&bValue, BOOL);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue, &bDefault);
+}
+
+BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&strValue, CString);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue);
+}
+
+BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue,
+	LPCTSTR lpszDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&strValue, CString);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue, lpszDefault);
+}
+
+BOOL AFX_CDECL PX_Bstr(CXTPPropExchange* pPX, LPCTSTR pszPropName, BSTR& lpszValue,
+	BSTR lpszDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&lpszValue, BSTR);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_BSTR, &lpszValue, lpszDefault);
+}
+
+BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&floatValue, float);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue);
+}
+
+BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue,
+	float floatDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&floatValue, float);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue, &floatDefault);
+}
+
+BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&doubleValue, double);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue);
+}
+
+BOOL AFX_CDECL PX_DateTime(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleDateTime& dtValue)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&dtValue, COleDateTime);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_DATE, &dtValue);
+}
+
+BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue,
+	double doubleDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT_POINTER(&doubleValue, double);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue, &doubleDefault);
+}
+
+BOOL AFX_CDECL PX_Size(CXTPPropExchange* pPX, LPCTSTR pszPropName, SIZE& szValue, SIZE szDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &szValue, &szDefault);
+}
+
+BOOL AFX_CDECL PX_Point(CXTPPropExchange* pPX, LPCTSTR pszPropName, POINT& ptValue, POINT ptDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	ASSERT(sizeof(POINT) == sizeof(SIZE));
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &ptValue, &ptDefault);
+}
+
+BOOL AFX_CDECL PX_Rect(CXTPPropExchange* pPX, LPCTSTR pszPropName, RECT& rcValue, RECT rcDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_EX_RECT, &rcValue, &rcDefault);
+}
+
+BOOL AFX_CDECL PX_Variant(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleVariant& variant, COleVariant variantDefault)
+{
+	ASSERT_POINTER(pPX, CXTPPropExchange);
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeProp(pszPropName, VT_VARIANT, &variant, &variantDefault);
+}
+
+
+BOOL AFX_CDECL PX_RuntimeClass(CXTPPropExchange* pPX, LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
+{
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeRuntimeClass(pszPropName, pClass, pDefaultClass);
+}
+
+BOOL AFX_CDECL PX_Blob(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
+{
+	if (!pPX)
+		return FALSE;
+
+	return pPX->ExchangeBlobProp(pszPropName, pData, nBytes);
+}
+
+
+BOOL AFX_CDECL PX_Serialize(CXTPPropExchange* pPX, LPCTSTR pszPropName, CObject* pObject)
+{
+	if (!pPX)
+		return FALSE;
+
+	CArchive* pArchive = pPX->GetArchive(pszPropName);
+
+	if (!pArchive)
+		return FALSE;
+
+	BOOL bResult = FALSE;
+	try
+	{
+		pObject->Serialize(*pArchive);
+		bResult = TRUE;
+	}
+	catch (COleException* pEx)
+	{
+		pEx->Delete ();
+
+	}
+	catch (CArchiveException* pEx)
+	{
+		pEx->Delete ();
+	}
+
+	pPX->ReleaseArchive(pszPropName, pArchive);
+
+	return bResult;
+}
+
+

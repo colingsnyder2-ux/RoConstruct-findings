@@ -1,219 +1,289 @@
-// roc 2007-03 0052c8e0  unit: seg_00520000  size: 786 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0052c8e0
-//
-// 0052c8e0  83ec18               sub esp, 0x18
-// 0052c8e3  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0052c8e7  53                   push ebx
-// 0052c8e8  55                   push ebp
-// 0052c8e9  56                   push esi
-// 0052c8ea  c744241407000000     mov dword ptr [esp + 0x14], 7
-// 0052c8f2  83c008               add eax, 8
-// 0052c8f5  57                   push edi
-// 0052c8f6  8b7014               mov esi, dword ptr [eax + 0x14]
-// 0052c8f9  8b50f8               mov edx, dword ptr [eax - 8]
-// 0052c8fc  8b7810               mov edi, dword ptr [eax + 0x10]
-// 0052c8ff  8d0c32               lea ecx, [edx + esi]
-// 0052c902  2bd6                 sub edx, esi
-// 0052c904  8b70fc               mov esi, dword ptr [eax - 4]
-// 0052c907  8d1c3e               lea ebx, [esi + edi]
-// 0052c90a  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 0052c90e  8b580c               mov ebx, dword ptr [eax + 0xc]
-// 0052c911  2bf7                 sub esi, edi
-// 0052c913  8b38                 mov edi, dword ptr [eax]
-// 0052c915  8d2c3b               lea ebp, [ebx + edi]
-// 0052c918  896c2414             mov dword ptr [esp + 0x14], ebp
-// 0052c91c  8b6808               mov ebp, dword ptr [eax + 8]
-// 0052c91f  2bfb                 sub edi, ebx
-// 0052c921  8b5804               mov ebx, dword ptr [eax + 4]
-// 0052c924  03eb                 add ebp, ebx
-// 0052c926  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052c92a  03e9                 add ebp, ecx
-// 0052c92c  2b4c2410             sub ecx, dword ptr [esp + 0x10]
-// 0052c930  2b5808               sub ebx, dword ptr [eax + 8]
-// 0052c933  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0052c937  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052c93b  894c2424             mov dword ptr [esp + 0x24], ecx
-// 0052c93f  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0052c943  03e9                 add ebp, ecx
-// 0052c945  2b4c2414             sub ecx, dword ptr [esp + 0x14]
-// 0052c949  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052c94d  894c2414             mov dword ptr [esp + 0x14], ecx
-// 0052c951  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0052c955  03e9                 add ebp, ecx
-// 0052c957  2b4c2410             sub ecx, dword ptr [esp + 0x10]
-// 0052c95b  03ed                 add ebp, ebp
-// 0052c95d  03ed                 add ebp, ebp
-// 0052c95f  8968f8               mov dword ptr [eax - 8], ebp
-// 0052c962  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 0052c966  03c9                 add ecx, ecx
-// 0052c968  03c9                 add ecx, ecx
-// 0052c96a  894808               mov dword ptr [eax + 8], ecx
-// 0052c96d  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0052c971  03cd                 add ecx, ebp
-// 0052c973  69ed7e180000         imul ebp, ebp, 0x187e
-// 0052c979  69c951110000         imul ecx, ecx, 0x1151
-// 0052c97f  8dac2900040000       lea ebp, [ecx + ebp + 0x400]
-// 0052c986  c1fd0b               sar ebp, 0xb
-// 0052c989  8928                 mov dword ptr [eax], ebp
-// 0052c98b  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052c98f  69ed213b0000         imul ebp, ebp, 0x3b21
-// 0052c995  2bcd                 sub ecx, ebp
-// 0052c997  81c100040000         add ecx, 0x400
-// 0052c99d  c1f90b               sar ecx, 0xb
-// 0052c9a0  894810               mov dword ptr [eax + 0x10], ecx
-// 0052c9a3  8d0c33               lea ecx, [ebx + esi]
-// 0052c9a6  8d2c17               lea ebp, [edi + edx]
-// 0052c9a9  896c2424             mov dword ptr [esp + 0x24], ebp
-// 0052c9ad  03e9                 add ebp, ecx
-// 0052c9af  69c9c53e0000         imul ecx, ecx, 0x3ec5
-// 0052c9b5  69eda1250000         imul ebp, ebp, 0x25a1
-// 0052c9bb  896c2414             mov dword ptr [esp + 0x14], ebp
-// 0052c9bf  8d2c13               lea ebp, [ebx + edx]
-// 0052c9c2  69db8e090000         imul ebx, ebx, 0x98e
-// 0052c9c8  69ed33e3ffff         imul ebp, ebp, 0xffffe333
-// 0052c9ce  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0052c9d2  8d2c37               lea ebp, [edi + esi]
-// 0052c9d5  69ffb3410000         imul edi, edi, 0x41b3
-// 0052c9db  69edfdadffff         imul ebp, ebp, 0xffffadfd
-// 0052c9e1  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 0052c9e5  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052c9e9  2be9                 sub ebp, ecx
-// 0052c9eb  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 0052c9ef  69c97c0c0000         imul ecx, ecx, 0xc7c
-// 0052c9f5  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052c9f9  035c2410             add ebx, dword ptr [esp + 0x10]
-// 0052c9fd  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052ca01  2be9                 sub ebp, ecx
-// 0052ca03  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0052ca07  8d9c0b00040000       lea ebx, [ebx + ecx + 0x400]
-// 0052ca0e  c1fb0b               sar ebx, 0xb
-// 0052ca11  895814               mov dword ptr [eax + 0x14], ebx
-// 0052ca14  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 0052ca18  03fd                 add edi, ebp
-// 0052ca1a  69f654620000         imul esi, esi, 0x6254
-// 0052ca20  69d20b300000         imul edx, edx, 0x300b
-// 0052ca26  03742410             add esi, dword ptr [esp + 0x10]
-// 0052ca2a  03d5                 add edx, ebp
-// 0052ca2c  8dbc1f00040000       lea edi, [edi + ebx + 0x400]
-// 0052ca33  8db41e00040000       lea esi, [esi + ebx + 0x400]
-// 0052ca3a  8d940a00040000       lea edx, [edx + ecx + 0x400]
-// 0052ca41  c1ff0b               sar edi, 0xb
-// 0052ca44  c1fe0b               sar esi, 0xb
-// 0052ca47  c1fa0b               sar edx, 0xb
-// 0052ca4a  89780c               mov dword ptr [eax + 0xc], edi
-// 0052ca4d  897004               mov dword ptr [eax + 4], esi
-// 0052ca50  8950fc               mov dword ptr [eax - 4], edx
-// 0052ca53  83c020               add eax, 0x20
-// 0052ca56  836c241801           sub dword ptr [esp + 0x18], 1
-// 0052ca5b  0f8995feffff         jns 0x52c8f6
-// 0052ca61  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 0052ca65  c744241807000000     mov dword ptr [esp + 0x18], 7
-// 0052ca6d  83c040               add eax, 0x40
-// 0052ca70  8bb0a0000000         mov esi, dword ptr [eax + 0xa0]
-// 0052ca76  8b50c0               mov edx, dword ptr [eax - 0x40]
-// 0052ca79  8bb880000000         mov edi, dword ptr [eax + 0x80]
-// 0052ca7f  8d0c32               lea ecx, [edx + esi]
-// 0052ca82  2bd6                 sub edx, esi
-// 0052ca84  8b70e0               mov esi, dword ptr [eax - 0x20]
-// 0052ca87  8d1c3e               lea ebx, [esi + edi]
-// 0052ca8a  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 0052ca8e  8b5860               mov ebx, dword ptr [eax + 0x60]
-// 0052ca91  2bf7                 sub esi, edi
-// 0052ca93  8b38                 mov edi, dword ptr [eax]
-// 0052ca95  8d2c3b               lea ebp, [ebx + edi]
-// 0052ca98  896c2414             mov dword ptr [esp + 0x14], ebp
-// 0052ca9c  8b6840               mov ebp, dword ptr [eax + 0x40]
-// 0052ca9f  2bfb                 sub edi, ebx
-// 0052caa1  8b5820               mov ebx, dword ptr [eax + 0x20]
-// 0052caa4  03eb                 add ebp, ebx
-// 0052caa6  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052caaa  03e9                 add ebp, ecx
-// 0052caac  2b4c2410             sub ecx, dword ptr [esp + 0x10]
-// 0052cab0  2b5840               sub ebx, dword ptr [eax + 0x40]
-// 0052cab3  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0052cab7  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052cabb  894c2424             mov dword ptr [esp + 0x24], ecx
-// 0052cabf  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0052cac3  03e9                 add ebp, ecx
-// 0052cac5  2b4c2414             sub ecx, dword ptr [esp + 0x14]
-// 0052cac9  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052cacd  894c2414             mov dword ptr [esp + 0x14], ecx
-// 0052cad1  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0052cad5  8d6c2902             lea ebp, [ecx + ebp + 2]
-// 0052cad9  2b4c2410             sub ecx, dword ptr [esp + 0x10]
-// 0052cadd  c1fd02               sar ebp, 2
-// 0052cae0  8968c0               mov dword ptr [eax - 0x40], ebp
-// 0052cae3  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 0052cae7  83c102               add ecx, 2
-// 0052caea  c1f902               sar ecx, 2
-// 0052caed  894840               mov dword ptr [eax + 0x40], ecx
-// 0052caf0  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0052caf4  03cd                 add ecx, ebp
-// 0052caf6  69ed7e180000         imul ebp, ebp, 0x187e
-// 0052cafc  69c951110000         imul ecx, ecx, 0x1151
-// 0052cb02  8dac2900400000       lea ebp, [ecx + ebp + 0x4000]
-// 0052cb09  c1fd0f               sar ebp, 0xf
-// 0052cb0c  8928                 mov dword ptr [eax], ebp
-// 0052cb0e  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052cb12  69ed213b0000         imul ebp, ebp, 0x3b21
-// 0052cb18  2bcd                 sub ecx, ebp
-// 0052cb1a  81c100400000         add ecx, 0x4000
-// 0052cb20  c1f90f               sar ecx, 0xf
-// 0052cb23  8d2c17               lea ebp, [edi + edx]
-// 0052cb26  896c2424             mov dword ptr [esp + 0x24], ebp
-// 0052cb2a  898880000000         mov dword ptr [eax + 0x80], ecx
-// 0052cb30  8d0c33               lea ecx, [ebx + esi]
-// 0052cb33  03e9                 add ebp, ecx
-// 0052cb35  69c9c53e0000         imul ecx, ecx, 0x3ec5
-// 0052cb3b  69eda1250000         imul ebp, ebp, 0x25a1
-// 0052cb41  896c2414             mov dword ptr [esp + 0x14], ebp
-// 0052cb45  8d2c13               lea ebp, [ebx + edx]
-// 0052cb48  69db8e090000         imul ebx, ebx, 0x98e
-// 0052cb4e  69ed33e3ffff         imul ebp, ebp, 0xffffe333
-// 0052cb54  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0052cb58  8d2c37               lea ebp, [edi + esi]
-// 0052cb5b  69ffb3410000         imul edi, edi, 0x41b3
-// 0052cb61  69edfdadffff         imul ebp, ebp, 0xffffadfd
-// 0052cb67  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 0052cb6b  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0052cb6f  2be9                 sub ebp, ecx
-// 0052cb71  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0052cb75  896c2410             mov dword ptr [esp + 0x10], ebp
-// 0052cb79  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 0052cb7d  035c2410             add ebx, dword ptr [esp + 0x10]
-// 0052cb81  69ed7c0c0000         imul ebp, ebp, 0xc7c
-// 0052cb87  2bcd                 sub ecx, ebp
-// 0052cb89  8b6c2420             mov ebp, dword ptr [esp + 0x20]
-// 0052cb8d  8d9c2b00400000       lea ebx, [ebx + ebp + 0x4000]
-// 0052cb94  c1fb0f               sar ebx, 0xf
-// 0052cb97  8998a0000000         mov dword ptr [eax + 0xa0], ebx
-// 0052cb9d  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 0052cba1  03f9                 add edi, ecx
-// 0052cba3  8dbc1f00400000       lea edi, [edi + ebx + 0x4000]
-// 0052cbaa  69f654620000         imul esi, esi, 0x6254
-// 0052cbb0  69d20b300000         imul edx, edx, 0x300b
-// 0052cbb6  03742410             add esi, dword ptr [esp + 0x10]
-// 0052cbba  03d1                 add edx, ecx
-// 0052cbbc  8db41e00400000       lea esi, [esi + ebx + 0x4000]
-// 0052cbc3  8d942a00400000       lea edx, [edx + ebp + 0x4000]
-// 0052cbca  c1ff0f               sar edi, 0xf
-// 0052cbcd  c1fe0f               sar esi, 0xf
-// 0052cbd0  c1fa0f               sar edx, 0xf
-// 0052cbd3  897860               mov dword ptr [eax + 0x60], edi
-// 0052cbd6  897020               mov dword ptr [eax + 0x20], esi
-// 0052cbd9  8950e0               mov dword ptr [eax - 0x20], edx
-// 0052cbdc  83c004               add eax, 4
-// 0052cbdf  836c241801           sub dword ptr [esp + 0x18], 1
-// 0052cbe4  0f8986feffff         jns 0x52ca70
-// 0052cbea  5f                   pop edi
-// 0052cbeb  5e                   pop esi
-// 0052cbec  5d                   pop ebp
-// 0052cbed  5b                   pop ebx
-// 0052cbee  83c418               add esp, 0x18
-// 0052cbf1  c3                   ret 
-// library jpeg-6b/jfdctint.c (function _jpeg_fdct_islow)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jfdctint.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jfdctint.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains a slow-but-accurate integer implementation of the
+ * forward DCT (Discrete Cosine Transform).
+ *
+ * A 2-D DCT can be done by 1-D DCT on each row followed by 1-D DCT
+ * on each column.  Direct algorithms are also available, but they are
+ * much more complex and seem not to be any faster when reduced to code.
+ *
+ * This implementation is based on an algorithm described in
+ *   C. Loeffler, A. Ligtenberg and G. Moschytz, "Practical Fast 1-D DCT
+ *   Algorithms with 11 Multiplications", Proc. Int'l. Conf. on Acoustics,
+ *   Speech, and Signal Processing 1989 (ICASSP '89), pp. 988-991.
+ * The primary algorithm described there uses 11 multiplies and 29 adds.
+ * We use their alternate method with 12 multiplies and 32 adds.
+ * The advantage of this method is that no data path contains more than one
+ * multiplication; this allows a very simple and accurate implementation in
+ * scaled fixed-point arithmetic, with a minimal number of shifts.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jdct.h"		/* Private declarations for DCT subsystem */
+
+#ifdef DCT_ISLOW_SUPPORTED
+
+
+/*
+ * This module is specialized to the case DCTSIZE = 8.
+ */
+
+#if DCTSIZE != 8
+  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
+#endif
+
+
+/*
+ * The poop on this scaling stuff is as follows:
+ *
+ * Each 1-D DCT step produces outputs which are a factor of sqrt(N)
+ * larger than the true DCT outputs.  The final outputs are therefore
+ * a factor of N larger than desired; since N=8 this can be cured by
+ * a simple right shift at the end of the algorithm.  The advantage of
+ * this arrangement is that we save two multiplications per 1-D DCT,
+ * because the y0 and y4 outputs need not be divided by sqrt(N).
+ * In the IJG code, this factor of 8 is removed by the quantization step
+ * (in jcdctmgr.c), NOT in this module.
+ *
+ * We have to do addition and subtraction of the integer inputs, which
+ * is no problem, and multiplication by fractional constants, which is
+ * a problem to do in integer arithmetic.  We multiply all the constants
+ * by CONST_SCALE and convert them to integer constants (thus retaining
+ * CONST_BITS bits of precision in the constants).  After doing a
+ * multiplication we have to divide the product by CONST_SCALE, with proper
+ * rounding, to produce the correct output.  This division can be done
+ * cheaply as a right shift of CONST_BITS bits.  We postpone shifting
+ * as long as possible so that partial sums can be added together with
+ * full fractional precision.
+ *
+ * The outputs of the first pass are scaled up by PASS1_BITS bits so that
+ * they are represented to better-than-integral precision.  These outputs
+ * require BITS_IN_JSAMPLE + PASS1_BITS + 3 bits; this fits in a 16-bit word
+ * with the recommended scaling.  (For 12-bit sample data, the intermediate
+ * array is INT32 anyway.)
+ *
+ * To avoid overflow of the 32-bit intermediate results in pass 2, we must
+ * have BITS_IN_JSAMPLE + CONST_BITS + PASS1_BITS <= 26.  Error analysis
+ * shows that the values given below are the most effective.
+ */
+
+#if BITS_IN_JSAMPLE == 8
+#define CONST_BITS  13
+#define PASS1_BITS  2
+#else
+#define CONST_BITS  13
+#define PASS1_BITS  1		/* lose a little precision to avoid overflow */
+#endif
+
+/* Some C compilers fail to reduce "FIX(constant)" at compile time, thus
+ * causing a lot of useless floating-point operations at run time.
+ * To get around this we use the following pre-calculated constants.
+ * If you change CONST_BITS you may want to add appropriate values.
+ * (With a reasonable C compiler, you can just rely on the FIX() macro...)
+ */
+
+#if CONST_BITS == 13
+#define FIX_0_298631336  ((INT32)  2446)	/* FIX(0.298631336) */
+#define FIX_0_390180644  ((INT32)  3196)	/* FIX(0.390180644) */
+#define FIX_0_541196100  ((INT32)  4433)	/* FIX(0.541196100) */
+#define FIX_0_765366865  ((INT32)  6270)	/* FIX(0.765366865) */
+#define FIX_0_899976223  ((INT32)  7373)	/* FIX(0.899976223) */
+#define FIX_1_175875602  ((INT32)  9633)	/* FIX(1.175875602) */
+#define FIX_1_501321110  ((INT32)  12299)	/* FIX(1.501321110) */
+#define FIX_1_847759065  ((INT32)  15137)	/* FIX(1.847759065) */
+#define FIX_1_961570560  ((INT32)  16069)	/* FIX(1.961570560) */
+#define FIX_2_053119869  ((INT32)  16819)	/* FIX(2.053119869) */
+#define FIX_2_562915447  ((INT32)  20995)	/* FIX(2.562915447) */
+#define FIX_3_072711026  ((INT32)  25172)	/* FIX(3.072711026) */
+#else
+#define FIX_0_298631336  FIX(0.298631336)
+#define FIX_0_390180644  FIX(0.390180644)
+#define FIX_0_541196100  FIX(0.541196100)
+#define FIX_0_765366865  FIX(0.765366865)
+#define FIX_0_899976223  FIX(0.899976223)
+#define FIX_1_175875602  FIX(1.175875602)
+#define FIX_1_501321110  FIX(1.501321110)
+#define FIX_1_847759065  FIX(1.847759065)
+#define FIX_1_961570560  FIX(1.961570560)
+#define FIX_2_053119869  FIX(2.053119869)
+#define FIX_2_562915447  FIX(2.562915447)
+#define FIX_3_072711026  FIX(3.072711026)
+#endif
+
+
+/* Multiply an INT32 variable by an INT32 constant to yield an INT32 result.
+ * For 8-bit samples with the recommended scaling, all the variable
+ * and constant values involved are no more than 16 bits wide, so a
+ * 16x16->32 bit multiply can be used instead of a full 32x32 multiply.
+ * For 12-bit samples, a full 32-bit multiplication will be needed.
+ */
+
+#if BITS_IN_JSAMPLE == 8
+#define MULTIPLY(var,const)  MULTIPLY16C16(var,const)
+#else
+#define MULTIPLY(var,const)  ((var) * (const))
+#endif
+
+
+/*
+ * Perform the forward DCT on one block of samples.
+ */
+
+GLOBAL(void)
+jpeg_fdct_islow (DCTELEM * data)
+{
+  INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  INT32 tmp10, tmp11, tmp12, tmp13;
+  INT32 z1, z2, z3, z4, z5;
+  DCTELEM *dataptr;
+  int ctr;
+  SHIFT_TEMPS
+
+  /* Pass 1: process rows. */
+  /* Note results are scaled up by sqrt(8) compared to a true DCT; */
+  /* furthermore, we scale the results by 2**PASS1_BITS. */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[0] + dataptr[7];
+    tmp7 = dataptr[0] - dataptr[7];
+    tmp1 = dataptr[1] + dataptr[6];
+    tmp6 = dataptr[1] - dataptr[6];
+    tmp2 = dataptr[2] + dataptr[5];
+    tmp5 = dataptr[2] - dataptr[5];
+    tmp3 = dataptr[3] + dataptr[4];
+    tmp4 = dataptr[3] - dataptr[4];
+    
+    /* Even part per LL&M figure 1 --- note that published figure is faulty;
+     * rotator "sqrt(2)*c1" should be "sqrt(2)*c6".
+     */
+    
+    tmp10 = tmp0 + tmp3;
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[0] = (DCTELEM) ((tmp10 + tmp11) << PASS1_BITS);
+    dataptr[4] = (DCTELEM) ((tmp10 - tmp11) << PASS1_BITS);
+    
+    z1 = MULTIPLY(tmp12 + tmp13, FIX_0_541196100);
+    dataptr[2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, FIX_0_765366865),
+				   CONST_BITS-PASS1_BITS);
+    dataptr[6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, - FIX_1_847759065),
+				   CONST_BITS-PASS1_BITS);
+    
+    /* Odd part per figure 8 --- note paper omits factor of sqrt(2).
+     * cK represents cos(K*pi/16).
+     * i0..i3 in the paper are tmp4..tmp7 here.
+     */
+    
+    z1 = tmp4 + tmp7;
+    z2 = tmp5 + tmp6;
+    z3 = tmp4 + tmp6;
+    z4 = tmp5 + tmp7;
+    z5 = MULTIPLY(z3 + z4, FIX_1_175875602); /* sqrt(2) * c3 */
+    
+    tmp4 = MULTIPLY(tmp4, FIX_0_298631336); /* sqrt(2) * (-c1+c3+c5-c7) */
+    tmp5 = MULTIPLY(tmp5, FIX_2_053119869); /* sqrt(2) * ( c1+c3-c5+c7) */
+    tmp6 = MULTIPLY(tmp6, FIX_3_072711026); /* sqrt(2) * ( c1+c3+c5-c7) */
+    tmp7 = MULTIPLY(tmp7, FIX_1_501321110); /* sqrt(2) * ( c1+c3-c5-c7) */
+    z1 = MULTIPLY(z1, - FIX_0_899976223); /* sqrt(2) * (c7-c3) */
+    z2 = MULTIPLY(z2, - FIX_2_562915447); /* sqrt(2) * (-c1-c3) */
+    z3 = MULTIPLY(z3, - FIX_1_961570560); /* sqrt(2) * (-c3-c5) */
+    z4 = MULTIPLY(z4, - FIX_0_390180644); /* sqrt(2) * (c5-c3) */
+    
+    z3 += z5;
+    z4 += z5;
+    
+    dataptr[7] = (DCTELEM) DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS);
+    dataptr[5] = (DCTELEM) DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS);
+    dataptr[3] = (DCTELEM) DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS);
+    dataptr[1] = (DCTELEM) DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS);
+    
+    dataptr += DCTSIZE;		/* advance pointer to next row */
+  }
+
+  /* Pass 2: process columns.
+   * We remove the PASS1_BITS scaling, but leave the results scaled up
+   * by an overall factor of 8.
+   */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[DCTSIZE*0] + dataptr[DCTSIZE*7];
+    tmp7 = dataptr[DCTSIZE*0] - dataptr[DCTSIZE*7];
+    tmp1 = dataptr[DCTSIZE*1] + dataptr[DCTSIZE*6];
+    tmp6 = dataptr[DCTSIZE*1] - dataptr[DCTSIZE*6];
+    tmp2 = dataptr[DCTSIZE*2] + dataptr[DCTSIZE*5];
+    tmp5 = dataptr[DCTSIZE*2] - dataptr[DCTSIZE*5];
+    tmp3 = dataptr[DCTSIZE*3] + dataptr[DCTSIZE*4];
+    tmp4 = dataptr[DCTSIZE*3] - dataptr[DCTSIZE*4];
+    
+    /* Even part per LL&M figure 1 --- note that published figure is faulty;
+     * rotator "sqrt(2)*c1" should be "sqrt(2)*c6".
+     */
+    
+    tmp10 = tmp0 + tmp3;
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[DCTSIZE*0] = (DCTELEM) DESCALE(tmp10 + tmp11, PASS1_BITS);
+    dataptr[DCTSIZE*4] = (DCTELEM) DESCALE(tmp10 - tmp11, PASS1_BITS);
+    
+    z1 = MULTIPLY(tmp12 + tmp13, FIX_0_541196100);
+    dataptr[DCTSIZE*2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, FIX_0_765366865),
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, - FIX_1_847759065),
+					   CONST_BITS+PASS1_BITS);
+    
+    /* Odd part per figure 8 --- note paper omits factor of sqrt(2).
+     * cK represents cos(K*pi/16).
+     * i0..i3 in the paper are tmp4..tmp7 here.
+     */
+    
+    z1 = tmp4 + tmp7;
+    z2 = tmp5 + tmp6;
+    z3 = tmp4 + tmp6;
+    z4 = tmp5 + tmp7;
+    z5 = MULTIPLY(z3 + z4, FIX_1_175875602); /* sqrt(2) * c3 */
+    
+    tmp4 = MULTIPLY(tmp4, FIX_0_298631336); /* sqrt(2) * (-c1+c3+c5-c7) */
+    tmp5 = MULTIPLY(tmp5, FIX_2_053119869); /* sqrt(2) * ( c1+c3-c5+c7) */
+    tmp6 = MULTIPLY(tmp6, FIX_3_072711026); /* sqrt(2) * ( c1+c3+c5-c7) */
+    tmp7 = MULTIPLY(tmp7, FIX_1_501321110); /* sqrt(2) * ( c1+c3-c5-c7) */
+    z1 = MULTIPLY(z1, - FIX_0_899976223); /* sqrt(2) * (c7-c3) */
+    z2 = MULTIPLY(z2, - FIX_2_562915447); /* sqrt(2) * (-c1-c3) */
+    z3 = MULTIPLY(z3, - FIX_1_961570560); /* sqrt(2) * (-c3-c5) */
+    z4 = MULTIPLY(z4, - FIX_0_390180644); /* sqrt(2) * (c5-c3) */
+    
+    z3 += z5;
+    z4 += z5;
+    
+    dataptr[DCTSIZE*7] = (DCTELEM) DESCALE(tmp4 + z1 + z3,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*5] = (DCTELEM) DESCALE(tmp5 + z2 + z4,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*3] = (DCTELEM) DESCALE(tmp6 + z2 + z3,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*1] = (DCTELEM) DESCALE(tmp7 + z1 + z4,
+					   CONST_BITS+PASS1_BITS);
+    
+    dataptr++;			/* advance pointer to next column */
+  }
+}
+
+#endif /* DCT_ISLOW_SUPPORTED */

@@ -1,68 +1,281 @@
-// roc 2012-06 00a57cb0  unit: VCEdit::?$CXTMaskEditT  size: 142 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a57cb0
-//
-// 00a57cb0  56                   push esi
-// 00a57cb1  8bf1                 mov esi, ecx
-// 00a57cb3  837e5c00             cmp dword ptr [esi + 0x5c], 0
-// 00a57cb7  57                   push edi
-// 00a57cb8  7421                 je 0xa57cdb
-// 00a57cba  837e2000             cmp dword ptr [esi + 0x20], 0
-// 00a57cbe  741b                 je 0xa57cdb
-// 00a57cc0  e80d190400           call 0xa995d2
-// 00a57cc5  a900080000           test eax, 0x800
-// 00a57cca  750f                 jne 0xa57cdb
-// 00a57ccc  8d7e70               lea edi, [esi + 0x70]
-// 00a57ccf  8bcf                 mov ecx, edi
-// 00a57cd1  ff156046b200         call dword ptr [0xb24660]
-// 00a57cd7  84c0                 test al, al
-// 00a57cd9  7407                 je 0xa57ce2
-// 00a57cdb  5f                   pop edi
-// 00a57cdc  33c0                 xor eax, eax
-// 00a57cde  5e                   pop esi
-// 00a57cdf  c20800               ret 8
-// 00a57ce2  8b06                 mov eax, dword ptr [esi]
-// 00a57ce4  8b9050010000         mov edx, dword ptr [eax + 0x150]
-// 00a57cea  53                   push ebx
-// 00a57ceb  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 00a57cef  0fb60b               movzx ecx, byte ptr [ebx]
-// 00a57cf2  51                   push ecx
-// 00a57cf3  8bce                 mov ecx, esi
-// 00a57cf5  ffd2                 call edx
-// 00a57cf7  85c0                 test eax, eax
-// 00a57cf9  750b                 jne 0xa57d06
-// 00a57cfb  5b                   pop ebx
-// 00a57cfc  5f                   pop edi
-// 00a57cfd  b801000000           mov eax, 1
-// 00a57d02  5e                   pop esi
-// 00a57d03  c20800               ret 8
-// 00a57d06  8bcf                 mov ecx, edi
-// 00a57d08  ff155846b200         call dword ptr [0xb24658]
-// 00a57d0e  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 00a57d12  3bf8                 cmp edi, eax
-// 00a57d14  7d0c                 jge 0xa57d22
-// 00a57d16  57                   push edi
-// 00a57d17  8bce                 mov ecx, esi
-// 00a57d19  e822fcffff           call 0xa57940
-// 00a57d1e  85c0                 test eax, eax
-// 00a57d20  7508                 jne 0xa57d2a
-// 00a57d22  5b                   pop ebx
-// 00a57d23  5f                   pop edi
-// 00a57d24  33c0                 xor eax, eax
-// 00a57d26  5e                   pop esi
-// 00a57d27  c20800               ret 8
-// 00a57d2a  8b06                 mov eax, dword ptr [esi]
-// 00a57d2c  8b904c010000         mov edx, dword ptr [eax + 0x14c]
-// 00a57d32  57                   push edi
-// 00a57d33  53                   push ebx
-// 00a57d34  8bce                 mov ecx, esi
-// 00a57d36  ffd2                 call edx
-// 00a57d38  5b                   pop ebx
-// 00a57d39  5f                   pop edi
-// 00a57d3a  5e                   pop esi
-// 00a57d3b  c20800               ret 8
-// copied from an identical function in another client (function ?CheckChar@?$CXTMaskEditT@VCEdit@@@@UAEHAADH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTMaskEdit.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTMaskEdit.cpp : implementation of the CXTMaskEdit class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
+
+#include "XTGlobal.h"
+#include "XTMaskEdit.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMaskEdit
+/////////////////////////////////////////////////////////////////////////////
+
+CXTMaskEdit::CXTMaskEdit()
+{
+}
+
+
+IMPLEMENT_DYNAMIC(CXTMaskEdit, CEdit)
+
+BEGIN_MESSAGE_MAP(CXTMaskEdit, CEdit)
+	ON_MASKEDIT_REFLECT()
+END_MESSAGE_MAP()
+
+BOOL CXTMaskEdit::SetEditMask(LPCTSTR lpszMask, LPCTSTR lpszLiteral, LPCTSTR lpszDefault /*= NULL*/)
+{
+	return CXTMaskEditT<CEdit>::SetEditMask(lpszMask, lpszLiteral, lpszDefault);
+}
+
+bool CXTMaskEdit::Initialize(CWnd* /*pParentWnd*/)
+{
+	SetFont(&XTAuxData().font);
+	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTDateEdit class
+/////////////////////////////////////////////////////////////////////////////
+
+CXTDateEdit::CXTDateEdit()
+{
+	m_bUseMask = true;
+	m_strMask = _T("00/00/0000");
+	m_strLiteral = _T("__/__/____");
+	m_strDefault = _T("00/00/0000");
+}
+
+COleDateTime CXTDateEdit::ReadOleDateTime(LPCTSTR lpszData)
+{
+	COleDateTime dt;
+	dt.ParseDateTime(lpszData);
+	return dt;
+}
+
+IMPLEMENT_DYNAMIC(CXTDateEdit, CXTMaskEdit)
+
+void CXTDateEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
+{
+	strData = dt.Format(_T("%d/%m/%Y"));
+}
+
+void CXTDateEdit::SetDateTime(COleDateTime& dt)
+{
+	CString strText;
+	FormatOleDateTime(strText, dt);
+	m_strWindowText = m_strDefault = strText;
+	SetWindowText(strText);
+}
+
+void CXTDateEdit::SetDateTime(LPCTSTR strDate)
+{
+	m_strWindowText = m_strDefault = strDate;
+	SetWindowText(strDate);
+}
+
+COleDateTime CXTDateEdit::GetDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return ReadOleDateTime(strText);
+}
+
+CString CXTDateEdit::GetWindowDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return strText;
+}
+
+BOOL CXTDateEdit::ProcessMask(TCHAR& nChar, int nEndPos)
+{
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit((TCHAR)nChar))
+	{
+		if (nEndPos == 0)
+		{
+			if (nChar > '3')
+				return FALSE;
+		}
+		if (nEndPos == 1)
+		{
+			if (m_strWindowText.GetAt(0) == _T('3'))
+			{
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+		}
+		if (nEndPos == 3)
+		{
+			if (nChar > _T('1'))
+				return FALSE;
+		}
+		if (nEndPos == 4)
+		{
+			if (m_strWindowText.GetAt(3) == _T('1'))
+			{
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTTimeEdit class
+/////////////////////////////////////////////////////////////////////////////
+
+CXTTimeEdit::CXTTimeEdit()
+{
+	m_bMilitary = false;
+	m_bUseMask = true;
+	m_strMask = _T("00:00");
+	m_strLiteral = _T("__:__");
+	m_strDefault = _T("00:00");
+	m_iHours = 0;
+	m_iMins = 0;
+}
+
+IMPLEMENT_DYNAMIC(CXTTimeEdit, CXTDateEdit)
+
+void CXTTimeEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
+{
+	if (dt.m_dt == 0)
+	{
+		strData = _T("00:00");
+	}
+	else
+	{
+		strData = dt.Format(_T("%H:%M"));
+	}
+}
+
+BOOL CXTTimeEdit::ProcessMask(TCHAR& nChar, int nEndPos)
+{
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit(nChar))
+	{
+		switch (nEndPos)
+		{
+		case 0:
+			if (m_bMilitary)
+			{
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+			else
+			{
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+			return TRUE;
+
+		case 1:
+			if (m_bMilitary)
+			{
+				if (m_strWindowText.GetAt(0) == _T('2'))
+				{
+					if (nChar > _T('3'))
+						return FALSE;
+				}
+			}
+			else
+			{
+				if (m_strWindowText.GetAt(0) == _T('1'))
+				{
+					if (nChar > _T('2'))
+						return FALSE;
+				}
+			}
+			return TRUE;
+
+		case 3:
+			if (nChar > _T('5'))
+				return FALSE;
+			return TRUE;
+
+		case 4:
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+void CXTTimeEdit::SetHours(int nHours)
+{
+	m_iHours = nHours;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+void CXTTimeEdit::SetMins(int nMins)
+{
+	m_iMins = nMins;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+void CXTTimeEdit::SetTime(int nHours, int nMins)
+{
+	m_iHours = nHours;
+	m_iMins = nMins;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// DDX_ routines
+/////////////////////////////////////////////////////////////////////////////
+
+_XTP_EXT_CLASS void AFXAPI DDX_XTOleDateTime(CDataExchange* pDX, int nIDC, CXTDateEdit& rControl, COleDateTime& rDateTime)
+{
+	DDX_Control(pDX, nIDC, rControl);
+
+	if (pDX->m_bSaveAndValidate)
+	{
+		rDateTime = rControl.GetDateTime();
+	}
+	else
+	{
+		rControl.SetDateTime(rDateTime);
+	}
+}

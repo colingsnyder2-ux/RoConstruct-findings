@@ -1,18 +1,5 @@
-// from server: 51% by colin
-struct CXTPToolBar_CControlButtonHide {
-    void* construct();
-};
-
-extern "C" void __stdcall sub_63c810();
-extern "C" void __stdcall sub_738334();
-
-void* CXTPToolBar_CControlButtonHide::construct()
-{
-    sub_63c810();
-    *(int*)((char*)this + 0x14) = 0;
-    *(int*)((char*)this) = 0x7d791c;
-    *(int*)((char*)this + 0x20) = 0x7d78bc;
-    sub_738334();
-    *(int*)((char*)this + 0xf8) = 1;
-    return this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_749bfb0baa251aa7.cpp

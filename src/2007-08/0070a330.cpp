@@ -1,20 +1,5 @@
-// from server: 43% by colin
-struct CXTColorPageStandard {
-    char pad[0x120];
-    int field_120;
-    CXTColorPageStandard(int);
-};
-
-extern "C" void __stdcall sub_738808(int, int, int);
-extern "C" void __stdcall sub_709d00();
-extern "C" void* __stdcall sub_738718();
-
-CXTColorPageStandard::CXTColorPageStandard(int a)
-{
-    sub_738808(0x30, 0, 0x2462);
-    *(void**)this = (void*)0x7dd70c;
-    sub_709d00();
-    void* p = sub_738718();
-    *(unsigned int*)((char*)p + 4) &= 0xffffffdf;
-    field_120 = a;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_5078646af539c83f.cpp

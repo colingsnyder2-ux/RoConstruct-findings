@@ -1,30 +1,5 @@
-// from server: 50% by TrollStein
-struct CXTPDockingPaneVisualStudio2005SecondTheme
-{
-    int __cdecl GetThemeValue(int nIndex);
-};
-
-extern "C" void __stdcall sub_66f110(int);
-extern "C" void __stdcall sub_66f140(int);
-
-int CXTPDockingPaneVisualStudio2005SecondTheme::GetThemeValue(int nIndex)
-{
-    if (*(int*)((char*)this + 0x18) == 1)
-        return *(int*)((char*)this + 0x14c);
-    if (*(int*)((char*)this + 0x18) == 3)
-    {
-        int local;
-        sub_66f110(10);
-        int result = 0;
-        (*(void(__thiscall**)(void*, int*, int))(*(int*)this + 0xc))(this, &local, 1);
-        if (*(int*)((char*)&local + 8) == 1)
-        {
-            int* p = *(int**)((char*)&local + 4);
-            int* q = p ? (int*)((char*)p - 0x54) : 0;
-            result = *(int*)((char*)q + 0x1a0);
-        }
-        sub_66f140((int)&local);
-        return result;
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ccbe3fdaa0936aec.cpp

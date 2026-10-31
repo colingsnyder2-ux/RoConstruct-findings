@@ -1,30 +1,126 @@
 // from server: 100% by auto
-// roc 2008-06 007a0740  unit: CXTPDockingPaneAutoHidePanel  size: 41 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007a0740
-//
-// 007a0740  56                   push esi
-// 007a0741  8b713c               mov esi, dword ptr [ecx + 0x3c]
-// 007a0744  85f6                 test esi, esi
-// 007a0746  7416                 je 0x7a075e
-// 007a0748  8bc6                 mov eax, esi
-// 007a074a  8b4808               mov ecx, dword ptr [eax + 8]
-// 007a074d  8b01                 mov eax, dword ptr [ecx]
-// 007a074f  8b5014               mov edx, dword ptr [eax + 0x14]
-// 007a0752  8b36                 mov esi, dword ptr [esi]
-// 007a0754  ffd2                 call edx
-// 007a0756  85c0                 test eax, eax
-// 007a0758  740b                 je 0x7a0765
-// 007a075a  85f6                 test esi, esi
-// 007a075c  75ea                 jne 0x7a0748
-// 007a075e  b801000000           mov eax, 1
-// 007a0763  5e                   pop esi
-// 007a0764  c3                   ret 
-// 007a0765  33c0                 xor eax, eax
-// 007a0767  5e                   pop esi
-// 007a0768  c3                   ret 
-// library xtp-11.2.2/Source\DockingPane\XTPDockingPaneBaseContainer.cpp (function ?IsEmpty@CXTPDockingPaneBaseContainer@@MBEHXZ)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPaneBaseContainer.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockingPaneBase.cpp : implementation of the CXTPDockingPaneBase class.
+//
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPDockingPanePaintManager.h"
+#include "XTPDockingPaneBaseContainer.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneBaseContainer
+
+CXTPDockingPaneBaseContainer::CXTPDockingPaneBaseContainer(XTPDockingPaneType type, CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBase(type, pLayout)
+{
+}
+
+CXTPDockingPaneBaseContainer::~CXTPDockingPaneBaseContainer()
+{
+}
+
+POSITION CXTPDockingPaneBaseContainer::ContainPane(CXTPDockingPaneBase* pPane) const
+{
+	if (pPane == (CXTPDockingPaneBase*)this)
+		return (POSITION)TRUE;
+
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		POSITION posContain = pos;
+
+		if (m_lstPanes.GetNext(pos)->ContainPane(pPane))
+			return posContain;
+	}
+	return NULL;
+}
+
+void CXTPDockingPaneBaseContainer::FindPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
+{
+	if (GetType() == type)
+	{
+		if (IsEmpty())
+		{
+			return;
+		}
+
+		pList->AddTail((CXTPDockingPaneBase*)this);
+	}
+
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
+		pPane->FindPane(type, pList);
+	}
+}
+
+BOOL CXTPDockingPaneBaseContainer::IsEmpty() const
+{
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
+
+		if (!pPane->IsEmpty())
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+POSITION CXTPDockingPaneBaseContainer::GetHeadPosition() const
+{
+	return m_lstPanes.GetHeadPosition();
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetNext(POSITION& pos) const
+{
+	return m_lstPanes.GetNext(pos);
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetFirstPane() const
+{
+	if (m_lstPanes.IsEmpty())
+		return NULL;
+
+	return m_lstPanes.GetHead();
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetLastPane() const
+{
+	if (m_lstPanes.IsEmpty())
+		return NULL;
+
+	return m_lstPanes.GetTail();
+}

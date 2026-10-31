@@ -1,18 +1,5 @@
-// from server: 91% by colin
-struct CXTPRibbonControlTab {
-    int sub_7176F0();
-};
-
-int CXTPRibbonControlTab::sub_7176F0()
-{
-    char* base = (char*)this - 0x178;
-    int* p = *(int**)(base);
-    int (__thiscall *fn)(void*) = *(int (__thiscall **)(void*))((char*)p + 0x74);
-    if (fn(base) != 0)
-    {
-        int* q = *(int**)((char*)this - 0x7c);
-        if (*(int*)((char*)q + 0xdc) != 0)
-            return 1;
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_4f7640495bfacb1b.cpp

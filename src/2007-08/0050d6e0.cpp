@@ -1,529 +1,832 @@
-// from server: 44% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d G3Dcpp/BinaryInput.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-g3d G3Dcpp/TextInput.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file BinaryInput.cpp
- 
+ @file TextInput.cpp
+  
  @author Morgan McGuire, graphics3d.com
  
- @created 2001-08-09
- @edited  2005-02-24
-
-
-  <PRE>
-    {    
-    BinaryOutput b("c:/tmp/test.b", BinaryOutput::LITTLE_ENDIAN);
-
-    float f = 3.1415926;
-    int i = 1027221;
-    std::string s = "Hello World!";
-
-    b.writeFloat32(f);
-    b.writeInt32(i);
-    b.writeString(s);
-    b.commit();
-    
-
-    BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
-
-    debugAssert(f == in.readFloat32());
-    int ii = in.readInt32();
-    debugAssert(i == ii);
-    debugAssert(s == in.readString());
-    }
-  </PRE>
+ @cite Based on a lexer written by Aaron Orenstein. 
+ 
+ @created 2001-11-27
+ @edited  2006-01-10
  */
 
-#include "G3D/platform.h"
+#include "G3D/TextInput.h"
 #include "G3D/BinaryInput.h"
-#include "G3D/Array.h"
-#include "G3D/fileutils.h"
-#ifdef G3D_WIN32
-  #include "../zlib/zlib.h"
-#else
-  #include <zlib.h>
+#include "G3D/stringutils.h"
+
+#ifdef _MSC_VER
+#   pragma warning (push)
+// conversion from 'int' to 'char', possible loss of data (TODO: fix underlying problems)
+#   pragma warning (disable: 4244)
 #endif
 
 namespace G3D {
 
-void BinaryInput::readBool8(std::vector<bool>& out, int n) {
-    out.resize(n);
-    // std::vector optimizes bool in a way that prevents fast reading
-    for (int i = 0; i < n ; ++i) {
-        out[i] = readBool8();
+
+Token TextInput::peek() {
+    if (stack.size() == 0) {
+        Token t = nextToken();
+        push(t);
+    }
+
+    return stack.front();
+}
+
+
+int TextInput::peekLineNumber() {
+    return peek().line();
+}
+
+
+int TextInput::peekCharacterNumber() {
+    return peek().character();
+}
+
+
+Token TextInput::read() {
+    if (stack.size() > 0) {
+        Token t = stack.front();
+        stack.pop_front();
+        return t;
+    } else {
+        return nextToken();
     }
 }
 
 
-void BinaryInput::readBool8(Array<bool>& out, int n) {
-    out.resize(n);
-    readBool8(out.begin(), n);
+void TextInput::push(const Token& t) {
+    stack.push_front(t);
 }
 
 
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(std::vector<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(&out[0], n);\
-}\
-\
-\
-void BinaryInput::read##ucase(Array<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(out.begin(), n);\
+bool TextInput::hasMore() {
+    return (peek()._type != Token::END);
 }
 
 
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
+int TextInput::eatInputChar() {
+    // Don't go off the end
+    if (currentCharOffset >= (unsigned int)buffer.length()) {
+        return EOF;
+    }
 
-#undef IMPLEMENT_READER
+    unsigned char c = buffer[currentCharOffset];
+    ++currentCharOffset;
 
-// Data structures that are one byte per element can be 
-// directly copied, regardles of endian-ness.
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (sizeof(lcase) == 1) {\
-        readBytes(out, n);\
-    } else {\
-        for (int i = 0; i < n ; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    }\
+    // update lineNumber and charNumber to reflect the location of the *next*
+    // character which will be read.
+    //
+    // We update even for CR because the user is allowed to do arbitrarily
+    // stupid things, like put a bunch of literal CRs inside a quoted string.
+    //
+    // We eat all whitespace between tokens, so they should never see a
+    // lineNumber that points to a CR.  However, if they have some kind of
+    // syntax error in a token that appears *after* a quoted string
+    // containing CRs, they should get a correct character number.  ("ugh!")
+
+    // TODO: http://sourceforge.net/tracker/index.php?func=detail&aid=1341266&group_id=76879&atid=548565
+
+    if (c == '\n') {
+        ++lineNumber;
+        charNumber = 1;
+    } else {
+        ++charNumber;
+    }
+
+    return c;
 }
 
-IMPLEMENT_READER(Bool8,   bool)
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
+int TextInput::peekInputChar(unsigned int distance) {
+    // Don't go off the end
+    if ((currentCharOffset + distance) >= (unsigned int)buffer.length()) {
+        return EOF;
+    }
 
-#undef IMPLEMENT_READER
-
-
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (swapBytes) {\
-        for (int i = 0; i < n; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    } else {\
-        readBytes(out, sizeof(lcase) * n);\
-    }\
+    unsigned char c = buffer[currentCharOffset + distance];
+    return c;
 }
 
 
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
+Token TextInput::nextToken() {
+    Token t;
 
-#undef IMPLEMENT_READER
+    t._line         = lineNumber;
+    t._character    = charNumber;
+	t._type         = Token::END;
+	t._extendedType = Token::END_TYPE;
 
-void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
-    // Load the next section of the file
-    debugAssertM(filename != "<memory>", "Read past end of file.");
+    int c = peekInputChar();
+    if (c == EOF) {
+        return t;
+    }
 
-    int absPos = alreadyRead + pos;
+    bool whitespaceDone = false;
+    while (! whitespaceDone) {
+        whitespaceDone = true;
 
-    if (bufferLength < minLength) {
-        // The current buffer isn't big enough to hold the chunk we want to read.
-        // This happens if there was little memory available during the initial constructor
-        // read but more memory has since been freed.
-        bufferLength = minLength;
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::realloc(buffer, bufferLength);
-        if (buffer == NULL) {
-            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
+        // Consume whitespace
+        while (isWhiteSpace(c)) {
+            c = eatAndPeekInputChar();
         }
+
+        int c2 = peekInputChar(1);
+        if ((options.cppComments && c == '/' && c2 == '/')
+            || (options.otherCommentCharacter != '\0'
+                && c == options.otherCommentCharacter)
+            || (options.otherCommentCharacter2 != '\0'
+                && c == options.otherCommentCharacter2)) {
+            
+            // Single line comment, consume to newline or EOF.
+
+            do {
+                c = eatAndPeekInputChar();
+            } while (! isNewline(c) && c != EOF);
+
+            // There is whitespace after the comment (in particular, the
+            // newline that terminates the comment).  There might also be
+            // whitespace at the start of the next line.
+            whitespaceDone = false;
+
+        } else if (options.cComments
+                   && c == '/' && c2 == '*') {
+
+            // consume both start-comment chars, can't let the trailing one
+            // help close the comment.
+            eatInputChar();
+            eatInputChar();
+
+            // Multi-line comment, consume to end-marker or EOF.
+            c = peekInputChar();
+            c2 = peekInputChar(1);
+            while (! (c == '*' && c2 == '/')
+                   && c != EOF) {
+                eatInputChar();
+                c = c2;
+                c2 = peekInputChar(1);
+            }
+            eatInputChar();      // eat closing '*'
+            eatInputChar();      // eat closing '/'
+
+            c = peekInputChar();
+
+            // May be whitespace after comment.
+            whitespaceDone = false;
+        }
+
+    }  // while (! whitespaceDone)
+
+    t._line      = lineNumber;
+    t._character = charNumber;
+
+    // handle EOF
+    if (c == EOF) {
+        return t;
     }
 
-    alreadyRead = startPosition;
+    // Does appropriate setup for a symbol (including setting up the token
+    // string to start with 'c'), eats the input character, and overwrites
+    // 'c' with the peeked next input character.
+#define SETUP_SYMBOL(c)                                                         \
+    {                                                                        \
+        t._type = Token::SYMBOL;                                                \
+        t._extendedType = Token::SYMBOL_TYPE;                                   \
+        t._string = c;                                                          \
+        c = eatAndPeekInputChar();                                              \
+    }
 
-    FILE* file = fopen(filename.c_str(), "rb");
-    debugAssert(file);
+    switch (c) {
 
-    int ret = fseek(file, alreadyRead, SEEK_SET);
-    debugAssert(ret == 0);
+    case '@':                   // Simple symbols -> just themselves.
+    case '(': 
+    case ')':
+    case ',':
+    case ';':
+    case '{':
+    case '}':
+    case '[':
+    case ']':
+    case '#':
+    case '$':
+    case '?':
+        SETUP_SYMBOL(c);
+        return t;
 
-    int toRead = iMin(bufferLength, length - alreadyRead);
-    ret = fread(buffer, 1, toRead, file);
-    debugAssert(ret == toRead);
-    fclose(file);
-    file = NULL;
+    case '-':                   // negative number, -, --, -=, or ->
+        SETUP_SYMBOL(c);
 
-    pos = absPos - alreadyRead;
-    debugAssert(pos >= 0);
-}
+        switch (c) {
+        case '>':               // ->
+        case '-':               // --
+        case '=':               // -=
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
 
+        if (options.signedNumbers
+            && (isDigit(c) || (c == '.' && isDigit(peekInputChar(1))))) {
 
+            // Negative number.  'c' is still the first digit, and is
+            // the next input char.
 
-const bool BinaryInput::NO_COPY = false;
+            goto numLabel;
+        }
+
+        // plain -
+        return t;
+
+    case '+':                   // positive number, +, ++, or +=
+        SETUP_SYMBOL(c);
+
+        switch (c) {
+        case '+':               // ++
+        case '=':               // +=
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+
+        if (options.signedNumbers
+            && (isDigit(c) || (c == '.' && isDigit(peekInputChar(1))))) {
+
+            // Positive number.  'c' is still the first digit, and is
+            // the next input char.
+
+            goto numLabel;
+        }
+
+        return t;
+
+    case ':':                   // : or ::
+        SETUP_SYMBOL(c);
+        
+        if (c == ':') {
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '*':                   // * or *=
+    case '/':                   // / or /=
+    case '!':                   // ! or !=
+    case '~':                   // ~ or ~=
+    case '=':                   // = or ==
+    case '^':                   // ^ or ^=
+        SETUP_SYMBOL(c);
+        
+        if (c == '=') {
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '>':                   // >, >>,or >=
+    case '<':                   // <<, <<, or <=
+    case '|':                   // ||, ||, or |=
+    case '&':                   // &, &&, or &=
+        {
+            int orig_c = c;
+            SETUP_SYMBOL(c);
+
+            if ((c == '=') || (orig_c == c)) {
+                t._string += c;
+                eatInputChar();
+                return t;
+            }
+        }
+        return t;
+            
+    case '\\':                // backslash or escaped comment char.
+        SETUP_SYMBOL(c);
+
+        if ((options.otherCommentCharacter != '\0'
+             && c == options.otherCommentCharacter)
+            || (options.otherCommentCharacter2 != '\0'
+                && c == options.otherCommentCharacter2)) {
+            
+            // escaped comment character.  Return the raw comment
+            // char (no backslash).
+
+            t._string = c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '.':                   // number, ., .., or ...
+        if (isDigit(peekInputChar(1))) {
+            // We're parsing a float that began without a leading zero
+            goto numLabel;
+        }
+
+        SETUP_SYMBOL(c);
+
+        if (c == '.') {         // .. or ...
+            t._string += c;
+            c = eatAndPeekInputChar();
+
+            if (c == '.') {     // ...
+                t._string += c;
+                eatInputChar();
+            }
+            return t;
+        }
+
+        return t;
+
+    } // switch (c)
+
+#undef SETUP_SYMBOL
+
+numLabel:
+    if (isDigit(c) || (c == '.')) {
+
+        // A number.  Note-- single dots have been
+        // parsed already, so a . indicates a number
+        // less than 1 in floating point form.
     
-static bool needSwapBytes(G3DEndian fileEndian) {
-    return (fileEndian != System::machineEndian());
-}
+        // [0-9]*(\.[0-9]) or [0-9]+ or 0x[0-9,A-F]+
 
+        if (t._string != "-") {
+            // If we picked up a leading "-" sign above, keep it,
+            // otherwise drop the string parsed thus far
+            t._string = "";
+        }
+        t._type = Token::NUMBER;
+		if (c == '.') {
+			t._extendedType = Token::FLOATING_POINT_TYPE;
+		} else {
+			t._extendedType = Token::INTEGER_TYPE;
+		}
 
-/** Helper used by the constructors for decompression */
-static uint32 readUInt32(const uint8* data, bool swapBytes) {
-    if (swapBytes) {
-        uint8 out[4];
-        out[0] = data[3];
-        out[1] = data[2];
-        out[2] = data[1];
-        out[3] = data[0];
-        return *((uint32*)out);
-    } else {
-        return *((uint32*)data);
-    }
-}
+        if ((c == '0') && (peekInputChar(1) == 'x')) {
+            // Hex number
+            t._string += "0x";
 
-BinaryInput::BinaryInput(
-    const uint8*        data,
-    int                 dataLen,
-    G3DEndian           dataEndian,
-    bool                compressed,
-    bool                copyMemory) {
+            // skip the 0x
+            eatInputChar();
+            eatInputChar();
 
-    debugAssert(! (compressed && !copyMemory));
-    beginEndBits = 0;
-    bitPos = 0;
-    alreadyRead = 0;
-    bufferLength = 0;
+            c = peekInputChar();
+            while (isDigit(c) || ((c >= 'A') && (c <= 'F')) || ((c >= 'a') && (c <= 'f'))) {
+                t._string += c;
+                c = eatAndPeekInputChar();
+            }
 
-    freeBuffer = copyMemory || compressed;
-
-    this->fileEndian = dataEndian;
-    this->filename = "<memory>";
-	pos = 0;
-    swapBytes = needSwapBytes(fileEndian);
-
-    if (compressed) {
-        // Read the decompressed size from the first 4 bytes
-        length = G3D::readUInt32(data, swapBytes);
-
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::malloc(length);
-
-        uint32 L = length;
-        // Decompress with zlib
-        int result = uncompress(buffer, (unsigned long*)&L, data + 4, dataLen - 4);
-        length = L;
-        bufferLength = L;
-        debugAssert(result == Z_OK); (void)result;
-
-    } else {
-	    length = dataLen;
-        bufferLength = length;
-        if (! copyMemory) {
- 			debugAssert(!freeBuffer);
-            buffer = const_cast<uint8*>(data);
         } else {
-			debugAssert(freeBuffer);
-            buffer = (uint8*)System::malloc(length);
-            memcpy(buffer, data, dataLen);
+
+            // Read the part before the decimal.
+            while (isDigit(c)) {
+                t._string += c;
+                c = eatAndPeekInputChar();
+            }
+    
+            // True if we are reading a floating-point special type
+            bool isSpecial = false;
+
+            // Read the decimal, if one exists
+            if (c == '.') {
+				t._extendedType = Token::FLOATING_POINT_TYPE;
+
+                // The '.' character was a decimal point, not the start of a
+                // method or range operator
+                t._string += c;
+                c = eatAndPeekInputChar();
+
+                // Floating point specials (msvc format only)
+                if (options.msvcSpecials && (c == '#')) {
+                    isSpecial = true;
+                    // We are reading a floating point special value
+                    // of the form -1.#IND00, -1.#INF00, or 1.#INF00
+                    c = eatAndPeekInputChar();
+                    if (c != 'I') {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    c = eatAndPeekInputChar();
+                    if (c != 'N') {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    t._string += "#IN";
+                    c = eatAndPeekInputChar();
+                    if ((c != 'F') && (c != 'D')) {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    t._string += c;
+                    for (int j = 0; j < 2; ++j) {
+                        c = eatAndPeekInputChar();
+                        if (c != '0') {
+                            throw BadMSVCSpecial
+                                (
+                                 "Incorrect floating-point special (inf or"
+                                 "nan) format.",
+                                 t.line(), charNumber);
+                        }
+                        t._string += (char)c;
+                    }
+
+                } else {
+
+                    // Read the part after the decimal
+                    while (isDigit((char)c)) {
+                        t._string += (char)c;
+                        c = eatAndPeekInputChar();
+                    }
+                }
+            }
+
+            if (! isSpecial && ((c == 'e') || (c == 'E'))) {
+                // Read exponent
+				t._extendedType = Token::FLOATING_POINT_TYPE;
+                t._string += c;
+
+                c = eatAndPeekInputChar();
+                if ((c == '-') || (c == '+')) {
+                    t._string += c;
+                    c = eatAndPeekInputChar();                    
+                }
+
+                while (isDigit(c)) {
+                    t._string += c;
+                    c = eatAndPeekInputChar();
+                }
+            }
         }
+        return t;
+
+    } else if (isLetter(c) || (c == '_')) {
+        // Identifier or keyword
+        // [A-Za-z_][A-Za-z_0-9]*
+
+        t._type = Token::SYMBOL;
+        t._extendedType = Token::SYMBOL_TYPE;
+        t._string = "";
+        do {
+            t._string += c;
+            c = eatAndPeekInputChar();
+        } while (isLetter(c) || isDigit(c) || (c == '_'));
+
+        return t;
+
+    } else if (c == '\"') {
+
+        // Discard the double-quote.
+        eatInputChar();
+
+        // Double quoted string
+		parseQuotedString('\"', t);
+        return t;
+
+    } else if (c == '\'') {
+
+        // Discard the single-quote.
+        eatInputChar();
+
+		if (options.singleQuotedStrings) {
+			// Single quoted string
+			parseQuotedString('\'', t);
+		} else {
+			t._string = c;
+			t._type = Token::SYMBOL;
+			t._extendedType = Token::SYMBOL_TYPE;
+		}
+        return t;
+
+    } // end of special case tokens
+
+    if (c == EOF) {
+        t._type = Token::END;
+        t._extendedType = Token::END_TYPE;
+        t._string = "";
+        return t;
     }
+
+    // Some unknown token
+    debugAssert(false);
+    return t;
 }
 
 
-BinaryInput::BinaryInput(
-    const std::string&  filename,
-    G3DEndian           fileEndian,
-    bool                compressed) {
+void TextInput::parseQuotedString(unsigned char delimiter, Token& t) {
 
-    alreadyRead = 0;
-    freeBuffer = true;
-    this->fileEndian = fileEndian;
-    this->filename = filename;
-	buffer = NULL;
-    bufferLength = 0;
-	length = 0;
-	pos = 0;
-    beginEndBits = 0;
-    bitPos = 0;
+    t._type = Token::STRING;
 
-    // Update global file tracker
-    _internal::currentFilesUsed.append(filename);
-    
-    swapBytes = needSwapBytes(fileEndian);
-
-    // Figure out how big the file is and verify that it exists.
-    length = fileLength(filename);
-
-    // Read the file into memory
-    FILE* file = fopen(filename.c_str(), "rb");
-
-	if (! file || (length == -1)) {
-        throw format("File not found: \"%s\"", filename.c_str());
-		return;
+	if (delimiter == '\'') {
+		t._extendedType = Token::SINGLE_QUOTED_TYPE;
+	} else {
+		t._extendedType = Token::DOUBLE_QUOTED_TYPE;
 	}
 
-    if (! compressed && (length > INITIAL_BUFFER_LENGTH)) {
-        // Read only a subset of the file so we don't consume
-        // all available memory.
-        bufferLength = INITIAL_BUFFER_LENGTH;
-    } else {
-        // Either the length is fine or the file is compressed
-        // and requires us to read the whole thing for zlib.
-        bufferLength = length;
-    }
+    while (true) {
+        // We're definitely going to consume the next input char, so we get
+        // it right now.  This makes the condition handling below a bit easier.
+        int c = eatInputChar();
 
-	debugAssert(freeBuffer);
-    buffer = (uint8*)System::malloc(bufferLength);
-    if (buffer == NULL) {
-        if (compressed) {
-            throw "Not enough memory to load compressed file. (1)";
+        if (c == EOF) {
+            // END inside a quoted string.  (We finish the string.)
+            break;
         }
 
-        // Try to allocate a small array; not much memory is available.
-        // Give up if we can't allocate even 1k.
-        while ((buffer == NULL) && (bufferLength > 1024)) {
-            bufferLength /= 2;
-            buffer = (uint8*)System::malloc(bufferLength);
+        if (options.escapeSequencesInStrings && (c == '\\')) {
+            // An escaped character.  We're definitely going to consume it,
+            // so we get it (and consume it) now.
+
+            c = eatInputChar();
+
+            switch (c) {
+            case 'r':
+                t._string += '\r';
+                break;
+            case 'n':
+                t._string += '\n';
+                break;
+            case 't':
+                t._string += '\t';
+                break;
+            case '0':
+                t._string += '\0';
+                break;
+
+            case '\\':
+            case '\"':
+            case '\'':
+                t._string += (char)c;
+                break;
+
+            default:
+                if (((c == options.otherCommentCharacter) && 
+                     (options.otherCommentCharacter != '\0')) ||
+                    ((c == options.otherCommentCharacter2) && 
+                     (options.otherCommentCharacter2 != '\0'))) {
+                    t._string += c;
+                } 
+                // otherwise, some illegal escape sequence; skip it.
+                break;
+
+            } // switch
+
+        } else if (c == delimiter) {
+            // End of the string.  Already consumed the character.
+            break;
+        } else {
+            // All other chars, go on to the string.  Already consumed the
+            // character.
+            t._string += (char)c;
         }
+
     }
-    debugAssert(buffer);
+}
+
+
+double TextInput::readNumber() {
+    Token t(read());
+
+    if (t._type == Token::NUMBER) {
+        return t.number();
+    }
+
+    // Even if signedNumbers is disabled, readNumber attempts to
+    // read a signed number, so we handle that case here.
+    if (! options.signedNumbers
+        && (t._type == Token::SYMBOL)
+        && ((t._string == "-") 
+             || (t._string == "+"))) {
+
+        Token t2(read());
+
+        if ((t2._type == Token::NUMBER)
+            && (t2._character == t._character + 1)) {
+
+            if (t._string == "-") {
+                return -t2.number();
+            } else {
+                return t2.number();
+            }
+        }
+
+        // push back the second token.
+        push(t2);
+    }
+
+    // Push initial token back, and throw an error.  We intentionally
+    // indicate that the wrong type is the type of the initial token.
+    // Logically, the number started there.
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::NUMBER, t._type); 
+}
+
+
+Token TextInput::readStringToken() {
+    Token t(read());
+
+    if (t._type == Token::STRING) {               // fast path
+        return t;
+    }
+
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::STRING, t._type);
+}
+
+std::string TextInput::readString() {
+    return readStringToken()._string;
+}
+
+void TextInput::readString(const std::string& s) {
+    Token t(readStringToken());
+
+    if (t._string == s) {                         // fast path
+        return;
+    }
+
+    push(t);
+    throw WrongString(options.sourceFileName, t.line(), t.character(),
+                      s, t._string);
+}
+
+
+Token TextInput::readSymbolToken() {
+    Token t(read());
     
-    fread(buffer, bufferLength, sizeof(int8), file);
-    fclose(file);
-    file = NULL;
-
-    pos = 0;
-
-    if (compressed) {
-        if (bufferLength != length) {
-            throw "Not enough memory to load compressed file. (2)";
-        }
-
-        // Decompress
-        // Use the existing buffer as the source, allocate
-        // a new buffer to use as the destination.
-
-        int tempLength = length;
-        length = G3D::readUInt32(buffer, swapBytes);
-
-        uint8* tempBuffer = buffer;
-        buffer = (uint8*)System::malloc(length);
-
-        debugAssert(buffer);
-        debugAssert(isValidHeapPointer(tempBuffer));
-        debugAssert(isValidHeapPointer(buffer));
-
-        unsigned long L = length;
-        int result = uncompress(buffer, &L, tempBuffer + 4, tempLength - 4);
-        length = L;
-        bufferLength = length;
-
-        debugAssert(result == Z_OK); (void)result;
-
-        System::free(tempBuffer);
-    }
-}
-
-
-BinaryInput::~BinaryInput() {
-
-    if (freeBuffer) {
-        System::free(buffer);
-    }
-    buffer = NULL;
-}
-
-
-void BinaryInput::readBytes(int n, void* bytes) {
-    prepareToRead(n);
-    debugAssert(isValidPointer(bytes));
-
-    memcpy(bytes, buffer + pos, n);
-    pos += n;
-}
-
-
-uint64 BinaryInput::readUInt64() {
-    prepareToRead(8);
-    uint8 out[8];
-
-    if (swapBytes) {
-        out[0] = buffer[pos + 7];
-        out[1] = buffer[pos + 6];
-        out[2] = buffer[pos + 5];
-        out[3] = buffer[pos + 4];
-        out[4] = buffer[pos + 3];
-        out[5] = buffer[pos + 2];
-        out[6] = buffer[pos + 1];
-        out[7] = buffer[pos + 0];
-    } else {
-        *(uint64*)out = *(uint64*)(buffer + pos);
+    if (t._type == Token::SYMBOL) {               // fast path
+        return t;
     }
 
-    pos += 8;
-    return *(uint64*)out;
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::SYMBOL, t._type);
 }
 
 
-std::string BinaryInput::readString(int n) {
-    prepareToRead(n);
-    debugAssertM((pos + n) <= length, "Read past end of file");
-    
-    char *s = (char*)System::malloc(n + 1);
-    assert(s != NULL);
-
-    memcpy(s, buffer + pos, n);
-    // There may not be a null, so make sure
-    // we add one.
-    s[n] = '\0';
-
-    std::string out = s;
-    System::free(s);
-    s = NULL;
-
-    pos += n;
-
-    return out;
-
+std::string TextInput::readSymbol() {
+    return readSymbolToken()._string;
 }
 
+void TextInput::readSymbol(const std::string& symbol) {
+    Token t(readSymbolToken());
 
-std::string BinaryInput::readString() {
-    int n = 0;
-
-    if ((int)pos + (int)alreadyRead + n < (int)length - 1) {
-        prepareToRead(1);
+    if (t._string == symbol) {                    // fast path
+        return;
     }
 
-    if (((int)pos + (int)alreadyRead + (int)n < length - 1) && (buffer[pos + n] != '\0')) {
-        ++n;
-        while (((int)pos + (int)alreadyRead + n < (int)length - 1) && (buffer[pos + n] != '\0')) {
-            prepareToRead(1);
-            ++n;
+    push(t);
+    throw WrongSymbol(options.sourceFileName, t.line(), t.character(),
+                      symbol, t._string);
+}
+
+
+TextInput::TextInput(const std::string& filename, const Options& opt) : options(opt) {
+    init();
+    BinaryInput input(filename, G3D_LITTLE_ENDIAN);
+    if (options.sourceFileName.empty()) {
+        options.sourceFileName = filename;
+    }
+    int n = input.size();
+    buffer.resize(n);
+    System::memcpy(buffer.getCArray(), input.getCArray(), n);
+}
+
+
+TextInput::TextInput(FS fs, const std::string& str, const Options& opt) : options(opt) {
+    (void)fs;
+    init();
+    if (options.sourceFileName.empty()) {
+        if (str.length() < 14) {
+            options.sourceFileName = std::string("\"") + str + "\"";
+        } else {
+            options.sourceFileName = std::string("\"") + str.substr(0, 10) + "...\"";
         }
     }
-
-    // Consume NULL
-    ++n;
-
-    return readString(n);
+    buffer.resize(str.length()); // we don't bother copying trailing NUL.
+    System::memcpy(buffer.getCArray(), str.c_str(), buffer.size());
 }
 
 
-std::string BinaryInput::readStringEven() {
-    std::string x = readString();
-    if (hasMore() && (G3D::isOdd(x.length() + 1))) {
-        skip(1);
+const std::string& TextInput::filename() const {
+    return options.sourceFileName;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+TextInput::TokenException::TokenException(
+    const std::string&  src,
+    int                 ln,
+    int                 ch) : sourceFile(src), line(ln), character(ch) {
+
+    message = format("%s(%d) : ", sourceFile.c_str(), line);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+static const char* tokenTypeToString(Token::Type t) {
+    switch (t) {
+    case Token::SYMBOL:
+        return "Token::SYMBOL";
+    case Token::STRING:
+        return "Token::STRING";
+    case Token::NUMBER:
+        return "Token::NUMBER";
+    case Token::END:
+        return "Token::END";
+    default:
+        debugAssertM(false, "Fell through switch");
+        return "?";
     }
-    return x;
+}
+
+TextInput::WrongTokenType::WrongTokenType(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    Token::Type         e,
+    Token::Type         a) :
+    TokenException(src, ln, ch), expected(e), actual(a) {
+         
+    message += format("Expected token of type %s, found type %s.",
+                      tokenTypeToString(e), tokenTypeToString(a));
 }
 
 
-std::string BinaryInput::readString32() {
-    int len = readUInt32();
-    return readString(len);
+TextInput::BadMSVCSpecial::BadMSVCSpecial(
+    const std::string&  src,
+    int                 ln,
+    int                 ch) :
+    TokenException(src, ln, ch) {
 }
 
 
-Vector4 BinaryInput::readVector4() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    double w = readFloat32();
-    return Vector4(x, y, z, w);
+TextInput::WrongSymbol::WrongSymbol(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    const std::string&  e,
+    const std::string&  a) : 
+    TokenException(src, ln, ch), expected(e), actual(a) {
+
+    message += format("Expected symbol '%s', found symbol '%s'.",
+                      e.c_str(), a.c_str());
 }
 
 
-Vector3 BinaryInput::readVector3() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    return Vector3(x, y, z);
+TextInput::WrongString::WrongString(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    const std::string&  e,
+    const std::string&  a) : 
+    TokenException(src, ln, ch), expected(e), actual(a) {
+
+    message += format("Expected string '%s', found string '%s'.",
+                      e.c_str(), a.c_str());
 }
 
 
-Vector2 BinaryInput::readVector2() {
-    double x = readFloat32();
-    double y = readFloat32();
-    return Vector2(x, y);
+void deserialize(bool& b, TextInput& ti) {
+    b = ti.readSymbol() == "true";
 }
 
 
-Color4 BinaryInput::readColor4() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    double a = readFloat32();
-    return Color4(r, g, b, a);
+void deserialize(int& b, TextInput& ti) {
+    b = iRound(ti.readNumber());
 }
 
 
-Color3 BinaryInput::readColor3() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    return Color3(r, g, b);
+void deserialize(uint8& b, TextInput& ti) {
+    b = (uint8)iRound(ti.readNumber());
 }
 
 
-void BinaryInput::beginBits() {
-    debugAssert(beginEndBits == 0);
-    beginEndBits = 1;
-    bitPos = 0;
-
-    debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
-    bitString = readUInt8();
+void deserialize(double& b, TextInput& ti) {
+    b = ti.readNumber();
 }
 
 
-uint32 BinaryInput::readBits(int numBits) {
-    debugAssert(beginEndBits == 1);
-
-    uint32 out = 0;
-
-    const int total = numBits;
-    while (numBits > 0) {
-        if (bitPos > 7) {
-            // Consume a new byte for reading.  We do this at the beginning
-            // of the loop so that we don't try to read past the end of the file.
-            bitPos = 0;
-            bitString = readUInt8();
-        }
-
-        // Slide the lowest bit of the bitString into
-        // the correct position.
-        out |= (bitString & 1) << (total - numBits);
-
-        // Shift over to the next bit
-        bitString = bitString >> 1;
-        ++bitPos;
-        --numBits;
-    }
-
-    return out;
+void deserialize(float& b, TextInput& ti) {
+    b = (float)ti.readNumber();
 }
 
+} // namespace
 
-void BinaryInput::endBits() {
-    debugAssert(beginEndBits == 1);
-    if (bitPos == 0) {
-        // Put back the last byte we read
-        --pos;
-    }
-    beginEndBits = 0;
-    bitPos = 0;
-}
-
-}
+#ifdef _MSC_VER
+#   pragma warning (pop)
+#endif

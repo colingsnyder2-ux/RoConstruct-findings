@@ -1,130 +1,428 @@
-// roc 2009-06 0079bc70  unit: CXTPNewToolbarDlg  size: 334 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0079bc70
-//
-// 0079bc70  83ec1c               sub esp, 0x1c
-// 0079bc73  8b442424             mov eax, dword ptr [esp + 0x24]
-// 0079bc77  53                   push ebx
-// 0079bc78  55                   push ebp
-// 0079bc79  56                   push esi
-// 0079bc7a  57                   push edi
-// 0079bc7b  8bf9                 mov edi, ecx
-// 0079bc7d  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 0079bc81  50                   push eax
-// 0079bc82  51                   push ecx
-// 0079bc83  ff1534ef8900         call dword ptr [0x89ef34]
-// 0079bc89  8b5f28               mov ebx, dword ptr [edi + 0x28]
-// 0079bc8c  83eb01               sub ebx, 1
-// 0079bc8f  89442410             mov dword ptr [esp + 0x10], eax
-// 0079bc93  786a                 js 0x79bcff
-// 0079bc95  85db                 test ebx, ebx
-// 0079bc97  0f8c1c010000         jl 0x79bdb9
-// 0079bc9d  3b5f28               cmp ebx, dword ptr [edi + 0x28]
-// 0079bca0  0f8d13010000         jge 0x79bdb9
-// 0079bca6  8b5724               mov edx, dword ptr [edi + 0x24]
-// 0079bca9  8b349a               mov esi, dword ptr [edx + ebx*4]
-// 0079bcac  8b06                 mov eax, dword ptr [esi]
-// 0079bcae  8b9068010000         mov edx, dword ptr [eax + 0x168]
-// 0079bcb4  8bce                 mov ecx, esi
-// 0079bcb6  ffd2                 call edx
-// 0079bcb8  85c0                 test eax, eax
-// 0079bcba  743e                 je 0x79bcfa
-// 0079bcbc  8b442434             mov eax, dword ptr [esp + 0x34]
-// 0079bcc0  8b6c2430             mov ebp, dword ptr [esp + 0x30]
-// 0079bcc4  56                   push esi
-// 0079bcc5  8d4c2420             lea ecx, [esp + 0x20]
-// 0079bcc9  8944241c             mov dword ptr [esp + 0x1c], eax
-// 0079bccd  e89e47fdff           call 0x770470
-// 0079bcd2  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 0079bcd6  51                   push ecx
-// 0079bcd7  55                   push ebp
-// 0079bcd8  50                   push eax
-// 0079bcd9  ff15c0ed8900         call dword ptr [0x89edc0]
-// 0079bcdf  85c0                 test eax, eax
-// 0079bce1  7417                 je 0x79bcfa
-// 0079bce3  8b4620               mov eax, dword ptr [esi + 0x20]
-// 0079bce6  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 0079bcea  3bc1                 cmp eax, ecx
-// 0079bcec  743a                 je 0x79bd28
-// 0079bcee  51                   push ecx
-// 0079bcef  50                   push eax
-// 0079bcf0  ff1508ef8900         call dword ptr [0x89ef08]
-// 0079bcf6  85c0                 test eax, eax
-// 0079bcf8  752e                 jne 0x79bd28
-// 0079bcfa  83eb01               sub ebx, 1
-// 0079bcfd  7996                 jns 0x79bc95
-// 0079bcff  8b4f10               mov ecx, dword ptr [edi + 0x10]
-// 0079bd02  85c9                 test ecx, ecx
-// 0079bd04  7411                 je 0x79bd17
-// 0079bd06  8b01                 mov eax, dword ptr [ecx]
-// 0079bd08  8b9074010000         mov edx, dword ptr [eax + 0x174]
-// 0079bd0e  ffd2                 call edx
-// 0079bd10  c7471000000000       mov dword ptr [edi + 0x10], 0
-// 0079bd17  8bcf                 mov ecx, edi
-// 0079bd19  e862f9ffff           call 0x79b680
-// 0079bd1e  5f                   pop edi
-// 0079bd1f  5e                   pop esi
-// 0079bd20  5d                   pop ebp
-// 0079bd21  5b                   pop ebx
-// 0079bd22  83c41c               add esp, 0x1c
-// 0079bd25  c20800               ret 8
-// 0079bd28  8b4f10               mov ecx, dword ptr [edi + 0x10]
-// 0079bd2b  8b1d30ee8900         mov ebx, dword ptr [0x89ee30]
-// 0079bd31  3bce                 cmp ecx, esi
-// 0079bd33  7528                 jne 0x79bd5d
-// 0079bd35  8b4120               mov eax, dword ptr [ecx + 0x20]
-// 0079bd38  8d542430             lea edx, [esp + 0x30]
-// 0079bd3c  52                   push edx
-// 0079bd3d  50                   push eax
-// 0079bd3e  ffd3                 call ebx
-// 0079bd40  8b442434             mov eax, dword ptr [esp + 0x34]
-// 0079bd44  8b4f10               mov ecx, dword ptr [edi + 0x10]
-// 0079bd47  8b11                 mov edx, dword ptr [ecx]
-// 0079bd49  8b9278010000         mov edx, dword ptr [edx + 0x178]
-// 0079bd4f  50                   push eax
-// 0079bd50  8b442434             mov eax, dword ptr [esp + 0x34]
-// 0079bd54  50                   push eax
-// 0079bd55  8b4704               mov eax, dword ptr [edi + 4]
-// 0079bd58  50                   push eax
-// 0079bd59  ffd2                 call edx
-// 0079bd5b  eb15                 jmp 0x79bd72
-// 0079bd5d  85c9                 test ecx, ecx
-// 0079bd5f  7411                 je 0x79bd72
-// 0079bd61  8b01                 mov eax, dword ptr [ecx]
-// 0079bd63  8b9074010000         mov edx, dword ptr [eax + 0x174]
-// 0079bd69  ffd2                 call edx
-// 0079bd6b  c7471000000000       mov dword ptr [edi + 0x10], 0
-// 0079bd72  837f1000             cmp dword ptr [edi + 0x10], 0
-// 0079bd76  759f                 jne 0x79bd17
-// 0079bd78  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 0079bd7b  8d442430             lea eax, [esp + 0x30]
-// 0079bd7f  50                   push eax
-// 0079bd80  51                   push ecx
-// 0079bd81  ffd3                 call ebx
-// 0079bd83  8b442434             mov eax, dword ptr [esp + 0x34]
-// 0079bd87  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 0079bd8b  8b16                 mov edx, dword ptr [esi]
-// 0079bd8d  8b9270010000         mov edx, dword ptr [edx + 0x170]
-// 0079bd93  50                   push eax
-// 0079bd94  8b4704               mov eax, dword ptr [edi + 4]
-// 0079bd97  51                   push ecx
-// 0079bd98  50                   push eax
-// 0079bd99  8bce                 mov ecx, esi
-// 0079bd9b  ffd2                 call edx
-// 0079bd9d  85c0                 test eax, eax
-// 0079bd9f  0f8472ffffff         je 0x79bd17
-// 0079bda5  8bcf                 mov ecx, edi
-// 0079bda7  897710               mov dword ptr [edi + 0x10], esi
-// 0079bdaa  e8d1f8ffff           call 0x79b680
-// 0079bdaf  5f                   pop edi
-// 0079bdb0  5e                   pop esi
-// 0079bdb1  5d                   pop ebp
-// 0079bdb2  5b                   pop ebx
-// 0079bdb3  83c41c               add esp, 0x1c
-// 0079bdb6  c20800               ret 8
-// 0079bdb9  e826cff7ff           call 0x718ce4
-// copied from an identical function in another client (function ?PickTarget@CXTPCustomizeDropSource@@AAEXVCPoint@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPCustomizeTools.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPCustomizeTools.cpp.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPCustomizeTools.h"
+#include "XTPCommandBar.h"
+#include "XTPControl.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeDropSource
+
+
+CXTPCustomizeDropSource::CXTPCustomizeDropSource(CXTPCommandBars* pCommandBars)
+{
+	m_hcurDelete = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGDELETE);
+	m_hcurMove = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGMOVE);
+	m_hcurCopy = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGCOPY);
+	m_pSheet = NULL;
+	m_pCommandBars = pCommandBars;
+
+	m_hwndCapture = 0;
+	m_pControl = 0;
+	m_bMove = FALSE;
+	m_bCopyOnly = FALSE;
+	m_pTarget = NULL;
+}
+
+
+CXTPCustomizeDropSource::~CXTPCustomizeDropSource()
+{
+}
+
+DROPEFFECT CXTPCustomizeDropSource::DoDragDrop(CXTPControl* pControl, BOOL bCopyOnly)
+{
+	ASSERT(m_pCommandBars);
+	if (!m_pCommandBars)
+		return 0;
+
+	CWnd* pWndCapture = m_pSheet ? (CWnd*)m_pSheet : m_pCommandBars->GetSite();
+	ASSERT(pWndCapture);
+	if (!pWndCapture)
+		return 0;
+
+	m_pControl = pControl;
+	m_hwndCapture = pWndCapture->GetSafeHwnd();
+	::SetCapture(m_hwndCapture);
+	m_bMove = FALSE;
+	m_pTarget = NULL;
+	m_bCopyOnly = bCopyOnly;
+
+	GetCursorPos(&m_ptStart);
+
+	DROPEFFECT dropEffect = _DoDragDrop();
+
+	if (m_pTarget) m_pTarget->OnCustomizeDragLeave();
+
+	ReleaseCapture();
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+	return dropEffect;
+}
+
+void CXTPCustomizeDropSource::Register(CXTPCommandBar* pCommandBar)
+{
+	m_arrTargets.Add(pCommandBar);
+
+}
+void CXTPCustomizeDropSource::UnRegister(CXTPCommandBar* pCommandBar)
+{
+	for (int i = 0; i < m_arrTargets.GetSize(); i++)
+	{
+		if (pCommandBar == m_arrTargets[i])
+		{
+			m_arrTargets.RemoveAt(i);
+		}
+	}
+}
+
+CXTPCustomizeSheet* CXTPCustomizeDropSource::GetSheet() const
+{
+	return m_pSheet;
+}
+
+
+// picks the current target
+void CXTPCustomizeDropSource::PickTarget(CPoint point)
+{
+	HWND hWndPoint = WindowFromPoint(point);
+
+	BOOL bFound = FALSE;
+
+	for (int i = (int)m_arrTargets.GetSize() - 1; i >= 0; i--)
+	{
+		CXTPCommandBar* pCommandBar = m_arrTargets[i];
+
+		if (pCommandBar->IsVisible() && CXTPWindowRect(pCommandBar).PtInRect(point)
+			&& (pCommandBar->GetSafeHwnd() == hWndPoint || ::IsChild(pCommandBar->GetSafeHwnd(), hWndPoint)))
+		{
+			bFound = TRUE;
+
+			if (m_pTarget == pCommandBar)
+			{
+				m_pTarget->ScreenToClient(&point);
+				m_pTarget->OnCustomizeDragOver(m_pControl, point);
+			}
+			else if (m_pTarget != NULL)
+			{
+				m_pTarget->OnCustomizeDragLeave();
+				m_pTarget = 0;
+			}
+
+			if (m_pTarget == 0)
+			{
+				pCommandBar->ScreenToClient(&point);
+				if (pCommandBar->OnCustomizeDragEnter(m_pControl, point) != DROPEFFECT_NONE)
+				{
+					m_pTarget = pCommandBar;
+				}
+			}
+			break;
+		}
+	}
+
+	if (!bFound && m_pTarget)
+	{
+		m_pTarget->OnCustomizeDragLeave();
+		m_pTarget = 0;
+	}
+
+
+	// set the cursor as appropriate
+	FreshenCursor();
+}
+
+void CXTPCustomizeDropSource::FreshenCursor()
+{
+	HCURSOR hCursor = m_hcurDelete;
+	if (m_pTarget)
+	{
+		hCursor = (m_bMove && !m_bCopyOnly) ? m_hcurMove : m_hcurCopy;
+	}
+	::SetCursor(hCursor);
+}
+
+
+DROPEFFECT CXTPCustomizeDropSource::_DoDragDrop()
+{
+	BOOL bMoved = FALSE;
+
+	DROPEFFECT dropEffect = DROPEFFECT_CANCEL;
+
+	BOOL bDone = FALSE;
+
+	while (!bDone && ::GetCapture() == m_hwndCapture)
+	{
+		MSG msg;
+
+		// assess current state
+		// pump WM_PAINT first for better feedback
+		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+		{
+			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+				break;
+			DispatchMessage(&msg);
+		}
+
+		// get a message
+		if (!::GetMessage(&msg, NULL, 0, 0))
+		{
+			AfxPostQuitMessage((int)msg.wParam);
+			return DROPEFFECT_CANCEL;
+		}
+
+		if (::GetCapture() != m_hwndCapture)
+		{
+			// capture was stolen while repainting
+			return DROPEFFECT_CANCEL;
+		}
+
+		switch (msg.message)
+		{
+		case WM_LBUTTONUP:
+			bDone = TRUE;
+			break;
+
+		case WM_MOUSEMOVE:
+			if (!bMoved)
+			{
+				CPoint pt(msg.pt);
+				if (m_pControl && m_pControl->GetParent())
+				{
+					DROPEFFECT dropEffectDragStart = DROPEFFECT_CANCEL;
+					m_pControl->GetParent()->ScreenToClient(&pt);
+					m_pControl->OnCustomizeDragOver(m_pControl, pt, dropEffectDragStart);
+				}
+
+				bMoved = TRUE;
+			}
+			m_bMove = !(msg.wParam & MK_CONTROL);
+			PickTarget(msg.pt);
+
+			// terminate loop if we happen to get mouse move with button up
+			if (!(msg.wParam & MK_LBUTTON))
+				bDone = TRUE;
+
+			dropEffect = DROPEFFECT_NONE;
+			break;
+
+		case WM_KEYDOWN:
+			if (msg.wParam == VK_ESCAPE)
+				return DROPEFFECT_CANCEL;
+
+			if (msg.wParam == VK_CONTROL && m_bMove)
+			{
+				m_bMove = FALSE;
+				FreshenCursor();
+			}
+			break;
+
+		case WM_KEYUP:
+			if (msg.wParam == VK_CONTROL && !m_bMove)
+			{
+				m_bMove = TRUE;
+				FreshenCursor();
+			}
+			break;
+
+		case WM_RBUTTONDOWN:
+			return DROPEFFECT_CANCEL;
+
+		default:
+			::DispatchMessage(&msg);
+		}
+	}
+
+
+	if (m_pTarget)
+	{
+
+		dropEffect = m_bMove ? DROPEFFECT_MOVE : DROPEFFECT_COPY;
+
+		CPoint point;
+		GetCursorPos(&point);
+
+		m_pTarget->ScreenToClient(&point);
+		m_pTarget->ScreenToClient(&m_ptStart);
+
+		m_pTarget->OnCustomizeDrop(m_pControl, dropEffect, point, m_ptStart);
+		m_pTarget = 0;
+	}
+
+	return dropEffect;
+}
+/////////////////////////////////////////////////////////////////////////////
+// CXTPNewToolbarDlg dialog
+
+
+CXTPNewToolbarDlg::CXTPNewToolbarDlg(CWnd* pParent, CXTPCommandBars* pCommandBars, CXTPCommandBar* pCommandBar)
+	: m_pCommandBars(pCommandBars), m_pCommandBar(pCommandBar)
+{
+	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(XTP_IDD_NEWTOOLBAR), pParent);
+
+	m_strToolbar = _T("");
+	m_nNewID = 0;
+}
+
+
+void CXTPNewToolbarDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CXTPNewToolbarDlg)
+	DDX_Text(pDX, XTP_IDC_EDIT_TOOLBARNAME, m_strToolbar);
+	//}}AFX_DATA_MAP
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPNewToolbarDlg, CDialog)
+	//{{AFX_MSG_MAP(CXTPNewToolbarDlg)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPNewToolbarDlg message handlers
+
+BOOL CXTPNewToolbarDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	if (m_pCommandBar)
+	{
+		m_strToolbar = m_pCommandBar->GetTitle();
+		UpdateData(FALSE);
+
+		CString strWindowText;
+		XTPResourceManager()->LoadString(&strWindowText, XTP_IDS_RENAMETOOLBAR);
+		SetWindowText(strWindowText);
+
+	}
+	else
+	{
+		SetSuggestedName();
+	}
+
+
+	return TRUE;
+}
+
+void CXTPNewToolbarDlg::SetSuggestedName()
+{
+	CString szMsg;
+	XTPResourceManager()->LoadString(&szMsg, XTP_IDS_CUSTOM_BAR);
+
+	int iNewID = 1;
+	CString strCustom;
+	strCustom.Format(szMsg, iNewID);
+
+	int nCount = m_pCommandBars->GetCount();
+	int nIndex = 0;
+	while (nIndex < nCount)
+	{
+		CXTPToolBar* pBar = m_pCommandBars->GetAt(nIndex);
+		ASSERT(pBar != NULL);
+
+		if (pBar && strCustom.Compare(pBar->GetTitle()) == 0)
+		{
+			strCustom.Format(szMsg, iNewID++);
+			nIndex = 0;
+			continue;
+		}
+		nIndex++;
+	}
+
+	m_strToolbar = strCustom;
+	UpdateData(FALSE);
+}
+
+void CXTPNewToolbarDlg::OnOK()
+{
+	UpdateData();
+
+	// If no text was entered, alert user.
+	if (m_strToolbar.IsEmpty())
+	{
+		XTPResourceManager()->ShowMessageBox(XTP_IDS_ERROR_BLANKNAME, MB_ICONSTOP);
+		return;
+	}
+
+	m_nNewID = AFX_IDW_CONTROLBAR_FIRST;
+
+	// Loop through all of the existing control bars to find
+	// an available ID to use.
+	int nCount = m_pCommandBars->GetCount();
+	int nIndex = 0;
+	while (nIndex < nCount)
+	{
+		CXTPToolBar* pBar = m_pCommandBars->GetAt(nIndex);
+		ASSERT(pBar != NULL);
+
+		// We found a control bar with the same ID as m_nNewID, increment
+		// m_nNewID and reset the position back to the head.
+		if (pBar && m_pCommandBar == NULL && pBar->GetBarID() == m_nNewID)
+		{
+			m_nNewID++;
+
+			// If m_nNewID is greater than the maximum number of allowed
+			// custom commands, alert the user and abort.
+			if ((int)m_nNewID >= AFX_IDW_CONTROLBAR_LAST)
+			{
+				XTPResourceManager()->ShowMessageBox(XTP_IDS_ERROR_LIMIT, MB_ICONSTOP);
+				CDialog::OnCancel();
+				return;
+			}
+
+			nIndex = 0;
+			continue;
+		}
+
+
+		// Now check to see if the title for the toolbar has already
+		// been used, if so, alert the user and return.
+		if (pBar && m_pCommandBar != pBar && m_strToolbar.Compare(pBar->GetTitle()) == 0)
+		{
+			CString strName;
+			strName.Format(XTP_IDS_ERROR_EXISTS, (LPCTSTR)m_strToolbar);
+			AfxMessageBox(strName, MB_ICONSTOP);
+			return;
+		}
+
+		nIndex++;
+	}
+
+	CDialog::OnOK(); // success!
+}

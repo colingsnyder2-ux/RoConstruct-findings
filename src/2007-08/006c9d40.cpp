@@ -1,7 +1,5 @@
-// from server: 95% by colin
-extern "C" void __stdcall helper_738bf2(int, int, int);
-
-void call_helper()
-{
-    helper_738bf2(9, -1, 0);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_png_277a41e56f649c11.cpp

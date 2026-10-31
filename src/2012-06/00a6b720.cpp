@@ -1,52 +1,290 @@
-// roc 2012-06 00a6b720  unit: CXTCaptionButton  size: 168 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a6b720
-//
-// 00a6b720  6aff                 push -1
-// 00a6b722  682d88ae00           push 0xae882d
-// 00a6b727  64a100000000         mov eax, dword ptr fs:[0]
-// 00a6b72d  50                   push eax
-// 00a6b72e  51                   push ecx
-// 00a6b72f  56                   push esi
-// 00a6b730  a1d027e000           mov eax, dword ptr [0xe027d0]
-// 00a6b735  33c4                 xor eax, esp
-// 00a6b737  50                   push eax
-// 00a6b738  8d44240c             lea eax, [esp + 0xc]
-// 00a6b73c  64a300000000         mov dword ptr fs:[0], eax
-// 00a6b742  8bf1                 mov esi, ecx
-// 00a6b744  89742408             mov dword ptr [esp + 8], esi
-// 00a6b748  c7067c5ec200         mov dword ptr [esi], 0xc25e7c
-// 00a6b74e  8b4620               mov eax, dword ptr [esi + 0x20]
-// 00a6b751  50                   push eax
-// 00a6b752  c744241804000000     mov dword ptr [esp + 0x18], 4
-// 00a6b75a  ff15143bb200         call dword ptr [0xb23b14]
-// 00a6b760  85c0                 test eax, eax
-// 00a6b762  7407                 je 0xa6b76b
-// 00a6b764  8bce                 mov ecx, esi
-// 00a6b766  e82d6af1ff           call 0x982198
-// 00a6b76b  8d8ea8020000         lea ecx, [esi + 0x2a8]
-// 00a6b771  c644241403           mov byte ptr [esp + 0x14], 3
-// 00a6b776  e8f5fb0000           call 0xa7b370
-// 00a6b77b  8d8ea0020000         lea ecx, [esi + 0x2a0]
-// 00a6b781  c644241402           mov byte ptr [esp + 0x14], 2
-// 00a6b786  e8e5fb0000           call 0xa7b370
-// 00a6b78b  8d8ef0010000         lea ecx, [esi + 0x1f0]
-// 00a6b791  c644241401           mov byte ptr [esp + 0x14], 1
-// 00a6b796  e895f3ffff           call 0xa6ab30
-// 00a6b79b  8d4e60               lea ecx, [esi + 0x60]
-// 00a6b79e  c644241400           mov byte ptr [esp + 0x14], 0
-// 00a6b7a3  e878b3f8ff           call 0x9f6b20
-// 00a6b7a8  8bce                 mov ecx, esi
-// 00a6b7aa  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 00a6b7b2  e8e973f1ff           call 0x982ba0
-// 00a6b7b7  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00a6b7bb  64890d00000000       mov dword ptr fs:[0], ecx
-// 00a6b7c2  59                   pop ecx
-// 00a6b7c3  5e                   pop esi
-// 00a6b7c4  83c410               add esp, 0x10
-// 00a6b7c7  c3                   ret 
-// copied from an identical function in another client (function ??1CXTCaptionPopupWnd@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTCaptionPopupWnd.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTCaptionPopupWnd.cpp : implementation of the CXTCaptionPopupWnd class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTUtil.h"
+#include "XTGlobal.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTButton.h"
+#include "XTCaption.h"
+#include "XTCaptionPopupWnd.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define XTCAPTIONPOPUP_CLASSNAME    _T("XTCaptionPopupWnd")  // Window class name
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionPopupWnd
+/////////////////////////////////////////////////////////////////////////////
+
+CXTCaptionPopupWnd::CXTCaptionPopupWnd()
+{
+	m_pChildWnd = NULL;
+	m_pChildParent = NULL;
+	m_pParentWnd = NULL;
+
+	// register the wnd class.
+	RegisterWindowClass();
+}
+
+CXTCaptionPopupWnd::~CXTCaptionPopupWnd()
+{
+	if (::IsWindow(m_hWnd))
+		DestroyWindow();
+}
+
+IMPLEMENT_DYNAMIC(CXTCaptionPopupWnd, CWnd)
+
+BEGIN_MESSAGE_MAP(CXTCaptionPopupWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTCaptionPopupWnd)
+	ON_WM_DESTROY()
+	ON_BN_CLICKED(XT_IDC_BTN_CLOSE, OnCaptButton)
+	ON_WM_PAINT()
+	ON_WM_TIMER()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+BOOL CXTCaptionPopupWnd::RegisterWindowClass()
+{
+	WNDCLASS wndcls;
+	HINSTANCE hInst = ::AfxGetInstanceHandle();
+
+	if (!(::GetClassInfo(hInst, XTCAPTIONPOPUP_CLASSNAME, &wndcls)))
+	{
+		// otherwise we need to register a new class
+		wndcls.style = CS_HREDRAW | CS_VREDRAW;
+		wndcls.lpfnWndProc = ::DefWindowProc;
+		wndcls.cbClsExtra = 0;
+		wndcls.cbWndExtra = 0;
+		wndcls.hInstance = hInst;
+		wndcls.hIcon = NULL;
+		wndcls.hCursor = AfxGetApp()->LoadStandardCursor(IDC_ARROW);
+		wndcls.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
+		wndcls.lpszMenuName = NULL;
+		wndcls.lpszClassName = XTCAPTIONPOPUP_CLASSNAME;
+
+		if (!::AfxRegisterClass(&wndcls))
+		{
+			::AfxThrowResourceException();
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL CXTCaptionPopupWnd::Create(const CRect& rect, CWnd* pParentWnd, CWnd* pChildWnd)
+{
+	ASSERT_VALID(pParentWnd); // must be valid.
+	if (!pParentWnd || !::IsWindow(pParentWnd->m_hWnd))
+		return FALSE;
+
+	m_pParentWnd = pParentWnd;
+
+	ASSERT_VALID(pChildWnd); // must be valid.
+	if (!pChildWnd || !::IsWindow(pChildWnd->m_hWnd))
+		return FALSE;
+
+	m_pChildWnd = pChildWnd;
+
+	// define the styles for this window.
+	DWORD dwStyleEx = WS_EX_TOOLWINDOW;
+	DWORD dwStyle = WS_VISIBLE | WS_POPUP | WS_DLGFRAME;
+
+	// call the base class for creation.
+	if (!CWnd::CreateEx(dwStyleEx, XTCAPTIONPOPUP_CLASSNAME, _T(""), dwStyle, rect.left, rect.top,
+		rect.Width(), rect.Height(), pParentWnd->GetSafeHwnd(), 0, NULL))
+	{
+		TRACE0("Failed to create caption popdown window.\n");
+		return FALSE;
+	}
+
+	// set the child windows parent to this popup window, save
+	// the previous parent, since we need to reset this when the
+	// window is destroyed.
+	m_pChildParent = m_pChildWnd->SetParent(this);
+	ASSERT(m_pChildParent != NULL);
+
+	// Create the caption.
+	CString string;
+	VERIFY(XTPResourceManager()->LoadString(&string, XT_IDS_CLICKKEEPOPEN));
+
+	if (!m_Caption.Create(this, string, CPWS_EX_RAISED_EDGE,
+		WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE, CXTPEmptyRect()))
+	{
+		TRACE0("Unable to create caption.\n");
+		return FALSE;
+	}
+	m_Caption.SetAppCaption(false);
+
+	// Create the caption button.
+	if (!m_CaptionButton.Create(NULL, WS_VISIBLE | BS_ICON | BS_OWNERDRAW | BS_CENTER | BS_VCENTER,
+		CXTPEmptyRect(), this, XT_IDC_BTN_CLOSE))
+	{
+		TRACE0("Unable to create caption button.\n");
+		return FALSE;
+	}
+	m_CaptionButton.SetCaption(&m_Caption);
+
+	CImageList imageList;
+	imageList.Create(16, 15, ILC_COLOR8 | ILC_MASK, 0, 1);
+
+	CBitmap bmp;
+	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, XT_IDB_BTN_OUT));
+	imageList.Add(&bmp, RGB(255, 0, 255));
+
+	// Associate the button icon
+	m_hIconOff = imageList.ExtractIcon(0);
+	m_hIconOn = imageList.ExtractIcon(1);
+	m_CaptionButton.SetIcon(CSize(16, 15), m_hIconOff, m_hIconOn);
+	imageList.DeleteImageList();
+
+	// start the timer after everything has been initialized.
+	SetTimer(1, 10, NULL);
+
+	return TRUE;
+}
+
+void CXTCaptionPopupWnd::RecalcLayout()
+{
+	// define the caption and client rect.
+	CXTPClientRect rcChild(this);
+	rcChild.DeflateRect(2, 2);
+
+	// move the window to fit the client area of this window.
+	CRect rcCaption(rcChild);
+	rcChild.top += 19;
+	m_pChildWnd->MoveWindow(rcChild);
+
+	// define the size for the push pin caption.
+	rcCaption.bottom = rcCaption.top + 19;
+	m_Caption.MoveWindow(&rcCaption);
+
+	// define the size for the caption button.
+	CRect rcButton(rcCaption);
+	rcButton.DeflateRect(2, 2);
+	rcButton.left = rcButton.right - 16;
+
+	m_CaptionButton.MoveWindow(&rcButton);
+}
+
+BOOL CXTCaptionPopupWnd::ResetParent()
+{
+	if (!::IsWindow(m_pChildWnd->GetSafeHwnd()))
+		return FALSE;
+
+	if (!::IsWindow(m_pChildParent->GetSafeHwnd()))
+		return FALSE;
+
+	m_pChildWnd->SetParent(m_pChildParent);
+	return TRUE;
+}
+
+void CXTCaptionPopupWnd::OnDestroy()
+{
+	ResetParent();
+	CWnd::OnDestroy();
+}
+
+void CXTCaptionPopupWnd::OnCaptButton()
+{
+	// check to see if the parent is valid...
+	if (::IsWindow(m_pParentWnd->GetSafeHwnd()))
+	{
+		// notify that push pin button was pressed.
+		m_pParentWnd->SendMessage(CPWN_XT_PUSHPINBUTTON);
+	}
+}
+
+void CXTCaptionPopupWnd::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	CXTPClientRect rc(this);
+	rc.DeflateRect(1, 1);
+
+	// draw a border for the client area.
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DSHADOW),
+		GetXtremeColor(COLOR_3DHILIGHT));
+
+	// update the caption as well.
+	m_Caption.Invalidate();
+}
+
+BOOL CXTCaptionPopupWnd::SendCancelMessage()
+{
+	// get a handle to the window which currently
+	// has the input focus...
+	HWND hWnd_HasFocus = ::GetFocus();
+
+	// caption has focus.
+	if (hWnd_HasFocus == m_Caption.GetSafeHwnd())
+		return FALSE;
+
+	// caption button has focus.
+	if (hWnd_HasFocus == m_CaptionButton.GetSafeHwnd())
+		return FALSE;
+
+	// popup window has focus.
+	if (hWnd_HasFocus == GetSafeHwnd())
+		return FALSE;
+
+	// popup window child has focus.
+	if (hWnd_HasFocus == m_pChildWnd->GetSafeHwnd())
+		return FALSE;
+
+	// check to see if the parent is valid...
+	if (::IsWindow(m_pParentWnd->GetSafeHwnd()))
+	{
+		// and send cancel message.
+		m_pParentWnd->SendMessage(CPWN_XT_PUSHPINCANCEL);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void CXTCaptionPopupWnd::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == 1)
+	{
+		SendCancelMessage();
+		return;
+	}
+
+	CWnd::OnTimer(nIDEvent);
+}

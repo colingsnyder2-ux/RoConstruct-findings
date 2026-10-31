@@ -1,29 +1,5 @@
-// from server: 51% by colin
-struct CXTPToolBar {
-    char pad[0xf8];
-    int field_f8;
-    char pad2[0x168 - 0xf8 - 4];
-    int field_168;
-    int field_16c;
-    int field_170;
-    int field_174;
-    CXTPToolBar* CControlButtonExpand();
-};
-
-extern "C" void __fastcall sub_6CA460(CXTPToolBar*);
-extern "C" void __fastcall sub_738334(CXTPToolBar*);
-
-CXTPToolBar* CXTPToolBar::CControlButtonExpand()
-{
-    sub_6CA460(this);
-    this->field_168 = 0;
-    *(void**)this = (void*)0x7cb524;
-    *(void**)((char*)this + 0x20) = (void*)0x7cb4c4;
-    sub_738334(this);
-    this->field_f8 = 2;
-    this->field_168 = 0;
-    this->field_16c = 0;
-    this->field_170 = 0;
-    this->field_174 = 1;
-    return this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_daf37671930bb180.cpp

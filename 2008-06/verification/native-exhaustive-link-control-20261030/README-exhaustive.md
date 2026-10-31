@@ -1,5 +1,0 @@
-# Exhaustive baseline and candidate link comparison
-
-Accepted baseline job 3ff280eb25544ffeb23346a506763f1d matches current server overlay/generator. Forced all 11,365 external symbol names listed as owners in its local RbxgsApp report, including multiple providers. Baseline link fails: 77 unresolved symbols and 26 duplicate definitions, including 24 unresolved buildFace templates. The 100-target candidate produces exactly the same unresolved and duplicate sets, adding none and resolving none. This control deliberately forces every named owner and is stronger/different from the ordinary force_verified fixture; the full build is not proven clean. Candidate passes the separately scoped 100-symbol forced link, exact linked code, tree, default FunctionRef and empty conversion tests.
-
-Review packet 03d56e18c33248c8b2afc872554cb10d2fa2cf76cb004d1fdb921681c46416f9 supersedes c7ada8c4c63bcca8774bb4c34d629fe010279ddd3f8af8e4166be580d84b46f0 and honestly records baseline failures. Zero independently accepted credits.

@@ -1,50 +1,23 @@
+// roc 2010-06 0047ccd0  unit: VCContent::?$CComObject  size: 33 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0047ccd0
+//
+// 0047ccd0  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 0047ccd4  834108ff             add dword ptr [ecx + 8], -1
+// 0047ccd8  56                   push esi
+// 0047ccd9  8b7108               mov esi, dword ptr [ecx + 8]
+// 0047ccdc  750d                 jne 0x47cceb
+// 0047ccde  85c9                 test ecx, ecx
+// 0047cce0  7409                 je 0x47cceb
+// 0047cce2  8b01                 mov eax, dword ptr [ecx]
+// 0047cce4  8b5010               mov edx, dword ptr [eax + 0x10]
+// 0047cce7  6a01                 push 1
+// 0047cce9  ffd2                 call edx
+// 0047cceb  8bc6                 mov eax, esi
+// 0047cced  5e                   pop esi
+// 0047ccee  c20400               ret 4
+// copied from an identical function in another client (function ?Release@?$CComObject@VCContent@@@ATL@@UAGKXZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /GS- /EHsc /MD
 // roc-lib: atl-9.0-dll-rtm roc_espeon_contentinterface6da1be04c6837004.cpp
-
-// Candidate translation unit (score above; library headers required).
-#pragma include_alias(<atlcom.h>, <roc_espeon_atlobjectinlineheader81dc549e9ad7a653.cpp>)
-#ifndef _CPPUNWIND
-#define _CPPUNWIND 1
-#endif
-#ifndef _AFXDLL
-#define _AFXDLL
-#endif
-#include <new>
-#include <afxwin.h>
-#include <atlbase.h>
-#include <atlcom.h>
-#include <sstream>
-
-extern const GUID IID_IContent;
-extern const GUID CLSID_Content;
-extern const GUID LIBID_RobloxLib;
-
-struct ATL_NO_VTABLE IContent : public IDispatch
-{
-    virtual HRESULT STDMETHODCALLTYPE Load(BSTR url) = 0;
-};
-
-class ATL_NO_VTABLE CContent :
-    public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
-    public ATL::CComCoClass<CContent, &CLSID_Content>,
-    public ATL::ISupportErrorInfoImpl<&IID_IContent>,
-    public ATL::IDispatchImpl<IContent, &IID_IContent, &LIBID_RobloxLib, 1, 0>
-{
-public:
-    std::stringstream stream;
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CContent)
-    COM_INTERFACE_ENTRY_IID(IID_IContent, IContent)
-    COM_INTERFACE_ENTRY(IDispatch)
-    COM_INTERFACE_ENTRY(ISupportErrorInfo)
-END_COM_MAP()
-
-    STDMETHOD(Load)(BSTR url);
-};
-
-template class ATL::CComObject<CContent>;
-ATL::_ATL_CREATORFUNC* roc_creator = &ATL::CComCreator<ATL::CComObject<CContent> >::CreateInstance;

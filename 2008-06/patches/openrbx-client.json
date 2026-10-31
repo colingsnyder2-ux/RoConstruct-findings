@@ -12,29 +12,5 @@
    "void Instance::predelete()\n{\n\tSTUB(0x1004e0f0);\n}",
    "void Instance::predelete()\n{\n\t// rebuild overlay: release the children so none keeps a dangling parent\n\tif (children) {\n\t\tstd::vector<shared_ptr<Instance> > copy(*children);\n\t\tfor (size_t i = 0; i < copy.size(); ++i) {\n\t\t\tcopy[i]->setParent(NULL);\n\t\t}\n\t}\n}"
   ]
- ],
- "App/include/util/IRenderable.h": [
-  [
-   "\tint& indexFunc2d() { return index2d; }\n\tint& indexFunc3d() { return index3d; }",
-   "public:\n\tint& indexFunc2d() { return index2d; }\n\tint& indexFunc3d() { return index3d; }\nprivate:"
-  ]
- ],
- "App/v8datamodel/PartInstance.cpp": [
-  [
-   "PartInstance::PartInstance()\n\t: DescribedCreatable<PartInstance, PVInstance, sPart>(\"Part\"), surfaces(this),\n\t  PersistentPart(this, &PartInstance::computePersistentPart),\n\t  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)\n{\n\tSTUB(0x1009f220);\n}",
-   "PartInstance::PartInstance()\n    : DescribedCreatable<PartInstance, PVInstance, sPart>(\"Part\"),\n      partType(Part::BLOCK_PART), formFactor(BRICK), color(BrickColor::lego_194),\n      transparency(0.0f), reflectance(0.0f), locked(false), surfaces(this),\n      renderImportance(0.0f), primitive(new Primitive(Geometry::GEOMETRY_BLOCK)),\n      myWorld(NULL), alphaModifier(1.0f),\n      PersistentPart(this, &PartInstance::computePersistentPart),\n      SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)\n{\n    primitive->setSurfaceType(NORM_Y, STUDS);\n    primitive->setSurfaceType(NORM_Y_NEG, INLET);\n    primitive->setGridSize(G3D::Vector3(4.0f, 1.2f, 2.0f));\n    primitive->setFriction(0.3f);\n    primitive->setElasticity(0.5f);\n    primitive->setAnchor(false);\n    primitive->setCanCollide(true);\n    primitive->setOwner(this);\n    primitive->setGuid(getGuid());\n}"
-  ]
- ],
- "App/include/v8world/Primitive.h": [
-  [
-   "\tIMoving* getOwner() const { return myOwner; }",
-   "\tvoid setOwner(IMoving* owner) { myOwner = owner; }\n\tIMoving* getOwner() const { return myOwner; }"
-  ]
- ],
- "App/include/util/Guid.h": [
-  [
-   "\tvirtual ~GuidItem() {}",
-   "\tvirtual ~GuidItem() {}\n\n\tconst Guid& getGuid() const { return guid; }"
-  ]
  ]
 }

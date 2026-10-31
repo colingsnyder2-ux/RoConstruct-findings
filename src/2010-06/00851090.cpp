@@ -1,483 +1,2515 @@
-// roc 2010-06 00851090  unit: CXTPReportPaintManager  size: 1759 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00851090
-//
-// 00851090  6aff                 push -1
-// 00851092  68b17c9b00           push 0x9b7cb1
-// 00851097  64a100000000         mov eax, dword ptr fs:[0]
-// 0085109d  50                   push eax
-// 0085109e  83ec64               sub esp, 0x64
-// 008510a1  53                   push ebx
-// 008510a2  55                   push ebp
-// 008510a3  56                   push esi
-// 008510a4  57                   push edi
-// 008510a5  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 008510aa  33c4                 xor eax, esp
-// 008510ac  50                   push eax
-// 008510ad  8d442478             lea eax, [esp + 0x78]
-// 008510b1  64a300000000         mov dword ptr fs:[0], eax
-// 008510b7  8bf9                 mov edi, ecx
-// 008510b9  8bb424a4000000       mov esi, dword ptr [esp + 0xa4]
-// 008510c0  8bac2490000000       mov ebp, dword ptr [esp + 0x90]
-// 008510c7  85f6                 test esi, esi
-// 008510c9  7431                 je 0x8510fc
-// 008510cb  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008510d2  e8c9abf8ff           call 0x7dbca0
-// 008510d7  85c0                 test eax, eax
-// 008510d9  7421                 je 0x8510fc
-// 008510db  83bc249400000000     cmp dword ptr [esp + 0x94], 0
-// 008510e3  7517                 jne 0x8510fc
-// 008510e5  83bc249800000000     cmp dword ptr [esp + 0x98], 0
-// 008510ed  750d                 jne 0x8510fc
-// 008510ef  837d4000             cmp dword ptr [ebp + 0x40], 0
-// 008510f3  7407                 je 0x8510fc
-// 008510f5  b801000000           mov eax, 1
-// 008510fa  eb02                 jmp 0x8510fe
-// 008510fc  33c0                 xor eax, eax
-// 008510fe  85f6                 test esi, esi
-// 00851100  7412                 je 0x851114
-// 00851102  85c0                 test eax, eax
-// 00851104  750e                 jne 0x851114
-// 00851106  bb01000000           mov ebx, 1
-// 0085110b  899c2490000000       mov dword ptr [esp + 0x90], ebx
-// 00851112  eb12                 jmp 0x851126
-// 00851114  c784249000000000000000 mov dword ptr [esp + 0x90], 0
-// 0085111f  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
-// 00851126  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 0085112d  e86eabf8ff           call 0x7dbca0
-// 00851132  85c0                 test eax, eax
-// 00851134  7411                 je 0x851147
-// 00851136  85f6                 test esi, esi
-// 00851138  750d                 jne 0x851147
-// 0085113a  c744241c01000000     mov dword ptr [esp + 0x1c], 1
-// 00851142  397540               cmp dword ptr [ebp + 0x40], esi
-// 00851145  7508                 jne 0x85114f
-// 00851147  c744241c00000000     mov dword ptr [esp + 0x1c], 0
-// 0085114f  8b8c2498000000       mov ecx, dword ptr [esp + 0x98]
-// 00851156  8b94249c000000       mov edx, dword ptr [esp + 0x9c]
-// 0085115d  8b842494000000       mov eax, dword ptr [esp + 0x94]
-// 00851164  8bac248c000000       mov ebp, dword ptr [esp + 0x8c]
-// 0085116b  894c244c             mov dword ptr [esp + 0x4c], ecx
-// 0085116f  8b4d5c               mov ecx, dword ptr [ebp + 0x5c]
-// 00851172  89542450             mov dword ptr [esp + 0x50], edx
-// 00851176  89442448             mov dword ptr [esp + 0x48], eax
-// 0085117a  8b8424a0000000       mov eax, dword ptr [esp + 0xa0]
-// 00851181  8d9424a4000000       lea edx, [esp + 0xa4]
-// 00851188  894c2414             mov dword ptr [esp + 0x14], ecx
-// 0085118c  52                   push edx
-// 0085118d  8bcd                 mov ecx, ebp
-// 0085118f  89442458             mov dword ptr [esp + 0x58], eax
-// 00851193  e898cff7ff           call 0x7ce130
-// 00851198  33c0                 xor eax, eax
-// 0085119a  89842480000000       mov dword ptr [esp + 0x80], eax
-// 008511a1  3bd8                 cmp ebx, eax
-// 008511a3  0f8511020000         jne 0x8513ba
-// 008511a9  3987bc020000         cmp dword ptr [edi + 0x2bc], eax
-// 008511af  0f8505020000         jne 0x8513ba
-// 008511b5  c744241804000000     mov dword ptr [esp + 0x18], 4
-// 008511bd  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
-// 008511c4  8b17                 mov edx, dword ptr [edi]
-// 008511c6  8bb42488000000       mov esi, dword ptr [esp + 0x88]
-// 008511cd  8b92d8000000         mov edx, dword ptr [edx + 0xd8]
-// 008511d3  8d44241c             lea eax, [esp + 0x1c]
-// 008511d7  50                   push eax
-// 008511d8  83ec10               sub esp, 0x10
-// 008511db  8bc4                 mov eax, esp
-// 008511dd  8908                 mov dword ptr [eax], ecx
-// 008511df  8b8c24ac000000       mov ecx, dword ptr [esp + 0xac]
-// 008511e6  894804               mov dword ptr [eax + 4], ecx
-// 008511e9  8b8c24b0000000       mov ecx, dword ptr [esp + 0xb0]
-// 008511f0  894808               mov dword ptr [eax + 8], ecx
-// 008511f3  8b8c24b4000000       mov ecx, dword ptr [esp + 0xb4]
-// 008511fa  55                   push ebp
-// 008511fb  89480c               mov dword ptr [eax + 0xc], ecx
-// 008511fe  56                   push esi
-// 008511ff  8bcf                 mov ecx, edi
-// 00851201  ffd2                 call edx
-// 00851203  8b4778               mov eax, dword ptr [edi + 0x78]
-// 00851206  83f8ff               cmp eax, -1
-// 00851209  7503                 jne 0x85120e
-// 0085120b  8b4774               mov eax, dword ptr [edi + 0x74]
-// 0085120e  8b16                 mov edx, dword ptr [esi]
-// 00851210  50                   push eax
-// 00851211  8b4234               mov eax, dword ptr [edx + 0x34]
-// 00851214  8bce                 mov ecx, esi
-// 00851216  ffd0                 call eax
-// 00851218  8b8424a0000000       mov eax, dword ptr [esp + 0xa0]
-// 0085121f  8b942494000000       mov edx, dword ptr [esp + 0x94]
-// 00851226  83c9ff               or ecx, 0xffffffff
-// 00851229  2b4c2418             sub ecx, dword ptr [esp + 0x18]
-// 0085122d  89542438             mov dword ptr [esp + 0x38], edx
-// 00851231  8b94249c000000       mov edx, dword ptr [esp + 0x9c]
-// 00851238  03c1                 add eax, ecx
-// 0085123a  83bda800000000       cmp dword ptr [ebp + 0xa8], 0
-// 00851241  8b8c2498000000       mov ecx, dword ptr [esp + 0x98]
-// 00851248  898424a0000000       mov dword ptr [esp + 0xa0], eax
-// 0085124f  894c243c             mov dword ptr [esp + 0x3c], ecx
-// 00851253  89542440             mov dword ptr [esp + 0x40], edx
-// 00851257  89442444             mov dword ptr [esp + 0x44], eax
-// 0085125b  750f                 jne 0x85126c
-// 0085125d  85db                 test ebx, ebx
-// 0085125f  750b                 jne 0x85126c
-// 00851261  8bcd                 mov ecx, ebp
-// 00851263  e838adf8ff           call 0x7dbfa0
-// 00851268  01442438             add dword ptr [esp + 0x38], eax
-// 0085126c  8bcd                 mov ecx, ebp
-// 0085126e  e8eda9f8ff           call 0x7dbc60
-// 00851273  85c0                 test eax, eax
-// 00851275  7411                 je 0x851288
-// 00851277  837e0c00             cmp dword ptr [esi + 0xc], 0
-// 0085127b  c784248800000001000000 mov dword ptr [esp + 0x88], 1
-// 00851286  740b                 je 0x851293
-// 00851288  c784248800000000000000 mov dword ptr [esp + 0x88], 0
-// 00851293  8d4730               lea eax, [edi + 0x30]
-// 00851296  50                   push eax
-// 00851297  56                   push esi
-// 00851298  8d4c2470             lea ecx, [esp + 0x70]
-// 0085129c  e8ffe3faff           call 0x7ff6a0
-// 008512a1  8d4c2428             lea ecx, [esp + 0x28]
-// 008512a5  51                   push ecx
-// 008512a6  8d8c24a8000000       lea ecx, [esp + 0xa8]
-// 008512ad  c684248400000001     mov byte ptr [esp + 0x84], 1
-// 008512b5  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 008512bb  50                   push eax
-// 008512bc  8d8c24ac000000       lea ecx, [esp + 0xac]
-// 008512c3  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 008512c9  8b5608               mov edx, dword ptr [esi + 8]
-// 008512cc  50                   push eax
-// 008512cd  52                   push edx
-// 008512ce  ff1594a19e00         call dword ptr [0x9ea194]
-// 008512d4  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 008512d8  8b6c2428             mov ebp, dword ptr [esp + 0x28]
-// 008512dc  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008512e3  896c2420             mov dword ptr [esp + 0x20], ebp
-// 008512e7  89442424             mov dword ptr [esp + 0x24], eax
-// 008512eb  e8d0a7f8ff           call 0x7dbac0
-// 008512f0  85c0                 test eax, eax
-// 008512f2  0f84c2010000         je 0x8514ba
-// 008512f8  85db                 test ebx, ebx
-// 008512fa  0f85ba010000         jne 0x8514ba
-// 00851300  83c506               add ebp, 6
-// 00851303  837c2414ff           cmp dword ptr [esp + 0x14], -1
-// 00851308  744b                 je 0x851355
-// 0085130a  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0085130e  8b542438             mov edx, dword ptr [esp + 0x38]
-// 00851312  8b1f                 mov ebx, dword ptr [edi]
-// 00851314  51                   push ecx
-// 00851315  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00851319  83ec10               sub esp, 0x10
-// 0085131c  8bc4                 mov eax, esp
-// 0085131e  8910                 mov dword ptr [eax], edx
-// 00851320  8b542454             mov edx, dword ptr [esp + 0x54]
-// 00851324  894804               mov dword ptr [eax + 4], ecx
-// 00851327  8b4c2458             mov ecx, dword ptr [esp + 0x58]
-// 0085132b  895008               mov dword ptr [eax + 8], edx
-// 0085132e  89480c               mov dword ptr [eax + 0xc], ecx
-// 00851331  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 00851338  e8d3a9f8ff           call 0x7dbd10
-// 0085133d  8b93a8000000         mov edx, dword ptr [ebx + 0xa8]
-// 00851343  50                   push eax
-// 00851344  6a00                 push 0
-// 00851346  8bcf                 mov ecx, edi
-// 00851348  ffd2                 call edx
-// 0085134a  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
-// 00851351  8d6c2802             lea ebp, [eax + ebp + 2]
-// 00851355  83bc248800000000     cmp dword ptr [esp + 0x88], 0
-// 0085135d  7403                 je 0x851362
-// 0085135f  83c51b               add ebp, 0x1b
-// 00851362  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00851366  8b442438             mov eax, dword ptr [esp + 0x38]
-// 0085136a  2bc8                 sub ecx, eax
-// 0085136c  3bcd                 cmp ecx, ebp
-// 0085136e  0f8e4a010000         jle 0x8514be
-// 00851374  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 0085137b  e840a7f8ff           call 0x7dbac0
-// 00851380  a802                 test al, 2
-// 00851382  740a                 je 0x85138e
-// 00851384  8b542440             mov edx, dword ptr [esp + 0x40]
-// 00851388  2bd5                 sub edx, ebp
-// 0085138a  89542438             mov dword ptr [esp + 0x38], edx
-// 0085138e  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 00851395  e826a7f8ff           call 0x7dbac0
-// 0085139a  a801                 test al, 1
-// 0085139c  0f8418010000         je 0x8514ba
-// 008513a2  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008513a6  2bc5                 sub eax, ebp
-// 008513a8  03442438             add eax, dword ptr [esp + 0x38]
-// 008513ac  99                   cdq 
-// 008513ad  2bc2                 sub eax, edx
-// 008513af  d1f8                 sar eax, 1
-// 008513b1  89442438             mov dword ptr [esp + 0x38], eax
-// 008513b5  e904010000           jmp 0x8514be
-// 008513ba  89442418             mov dword ptr [esp + 0x18], eax
-// 008513be  3bd8                 cmp ebx, eax
-// 008513c0  0f84f7fdffff         je 0x8511bd
-// 008513c6  83bfbc02000004       cmp dword ptr [edi + 0x2bc], 4
-// 008513cd  755d                 jne 0x85142c
-// 008513cf  8bb42488000000       mov esi, dword ptr [esp + 0x88]
-// 008513d6  50                   push eax
-// 008513d7  50                   push eax
-// 008513d8  8d8754010000         lea eax, [edi + 0x154]
-// 008513de  50                   push eax
-// 008513df  8d8c24a0000000       lea ecx, [esp + 0xa0]
-// 008513e6  51                   push ecx
-// 008513e7  56                   push esi
-// 008513e8  e813fffaff           call 0x801300
-// 008513ed  8bc8                 mov ecx, eax
-// 008513ef  e82c02fbff           call 0x801620
-// 008513f4  8b87bc010000         mov eax, dword ptr [edi + 0x1bc]
-// 008513fa  83f8ff               cmp eax, -1
-// 008513fd  7506                 jne 0x851405
-// 008513ff  8b87b8010000         mov eax, dword ptr [edi + 0x1b8]
-// 00851405  8b8fbc010000         mov ecx, dword ptr [edi + 0x1bc]
-// 0085140b  83f9ff               cmp ecx, -1
-// 0085140e  7506                 jne 0x851416
-// 00851410  8b8fb8010000         mov ecx, dword ptr [edi + 0x1b8]
-// 00851416  50                   push eax
-// 00851417  51                   push ecx
-// 00851418  8d94249c000000       lea edx, [esp + 0x9c]
-// 0085141f  52                   push edx
-// 00851420  8bce                 mov ecx, esi
-// 00851422  e81173f5ff           call 0x7a8738
-// 00851427  e9d7fdffff           jmp 0x851203
-// 0085142c  8b87d8000000         mov eax, dword ptr [edi + 0xd8]
-// 00851432  83f8ff               cmp eax, -1
-// 00851435  7508                 jne 0x85143f
-// 00851437  8b8fd4000000         mov ecx, dword ptr [edi + 0xd4]
-// 0085143d  eb02                 jmp 0x851441
-// 0085143f  8bc8                 mov ecx, eax
-// 00851441  8b87e4000000         mov eax, dword ptr [edi + 0xe4]
-// 00851447  83f8ff               cmp eax, -1
-// 0085144a  7506                 jne 0x851452
-// 0085144c  8b87e0000000         mov eax, dword ptr [edi + 0xe0]
-// 00851452  8bb42488000000       mov esi, dword ptr [esp + 0x88]
-// 00851459  51                   push ecx
-// 0085145a  50                   push eax
-// 0085145b  8d84249c000000       lea eax, [esp + 0x9c]
-// 00851462  50                   push eax
-// 00851463  8bce                 mov ecx, esi
-// 00851465  e8ce72f5ff           call 0x7a8738
-// 0085146a  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 00851471  8b942494000000       mov edx, dword ptr [esp + 0x94]
-// 00851478  51                   push ecx
-// 00851479  52                   push edx
-// 0085147a  8d442430             lea eax, [esp + 0x30]
-// 0085147e  50                   push eax
-// 0085147f  8bce                 mov ecx, esi
-// 00851481  e8f673f5ff           call 0x7a887c
-// 00851486  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 0085148d  8b94249c000000       mov edx, dword ptr [esp + 0x9c]
-// 00851494  51                   push ecx
-// 00851495  52                   push edx
-// 00851496  8bce                 mov ecx, esi
-// 00851498  e8d973f5ff           call 0x7a8876
-// 0085149d  8b842498000000       mov eax, dword ptr [esp + 0x98]
-// 008514a4  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 008514ab  48                   dec eax
-// 008514ac  50                   push eax
-// 008514ad  51                   push ecx
-// 008514ae  8bce                 mov ecx, esi
-// 008514b0  e8c173f5ff           call 0x7a8876
-// 008514b5  e949fdffff           jmp 0x851203
-// 008514ba  8b442438             mov eax, dword ptr [esp + 0x38]
-// 008514be  837c2414ff           cmp dword ptr [esp + 0x14], -1
-// 008514c3  0f8481000000         je 0x85154a
-// 008514c9  85db                 test ebx, ebx
-// 008514cb  757d                 jne 0x85154a
-// 008514cd  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 008514d1  8b54243c             mov edx, dword ptr [esp + 0x3c]
-// 008514d5  8b6c2440             mov ebp, dword ptr [esp + 0x40]
-// 008514d9  8bc8                 mov ecx, eax
-// 008514db  8b442444             mov eax, dword ptr [esp + 0x44]
-// 008514df  89442464             mov dword ptr [esp + 0x64], eax
-// 008514e3  03c3                 add eax, ebx
-// 008514e5  8b1f                 mov ebx, dword ptr [edi]
-// 008514e7  89442464             mov dword ptr [esp + 0x64], eax
-// 008514eb  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008514ef  50                   push eax
-// 008514f0  83ec10               sub esp, 0x10
-// 008514f3  8bc4                 mov eax, esp
-// 008514f5  8908                 mov dword ptr [eax], ecx
-// 008514f7  8b4c2478             mov ecx, dword ptr [esp + 0x78]
-// 008514fb  895004               mov dword ptr [eax + 4], edx
-// 008514fe  8b54245c             mov edx, dword ptr [esp + 0x5c]
-// 00851502  896808               mov dword ptr [eax + 8], ebp
-// 00851505  89480c               mov dword ptr [eax + 0xc], ecx
-// 00851508  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 0085150c  83ec10               sub esp, 0x10
-// 0085150f  8bc4                 mov eax, esp
-// 00851511  8910                 mov dword ptr [eax], edx
-// 00851513  8b542474             mov edx, dword ptr [esp + 0x74]
-// 00851517  894804               mov dword ptr [eax + 4], ecx
-// 0085151a  8b4c2478             mov ecx, dword ptr [esp + 0x78]
-// 0085151e  895008               mov dword ptr [eax + 8], edx
-// 00851521  8b9424b0000000       mov edx, dword ptr [esp + 0xb0]
-// 00851528  89480c               mov dword ptr [eax + 0xc], ecx
-// 0085152b  8b83ac000000         mov eax, dword ptr [ebx + 0xac]
-// 00851531  52                   push edx
-// 00851532  56                   push esi
-// 00851533  8bcf                 mov ecx, edi
-// 00851535  ffd0                 call eax
-// 00851537  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 0085153b  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
-// 00851542  8d540102             lea edx, [ecx + eax + 2]
-// 00851546  89542438             mov dword ptr [esp + 0x38], edx
-// 0085154a  6a01                 push 1
-// 0085154c  8bce                 mov ecx, esi
-// 0085154e  e861b81200           call 0x97cdb4
-// 00851553  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00851557  8b442438             mov eax, dword ptr [esp + 0x38]
-// 0085155b  83e903               sub ecx, 3
-// 0085155e  83c003               add eax, 3
-// 00851561  894c2440             mov dword ptr [esp + 0x40], ecx
-// 00851565  894c2450             mov dword ptr [esp + 0x50], ecx
-// 00851569  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 0085156d  8be8                 mov ebp, eax
-// 0085156f  89442438             mov dword ptr [esp + 0x38], eax
-// 00851573  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 00851577  894c2454             mov dword ptr [esp + 0x54], ecx
-// 0085157b  8d8c24a4000000       lea ecx, [esp + 0xa4]
-// 00851582  896c2448             mov dword ptr [esp + 0x48], ebp
-// 00851586  8944244c             mov dword ptr [esp + 0x4c], eax
-// 0085158a  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 00851590  85c0                 test eax, eax
-// 00851592  0f8e2f010000         jle 0x8516c7
-// 00851598  8b542440             mov edx, dword ptr [esp + 0x40]
-// 0085159c  3b542438             cmp edx, dword ptr [esp + 0x38]
-// 008515a0  0f8e21010000         jle 0x8516c7
-// 008515a6  8b8784000000         mov eax, dword ptr [edi + 0x84]
-// 008515ac  83f8ff               cmp eax, -1
-// 008515af  7506                 jne 0x8515b7
-// 008515b1  8b8780000000         mov eax, dword ptr [edi + 0x80]
-// 008515b7  8b16                 mov edx, dword ptr [esi]
-// 008515b9  50                   push eax
-// 008515ba  8b4238               mov eax, dword ptr [edx + 0x38]
-// 008515bd  8bce                 mov ecx, esi
-// 008515bf  ffd0                 call eax
-// 008515c1  83bf2802000000       cmp dword ptr [edi + 0x228], 0
-// 008515c8  744c                 je 0x851616
-// 008515ca  83bc248800000000     cmp dword ptr [esp + 0x88], 0
-// 008515d2  7442                 je 0x851616
-// 008515d4  8b5c2440             mov ebx, dword ptr [esp + 0x40]
-// 008515d8  8b6c2438             mov ebp, dword ptr [esp + 0x38]
-// 008515dc  8b542428             mov edx, dword ptr [esp + 0x28]
-// 008515e0  8bcb                 mov ecx, ebx
-// 008515e2  2bcd                 sub ecx, ebp
-// 008515e4  8d41e5               lea eax, [ecx - 0x1b]
-// 008515e7  3bd0                 cmp edx, eax
-// 008515e9  8bca                 mov ecx, edx
-// 008515eb  7c02                 jl 0x8515ef
-// 008515ed  8bc8                 mov ecx, eax
-// 008515ef  83f9fb               cmp ecx, -5
-// 008515f2  7d0a                 jge 0x8515fe
-// 008515f4  c7442420fbffffff     mov dword ptr [esp + 0x20], 0xfffffffb
-// 008515fc  eb08                 jmp 0x851606
-// 008515fe  3bd0                 cmp edx, eax
-// 00851600  7c04                 jl 0x851606
-// 00851602  89442420             mov dword ptr [esp + 0x20], eax
-// 00851606  8b542420             mov edx, dword ptr [esp + 0x20]
-// 0085160a  8d442a08             lea eax, [edx + ebp + 8]
-// 0085160e  3bd8                 cmp ebx, eax
-// 00851610  7c04                 jl 0x851616
-// 00851612  89442440             mov dword ptr [esp + 0x40], eax
-// 00851616  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 0085161d  e89ea4f8ff           call 0x7dbac0
-// 00851622  a810                 test al, 0x10
-// 00851624  745e                 je 0x851684
-// 00851626  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 0085162a  8b542440             mov edx, dword ptr [esp + 0x40]
-// 0085162e  8b442438             mov eax, dword ptr [esp + 0x38]
-// 00851632  894c242c             mov dword ptr [esp + 0x2c], ecx
-// 00851636  68108c0000           push 0x8c10
-// 0085163b  8d4c242c             lea ecx, [esp + 0x2c]
-// 0085163f  89542434             mov dword ptr [esp + 0x34], edx
-// 00851643  51                   push ecx
-// 00851644  89442430             mov dword ptr [esp + 0x30], eax
-// 00851648  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 0085164c  8d9424ac000000       lea edx, [esp + 0xac]
-// 00851653  52                   push edx
-// 00851654  8bce                 mov ecx, esi
-// 00851656  bb10880000           mov ebx, 0x8810
-// 0085165b  89442440             mov dword ptr [esp + 0x40], eax
-// 0085165f  e87cc6f5ff           call 0x7adce0
-// 00851664  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00851668  2b442434             sub eax, dword ptr [esp + 0x34]
-// 0085166c  2b44243c             sub eax, dword ptr [esp + 0x3c]
-// 00851670  03442444             add eax, dword ptr [esp + 0x44]
-// 00851674  83f801               cmp eax, 1
-// 00851677  7e10                 jle 0x851689
-// 00851679  99                   cdq 
-// 0085167a  2bc2                 sub eax, edx
-// 0085167c  d1f8                 sar eax, 1
-// 0085167e  0144243c             add dword ptr [esp + 0x3c], eax
-// 00851682  eb05                 jmp 0x851689
-// 00851684  bb24880000           mov ebx, 0x8824
-// 00851689  8b2e                 mov ebp, dword ptr [esi]
-// 0085168b  53                   push ebx
-// 0085168c  8d44243c             lea eax, [esp + 0x3c]
-// 00851690  50                   push eax
-// 00851691  8d8c24ac000000       lea ecx, [esp + 0xac]
-// 00851698  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 0085169e  50                   push eax
-// 0085169f  8d8c24b0000000       lea ecx, [esp + 0xb0]
-// 008516a6  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 008516ac  8b5570               mov edx, dword ptr [ebp + 0x70]
-// 008516af  50                   push eax
-// 008516b0  8bce                 mov ecx, esi
-// 008516b2  ffd2                 call edx
-// 008516b4  8b442420             mov eax, dword ptr [esp + 0x20]
-// 008516b8  01442448             add dword ptr [esp + 0x48], eax
-// 008516bc  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
-// 008516c3  8b6c2448             mov ebp, dword ptr [esp + 0x48]
-// 008516c7  83bc248800000000     cmp dword ptr [esp + 0x88], 0
-// 008516cf  743d                 je 0x85170e
-// 008516d1  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008516d8  f7db                 neg ebx
-// 008516da  1bdb                 sbb ebx, ebx
-// 008516dc  83e307               and ebx, 7
-// 008516df  83c30a               add ebx, 0xa
-// 008516e2  03eb                 add ebp, ebx
-// 008516e4  e877a4f8ff           call 0x7dbb60
-// 008516e9  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 008516ed  8b542450             mov edx, dword ptr [esp + 0x50]
-// 008516f1  50                   push eax
-// 008516f2  83ec10               sub esp, 0x10
-// 008516f5  8bc4                 mov eax, esp
-// 008516f7  8928                 mov dword ptr [eax], ebp
-// 008516f9  894804               mov dword ptr [eax + 4], ecx
-// 008516fc  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 00851700  895008               mov dword ptr [eax + 8], edx
-// 00851703  89480c               mov dword ptr [eax + 0xc], ecx
-// 00851706  56                   push esi
-// 00851707  8bcf                 mov ecx, edi
-// 00851709  e842e4ffff           call 0x84fb50
-// 0085170e  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 00851713  7426                 je 0x85173b
-// 00851715  83bf1002000000       cmp dword ptr [edi + 0x210], 0
-// 0085171c  741d                 je 0x85173b
-// 0085171e  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00851721  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00851725  019424a0000000       add dword ptr [esp + 0xa0], edx
-// 0085172c  8d842494000000       lea eax, [esp + 0x94]
-// 00851733  50                   push eax
-// 00851734  51                   push ecx
-// 00851735  ff15dcba9e00         call dword ptr [0x9ebadc]
-// 0085173b  8d4c2468             lea ecx, [esp + 0x68]
-// 0085173f  c684248000000000     mov byte ptr [esp + 0x80], 0
-// 00851747  e8d4dffaff           call 0x7ff720
-// 0085174c  8d8c24a4000000       lea ecx, [esp + 0xa4]
-// 00851753  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00851759  8b4c2478             mov ecx, dword ptr [esp + 0x78]
-// 0085175d  64890d00000000       mov dword ptr fs:[0], ecx
-// 00851764  59                   pop ecx
-// 00851765  5f                   pop edi
-// 00851766  5e                   pop esi
-// 00851767  5d                   pop ebp
-// 00851768  5b                   pop ebx
-// 00851769  83c470               add esp, 0x70
-// 0085176c  c22000               ret 0x20
-// copied from an identical function in another client (function ?DrawColumn@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportColumn@@PAVCXTPReportHeader@@VCRect@@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\ReportControl\XTPReportPaintManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportPaintManager.cpp : implementation of the CXTPReportPaintManager class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+
+#include "XTPReportPaintManager.h"
+#include "XTPReportRow.h"
+#include "XTPReportGroupRow.h"
+#include "XTPReportColumn.h"
+#include "XTPReportHeader.h"
+#include "XTPReportControl.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportColumns.h"
+#include "XTPReportRecord.h"
+#include "XTPReportHyperlink.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+#define XTP_HLINK_SPACE_X   ((TCHAR)1)
+
+AFX_INLINE int GetTextExtentX(CDC* pDC, const CString& strString)
+{
+	CString str(strString);
+	REPLACE_S(str, XTP_HLINK_SPACE_X, _T(' '));
+
+	int nExt1 = pDC->GetTextExtent(str).cx;
+	if (pDC->IsPrinting())
+	{
+		int nExt2 = pDC->GetOutputTextExtent(str).cx;
+		return max(nExt1, nExt2);
+	}
+	return nExt1;
+}
+
+AFX_INLINE int GetTextExtentX(CDC* pDC, LPTSTR pszString, int nCount)
+{
+	CString str(pszString, nCount);
+	REPLACE_S(str, XTP_HLINK_SPACE_X, _T(' '));
+
+	int nExt1 = pDC->GetTextExtent(str).cx;
+	if (pDC->IsPrinting())
+	{
+		int nExt2 = pDC->GetOutputTextExtent(str).cx;
+		return max(nExt1, nExt2);
+	}
+	return nExt1;
+}
+/////////////////////////////////////////////////////////////////////////////
+// class CXTPFormulaMulDivC
+
+CXTPFormulaMulDivC::CXTPFormulaMulDivC()
+{
+	m_nMultiplier = 1;
+	m_nDivisor = 1;
+	m_nConstant = 0;
+
+}
+
+CXTPFormulaMulDivC::~CXTPFormulaMulDivC()
+{
+}
+
+int CXTPFormulaMulDivC::Calculate(int nY) const
+{
+	ASSERT((int)m_nDivisor);
+
+	int nDiv = (int)m_nDivisor ? (int)m_nDivisor : (int)1;
+
+	int nResult = nY * m_nMultiplier / nDiv + m_nConstant;
+
+	return nResult;
+}
+
+void CXTPFormulaMulDivC::SetStandardValue(int nMul, int nDiv, int nC)
+{
+	m_nMultiplier = nMul;
+	m_nDivisor = nDiv;
+	m_nConstant = nC;
+}
+
+void CXTPFormulaMulDivC::GetStandardValue(int& rnMul, int& rnDiv, int& rnC)
+{
+	rnMul = m_nMultiplier;
+	rnDiv = m_nDivisor;
+	rnC = m_nConstant;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPReportPaintManager
+
+CXTPReportPaintManager::CXTPReportPaintManager()
+{
+	m_pHeaderHeightFormula = new CXTPFormulaMulDivC;
+	m_pHeaderHeightFormula->SetStandardValue(11, 10, 8);
+
+	m_clrPreviewText.SetStandardValue(RGB(0, 0, 255));
+	//m_clrColumnOffice2007CustomTheme.SetStandardValue(RGB(196, 221, 255));
+	m_clrColumnOffice2007CustomTheme = COLORREF_NULL;
+	m_nMaxPreviewLines = 3;
+	m_szGlyph = CSize(12, 12);
+
+	m_bThemedInplaceButtons = TRUE;
+
+	// defaults
+	m_nGroupGridLineHeight = 2;
+	m_nResizingWidth = 1;
+	m_bIsPreviewMode = FALSE;
+	m_bShadeGroupHeadings = FALSE;
+	m_bGroupRowTextBold = FALSE;
+	m_bShadeSortColumn = TRUE;
+	m_columnStyle = xtpReportColumnShaded;
+
+	m_treeStructureStyle = xtpReportTreeStructureSolid;
+	m_HeaderRowsDividerStyle = xtpReportFixedRowsDividerThin;
+	m_FooterRowsDividerStyle = xtpReportFixedRowsDividerThin;
+
+	m_verticalGridStyle = xtpReportGridNoLines;
+	m_horizontalGridStyle = xtpReportGridSolid;
+
+	m_bRevertAlignment = FALSE;
+	m_bUseEditTextAlignment = TRUE;
+	m_bUseColumnTextAlignment = FALSE;
+	m_bHotTracking = TRUE;
+	m_bInvertColumnOnClick = TRUE;
+
+	XTPResourceManager()->LoadString(&m_strNoItems, XTP_IDS_REPORT_NOITEMS);
+	XTPResourceManager()->LoadString(&m_strNoGroupBy, XTP_IDS_REPORT_NOGROUPBY);
+	XTPResourceManager()->LoadString(&m_strNoFieldsAvailable, XTP_IDS_REPORT_NOFIELDSAVAILABLE);
+	if (XTPResourceManager()->LoadString(&m_strSortBy, XTP_IDS_REPORT_SORTBY))
+	{
+		m_strSortBy += _T(" ");
+	}
+
+	m_bHideSelection = FALSE;
+
+	m_rcPreviewIndent.SetRect(10, 0, 10, 2);
+
+	m_nTreeIndent = 20;
+	m_bDrawSortTriangleAlways = TRUE;
+
+
+	// get system parameters
+	LOGFONT lfIcon;
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+
+	VERIFY(m_fontPreview.CreateFontIndirect(&lfIcon));
+
+	SetCaptionFont(lfIcon);
+	SetTextFont(lfIcon);
+
+	VERIFY(m_ilGlyphs.Create(12, 12, ILC_COLOR24 | ILC_MASK, 0, 1));
+	CBitmap bmp;
+	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, XTP_IDB_REPORT_GLYPHS));
+	m_ilGlyphs.Add(&bmp, RGB(255, 0, 255));
+
+	m_bFixedRowHeight = TRUE;
+	m_bDrawGridForEmptySpace = FALSE;
+
+	m_bFixedInplaceButtonHeight = FALSE;
+	m_nFreezeColsDividerStyle = xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerShade | xtpReportFreezeColsDividerHeader;
+	m_HeaderRowsDividerStyle = xtpReportFixedRowsDividerThin;
+	m_FooterRowsDividerStyle = xtpReportFixedRowsDividerThin;
+
+	m_nTreeStructureStyle = 0;
+
+	RefreshMetrics();
+
+}
+
+CXTPReportPaintManager::~CXTPReportPaintManager()
+{
+	CMDTARGET_RELEASE(m_pHeaderHeightFormula);
+}
+
+COLORREF CXTPReportPaintManager::GetControlBackColor(CXTPReportControl* /*pControl*/)
+{
+	return m_clrControlBack;
+}
+
+
+void CXTPReportPaintManager::RefreshMetrics()
+{
+	RefreshXtremeColors();
+
+	m_clrBtnFace.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
+	m_clrBtnText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_clrControlDark.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrHighlight.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHT));
+	m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHTTEXT));
+	m_clrWindowText.SetStandardValue(GetXtremeColor(COLOR_WINDOWTEXT));
+	m_clrControlLightLight.SetStandardValue(GetXtremeColor(COLOR_3DHIGHLIGHT));
+	m_clrControlBack.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+
+	m_clrIndentControl.SetStandardValue(m_clrBtnFace);
+	m_clrCaptionText.SetStandardValue(m_clrBtnText);
+	m_clrGridLine.SetStandardValue(m_clrControlDark);
+	m_clrHeaderControl.SetStandardValue(m_clrBtnFace);
+	m_clrGroupShadeBorder.SetStandardValue(m_clrControlDark);
+	m_clrGroupShadeBack.SetStandardValue(m_clrBtnFace);
+	m_clrGroupShadeText.SetStandardValue(m_clrBtnText);
+	m_clrGroupRowText.SetStandardValue(m_clrControlDark);
+	m_clrGroupBoxBack.SetStandardValue(m_clrControlDark);
+
+	m_clrSelectedRow.SetStandardValue(m_clrBtnFace);
+	m_clrSelectedRowText.SetStandardValue(m_clrBtnText);
+
+	m_clrHyper.SetStandardValue(RGB(0, 0, 0xFF));
+	m_clrItemShade.SetStandardValue(RGB(245, 245, 245));
+	m_clrHotDivider.SetStandardValue(RGB(0xFF, 0, 0));
+
+	m_crlNoGroupByText.SetStandardValue(m_clrControlDark);
+
+	m_clrGradientColumnSeparator.SetStandardValue(m_clrControlDark);
+
+	m_themeWrapper.OpenThemeData(0, L"HEADER");
+	m_themeButton.OpenThemeData(0, L"BUTTON");
+	m_themeCombo.OpenThemeData(0, L"COMBOBOX");
+
+
+	if (!XTPColorManager()->IsLunaColorsDisabled())
+	{
+
+		XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+		switch (systemTheme)
+		{
+			case xtpSystemThemeBlue:
+			case xtpSystemThemeRoyale:
+			case xtpSystemThemeAero:
+				m_clrGroupShadeBorder.SetStandardValue(RGB(123, 164, 224));
+				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
+				m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
+				m_clrGroupRowText.SetStandardValue(RGB(55, 104, 185));
+				m_clrGridLine.SetStandardValue(RGB(234, 233, 225));
+				break;
+
+			case xtpSystemThemeOlive:
+				m_clrGroupShadeBorder.SetStandardValue(RGB(181, 196, 143));
+				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
+				m_clrGroupShadeBack.SetStandardValue(RGB(175, 186, 145));
+				m_clrGroupRowText.SetStandardValue(RGB(115, 137, 84));
+				m_clrGridLine.SetStandardValue(RGB(234, 233, 225));
+				break;
+
+			case xtpSystemThemeSilver:
+				m_clrGroupShadeBorder.SetStandardValue(RGB(165, 164, 189));
+				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
+				m_clrGroupShadeBack.SetStandardValue(RGB(229, 229, 235));
+				m_clrGroupRowText.SetStandardValue(RGB(112, 111, 145));
+				m_clrGridLine.SetStandardValue(RGB(229, 229, 235));
+				break;
+		}
+	}
+
+	if (m_columnStyle == xtpReportColumnOffice2007)
+	{
+		//if (m_clrColumnOffice2007CustomTheme.IsCustomValue())
+		if (m_clrColumnOffice2007CustomTheme != COLORREF_NULL)
+		{
+			COLORREF clrHsl = XTPDrawHelpers()->RGBtoHSL(m_clrColumnOffice2007CustomTheme);
+			BYTE Hue = GetRValue(clrHsl);
+			BYTE Sat = GetGValue(clrHsl);
+
+			m_grcGradientColumnPushed.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 212)), XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 239)));
+			m_grcGradientColumn.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 239)), XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 212)));
+			m_clrGradientColumnShadow.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.525f), 145)));
+			m_clrGradientColumnSeparator.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 192)));
+			m_clrGroupBoxBack.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 227)));
+			m_crlNoGroupByText.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.75f), 79)));
+			m_clrGroupShadeBack.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.88f), 208)));
+		}
+		else
+		{
+			switch (XTPColorManager()->GetCurrentSystemTheme())
+			{
+				case xtpSystemThemeSilver:
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(221, 221, 221), RGB(253, 253, 253));
+					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(221, 221, 221));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(147, 147, 147));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(198, 198, 198));
+					m_clrGroupBoxBack.SetStandardValue(RGB(239, 239, 239));
+					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
+					m_clrGroupShadeBack.SetStandardValue(RGB(229, 229, 235));
+					break;
+				}
+				case xtpSystemThemeOlive:
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(165, 184, 114), RGB(253, 253, 253));
+					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(165, 184, 114));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(96, 128, 88));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(120, 183, 104));
+					m_clrGroupBoxBack.SetStandardValue(RGB(216, 225, 187));
+					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
+					m_clrGroupShadeBack.SetStandardValue(RGB(175, 186, 145));
+					break;
+				}
+				case xtpSystemThemeBlue:
+				case xtpSystemThemeRoyale:
+				case xtpSystemThemeAero:
+				//case xtpSystemThemeAuto:
+				//case xtpSystemThemeDefault:
+				default :
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(196, 221, 255), RGB(252, 253, 255));
+					m_grcGradientColumn.SetStandardValue(RGB(252, 253,255), RGB(196, 221, 255));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(101, 147, 207));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(154, 198, 255));
+					m_clrGroupBoxBack.SetStandardValue(RGB(227, 239, 255));
+					m_crlNoGroupByText.SetStandardValue(RGB(50, 75, 44));
+					m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
+					break;
+				}
+			}
+
+		}
+		m_grcGradientColumnHot.SetStandardValue(m_grcGradientColumn);
+		m_clrGroupRowText.SetStandardValue(m_crlNoGroupByText);
+		m_clrGroupShadeBorder.SetStandardValue(m_clrGradientColumnSeparator);
+	}
+	else if (m_columnStyle == xtpReportColumnOffice2003)
+	{
+		m_grcGradientColumn.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd), GetXtremeColor(COLOR_3DFACE));
+		m_grcGradientColumnHot.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT));
+		m_grcGradientColumnPushed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
+		m_clrGradientColumnShadow.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
+		m_clrGradientColumnSeparator.SetStandardValue(GetXtremeColor(XPCOLOR_SEPARATOR));
+
+		switch (XTPColorManager()->GetCurrentSystemTheme())
+		{
+		case xtpSystemThemeBlue:
+		case xtpSystemThemeRoyale:
+		case xtpSystemThemeAero:
+			m_grcGradientColumn.SetStandardValue(RGB(221, 236, 254), RGB(129, 169, 226));
+			m_clrGradientColumnShadow.SetStandardValue(RGB(59, 97, 156));
+			m_clrGradientColumnSeparator.SetStandardValue(RGB(106, 140, 203));
+			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
+			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
+			break;
+
+		case xtpSystemThemeOlive:
+			m_grcGradientColumn.SetStandardValue(RGB(244, 247, 222), RGB(183, 198, 145));
+			m_clrGradientColumnShadow.SetStandardValue(RGB(96, 128, 88));
+			m_clrGradientColumnSeparator.SetStandardValue(RGB(96, 128, 88));
+			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
+			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
+			break;
+
+		case xtpSystemThemeSilver:
+			m_grcGradientColumn.SetStandardValue(RGB(243, 244, 250), RGB(153, 151, 181));
+			m_clrGradientColumnShadow.SetStandardValue(RGB(124, 124, 148));
+			m_clrGradientColumnSeparator.SetStandardValue(RGB(110, 109, 143));
+			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
+			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
+			break;
+		}
+	}
+
+	m_brushVeriticalGrid.DeleteObject();
+	m_brushHorizontalGrid.DeleteObject();
+	m_brushTreeStructure.DeleteObject();
+
+	m_clrFreezeColsDivider.SetStandardValue(RGB(0, 0, 222));
+	m_clrHeaderRowsDivider.SetStandardValue(COLOR_BTNFACE);
+	m_clrFooterRowsDivider.SetStandardValue(COLOR_BTNFACE);
+
+	LOGFONT lf;
+	m_fontCaption.GetLogFont(&lf);
+	SetCaptionFont(lf);
+}
+
+
+void CXTPReportPaintManager::FillRow(CDC* /*pDC*/, CXTPReportRow* /*pRow*/, CRect /*rcRow*/)
+{
+}
+
+void CXTPReportPaintManager::DrawGridPat(CDC* pDC, CBrush* pBrush, CRect rc, CONST VOID*pPattern, COLORREF clr)
+{
+	if (pBrush->GetSafeHandle() == 0)
+	{
+		CBitmap bmp;
+		bmp.CreateBitmap(8, 8, 1, 1, pPattern);
+		pBrush->CreatePatternBrush(&bmp);
+	}
+	CBrush* pOldBrush = (CBrush*)pDC->SelectObject(pBrush);
+
+	pDC->SetTextColor(m_clrControlBack);
+	pDC->SetBkColor(clr);
+	PatBlt(pDC->GetSafeHdc(), rc.left, rc.top, rc.Width(), rc.Height(), PATCOPY);
+
+	pDC->SelectObject(pOldBrush);
+}
+
+void CXTPReportPaintManager::SetGridStyle(BOOL bVertical, XTPReportGridStyle gridStyle)
+{
+	if (bVertical)
+	{
+		m_verticalGridStyle = gridStyle;
+		m_brushVeriticalGrid.DeleteObject();
+	}
+	else
+	{
+		m_horizontalGridStyle = gridStyle;
+		m_brushHorizontalGrid.DeleteObject();
+	}
+}
+
+void CXTPReportPaintManager::DrawGrid(CDC* pDC, BOOL bVertical, CRect rc)
+{
+	if (!bVertical)
+	{
+		switch (m_horizontalGridStyle)
+		{
+			case xtpReportGridSolid:
+				DrawHorizontalLine(pDC, rc.left, rc.bottom, rc.Width(), m_clrGridLine);
+				break;
+			case xtpReportGridSmallDots:
+				{
+					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+				}
+			case xtpReportGridLargeDots:
+				{
+					const unsigned short _cb[] = {0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+				}
+			case xtpReportGridDashes:
+				{
+					const unsigned short _cb[] = {0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+
+				}
+
+		}
+	}
+	else
+	{
+		int nPos = rc.right - 1;
+		switch (m_verticalGridStyle)
+		{
+			case xtpReportGridSolid:
+				DrawVerticalLine(pDC, nPos, rc.top, rc.Height(), m_clrGridLine);
+				break;
+			case xtpReportGridSmallDots:
+				{
+					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+				}
+			case xtpReportGridLargeDots:
+				{
+					const unsigned short _cb[] = {0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0x33, 0x33};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+				}
+			case xtpReportGridDashes:
+				{
+					const unsigned short _cb[] = {0xf0, 0xf0, 0xf0, 0xf0, 0xf, 0xf, 0xf, 0xf};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+
+				}
+
+		}
+
+	}
+}
+
+void CXTPReportPaintManager::DrawFreezeColsDivider(CDC* pDC, const CRect& rc, CXTPReportControl* pControl, CXTPReportRow* pRow)
+{
+	if (pControl->GetReportHeader()->IsAutoColumnSizing() ||
+		(m_nFreezeColsDividerStyle == 0))
+		return;
+
+	CRect rcDvX = rc;
+
+	if ((m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerShade) &&
+		pControl->GetScrollPos(SB_HORZ) && !pControl->IsFullColumnScrolling())
+	{
+		rcDvX.left = rcDvX.right-1;
+		rcDvX.right = rcDvX.left + 4;
+		XTPDrawHelpers()->GradientFill(pDC, rcDvX, m_clrFreezeColsDivider,
+									   RGB(255, 255, 255), TRUE);
+	}
+	else if (m_nFreezeColsDividerStyle & (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold))
+	{
+		int nWidth = (m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerBold) ? 2 : 1;
+		rcDvX.left = rcDvX.right-nWidth;
+		pDC->FillSolidRect(&rcDvX, m_clrFreezeColsDivider);
+	}
+
+	int nMask = (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold | xtpReportFreezeColsDividerShade);
+	if (pRow && pRow->IsSelected() && (m_nFreezeColsDividerStyle & nMask))
+	{
+		pDC->InvertRect(&rcDvX);
+	}
+}
+
+void CXTPReportPaintManager::FillGroupRowMetrics(CXTPReportGroupRow* pRow,
+						XTP_REPORTRECORDITEM_METRICS* pMetrics, BOOL bPrinting)
+{
+	ASSERT(pRow && pMetrics);
+	if (!pRow || !pRow->GetControl() || !pMetrics)
+	{
+		return;
+	}
+
+	BOOL bControlFocused = pRow->GetControl()->HasFocus();
+
+	pMetrics->clrForeground = m_clrGroupRowText;
+	pMetrics->clrBackground = XTP_REPORT_COLOR_DEFAULT;
+
+	if (pRow->IsSelected() && bControlFocused && !bPrinting)
+	{
+		pMetrics->clrForeground = m_clrHighlightText;
+		pMetrics->clrBackground = m_clrHighlight;
+	}
+	else if (m_bShadeGroupHeadings)
+	{
+		pMetrics->clrForeground = m_clrGroupShadeText;
+		pMetrics->clrBackground = m_clrGroupShadeBack;
+	}
+
+	//--------------------------------
+	pMetrics->pFont = m_bGroupRowTextBold ? &m_fontBoldText : &m_fontText;
+}
+
+void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CRect rcRow,
+	XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	BOOL bControlFocused = pRow->GetControl()->HasFocus();
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+	{
+		pDC->FillSolidRect(rcRow, pMetrics->clrBackground);
+	}
+	pDC->SetTextColor(pMetrics->clrForeground);
+
+	//--------------------------------
+	ASSERT(pMetrics->pFont);
+	CXTPFontDC font(pDC, pMetrics->pFont);
+
+	int nRowLevel = pRow->GetTreeDepth();
+	int nIndent = pRow->GetControl()->GetIndent(nRowLevel + 1);
+
+	pDC->FillSolidRect(rcRow.left, rcRow.bottom - m_nGroupGridLineHeight, rcRow.Width(), m_nGroupGridLineHeight, m_clrGroupShadeBorder);
+
+	if (pRow->IsFocused() && bControlFocused && !pDC->IsPrinting() && pRow->GetControl()->IsRowFocusVisible())
+	{
+		DrawFocusedRow(pDC, CRect(rcRow.left + nIndent, rcRow.top, rcRow.right, rcRow.bottom - 1));
+	}
+
+	if (nIndent > 0)
+	{
+		FillIndent(pDC, CRect(rcRow.left, rcRow.top, rcRow.left + nIndent, rcRow.bottom));
+	}
+	rcRow.left += nIndent;
+
+	//-----------------------------------------------------------------------
+	int nBitmapOffset = 0;
+	int nTextOffset = 0;
+	CSize szIcon(0, 0);
+
+	int nGroupRowIconAlignment = pMetrics->nGroupRowIconAlignment;
+
+	// check and set defaults if need
+	if ((nGroupRowIconAlignment & xtpGroupRowIconHmask) == 0)
+	{
+		nGroupRowIconAlignment |= xtpGroupRowIconLeft;
+	}
+	if ((nGroupRowIconAlignment & xtpGroupRowIconVmask) == 0)
+	{
+		nGroupRowIconAlignment |= xtpGroupRowIconVCenter;
+	}
+
+	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
+	{
+		CXTPImageManagerIcon* pIcon = pRow->GetControl()->GetImageManager()->
+										GetImage(pMetrics->nGroupRowIcon, 0);
+		if (pIcon)
+		{
+			szIcon = CSize(pIcon->GetWidth(), pIcon->GetHeight());
+		}
+
+		if (nGroupRowIconAlignment & xtpGroupRowIconLeft)
+		{
+			nBitmapOffset = szIcon.cx + 5;
+		}
+		if (nGroupRowIconAlignment & xtpGroupRowIconBeforeText)
+		{
+			nTextOffset = szIcon.cx + 5 + 5;
+		}
+	}
+
+	//-----------------------------------------------------------------------
+	CRect rcBitmap(rcRow);
+	rcBitmap.top = rcBitmap.bottom - m_nRowHeight - 12;
+	rcBitmap.top = rcBitmap.CenterPoint().y - m_szGlyph.cy / 2;
+	rcBitmap.left += nBitmapOffset;
+
+	int nBitmapWidth = DrawCollapsedBitmap(pDC, pRow, rcBitmap).cx;
+
+	if (!pDC->IsPrinting())
+		pRow->SetCollapseRect(rcBitmap);
+
+	//-----------------------------------------------------------------------
+	CRect rcText(rcBitmap.left + nBitmapWidth + 5, rcRow.top, rcRow.right, rcRow.bottom);
+	rcText.top = rcText.bottom - m_nRowHeight - 6;
+	rcText.left += nTextOffset;
+
+	int nRightMask = (xtpGroupRowIconAfterText | xtpGroupRowIconRight);
+	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON &&
+		(nGroupRowIconAlignment & nRightMask))
+	{
+		rcText.right -= szIcon.cx;
+	}
+
+	UINT nFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
+	pDC->DrawText(pMetrics->strText, rcText, nFlags);
+	int nTextWidth = pDC->GetTextExtent(pMetrics->strText).cx;
+
+	//-----------------------------------------------------------------------
+	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
+	{
+		CRect rcIcon(rcRow);
+
+		if (nGroupRowIconAlignment & xtpGroupRowIconBeforeText)
+		{
+			rcIcon.left = rcBitmap.left + nBitmapWidth + 5;
+		}
+		else if (nGroupRowIconAlignment & xtpGroupRowIconAfterText)
+		{
+			rcIcon.left = rcText.left + nTextWidth + 5;
+			rcIcon.left = min(rcIcon.left, rcRow.right - szIcon.cx - 1);
+		}
+		else if (nGroupRowIconAlignment & xtpGroupRowIconRight)
+		{
+			rcIcon.left = rcRow.right - szIcon.cx - 1;
+		}
+		else
+		{
+			// xtpGroupRowIconLeft
+		}
+
+		// ***
+		if (nGroupRowIconAlignment & xtpGroupRowIconVTop)
+		{
+			rcIcon.bottom = rcIcon.top + szIcon.cy + 1;
+		}
+		else if (nGroupRowIconAlignment & xtpGroupRowIconVCenterToText)
+		{
+			rcIcon.top = rcText.CenterPoint().y - szIcon.cy / 2;
+			rcIcon.bottom = rcIcon.top + szIcon.cy + 1;
+		}
+		else if (nGroupRowIconAlignment & xtpGroupRowIconVBottom)
+		{
+			rcIcon.top = rcIcon.bottom - szIcon.cy - 1;
+		}
+		else
+		{
+			// xtpGroupRowIconVCenter
+		}
+
+		//-------------------------------------------------------------------
+		COLORREF clrBk = pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT ?
+							pMetrics->clrBackground : RGB(255, 255, 255);
+
+		COLORREF clrBkPrev = pDC->SetBkColor(clrBk);
+
+		DrawBitmap(pDC, pRow->GetControl(), rcIcon, pMetrics->nGroupRowIcon);
+
+		pDC->SetBkColor(clrBkPrev);
+	}
+}
+
+CSize CXTPReportPaintManager::DrawCollapsedBitmap(CDC* pDC, const CXTPReportRow* pRow, CRect& rcBitmap)
+{
+	rcBitmap.left += 2;
+
+	CSize sizeGlyph = DrawGlyph(pDC, rcBitmap, pRow->IsExpanded() ? 0 : 1);
+
+	if (sizeGlyph.cx != 0 && pDC)
+	{
+		rcBitmap.right = rcBitmap.left + sizeGlyph.cx;
+	}
+	return CSize(2 + sizeGlyph.cx, 2 + sizeGlyph.cy);
+}
+
+void CXTPReportPaintManager::FillIndent(CDC* pDC, CRect rcRow)
+{
+	pDC->FillSolidRect(&rcRow, m_clrIndentControl);
+}
+
+void CXTPReportPaintManager::FillItemShade(CDC* pDC, CRect rcItem)
+{
+	// fill item background shade (for example when sorted by this column)
+	if (!m_bShadeSortColumn)
+		return;
+
+	if (pDC)
+	{
+		pDC->FillSolidRect(rcItem, m_clrItemShade);
+	}
+}
+
+void CXTPReportPaintManager::FillHeaderControl(CDC* pDC, CRect rcHeader)
+{
+	pDC->FillSolidRect(rcHeader, m_clrHeaderControl);
+}
+
+void CXTPReportPaintManager::DrawNoGroupByText(CDC* pDC, CRect rcItem)
+{
+	int nWidth = max(55, pDC->GetTextExtent(m_strNoGroupBy).cx + 8);
+	rcItem.right = rcItem.left + nWidth;
+
+	pDC->SetTextColor(m_crlNoGroupByText);
+
+	if (m_columnStyle != xtpReportColumnOffice2007)
+		FillHeaderControl(pDC, rcItem);
+
+	pDC->DrawText(m_strNoGroupBy, rcItem, DT_END_ELLIPSIS | DT_CENTER | DT_NOPREFIX);
+
+}
+
+void CXTPReportPaintManager::FillFooter(CDC* pDC, CRect rcFooter)
+{
+	if (m_columnStyle == xtpReportColumnOffice2007)
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rcFooter,
+			m_grcGradientColumn.clrDark, m_grcGradientColumn.clrLight, FALSE);
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrGroupBoxBack);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrGradientColumnShadow);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.25));
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.1));
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrGradientColumnShadow);
+	}
+	else if (m_columnStyle == xtpReportColumnOffice2003)
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rcFooter,
+			m_grcGradientColumn.clrDark, m_grcGradientColumn.clrLight, FALSE);
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrControlBack);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrGradientColumnShadow);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.25));
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.1));
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrGradientColumnShadow);
+	}
+	else
+	{
+		pDC->FillSolidRect(rcFooter, m_clrHeaderControl);
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrControlBack);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrControlDark);
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.25));
+
+		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrControlDark);
+	}
+}
+
+void CXTPReportPaintManager::DrawHorizontalLine(CDC* pDC, int x, int y, int cx, COLORREF clr)
+{
+	pDC->FillSolidRect(x, y, cx, 1, clr);
+}
+
+void CXTPReportPaintManager::DrawVerticalLine(CDC* pDC, int x, int y, int cy, COLORREF clr)
+{
+	pDC->FillSolidRect(x, y, 1, cy, clr);
+}
+
+void CXTPReportPaintManager::DrawTriangle(CDC* pDC, CRect rcTriangle, BOOL bToDown)
+{
+	CRect rcTRect;
+
+	if (rcTriangle.Width() > 15)
+	{
+		CPoint pt(rcTriangle.left + 10, rcTriangle.CenterPoint().y);
+
+		if (m_columnStyle == xtpReportColumnOffice2007 || m_columnStyle == xtpReportColumnExplorer)
+		{
+			if (bToDown)
+			{
+				CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 4, pt.y - 2),
+					CPoint(pt.x, pt.y + 2), CPoint(pt.x + 4, pt.y  - 2), m_clrGradientColumnSeparator);
+			}
+			else
+			{
+				CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 4, pt.y + 2),
+					CPoint(pt.x, pt.y - 2), CPoint(pt.x + 4, pt.y  + 2), m_clrGradientColumnSeparator);
+			}
+			return;
+		}
+
+		// Set up pens to use for drawing the triangle
+		CPen penLight(PS_SOLID, 1, m_clrControlLightLight);
+		CPen penShadow(PS_SOLID, 1, m_clrControlDark);
+
+		if (bToDown)
+		{
+			Line(pDC, pt.x, pt.y - 3 + 6, 3, -6, &penLight);
+			Line(pDC, pt.x, pt.y - 2 + 6, 3, -6, &penLight);
+			Line(pDC, pt.x - 4, pt.y - 2, 3, +6, &penShadow);
+			Line(pDC, pt.x - 1, pt.y - 2 + 6, -4, -7, &penShadow);
+			Line(pDC, pt.x - 4, pt.y - 2, 8, 0, &penShadow);
+		}
+		else
+		{
+			Line(pDC, pt.x, pt.y - 3, 3, 6, &penLight);
+			Line(pDC, pt.x, pt.y - 2, 3, 6, &penLight);
+			Line(pDC, pt.x - 3, pt.y + 3, 6, 0, &penLight);
+			Line(pDC, pt.x - 1, pt.y - 3, -3, 6, &penShadow);
+			Line(pDC, pt.x - 2, pt.y - 2, -3, 6, &penShadow);
+		}
+	}
+}
+
+void CXTPReportPaintManager::DrawItemBitmap(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem, int nImage)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	POINT ptIcon;
+
+	CXTPImageManagerIcon* pIcon = pDrawArgs->pControl->GetImageManager()->GetImage(nImage, 0);
+
+	if (!pIcon)
+		return;
+
+	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
+	CSize szColumn(rcItem.Size());
+
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+
+	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDrawArgs->pDC)
+	{
+		// calculate image position
+		if (nIconAlign & xtpColumnIconRight)
+		{
+			ptIcon.x = rcItem.right - szImage.cx - 1;
+			rcItem.right -= (1 + szImage.cx); // shift text box to the left
+		}
+		else if (nIconAlign & xtpColumnIconCenter)
+		{
+			ptIcon.x = rcItem.left + szColumn.cx / 2 - szImage.cx / 2 - 1;
+		}
+		else //xtpColumnIconLeft : by default
+		{
+			ptIcon.x = rcItem.left + 1;
+			rcItem.left += 1 + szImage.cx; // shift text box to the right
+		}
+
+		// vertically align
+		if (nIconAlign & xtpColumnIconTop)
+		{
+			ptIcon.y = rcItem.top;
+		}
+		else if (nIconAlign & xtpColumnIconBottom)
+		{
+
+			ptIcon.y = rcItem.bottom - szImage.cy - 1;
+		}
+		else // xtpColumnIconVCenter - by default
+		{
+			ptIcon.y = rcItem.top + (szColumn.cy - szImage.cy) /2;
+		}
+
+		// draw image
+		if (pDrawArgs->pDC->IsPrinting())
+		{
+			CBitmap bmp;
+			bmp.CreateCompatibleBitmap(pDrawArgs->pDC, szImage.cx, szImage.cy);
+			CXTPCompatibleDC dcMem(NULL, &bmp);
+			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDrawArgs->pDC->GetBkColor());
+
+			pIcon->Draw(&dcMem, CPoint(0, 0), pIcon->GetIcon());
+			pDrawArgs->pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
+		}
+		else
+		{
+			pIcon->Draw(pDrawArgs->pDC, ptIcon, pIcon->GetIcon());
+		}
+	}
+}
+
+int CXTPReportPaintManager::DrawColumnIcon(CDC* pDC, CXTPReportColumn* pColumn,
+										   CRect rcColumn, CRect rcIcon, int iIcon)
+{
+	if (!pColumn || !pColumn->GetControl())
+	{
+		ASSERT(FALSE);
+		return 0;
+	}
+
+	POINT ptIcon;
+
+	CXTPImageManagerIcon* pIcon = pColumn->GetControl()->GetImageManager()->GetImage(iIcon, 0);
+
+	if (!pIcon)
+		return 0;
+
+	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
+	CSize szColumn(rcIcon.Size());
+
+	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDC)
+	{
+		ptIcon.x = rcIcon.left + 1;
+		ptIcon.y = rcIcon.top + (szColumn.cy - szImage.cy) /2;
+
+		if (pDC->IsPrinting())
+		{
+			CPoint ptIconOffset(ptIcon.x - rcColumn.left, ptIcon.y - rcColumn.top);
+			CRect rcColumn2(0, 0, rcColumn.Width(), rcColumn.Height());
+
+			CBitmap bmp;
+			bmp.CreateCompatibleBitmap(pDC, rcColumn2.Width(), rcColumn2.Height());
+
+			CXTPCompatibleDC dcMem(NULL, &bmp);
+
+			// Fill background
+			dcMem.FillSolidRect(&rcColumn2, pDC->GetBkColor());
+			BOOL bColumnPressed = FALSE;
+			DrawColumnBackground(&dcMem, pColumn, rcColumn2, bColumnPressed);
+
+
+			pIcon->Draw(&dcMem, ptIconOffset, pIcon->GetIcon());
+
+			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem,
+						ptIconOffset.x, ptIconOffset.y, SRCCOPY);
+		}
+		else
+		{
+			pIcon->Draw(pDC, ptIcon, pIcon->GetIcon());
+		}
+	}
+
+	return 1 + szImage.cx;
+}
+
+int CXTPReportPaintManager::DrawBitmap(CDC* pDC, CXTPReportControl* pControl, CRect rcColumn, int iIcon)
+{
+	ASSERT(pControl);
+	if (!pControl)
+		return 0;
+
+	POINT ptIcon;
+
+	CXTPImageManagerIcon* pIcon = pControl->GetImageManager()->GetImage(iIcon, 0);
+
+	if (!pIcon)
+		return 0;
+
+	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
+	CSize szColumn(rcColumn.Size());
+
+	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDC)
+	{
+		ptIcon.x = rcColumn.left + 1;
+		ptIcon.y = rcColumn.top + (szColumn.cy - szImage.cy) /2;
+
+		if (pDC->IsPrinting())
+		{
+			CBitmap bmp;
+			bmp.CreateCompatibleBitmap(pDC, szImage.cx, szImage.cy);
+			CXTPCompatibleDC dcMem(NULL, &bmp);
+			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDC->GetBkColor());
+
+			pIcon->Draw(&dcMem, CPoint(0, 0), pIcon->GetIcon());
+			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
+
+		}
+		else
+		{
+			pIcon->Draw(pDC, ptIcon, pIcon->GetIcon());
+		}
+	}
+
+	return 1 + szImage.cx;
+}
+
+CSize CXTPReportPaintManager::DrawGlyph(CDC* pDC, CRect rcColumn, int iIcon)
+{
+	CImageList* pImageList = &m_ilGlyphs;
+
+	IMAGEINFO imgInf;
+
+	if (!pImageList->GetImageInfo(iIcon, &imgInf))
+		return CSize(0, 0);
+
+	CSize szImage(imgInf.rcImage.right - imgInf.rcImage.left, imgInf.rcImage.bottom - imgInf.rcImage.top);
+	CSize szColumn(rcColumn.Size());
+
+	if (szImage.cy < szColumn.cy && pDC)
+	{
+		POINT ptIcon;
+
+		ptIcon.x = rcColumn.left + 1;
+		ptIcon.y = rcColumn.top + (szColumn.cy - szImage.cy) /2;
+
+		if (pDC->IsPrinting())
+		{
+			CBitmap bmp;
+			bmp.CreateCompatibleBitmap(pDC, szImage.cx, szImage.cy);
+			CXTPCompatibleDC dcMem(NULL, &bmp);
+			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDC->GetBkColor());
+
+			pImageList->Draw(&dcMem, iIcon, CPoint(0, 0), ILD_TRANSPARENT);
+			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
+
+		}
+		else if (CXTPDrawHelpers::IsContextRTL(pDC))  // Revert Icon
+		{
+			HICON hIcon = pImageList->ExtractIcon(iIcon);
+			DrawIconEx(pDC->GetSafeHdc(), ptIcon.x + szImage.cx, ptIcon.y, hIcon, -szImage.cx, szImage.cy, 0, 0, DI_NORMAL);
+			DestroyIcon(hIcon);
+		}
+		else
+		{
+			pImageList->Draw(pDC, iIcon, ptIcon, ILD_TRANSPARENT);
+		}
+	}
+
+	return CSize(1 + szImage.cx, 1 + szImage.cy);
+}
+
+int CXTPReportPaintManager::GetRowHeight(CDC* pDC, CXTPReportRow* pRow, int nTotalWidth)
+{
+	if (m_bFixedRowHeight || pRow->IsGroupRow() || !pRow->IsItemsVisible())
+		return GetRowHeight(pDC, pRow);
+
+	CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
+	int nColumnCount = pColumns->GetCount();
+
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pControl = pRow->GetControl();
+	drawArgs.pDC = pDC;
+	drawArgs.pRow = pRow;
+
+	XTP_REPORTRECORDITEM_METRICS* pItemMetrics = new XTP_REPORTRECORDITEM_METRICS;
+	int nHeight = 0;
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(pColumn);
+			if (!pItem)
+				continue;
+
+			drawArgs.pItem = pItem;
+			drawArgs.nTextAlign = pColumn->GetAlignment();
+
+			pItemMetrics->Reset();
+
+			pRow->GetItemMetrics(&drawArgs, pItemMetrics);
+
+			CXTPFontDC fnt(pDC, pItemMetrics->pFont);
+
+			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+
+			CRect rcItem(0, 0, nWidth - 4, 0);
+			pRow->ShiftTreeIndent(rcItem, pColumn);
+
+			pItem->GetCaptionRect(&drawArgs, rcItem);
+
+			BOOL bWordBreak = !!(pItemMetrics->nColumnAlignment & DT_WORDBREAK);
+			CString strText = pItem->GetCaption(pColumn);
+			ReplaceInHyperLinks(pItem, strText, XTP_HLINK_SPACE_X);
+			int nCalculatedHeight = CalculateRowHeight(pDC, strText, rcItem.Width(), bWordBreak);
+
+			nHeight = max(nHeight, nCalculatedHeight);
+
+			if (pItem->GetIconIndex() != -1)
+			{
+				CXTPImageManagerIcon* pIcon = pRow->GetControl()->
+					GetImageManager()->GetImage(pItem->GetIconIndex(), 0);
+
+				if (pIcon)
+				{
+					nHeight = max(nHeight, pIcon->GetHeight());
+				}
+			}
+		}
+	}
+
+	CMDTARGET_RELEASE(pItemMetrics);
+
+	return max(nHeight + 5, m_nRowHeight) + (IsGridVisible(FALSE) ? 1 : 0);
+}
+
+int CXTPReportPaintManager::GetRowHeight(CDC* /*pDC*/, CXTPReportRow* pRow)
+{
+	if (!pRow->IsGroupRow())
+	{
+		return m_nRowHeight + (IsGridVisible(FALSE) ? 1 : 0);
+	}
+
+	if (m_bShadeGroupHeadings)
+		return m_nRowHeight + 6;
+
+	return m_nRowHeight + 16;
+}
+
+BOOL CXTPReportPaintManager::IsColumHotTrackingEnabled() const
+{
+	return m_bHotTracking && ((m_columnStyle == xtpReportColumnOffice2003) || ((m_columnStyle == xtpReportColumnExplorer) && m_themeWrapper.IsAppThemed()));
+}
+
+void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pColumn, CRect rcColumn, BOOL& bColumnPressed)
+{
+	if (m_columnStyle == xtpReportColumnShaded)
+	{
+		int nShadowWidth = 4;
+
+		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlDark);
+
+		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 3, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.25));
+		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 2, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.4));
+		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
+
+		DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlLightLight);
+	}
+	else if (m_columnStyle == xtpReportColumnOffice2003 || m_columnStyle == xtpReportColumnOffice2007)
+	{
+
+		XTPDrawHelpers()->GradientFill(pDC, rcColumn,
+			bColumnPressed ? m_grcGradientColumnPushed: pColumn->IsHotTracking() ? m_grcGradientColumnHot : m_grcGradientColumn, FALSE);
+
+		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), m_clrGradientColumnShadow);
+
+		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - 4, m_clrGradientColumnSeparator);
+
+		if (m_columnStyle == xtpReportColumnOffice2003)
+			DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 3, rcColumn.Height() - 2 - 4, m_clrControlLightLight);
+
+		if (pColumn->GetControl()->IsGroupByVisible())
+			DrawHorizontalLine(pDC, rcColumn.left, rcColumn.top, rcColumn.Width(), m_clrGradientColumnShadow);
+
+		bColumnPressed = FALSE;
+	}
+	else if (m_columnStyle == xtpReportColumnExplorer)
+	{
+		if (m_themeWrapper.IsAppThemed())
+		{
+			int iState = bColumnPressed ? HIS_PRESSED: pColumn->IsHotTracking() ? HIS_HOT : HIS_NORMAL;
+
+			m_themeWrapper.DrawThemeBackground(pDC->GetSafeHdc(), HP_HEADERITEM, iState, &rcColumn, NULL);
+		}
+		else
+		{
+			if (bColumnPressed)
+			{
+				pDC->Draw3dRect(rcColumn, m_clrControlDark, m_clrControlDark);
+			}
+			else
+			{
+				pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrBtnText);
+				rcColumn.DeflateRect(1, 1);
+				pDC->Draw3dRect(rcColumn, m_clrHeaderControl, m_clrControlDark);
+			}
+		}
+		bColumnPressed = FALSE;
+
+	}
+	else
+	{
+		pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
+	}
+}
+
+void CXTPReportPaintManager::DrawColumnFooter(CDC* pDC, CXTPReportColumn* pColumn, CXTPReportHeader* /*pHeader*/, CRect rcColumn)
+{
+	if (pColumn->GetDrawFooterDivider())
+	{
+		DrawVerticalLine(pDC, rcColumn.right, rcColumn.top + 6, rcColumn.Height() - 9, m_clrControlLightLight);
+		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 5, rcColumn.Height() - 9,
+			m_columnStyle == xtpReportColumnOffice2003 || m_columnStyle == xtpReportColumnOffice2007 ? m_clrGradientColumnSeparator : m_clrControlDark);
+	}
+
+	pDC->SetBkMode(TRANSPARENT);
+	CXTPFontDC font(pDC, pColumn->GetFooterFont(), m_clrCaptionText);
+
+	CString strCaption = pColumn->GetFooterText();
+	CSize sizeText = pDC->GetTextExtent(strCaption);
+	CRect rcText(rcColumn);
+
+	rcText.DeflateRect(3, 2, 3, 2);
+
+	if (pColumn->GetFooterAlignment() != DT_LEFT)
+	{
+		int nLength = 6 + sizeText.cx;
+
+		if (rcText.Width() > nLength)
+		{
+			if (pColumn->GetFooterAlignment() & DT_RIGHT)
+				rcText.left = rcText.right - nLength;
+			if (pColumn->GetFooterAlignment() & DT_CENTER)
+				rcText.left = (rcText.left + rcText.right - nLength) / 2;
+		}
+	}
+
+	UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
+
+	if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
+	{
+		uFlags |= DT_WORDBREAK;
+
+		// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
+		CRect rcTextReal = rcText;
+		pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
+
+		int nHeightDiff = rcText.Height() - rcTextReal.Height();
+		if (nHeightDiff > 1)
+		{
+			rcText.top += nHeightDiff/2;
+		}
+	}
+	else
+	{
+		uFlags |= DT_SINGLELINE | DT_VCENTER;
+	}
+
+	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
+	{
+		pDC->DrawText(strCaption, rcText, uFlags);
+	}
+}
+
+
+void CXTPReportPaintManager::DrawColumn(CDC* pDC, CXTPReportColumn* pColumn, CXTPReportHeader* pHeader, CRect rcColumn, BOOL bDrawExternal)
+{
+	// save column parameter for future use in drawing
+
+	BOOL bDraggingFromHeader = bDrawExternal && pColumn->IsDragging() &&
+						rcColumn.left == 0 && rcColumn.top == 0 && pHeader->IsDragHeader();
+
+	BOOL bPlainColumn = bDrawExternal && !bDraggingFromHeader;
+	BOOL bColumnPressed = pColumn->IsDragging() && !bDrawExternal && pHeader->IsDragHeader();
+
+
+	CRect rcColumn0 = rcColumn;
+	// draw
+	int nIconID = pColumn->GetIconID();
+	CString strCaption = pColumn->GetCaption();
+	int nShadowWidth = !bPlainColumn && m_columnStyle == xtpReportColumnShaded ? 4 : 0;
+
+	if (bPlainColumn)
+	{
+		if (m_columnStyle == xtpReportColumnOffice2007)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, rcColumn, m_grcGradientColumn, FALSE);
+			pDC->Draw3dRect(rcColumn, m_clrGradientColumnShadow, m_clrGradientColumnShadow);
+		}
+		else
+		{
+			pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
+			pDC->MoveTo(rcColumn.left, rcColumn.bottom);
+			pDC->LineTo(rcColumn.right, rcColumn.bottom);
+			pDC->LineTo(rcColumn.right, rcColumn.top-1);
+		}
+	}
+	else
+	{
+		DrawColumnBackground(pDC, pColumn, rcColumn, bColumnPressed);
+	}
+
+	pDC->SetBkColor(m_clrHeaderControl);
+
+
+	rcColumn.bottom = rcColumn.bottom - 1 - nShadowWidth;
+
+	CRect rcText(rcColumn);
+
+	if (!pColumn->IsAutoSize() && !bPlainColumn)
+	{
+		rcText.left += pColumn->GetIndent();
+	}
+
+	BOOL bHasSortTriangle = pColumn->HasSortTriangle() && !pDC->IsPrinting();
+
+	CXTPFontDC font(pDC, &m_fontCaption);
+	CSize sizeText = pDC->GetTextExtent(strCaption);
+
+	if (pColumn->GetHeaderAlignment() != DT_LEFT && !bPlainColumn)
+	{
+		int nLength = 6 + sizeText.cx;
+
+		if (nIconID != XTP_REPORT_NOICON)
+		{
+			nLength += DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID) + 2;
+		}
+		if (bHasSortTriangle)
+			nLength += 27;
+
+		if (rcText.Width() > nLength)
+		{
+			if (pColumn->GetHeaderAlignment() & DT_RIGHT)
+				rcText.left = rcText.right - nLength;
+			if (pColumn->GetHeaderAlignment() & DT_CENTER)
+				rcText.left = (rcText.left + rcText.right - nLength) / 2;
+
+		}
+
+	}
+
+	if (nIconID != XTP_REPORT_NOICON && !bPlainColumn)
+	{
+		CRect rcIcon(rcText);
+		rcIcon.bottom += nShadowWidth;
+		// shift column left by bitmap drawing place
+
+		//rcText.left += DrawBitmap(pDC, pColumn->GetControl(), rcIcon, nIconID);
+		rcText.left += DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
+
+		// shift column left to the column right to disallow drawing text on Bitmap column headers
+		rcText.left += 2;
+	}
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	rcText.DeflateRect(3, 0, 3, 0);
+	CRect rcTriangle(rcText);
+
+	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
+	{
+		pDC->SetTextColor(m_clrCaptionText);
+
+		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
+		{
+			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
+			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
+		}
+
+		UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
+
+		if (pColumn->GetHeaderAlignment() & DT_WORDBREAK)
+		{
+			uFlags |= DT_WORDBREAK;
+
+			// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
+			CRect rcTextReal = rcText;
+			pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
+
+			int nHeightDiff = rcText.Height() - rcTextReal.Height();
+			if (nHeightDiff > 1)
+			{
+				rcText.top += nHeightDiff/2;
+			}
+		}
+		else
+		{
+			uFlags |= DT_SINGLELINE | DT_VCENTER;
+		}
+
+		pDC->DrawText(strCaption, rcText, uFlags);
+
+
+		rcTriangle.left += sizeText.cx;
+	}
+
+
+	if (bHasSortTriangle)
+	{
+		rcTriangle.left += (bPlainColumn ? 17 : 10);
+		DrawTriangle(pDC, rcTriangle, pColumn->IsSortedDecreasing());
+	}
+
+	if (bColumnPressed && m_bInvertColumnOnClick)
+	{
+		rcColumn.bottom += nShadowWidth;
+		pDC->InvertRect(&rcColumn);
+	}
+}
+
+int CXTPReportPaintManager::CalcColumnHeight(CDC* pDC, CXTPReportColumn* pColumn,
+	int nTotalWidth)
+{
+	int nIconID = pColumn->GetIconID();
+	CString strCaption = pColumn->GetCaption();
+
+	int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+	CRect rcColumn = pColumn->GetRect();
+	rcColumn.right = rcColumn.left + nWidth;
+
+	CRect rcText(rcColumn);
+
+	if (!pColumn->IsAutoSize())
+	{
+		rcText.left += pColumn->GetIndent();
+	}
+
+	BOOL bHasSortTriangle = pColumn->HasSortTriangle() && !pDC->IsPrinting();
+
+	CXTPFontDC font(pDC, &m_fontCaption);
+	CSize sizeText = pDC->GetTextExtent(strCaption);
+
+	if (nIconID != XTP_REPORT_NOICON)
+	{
+		// shift column left by bitmap drawing place
+		rcText.left += DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID);
+		// shift column left to the column right to disallow drawing text on Bitmap column headers
+		rcText.left += 2;
+	}
+
+	rcText.DeflateRect(3, 0, 3, 0);
+
+	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
+	{
+		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
+		{
+			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
+			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
+		}
+
+		UINT uFlags = DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
+		uFlags |= (pColumn->GetHeaderAlignment() & DT_WORDBREAK) ? DT_WORDBREAK : DT_SINGLELINE;
+		uFlags |= DT_CALCRECT;
+
+		pDC->DrawText(strCaption, rcText, uFlags);
+
+		return m_pHeaderHeightFormula->Calculate(rcText.Height());
+	}
+
+	return 8;
+}
+
+void CXTPReportPaintManager::FillGroupByControl(CDC* pDC, CRect& rcGroupBy)
+{
+	pDC->FillSolidRect(rcGroupBy, m_clrGroupBoxBack);
+}
+
+void CXTPReportPaintManager::DrawConnector(CDC* pDC, CPoint ptFrom, CPoint ptTo)
+{
+	COLORREF crConnector = RGB(0, 0, 0);
+	DrawVerticalLine(pDC, ptFrom.x, ptFrom.y, ptTo.y - ptFrom.y, crConnector);
+	DrawHorizontalLine(pDC, ptFrom.x, ptTo.y, ptTo.x - ptFrom.x, crConnector);
+}
+
+void CXTPReportPaintManager::DrawFocusedRow(CDC* pDC, CRect rcRow)
+{
+	COLORREF clrTextColor = pDC->SetTextColor(m_clrControlBack);
+	COLORREF clrBkColor = pDC->SetBkColor(m_clrWindowText);
+	pDC->DrawFocusRect(rcRow);
+	pDC->SetTextColor(clrTextColor);
+	pDC->SetBkColor(clrBkColor);
+}
+
+
+int CXTPReportPaintManager::GetPreviewLinesCount(CDC* pDC, CRect& rcText, const CString& strText)
+{
+	if (rcText.Width() < 1)
+		return 0;
+
+	if (pDC->GetTextExtent(strText).cx / rcText.Width() > m_nMaxPreviewLines)
+		return m_nMaxPreviewLines;
+
+	CRect rcCalc(rcText.left, 0, rcText.right, 0);
+	pDC->DrawText(strText, rcCalc, DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+
+	return min(rcCalc.Height() / pDC->GetTextExtent(_T(" "), 1).cy, m_nMaxPreviewLines);
+
+}
+
+
+void CXTPReportPaintManager::SetTextFont(LOGFONT& lf)
+{
+	m_fontText.DeleteObject();
+	m_fontBoldText.DeleteObject();
+
+	m_fontText.CreateFontIndirect(&lf);
+
+	lf.lfWeight = FW_BOLD;
+	m_fontBoldText.CreateFontIndirect(&lf);
+
+	CWindowDC dc (NULL);
+	CXTPFontDC font(&dc, &m_fontText);
+
+	int nFontHeight = dc.GetTextExtent(_T(" "), 1).cy;
+	m_nRowHeight = max(18, nFontHeight + 4);
+
+}
+
+void CXTPReportPaintManager::SetCaptionFont(LOGFONT& lf)
+{
+	m_fontCaption.DeleteObject();
+	VERIFY(m_fontCaption.CreateFontIndirect(&lf));
+
+	CWindowDC dc (NULL);
+	CXTPFontDC font(&dc, &m_fontCaption);
+
+	font.SetFont(&m_fontCaption);
+	int nFontHeight = dc.GetTextExtent(_T(" "), 1).cy;
+	m_nHeaderHeight = m_pHeaderHeightFormula->Calculate(nFontHeight);
+	m_nFooterHeight = m_nHeaderHeight;
+}
+
+int CXTPReportPaintManager::GetFooterHeight(CXTPReportControl* pControl, CDC* pDC, int nTotalWidth)
+{
+	ASSERT(pControl && pDC);
+
+	if (!pControl || !pDC)
+	{
+		return m_nFooterHeight;
+	}
+
+	CXTPReportColumns* pColumns = pControl->GetColumns();
+	int nColumnCount = pColumns->GetCount();
+	int nHeight = 22;
+
+	CXTPFontDC font(pDC);
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			CString strCaption = pColumn->GetFooterText();
+
+			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+			CRect rcText(0, 0, nWidth, 22);
+			rcText.DeflateRect(3, 0, 3, 0);
+
+			UINT uFlags = DT_CALCRECT | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
+			if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
+				uFlags |= DT_WORDBREAK;
+			else
+				uFlags |= DT_SINGLELINE;
+
+			font.SetFont(pColumn->GetFooterFont());
+			pDC->DrawText(strCaption, rcText, uFlags);
+
+			nHeight = max(nHeight, rcText.Height() + 8);
+		}
+	}
+	return  nHeight;
+}
+
+int CXTPReportPaintManager::GetHeaderHeight(CXTPReportControl* pControl,
+											CDC* pDC, int nTotalWidth)
+{
+	ASSERT(pControl && pDC);
+
+	if (m_bFixedRowHeight || !pControl || !pDC)
+	{
+		return GetHeaderHeight();
+	}
+
+	CXTPReportColumns* pColumns = pControl->GetColumns();
+	int nColumnCount = pColumns->GetCount();
+	int nHeight = m_nHeaderHeight;
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			if (pColumn->GetHeaderAlignment() & DT_WORDBREAK)
+			{
+				int nColHeight = CalcColumnHeight(pDC, pColumn, nTotalWidth);
+
+				nHeight = max(nHeight, nColHeight);
+			}
+
+			// calculate icon height.
+			int nIconID = pColumn->GetIconID();
+			if (nIconID != XTP_REPORT_NOICON)
+			{
+				CXTPImageManagerIcon* pIcon = pColumn->GetControl()->
+										GetImageManager()->GetImage(nIconID, 0);
+
+				if (pIcon)
+				{
+					nHeight = max(nHeight, pIcon->GetHeight() + 2);
+				}
+			}
+		}
+	}
+
+	return nHeight;
+}
+
+void CXTPReportPaintManager::SetPreviewIndent(int nLeft, int nTop, int nRight, int nBottom)
+{
+	m_rcPreviewIndent.SetRect(nLeft, nTop, nRight, nBottom);
+}
+
+void CXTPReportPaintManager::DrawInplaceButton(CDC* pDC, CXTPReportInplaceButton* pButton)
+{
+	CXTPClientRect rect((CWnd*)pButton);
+
+	if (m_bThemedInplaceButtons)
+	{
+		if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON && m_themeCombo.IsAppThemed())
+		{
+			m_themeCombo.DrawThemeBackground(*pDC, CP_DROPDOWNBUTTON,
+				pButton->IsPressed() ? CBXS_PRESSED:  CBXS_NORMAL, rect, 0);
+
+			return;
+		}
+
+		if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON  && m_themeButton.IsAppThemed())
+		{
+			pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
+
+			m_themeButton.DrawThemeBackground(*pDC, BP_PUSHBUTTON, pButton->IsPressed() ? PBS_PRESSED :
+				CWnd::GetFocus() == pButton ? PBS_DEFAULTED : PBS_NORMAL, rect, 0);
+
+			pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
+			pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
+			pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
+
+			return;
+		}
+	}
+	DrawInplaceButtonFrame(pDC, pButton);
+
+	CXTPPenDC pen (*pDC, GetXtremeColor(COLOR_BTNTEXT));
+	CXTPBrushDC brush (*pDC, GetXtremeColor(COLOR_BTNTEXT));
+
+	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
+	{
+		CPoint pt = rect.CenterPoint();
+
+		CPoint pts[3];
+		pts[0] = CPoint(pt.x -3, pt.y -1);
+		pts[1] = CPoint(pt.x + 3, pt.y -1);
+		pts[2] = CPoint(pt.x, pt.y +2);
+		pDC->Polygon(pts, 3);
+	}
+
+	if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON)
+	{
+		pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
+		pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
+		pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
+	}
+
+}
+
+void CXTPReportPaintManager::DrawInplaceButtonFrame(CDC* pDC, CXTPReportInplaceButton* pButton)
+{
+	CXTPClientRect rect((CWnd*)pButton);
+
+	pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
+
+	if (pButton->IsPressed())
+	{
+		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_WINDOW));
+	}
+	else
+	{
+		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
+		rect.DeflateRect(1, 1);
+		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
+	}
+}
+
+void CXTPReportPaintManager::DrawTreeStructureLine(CDC* pDC, int x, int y, int cx, int cy, COLORREF clr)
+{
+	if (m_treeStructureStyle == xtpReportTreeStructureDots)
+	{
+		const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
+		DrawGridPat(pDC, &m_brushTreeStructure, CRect(x, y, x + cx, y + cy), _cb, m_clrControlDark);
+	}
+	else
+	{
+		pDC->FillSolidRect(x, y, cx, cy, clr);
+	}
+}
+
+void CXTPReportPaintManager::DrawTreeStructure(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics, CRect rcItem, CSize sizeGlyph)
+{
+	if (m_treeStructureStyle == xtpReportTreeStructureNone)
+		return;
+
+	CDC* pDC = pDrawArgs->pDC;
+	CXTPReportRow* pRow = pDrawArgs->pRow;
+	COLORREF clrTreeStructure = pMetrics->clrForeground;
+
+	if (pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (!pRow->GetParentRow() || pRow->GetParentRow()->IsGroupRow())))
+		return;
+
+	int nTreeIndent = pDrawArgs->pControl->GetPaintManager()->m_nTreeIndent;
+	int nHeight = rcItem.Height();
+
+	LONG lHorLineOffset = nHeight / 2;
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+	switch(nIconAlign)
+	{
+	case xtpColumnIconTop:
+		lHorLineOffset = sizeGlyph.cy / 2;
+		break;
+	case xtpColumnIconBottom:
+		lHorLineOffset = rcItem.bottom - rcItem.top - 2 - sizeGlyph.cy / 2;
+		break;
+	}
+
+	if(m_nTreeStructureStyle > 0)
+		rcItem.OffsetRect((sizeGlyph.cy + 1) / 2 + 2, 0);
+	if (!pRow->GetNextSiblingRow())
+	{
+		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, lHorLineOffset + 1, clrTreeStructure);
+	}
+	else
+	{
+		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, nHeight + 1, clrTreeStructure);
+	}
+
+	DrawTreeStructureLine(pDC, rcItem.left, rcItem.top + lHorLineOffset, sizeGlyph.cx / 2 + 1, 1, clrTreeStructure);
+
+	for (;;)
+	{
+		pRow = pRow->GetParentRow();
+
+		if (pRow == NULL || pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (pRow->GetParentRow() == 0 || pRow->GetParentRow()->IsGroupRow())))
+			break;
+
+		rcItem.OffsetRect(-nTreeIndent, 0);
+
+		if (pRow->GetNextSiblingRow())
+		{
+			DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, rcItem.Height() + 1, clrTreeStructure);
+		}
+	}
+
+}
+
+int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CString& strDraw, CRect rcDraw, UINT nFormat)
+{
+	int nCharCount = 0;
+
+
+	switch (nFormat)
+	{
+		case DT_END_ELLIPSIS:
+		{
+			// in this case char count only for identify if string printed partially
+			*pnCurrDrawPos += GetTextExtentX(pDC,strDraw);
+			if (*pnCurrDrawPos >= rcDraw.right)
+				nCharCount = - 1;
+			else
+				nCharCount = strDraw.GetLength();
+
+			pDC->DrawText(strDraw, rcDraw, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+			break;
+		}
+		case DT_WORDBREAK:
+		{
+			const TCHAR seps[] = _T(" \t\n");
+			TCHAR* lpszContext = 0;
+			CString strOut = _T("");
+			CString strSrc = strDraw;
+			TCHAR* szWord = STRTOK_S(strSrc.GetBuffer(strSrc.GetLength()), seps, &lpszContext);
+			int nRightStrMargin = GetTextExtentX(pDC, CString(szWord));
+
+			if (nRightStrMargin > rcDraw.Width())
+			{
+				strOut = szWord;
+
+			}
+			else
+			{
+				while (szWord != NULL && nRightStrMargin < rcDraw.Width())
+				{
+					strOut = strOut + szWord + _T(" ");
+						szWord = STRTOK_S(NULL, seps, &lpszContext);
+						nRightStrMargin = GetTextExtentX(pDC,strOut + szWord);
+				}
+			}
+
+			nCharCount = strOut.GetLength();
+			*pnCurrDrawPos += GetTextExtentX(pDC,strOut);
+			pDC->DrawText(strOut, rcDraw, DT_LEFT | DT_NOPREFIX);
+			break;
+		}
+		case DT_LEFT:
+		case DT_RIGHT:
+		case DT_CENTER:
+		{
+			*pnCurrDrawPos += GetTextExtentX(pDC,strDraw);
+			if (*pnCurrDrawPos >= rcDraw.right)
+				nCharCount = - 1;
+			else
+				nCharCount = strDraw.GetLength();
+
+			pDC->DrawText(strDraw, rcDraw, nFormat  | DT_NOPREFIX);
+			break;
+		}
+
+	} // switch
+
+	return nCharCount;
+}
+
+int CXTPReportPaintManager::DrawLink(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportHyperlink* pHyperlink,
+	CString strText, CRect rcLink, int nFlag)
+{
+	return DrawLink2(pnCurrDrawPos, pDrawArgs, pHyperlink, strText, rcLink, nFlag);
+}
+
+void CXTPReportPaintManager::DrawTextLine(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, const CString& strText,
+	CRect rcItem, int nFlag, int& nCharCounter, int& nHyperlikCounter)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
+	UINT nAlingFlag = 0;
+	int nHyperlink = nHyperlikCounter; // Hyperlink index
+	int nCharCount = nCharCounter; // Number of actually printed chars
+	CXTPReportHyperlink* pHl = NULL;
+	int nHyperlinks = pItem->GetHyperlinksCount();
+
+	int nCurrStrPos = nCharCount;
+	CRect rcText;
+	rcText.CopyRect(&rcItem);
+
+	if (nHyperlinks == 0)
+	{
+		pDC->DrawText(strText, rcText, pDrawArgs->nTextAlign | nFlag | DT_NOPREFIX | DT_SINGLELINE);
+		return;
+	}
+
+	// calculate rect for drawing text for text alignment feature
+	pDC->DrawText(strText, rcText, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+
+	if (rcText.Width() < rcItem.Width())
+	{
+		switch (pDrawArgs->nTextAlign & (DT_RIGHT|DT_CENTER))
+		{
+			case DT_RIGHT :
+				rcText.left = rcItem.right - rcText.Width();
+				break;
+			case DT_CENTER :
+				rcText.left = rcItem.left + (rcItem.Width() - rcText.Width())/2;
+				break;
+		}
+	}
+	rcText.right = rcItem.right;
+
+	int nCurrDrawPos = rcText.left;
+
+	while (strText.GetLength() > nCurrStrPos && nCurrDrawPos < rcText.right)
+	{
+		CString strOut;
+		if (nHyperlinks > nHyperlink)
+		{
+			pHl = pItem->GetHyperlinkAt(nHyperlink);
+			strOut = strText.Mid(nCurrStrPos, pHl->m_nHyperTextBegin - nCurrStrPos);
+			if (strOut.GetLength() > 0) // print str
+			{
+				// replace LF, CR characters (if any)
+				REMOVE_S(strOut, _T('\n'));
+				REMOVE_S(strOut, _T('\r'));
+
+				nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
+				rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
+
+				// if previous string was cut - stop draw
+				if (nCharCount < strOut.GetLength())
+				{
+					nCharCount += nCurrStrPos;
+					break;
+				}
+			}
+
+			// print link
+			nCharCount = DrawLink(&nCurrDrawPos, pDrawArgs, pHl, strText, rcText, nFlag);
+			rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
+
+			// update current position in string
+			nCurrStrPos = pHl->m_nHyperTextBegin + pHl->m_nHyperTextLen;
+			nHyperlink++;
+
+			// if previous string was cut - stop draw
+			if (nCharCount < (pHl->m_nHyperTextLen))
+			{
+				nCharCount += nCurrStrPos;
+				break;
+			}
+		}
+		else
+		{
+
+			// print whole string without links or tail of string
+			strOut = strText.Mid(nCurrStrPos, strText.GetLength() - nCurrStrPos);
+			nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
+			nCharCount += nCurrStrPos;
+			break; // all was drawn!
+		}
+	}
+
+	pDC->SetTextAlign(nAlingFlag);
+	nCharCounter = nCharCount;
+}
+
+void CXTPReportPaintManager::DrawItemCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	CString strText = pMetrics->strText;
+
+	CRect& rcItem = pDrawArgs->rcItem;
+
+	rcItem.DeflateRect(2, 1, 2, 0);
+
+	// draw item text
+	if (!strText.IsEmpty())
+	{
+		if (!m_bFixedRowHeight)// && (pDrawArgs->nTextAlign & DT_WORDBREAK))
+		{
+			BOOL bWordBreak = !!(pDrawArgs->nTextAlign & DT_WORDBREAK);
+
+			if (pDrawArgs->nTextAlign & DT_VCENTER)
+			{
+				// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
+
+				ReplaceInHyperLinks(pDrawArgs->pItem, strText, XTP_HLINK_SPACE_X);
+				int nHeightRequired = CalculateRowHeight(pDrawArgs->pDC, strText, rcItem.Width(), bWordBreak);
+				int nHeightDiff = rcItem.Height() - nHeightRequired;
+
+				if (nHeightDiff >= 4)
+				{
+					rcItem.top += nHeightDiff/2 - 2;
+				}
+
+				strText = pMetrics->strText;
+			}
+
+			DrawMultiLineText(pDrawArgs, strText, rcItem, bWordBreak);
+		}
+		else
+		{
+			int nCharCount = 0;
+			int nHyperlink = 0;
+			DrawTextLine(pDrawArgs, strText, rcItem, DT_END_ELLIPSIS, nCharCount, nHyperlink);
+		}
+	}
+}
+
+void CXTPReportPaintManager::ReplaceInHyperLinks(CXTPReportRecordItem* pItem, CString& rstrText, TCHAR chReplace )
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return;
+
+	int nHyperlinks = pItem->GetHyperlinksCount();
+	for (int nHLink = 0; nHLink < nHyperlinks; nHLink++)
+	{
+		CXTPReportHyperlink* pHLink = pItem->GetHyperlinkAt(nHLink);
+		ASSERT(pHLink);
+		if (!pHLink)
+			continue;
+
+		int nI0 = max(0, min(pHLink->m_nHyperTextBegin, rstrText.GetLength()-1));
+		int nI1 = max(0, min(pHLink->m_nHyperTextBegin + pHLink->m_nHyperTextLen, rstrText.GetLength()));
+		for (int i = nI0; i < nI1; i++)
+		{
+			if(rstrText.GetAt(i) == _T(' '))
+			{
+				rstrText.SetAt(i, chReplace);
+			}
+		}
+	}
+}
+
+void CXTPReportPaintManager::DrawMultiLineText(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, const CString& strText,
+												CRect rcItem, BOOL bWordBreak)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
+
+	int nCurrStrPos = 0, nStringWidth = 0, nWordWidth = 0;
+	int nStartString = -1, nEndString = -1;
+
+	CRect rcText;
+	rcText.CopyRect(&rcItem);
+
+	if (0 == pItem->GetHyperlinksCount())
+	{
+		// no hyperlinks
+		pDC->DrawText(strText, rcText, DT_NOPREFIX | pDrawArgs->nTextAlign | DT_WORD_ELLIPSIS | (bWordBreak ?  DT_WORDBREAK : 0));
+		return;
+	}
+
+	int nLineHeight = pDC->GetTextExtent(_T(" "), 1).cy;
+	CString strSrc = strText + _T(" ");
+	REPLACE_S(strSrc, _T('\r'), _T(' '));
+
+	ReplaceInHyperLinks(pItem, strSrc, XTP_HLINK_SPACE_X);
+
+	CString strWord, strString;
+	int nTextLength = strSrc.GetLength();
+
+	TCHAR* lpszBuff = strSrc.GetBuffer(nTextLength + 1);
+	TCHAR  cChar = lpszBuff[nCurrStrPos];
+
+	int     nWordLength = 0;
+	TCHAR*  lpszWord = strWord.GetBuffer(nTextLength + 1);
+
+	// parsing for the words (tokens)
+	while (_T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
+	{
+		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
+		{
+			if (lpszWord[0] == _T('\0') && cChar != _T('\n'))
+				continue;
+
+			if (strString.IsEmpty())
+			{
+				nStartString = nCurrStrPos - nWordLength;
+				nEndString = nCurrStrPos;
+			}
+			nWordWidth = GetTextExtentX(pDC, lpszWord, nWordLength);
+
+			if (nWordWidth > rcItem.Width() && bWordBreak || cChar == _T('\n'))
+			{
+				if (!strString.IsEmpty())
+				{
+					DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, nEndString-1,
+						GetTextExtentX(pDC,strString));
+
+					rcText.top += nLineHeight;
+					rcText.left = rcItem.left;
+				}
+
+				// the word exceeds the cell's width
+				DrawSingleLineText(pDrawArgs, strSrc , rcText, nCurrStrPos - nWordLength -1, nCurrStrPos -1, nWordWidth);
+
+				if((nCurrStrPos - nWordLength) != nCurrStrPos)
+				{
+					rcText.top += nLineHeight;
+					rcText.left = rcItem.left;
+				}
+
+				strString.Empty();
+
+				lpszWord[0] = _T('\0');
+				nWordLength = 0;
+				continue;
+			}
+
+			int nPrevStringWidth = GetTextExtentX(pDC,strString);
+
+			if (!strString.IsEmpty())
+				strString += _T(" ");
+
+			strString += lpszWord;
+			nStringWidth = GetTextExtentX(pDC,strString);
+
+			if (nStringWidth > rcItem.Width() && bWordBreak)
+			{
+				DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, nEndString-1,
+					nPrevStringWidth);
+
+				rcText.top += nLineHeight;
+				rcText.left = rcItem.left;
+
+
+				nStartString = nCurrStrPos - nWordLength;
+				strString = lpszWord;
+			}
+
+			nEndString = nCurrStrPos;
+			lpszWord[0] = _T('\0');
+			nWordLength = 0;
+			continue;
+		}
+
+		ASSERT(nWordLength <= nTextLength);
+		lpszWord[nWordLength] = cChar;
+		lpszWord[nWordLength + 1] = _T('\0');
+
+		++nWordLength;
+	}
+
+	// the rest of the string
+	if (strString.GetLength())
+	{
+		DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, strText.GetLength(),
+			GetTextExtentX(pDC,strString));
+	}
+
+}
+
+void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs,const CString& strText,
+		CRect rcItem, int nStartPos, int nEndPos,int nActualWidth )
+{
+
+	CDC* pDC = pDrawArgs->pDC;
+	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
+	CXTPReportHyperlink* pHl = NULL;
+
+	// alignment
+	CRect   rcText(rcItem);
+	int nFlag = pDrawArgs->nTextAlign & (DT_LEFT | DT_RIGHT | DT_CENTER);
+
+	if (nFlag & DT_RIGHT)
+		rcText.left = rcText.right - nActualWidth;
+	else
+		if (nFlag & DT_CENTER)
+			rcText.left += (rcText.Width() - nActualWidth) / 2;
+
+	// Left align the string, that exceeds the cell's width.
+	rcText.left = max(rcText.left, rcItem.left);
+
+	int nCurrDrawPos = rcText.left;
+	int nHyperlink = 0; // Hyperlink index
+	int nCurrStrPos = nStartPos;
+	int nBeginHyperlink = 0xFFFF;
+	int nHyperlinks = pItem->GetHyperlinksCount();
+
+	CString strWord, strPre, strPost, strSrc = strText + _T(" ");
+	TCHAR* lpszBuff = strSrc.GetBuffer(strSrc.GetLength());
+	TCHAR  cChar = lpszBuff[nCurrStrPos];
+	BOOL  bNeedsBlank = FALSE;
+
+	int   nBlankWidth = GetTextExtentX(pDC, _T(" "), 1);
+
+	while (nCurrStrPos <= nEndPos && _T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
+	{
+		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
+		{
+			if (strWord.IsEmpty())
+				continue;
+
+			if (bNeedsBlank)
+			{
+				// between words
+				pDC->DrawText(_T(" "), rcText, DT_LEFT);
+				rcText.left += nBlankWidth;
+			}
+
+			// as hyperlinks are not sorted in the array, check all
+			for (nHyperlink = 0; nHyperlink < nHyperlinks; ++nHyperlink)
+			{
+				pHl = pItem->GetHyperlinkAt(nHyperlink);
+				nBeginHyperlink = pHl->m_nHyperTextBegin;
+
+				// validate the hyperlink
+				if (nBeginHyperlink >= 0 &&
+					nBeginHyperlink <= strText.GetLength() - 1                  &&
+					pHl->m_nHyperTextLen > 1                                    &&
+					nBeginHyperlink + pHl->m_nHyperTextLen <= strText.GetLength())
+				{
+					// particular case: hyperlink begins with blank(s)
+					BOOL bInclude = FALSE;
+					if (nStartPos > nBeginHyperlink )
+					{
+						CString strExtracted = strText.Mid(nBeginHyperlink, nStartPos - nBeginHyperlink);
+						if (_tcsspnp(strExtracted.GetBuffer(strExtracted.GetLength()),_T(" ")) == NULL)
+							bInclude = TRUE;
+					}
+
+					// does the hyperlink belong to the string
+					if (nBeginHyperlink >= nStartPos &&
+						nBeginHyperlink + pHl->m_nHyperTextLen <= nEndPos ||
+						bInclude)
+					{
+
+						// does the word contain the hyperlink
+						CString strExtracted = strText.Mid(nBeginHyperlink,pHl->m_nHyperTextLen);
+						strExtracted.TrimLeft();
+						if (strWord.Find(strExtracted) != -1)
+						{
+							if (nBeginHyperlink < nCurrStrPos)
+							{
+								// before hyperlink
+								strPre = strWord.Mid(0,strWord.GetLength() - (nCurrStrPos - nBeginHyperlink - 1));
+								if (!strPre.IsEmpty())
+								{
+									pDC->DrawText(strPre, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+									rcText.left += GetTextExtentX(pDC,strPre);
+								}
+
+								// the hyperlink
+								nCurrDrawPos = rcText.left;
+								DrawLink2(&nCurrDrawPos,pDrawArgs,pHl,strText,rcText, DT_LEFT | DT_END_ELLIPSIS, TRUE);
+								rcText.left = nCurrDrawPos;
+
+								// after hyperlink
+								int n = strWord.GetLength() - (nCurrStrPos - (nBeginHyperlink+pHl->m_nHyperTextLen +1));
+								if (n >=0 && (strWord.GetLength() - n) > 0)
+								{
+									strPost = strWord.Mid(n,strWord.GetLength() - n);
+									if (!strPost.IsEmpty())
+									{
+										pDC->DrawText(strPost, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+										rcText.left += GetTextExtentX(pDC,strPost);
+									}
+								}
+
+								strWord.Empty();
+								bNeedsBlank = TRUE;
+								continue;
+							}
+						}
+					}
+				}
+			} // the hyperlink validation
+
+			// non-hyperlink words
+			pDC->DrawText(strWord, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+			rcText.left += GetTextExtentX(pDC,strWord);
+
+			strWord.Empty();
+			bNeedsBlank = TRUE;
+			continue;
+		}
+
+		strWord += cChar;
+	}
+}
+
+int CXTPReportPaintManager::CalculateRowHeight(CDC* pDC, const CString& strText, int nMaxWidth, BOOL bWordBreak)
+{
+	CString strWord, strBuff(strText);
+	strBuff += _T(" ");
+
+	int     nLineHeight = pDC->GetTextExtent(_T(" "),1).cy;
+	int     nRowHeight = 0;
+	int     nCurrXPos = 0;
+	int     nCurrStrPos = 0;
+	int     nBlanksWidth = 0;
+
+
+	// just calculate new line characters
+	if (!bWordBreak)
+	{
+		int nCount = 0, nPos = -1;
+
+		do
+		{
+			nCount++;
+			nPos = FIND_S(strBuff, _T('\n'), nPos + 1);
+		}
+		while(nPos != -1);
+
+		return nLineHeight * nCount;
+	}
+
+	int     nWordLength = 0;
+	BOOL    bNeedsLine = TRUE;
+	int     nBlankWidth = GetTextExtentX(pDC, _T(" "), 1);
+	int     nTextLength = strBuff.GetLength();
+
+	TCHAR*  lpszBuff = strBuff.GetBuffer(nTextLength + 1);
+	TCHAR   cChar = lpszBuff[nCurrStrPos];
+
+	TCHAR*  lpszWord = strWord.GetBuffer(nTextLength + 1);
+
+	// breaking the text by words
+	while (_T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
+	{
+		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
+		{
+			nBlanksWidth += nBlankWidth;
+
+			if (lpszWord[0] == _T('\0') && cChar != _T('\n'))
+				continue;
+
+			int nWordWidth = GetTextExtentX(pDC, lpszWord, nWordLength);
+
+			if (nWordWidth >= nMaxWidth)
+			{
+				// the word exceeds the cell's width
+				nRowHeight += nLineHeight;
+
+				if (nCurrXPos > 0)
+					nRowHeight += nLineHeight; // for the preceding line (regardless of its size)
+
+				bNeedsLine = FALSE;
+				nCurrXPos = 0;
+				nBlanksWidth = 0;
+
+				lpszWord[0] = _T('\0');
+				nWordLength = 0;
+				continue;
+			}
+
+			if (nCurrXPos + nWordWidth >= nMaxWidth)
+			{
+				nCurrXPos = nWordWidth + nBlanksWidth;
+				nRowHeight += nLineHeight;
+			}
+			else
+			{
+				nCurrXPos += nWordWidth + nBlanksWidth;
+				bNeedsLine = TRUE;
+			}
+
+			if (cChar == _T('\n')) // a new line is forced
+			{
+				nRowHeight += nLineHeight;
+				nCurrXPos = 0;
+			}
+
+			nBlanksWidth = 0;
+			lpszWord[0] = _T('\0');
+			nWordLength = 0;
+			continue;
+		}
+
+		ASSERT(nWordLength <= nTextLength);
+		lpszWord[nWordLength] = cChar;
+		lpszWord[nWordLength+1] = _T('\0');
+
+		++nWordLength;
+	}
+
+	if (bNeedsLine)
+		nRowHeight += nLineHeight;
+
+	return nRowHeight;
+}
+
+int CXTPReportPaintManager::DrawLink2(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportHyperlink* pHyperlink,
+	CString strText, CRect rcLink, int nFlag, BOOL bTrim )
+{
+	int nCount = pHyperlink->m_nHyperTextLen;
+
+	int nDiff = pHyperlink->m_nHyperTextBegin + pHyperlink->m_nHyperTextLen - strText.GetLength();
+	if (nDiff > 0)
+		nCount = max(0, pHyperlink->m_nHyperTextLen - nDiff);
+
+	if (pHyperlink->m_nHyperTextBegin < 0 || pHyperlink->m_nHyperTextBegin >= strText.GetLength() ||
+		nCount <= 0)
+		return 0;
+
+	CDC* pDC = pDrawArgs->pDC;
+	CString strOut = strText.Mid(pHyperlink->m_nHyperTextBegin, nCount);
+
+	if (bTrim)
+	{
+		strOut.TrimLeft();
+		strOut.TrimRight();
+	}
+	REPLACE_S(strOut, XTP_HLINK_SPACE_X, _T(' '));
+
+	BOOL bSelected = pDrawArgs->pRow->IsSelected() && pDrawArgs->pRow->GetControl()->HasFocus() &&
+		(!pDrawArgs->pColumn || !pDrawArgs->pRow->GetControl()->GetFocusedColumn() ||
+		  pDrawArgs->pColumn != pDrawArgs->pRow->GetControl()->GetFocusedColumn());
+
+	COLORREF clrPrev = pDC->SetTextColor(bSelected ? m_clrHighlightText : m_clrHyper);
+
+	TEXTMETRIC textMetrics;
+	pDC->GetTextMetrics(&textMetrics);
+	int nCharCount = 0;
+	//!pHyperlink->m_rcHyperSpot.left = pDC->GetCurrentPosition().x; // update hyperlink left bound before drawing
+	pHyperlink->m_rcHyperSpot.left = *pnCurrDrawPos;
+	nCharCount = DrawString(pnCurrDrawPos, pDC, strOut, rcLink, nFlag);
+
+	// update hyperlink spot
+	pHyperlink->m_rcHyperSpot.top = rcLink.top;
+	//!pHyperlink->m_rcHyperSpot.right = pDC->GetCurrentPosition().x;
+	pHyperlink->m_rcHyperSpot.right = *pnCurrDrawPos;
+	pHyperlink->m_rcHyperSpot.bottom = rcLink.top + textMetrics.tmHeight;
+
+	pDC->SetTextColor(clrPrev);
+
+	return nCharCount;
+}
+
+void CXTPReportPaintManager::DrawFixedRowsDivider(CDC* pDC, const CRect& rc, CXTPReportControl* pControl, BOOL bHeaderRows, BOOL bVScrollBarVisible)
+{
+	int nDividerStyle = bHeaderRows ? m_HeaderRowsDividerStyle : m_FooterRowsDividerStyle;
+	COLORREF clr =  bHeaderRows ? m_clrHeaderRowsDivider : m_clrFooterRowsDivider;
+
+	if (nDividerStyle == xtpReportFixedRowsDividerNone)
+		return;
+
+	if (nDividerStyle & xtpReportFixedRowsDividerOutlook)
+	{
+		if (m_columnStyle == xtpReportColumnShaded)
+		{
+			pDC->FillSolidRect(rc, m_clrHeaderControl);
+			DrawHorizontalLine(pDC, rc.left, rc.bottom - 2, rc.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.4));
+			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
+		}
+		else if (m_columnStyle == xtpReportColumnOffice2003)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, rc,m_grcGradientColumn.clrLight, m_grcGradientColumn.clrDark,FALSE);
+			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), m_clrGradientColumnShadow);
+		}
+		else if (m_columnStyle == xtpReportColumnOffice2007)
+		{
+			pDC->FillSolidRect(rc,  MixColor(m_grcGradientColumn.clrLight, m_grcGradientColumn.clrDark, 0.4));
+			DrawHorizontalLine(pDC, rc.left, rc.top, rc.Width(), RGB(255, 255, 255));
+			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), m_clrGradientColumnSeparator);
+		}
+		else if (m_columnStyle == xtpReportColumnExplorer)
+		{
+			pDC->FillSolidRect(rc, m_clrHeaderControl);
+			pDC->Draw3dRect(rc, m_clrControlLightLight, m_clrBtnText);
+
+			CRect rcTmp(rc);
+			rcTmp.DeflateRect(1, 1);
+			pDC->Draw3dRect(rcTmp, m_clrHeaderControl, m_clrControlDark);
+		}
+		else
+		{
+			pDC->FillSolidRect(rc, m_clrHeaderControl);
+			pDC->Draw3dRect(rc, m_clrControlLightLight, m_clrControlDark);
+		}
+	}
+	else
+	{
+		if (nDividerStyle & xtpReportFixedRowsDividerThin || nDividerStyle & xtpReportFixedRowsDividerBold)
+		{
+			pDC->FillSolidRect(rc, clr);
+		}
+	}
+
+	// draw shade (if necessary)
+	int nScrollPos = pControl->GetScrollPos(SB_VERT);
+	int nScrollLimit = pControl->GetScrollLimit(SB_VERT);
+
+	SCROLLINFO si;
+	pControl->GetScrollInfo(SB_VERT,&si);
+
+	if (nDividerStyle & xtpReportFixedRowsDividerShade)
+	{
+		if (bHeaderRows)
+		{
+			// header rows
+			if (nScrollPos)
+			{
+				CRect rcShade(rc);
+				rcShade.top = rcShade.bottom;
+				rcShade.bottom += 4;
+
+				XTPDrawHelpers()->GradientFill(pDC, rcShade, clr, RGB(255, 255, 255), FALSE);
+			}
+		}
+		else
+			// footer rows
+			if (bVScrollBarVisible && nScrollPos != nScrollLimit) // && (UINT)si.nMax != si.nPage)
+			{
+				CRect rcShade(rc);
+				rcShade.bottom = rcShade.top;
+				rcShade.top -= 4;
+
+				XTPDrawHelpers()->GradientFill(pDC, rcShade, RGB(255, 255, 255), clr, FALSE);
+			}
+	}
+}
+
+int CXTPReportPaintManager::GetHeaderRowsDividerHeight()
+{
+	int nHeight = 0;
+
+	switch(m_HeaderRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
+	{
+		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
+		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;
+		case xtpReportFixedRowsDividerBold:     nHeight = 2; break;
+		case xtpReportFixedRowsDividerOutlook:  nHeight = 8; break;
+	}
+
+	return nHeight;
+}
+
+int CXTPReportPaintManager::GetFooterRowsDividerHeight()
+{
+	int nHeight = 0;
+
+	switch(m_FooterRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
+	{
+		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
+		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;
+		case xtpReportFixedRowsDividerBold:     nHeight = 2; break;
+		case xtpReportFixedRowsDividerOutlook:  nHeight = 8; break;
+	}
+
+	return nHeight;
+}
+

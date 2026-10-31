@@ -1,16 +1,5 @@
-// from server: 82% by colin
-struct CXTPPropertyGridItem
-{
-    char pad[0xa4];
-    int field_a4;
-    void sub_00697c80();
-};
-
-extern "C" void __stdcall G_func_0077dd74(int*, int*);
-
-void CXTPPropertyGridItem::sub_00697c80()
-{
-    int* p = &field_a4;
-    G_func_0077dd74((int*)&p, p);
-    (*(void (__thiscall **)(CXTPPropertyGridItem*))(*(int*)this + 0x64))(this);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_48c4e0bce00a99de.cpp

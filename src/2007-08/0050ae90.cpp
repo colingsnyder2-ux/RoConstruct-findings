@@ -1,313 +1,408 @@
-// from server: 55% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Color3.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS- /EHsc /MD
+// roc-lib: g3d-6.09 G3Dcpp/Matrix4.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file Color3.cpp
+  @file Matrix4.cpp
+ 
+ 
+  @maintainer Morgan McGuire, matrix@graphics3d.com
 
- Color class.
-
- @author Morgan McGuire, matrix@graphics3d.com
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
-
-
- @created 2001-06-02
- @edited  2006-01-13
+  @created 2003-10-02
+  @edited  2006-01-05
  */
 
 #include "G3D/platform.h"
-#include <stdlib.h>
-#include "G3D/Color3.h"
-#include "G3D/Vector3.h"
-#include "G3D/format.h"
+#include "G3D/Matrix4.h"
+#include "G3D/Vector4.h"
 #include "G3D/BinaryInput.h"
 #include "G3D/BinaryOutput.h"
-#include "G3D/Color3uint8.h"
+#include "G3D/CoordinateFrame.h"
 
 namespace G3D {
 
-const Color3& Color3::red() {
-    static Color3 c(1, 0, 0);
-    return c;
+const Matrix4& Matrix4::identity() {
+    static Matrix4 m(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+    return m;
 }
 
-const Color3& Color3::green() {
-    static Color3 c(0, 1, 0);
-    return c;
-}
-
-const Color3& Color3::blue() {
-    static Color3 c(0, 0, 1);
-    return c;
-}
-
-const Color3& Color3::purple() {
-    static Color3 c(0.7f, 0, 1);
-    return c;
-}
-
-const Color3& Color3::cyan() {
-    static Color3 c(0, .7f, 1);
-    return c;
-}
-
-const Color3& Color3::yellow() {
-    static Color3 c(1, 1, 0);
-    return c;
-}
-
-const Color3& Color3::brown() {
-    static Color3 c(.5f, .5f, 0);
-    return c;
-}
-
-const Color3& Color3::orange() {
-    static Color3 c(1, 0.5f, 0);
-    return c;
-}
-
-const Color3& Color3::black() {
-    static Color3 c(0, 0, 0);
-    return c;
-}
-
-const Color3& Color3::gray() {
-    static Color3 c(.7f, .7f, .7f);
-    return c;
-}
-
-const Color3& Color3::white() {
-    static Color3 c(1, 1, 1);
-    return c;
-}
-
-Color3::Color3(BinaryInput& bi) {
-    deserialize(bi);
+const Matrix4& Matrix4::zero() {
+    static Matrix4 m(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0);
+    return m;
 }
 
 // Deprecated.
-const Color3 Color3::RED(1, 0, 0);
-const Color3 Color3::GREEN(0, 1, 0);
-const Color3 Color3::BLUE(0, 0, 1);
-const Color3 Color3::PURPLE(0.7f, 0, 1);
-const Color3 Color3::CYAN(0, 0.7f, 1);
-const Color3 Color3::YELLOW(1, 1, 0);
-const Color3 Color3::BROWN(0.5f, 0.5f, 0);
-const Color3 Color3::ORANGE(1, 0.5f, 0);
-const Color3 Color3::BLACK(0, 0, 0);
-const Color3 Color3::GRAY(.7f, .7f, .7f);
-const Color3 Color3::WHITE(1, 1, 1);
+const Matrix4 Matrix4::IDENTITY
+  = Matrix4(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
 
+const Matrix4 Matrix4::ZERO
+  = Matrix4(0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0);
 
-void Color3::deserialize(BinaryInput& bi) {
-    r = bi.readFloat32();
-    g = bi.readFloat32();
-    b = bi.readFloat32();
+Matrix4::Matrix4(const class CoordinateFrame& cframe) {
+    for (int r = 0; r < 3; ++r) {
+        for (int c = 0; c < 3; ++c) {
+            elt[r][c] = cframe.rotation[r][c];
+        }
+        elt[r][3] = cframe.translation[r];
+    }
+    elt[3][0] = 0.0f;
+    elt[3][1] = 0.0f;
+    elt[3][2] = 0.0f;
+    elt[3][3] = 1.0f;
 }
 
 
-void Color3::serialize(BinaryOutput& bo) const {
-    bo.writeFloat32(r);
-    bo.writeFloat32(g);
-    bo.writeFloat32(b);
+Matrix4 Matrix4::orthogonalProjection(
+    float            left,
+    float            right,
+    float            bottom,
+    float            top,
+    float            nearval,
+    float            farval) {
+
+    // Adapted from Mesa
+    float x, y, z;
+    float tx,  ty, tz;
+
+    x = 2.0f / (right-left);
+    y = 2.0f / (top-bottom);
+    z = -2.0f / (farval-nearval);
+    tx = -(right+left) / (right-left);
+    ty = -(top+bottom) / (top-bottom);
+    tz = -(farval+nearval) / (farval-nearval);
+
+    return 
+        Matrix4( x , 0.0f, 0.0f,  tx,
+                0.0f,  y , 0.0f,  ty,
+                0.0f, 0.0f,  z ,  tz,
+                0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 
-const Color3& Color3::wheelRandom() {
-    static const Color3 colorArray[8] =
-    {Color3::BLUE,   Color3::RED,    Color3::GREEN,
-     Color3::ORANGE, Color3::YELLOW, 
-     Color3::CYAN,   Color3::PURPLE, Color3::BROWN};
+Matrix4 Matrix4::perspectiveProjection(
+    float left,    
+    float right,
+    float bottom,  
+    float top,
+    float nearval, 
+    float farval) {
 
-    return colorArray[iRandom(0, 7)];
-}
+    float x, y, a, b, c, d;
 
+    x = (2.0f*nearval) / (right-left);
+    y = (2.0f*nearval) / (top-bottom);
+    a = (right+left) / (right-left);
+    b = (top+bottom) / (top-bottom);
 
-unsigned int Color3::hashCode() const {
-    unsigned int rhash = (*(int*)(void*)(&r));
-    unsigned int ghash = (*(int*)(void*)(&g));
-    unsigned int bhash = (*(int*)(void*)(&b));
-
-    return rhash + (ghash * 37) + (bhash * 101);
-}
-
-
-Color3::Color3(const Vector3& v) {
-    r = v.x;
-    g = v.y;
-    b = v.z;
-}
-
-
-Color3::Color3(const class Color3uint8& other) {
-    r = other.r / 255.0f;
-    g = other.g / 255.0f;
-    b = other.b / 255.0f;
-}
-
-
-Color3 Color3::fromARGB(uint32 x) {
-    return Color3((float)((x >> 16) & 0xFF), (float)((x >> 8) & 0xFF), (float)(x & 0xFF)) / 255.0f;
-}
-
-//----------------------------------------------------------------------------
-
-
-Color3 Color3::random() {
-    return Color3(uniformRandom(), 
-                  uniformRandom(),
-                  uniformRandom()).direction();
-}
-
-//----------------------------------------------------------------------------
-Color3 Color3::operator/ (float fScalar) const {
-    Color3 kQuot;
-
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.r = fInvScalar * r;
-        kQuot.g = fInvScalar * g;
-        kQuot.b = fInvScalar * b;
-        return kQuot;
-
+    if ((float)farval >= (float)inf()) {
+       // Infinite view frustum
+       c = -1.0f;
+       d = -2.0f * nearval;
     } else {
+       c = -(farval+nearval) / (farval-nearval);
+       d = -(2.0f*farval*nearval) / (farval-nearval);
+    }
 
-        return Color3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
+    return Matrix4(
+        x,  0,  a,  0,
+        0,  y,  b,  0,
+        0,  0,  c,  d,
+        0,  0, -1,  0);
+}
+
+
+Matrix4::Matrix4(
+    float r1c1, float r1c2, float r1c3, float r1c4,
+    float r2c1, float r2c2, float r2c3, float r2c4,
+    float r3c1, float r3c2, float r3c3, float r3c4,
+    float r4c1, float r4c2, float r4c3, float r4c4) {
+    elt[0][0] = r1c1;  elt[0][1] = r1c2;  elt[0][2] = r1c3;  elt[0][3] = r1c4;
+    elt[1][0] = r2c1;  elt[1][1] = r2c2;  elt[1][2] = r2c3;  elt[1][3] = r2c4;
+    elt[2][0] = r3c1;  elt[2][1] = r3c2;  elt[2][2] = r3c3;  elt[2][3] = r3c4;
+    elt[3][0] = r4c1;  elt[3][1] = r4c2;  elt[3][2] = r4c3;  elt[3][3] = r4c4;
+}
+
+/**
+ init should be <B>row major</B>.
+ */
+Matrix4::Matrix4(const float* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = init[r * 4 + c];
+        }
     }
 }
 
-//----------------------------------------------------------------------------
-Color3& Color3::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        r *= fInvScalar;
-        g *= fInvScalar;
-        b *= fInvScalar;
-    } else {
-        r = (float)G3D::inf();
-        g = (float)G3D::inf();
-        b = (float)G3D::inf();
+
+Matrix4::Matrix4(const double* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = (float)init[r * 4 + c];
+        }
+    }
+}
+
+
+Matrix4::Matrix4() {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = 0;
+        }
+    }
+}
+
+
+void Matrix4::setRow(int r, const Vector4& v) {
+    for (int c = 0; c < 4; ++c) {
+        elt[r][c] = v[c];
+    }
+}
+
+
+void Matrix4::setColumn(int c, const Vector4& v) {
+    for (int r = 0; r < 4; ++r) {
+        elt[r][c] = v[r];
+    }
+}
+
+
+Vector4 Matrix4::getRow(int r) const {
+    Vector4 v;
+    for (int c = 0; c < 4; ++c) {
+        v[c] = elt[r][c];
+    }
+    return v;
+}
+
+
+
+Vector4 Matrix4::getColumn(int c) const {
+    Vector4 v;
+    for (int r = 0; r < 4; ++r) {
+        v[r] = elt[r][c];
+    }
+    return v;
+}
+
+
+Matrix4 Matrix4::operator*(const Matrix4& other) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            for (int i = 0; i < 4; ++i) {
+                result.elt[r][c] += elt[r][i] * other.elt[i][c];
+            }
+        }
     }
 
-    return *this;
+    return result;
 }
 
-//----------------------------------------------------------------------------
-float Color3::unitize (float fTolerance) {
-	float fLength = length();
 
-    if ( fLength > fTolerance ) {
-		float fInvLength = 1.0f / fLength;
-        r *= fInvLength;
-        g *= fInvLength;
-        b *= fInvLength;
-    } else {
-        fLength = 0.0f;
+Matrix4 Matrix4::operator*(const float s) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[r][c] = elt[r][c] * s;
+        }
     }
 
-    return fLength;
+    return result;
 }
 
-//----------------------------------------------------------------------------
-Color3 Color3::fromHSV(const Vector3& _hsv) {
-	debugAssertM((_hsv.x <= 1.0f && _hsv.x >= 0.0f)
-			&& (_hsv.y <= 1.0f && _hsv.y >= 0.0f) 
-			&& ( _hsv.z <= 1.0f && _hsv.z >= 0.0f), "H,S,V must be between [0,1]");
-	const int i = G3D::iFloor(6.0*_hsv.x);
-	const float f = 6.0f * _hsv.x - i;
-	const float m = _hsv.z * (1.0f - (_hsv.y));
-	const float n = _hsv.z * (1.0f - (_hsv.y * f));
-	const float k = _hsv.z * (1.0f - (_hsv.y * (1 - f)));
-	switch(i) {
-	case 0:
-		return Color3(_hsv.z, k, m);
 
-	case 1:
-		return Color3(n, _hsv.z, m);
+Vector4 Matrix4::operator*(const Vector4& vector) const {
+    Vector4 result(0,0,0,0);
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result[r] += elt[r][c] * vector[c];
+        }
+    }
 
-	case 2:
-		return Color3(m, _hsv.z, k);
+    return result;
+}
 
-	case 3:
-		return Color3(m, n, _hsv.z);
 
-	case 4:
-		return Color3(k, m, _hsv.z);
+Matrix4 Matrix4::transpose() const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[c][r] = elt[r][c];
+        }
+    }
 
-	case 5:
-		return Color3(_hsv.z, m, n);
+    return result;
+}
 
-    default:
-		debugAssertM(false, "fell through switch..");
+
+bool Matrix4::operator!=(const Matrix4& other) const {
+    return ! (*this == other);
+}
+
+
+bool Matrix4::operator==(const Matrix4& other) const {
+
+    // If the bit patterns are identical, they must be
+    // the same matrix.  If not, they *might* still have
+    // equal elements due to floating point weirdness.
+    if (memcmp(this, &other, sizeof(Matrix4) == 0)) {
+        return true;
+    } 
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            if (elt[r][c] != other.elt[r][c]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+float Matrix4::determinant() const {
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	return cofactor().getRow(0).dot(getRow(0));
+}
+
+
+Matrix4 Matrix4::adjoint() const {
+    return cofactor().transpose();
+}
+
+
+Matrix4 Matrix4::inverse() const {
+    // Inverse = adjoint / determinant
+
+    Matrix4 A = adjoint();
+
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	float det = A.getColumn(0).dot(getRow(0));
+
+	return A * (1.0f / det);
+}
+
+
+Matrix4 Matrix4::cofactor() const {
+	Matrix4 out;
+
+    // We'll use i to incrementally compute -1 ^ (r+c)
+    int i = 1;
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            // Compute the determinant of the 3x3 submatrix
+            float det = subDeterminant(r, c);
+            out.elt[r][c] = i * det;
+            i = -i;
+        }
+        i = -i;
+    }
+
+    return out;
+}
+
+
+float Matrix4::subDeterminant(int excludeRow, int excludeCol) const {
+    // Compute non-excluded row and column indices
+    int row[3];
+    int col[3];
+
+    for (int i = 0; i < 3; ++i) {
+        row[i] = i;
+        col[i] = i;
+
+        if (i >= excludeRow) {
+            ++row[i];
+        }
+        if (i >= excludeCol) {
+            ++col[i];
+        }
+    }
+
+    // Compute the first row of cofactors 
+    float cofactor00 = 
+      elt[row[1]][col[1]] * elt[row[2]][col[2]] -
+      elt[row[1]][col[2]] * elt[row[2]][col[1]];
+
+    float cofactor10 = 
+      elt[row[1]][col[2]] * elt[row[2]][col[0]] -
+      elt[row[1]][col[0]] * elt[row[2]][col[2]];
+
+    float cofactor20 = 
+      elt[row[1]][col[0]] * elt[row[2]][col[1]] -
+      elt[row[1]][col[1]] * elt[row[2]][col[0]];
+
+    // Product of the first row and the cofactors along the first row
+    return
+      elt[row[0]][col[0]] * cofactor00 +
+      elt[row[0]][col[1]] * cofactor10 +
+      elt[row[0]][col[2]] * cofactor20;
+}
+
+
+CoordinateFrame Matrix4::approxCoordinateFrame() const {
+	CoordinateFrame cframe;
+
+	for (int r = 0; r < 3; ++r) {
+		for (int c = 0; c < 3; ++c) {
+			cframe.rotation[r][c] = elt[r][c];
+		}
+		cframe.translation[r] = elt[r][3];
 	}
-	return Color3::black();
-}
 
-Vector3 Color3::toHSV(const Color3& _rgb) {
-	debugAssertM((_rgb.r <= 1.0f && _rgb.r >= 0.0f) 
-			&& (_rgb.g <= 1.0f && _rgb.g >= 0.0f)
-			&& (_rgb.b <= 1.0f && _rgb.b >= 0.0f), "R,G,B must be between [0,1]");
-	Vector3 hsv = Vector3::zero();
-	hsv.z = G3D::max(G3D::max(_rgb.r, _rgb.g), _rgb.b);
-	if (G3D::fuzzyEq(hsv.z, 0.0f)) {
-		return hsv;
-	}
-	
-    const float x =  G3D::min(G3D::min(_rgb.r, _rgb.g), _rgb.b);
-	hsv.y = (hsv.z - x) / hsv.z; 
+	// Ensure that the rotation matrix is orthonormal
+	cframe.rotation.orthonormalize();
 
-    if (G3D::fuzzyEq(hsv.y, 0.0f)) {
-		return hsv;
-	}
-
-	Vector3 rgbN;
-	rgbN.x = (hsv.z - _rgb.r) / (hsv.z - x);
-	rgbN.y = (hsv.z - _rgb.g) / (hsv.z - x);
-	rgbN.z = (hsv.z - _rgb.b) / (hsv.z - x);
-
-	if (_rgb.r == hsv.z) {  // note from the max we know that it exactly equals one of the three.
-		hsv.x = (_rgb.g == x)? 5.0f + rgbN.z : 1.0f - rgbN.y;
-	} else if (_rgb.g == hsv.z) {
-		hsv.x = (_rgb.b == x)? 1.0f + rgbN.x : 3.0f - rgbN.z;
-	} else {
-		hsv.x = (_rgb.r == x)? 3.0f + rgbN.y : 5.0f - rgbN.x;
-	}
-	
-    hsv.x /= 6.0f;
-
-	return hsv;
-}
-
-Color3 Color3::jetColorMap(const float& val) {
-	debugAssertM(val <= 1.0f && val >= 0.0f , "value should be in [0,1]");
-
-	//truncated triangles where sides have slope 4
-	Color3 jet;
-
-	jet.r = G3D::min(4.0f * val - 1.5f,-4.0f * val + 4.5f) ;
-	jet.g = G3D::min(4.0f * val - 0.5f,-4.0f * val + 3.5f) ;
-	jet.b = G3D::min(4.0f * val + 0.5f,-4.0f * val + 2.5f) ;
-
-
-	jet.r = G3D::clamp(jet.r, 0.0f, 1.0f);
-	jet.g = G3D::clamp(jet.g, 0.0f, 1.0f);
-	jet.b = G3D::clamp(jet.b, 0.0f, 1.0f);
-
-	return jet;
+	return cframe;
 }
 
 
-
-
-
-std::string Color3::toString() const {
-    return G3D::format("(%g, %g, %g)", r, g, b);
+void Matrix4::serialize(class BinaryOutput& b) const {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            b.writeFloat32(elt[r][c]);
+        }
+    }
 }
 
-//----------------------------------------------------------------------------
 
-}; // namespace
+void Matrix4::deserialize(class BinaryInput& b) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = b.readFloat32();
+        }
+    }
+}
+
+std::string Matrix4::toString() const {
+    return G3D::format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]", 
+			elt[0][0], elt[0][1], elt[0][2], elt[0][3],
+			elt[1][0], elt[1][1], elt[1][2], elt[1][3],
+			elt[2][0], elt[2][1], elt[2][2], elt[2][3],
+			elt[3][0], elt[3][1], elt[3][2], elt[3][3]);
+}
+
+} // namespace
+
 

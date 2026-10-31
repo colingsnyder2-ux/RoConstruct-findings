@@ -1,12 +1,5 @@
-// from server: 91% by colin
-struct CXTPPropertyGridItemConstraints {
-    int method_00699d00(int);
-};
-
-extern "C" int __stdcall sub_00699320(int, int);
-
-int CXTPPropertyGridItemConstraints::method_00699d00(int a) {
-    int p = *(int*)((char*)this + 0xb8);
-    int q = *(int*)(p + 0x28);
-    return sub_00699320(q, a);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_48c4e0bce00a99de.cpp

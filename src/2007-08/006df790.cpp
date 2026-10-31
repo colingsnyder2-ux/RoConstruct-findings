@@ -1,35 +1,5 @@
-// from server: 51% by 41k
-struct CXTPDockingPaneMiniWnd {
-    char pad[0xe4];
-    int m_field;
-    int FindPane(int);
-};
-
-extern "C" int __fastcall sub_6e0540(int, int, int, int, int);
-extern "C" int __fastcall sub_66f110(int);
-extern "C" int __fastcall sub_66f140(int);
-
-int CXTPDockingPaneMiniWnd::FindPane(int arg)
-{
-    int result = sub_6e0540(m_field, 0, 0, 0, 0);
-    int local1;
-    sub_66f110(0xa);
-    int local2;
-    (*(int (__thiscall **)(int, int, int *))(*(int *)&m_field + 0xc))((int)&m_field, 0, &local2);
-    int *node = (int *)local2;
-    while (node != 0) {
-        int *next = (int *)*node;
-        int val = node[2];
-        if (val != 0)
-            val -= 0x20;
-        else
-            val = 0;
-        if (sub_6e0540(result, arg, val, 0, 0) != 0) {
-            sub_66f140((int)&local1);
-            return 1;
-        }
-        node = next;
-    }
-    sub_66f140((int)&local1);
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_59fe49e6bffb02bc.cpp

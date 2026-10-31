@@ -1,20 +1,5 @@
-// from server: 85% by colin
-extern "C" long (__stdcall *SafeArrayGetVartype)(void* psa, unsigned short* vt);
-
-void func_004114f0(void* psa, unsigned short* vt)
-{
-    if (SafeArrayGetVartype(psa, vt) < 0)
-        return;
-    if (vt == 0)
-        return;
-    if (*vt != 0xd)
-        return;
-    if (psa == 0)
-        return;
-    unsigned short flags = *(unsigned short*)((char*)psa + 2);
-    if ((flags & 0x40) == 0)
-        return;
-    if ((flags & 0x400) == 0)
-        return;
-    *vt = 9;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_atl_safearray_0f81521ec0deee80.cpp

@@ -1,21 +1,5 @@
-// from server: 88% by colin
-struct CXTPReportRecordItemPreview {
-    void get(int* p1, int* p2);
-};
-
-void CXTPReportRecordItemPreview::get(int* p1, int* p2)
-{
-    int v = *(int*)((char*)p1 + 4);
-    int* a = (int*)(*(int*)((char*)v + 0xb0));
-    int c = *(int*)((char*)a + 0x138);
-    int* base = (int*)((char*)a + 0x130);
-    int r;
-    if (c == -1)
-        r = *(int*)((char*)base + 4);
-    else
-        r = c;
-    *(int*)((char*)p2 + 0x24) = r;
-    int v2 = *(int*)((char*)p1 + 4);
-    int* a2 = (int*)(*(int*)((char*)v2 + 0xb0));
-    *(int*)((char*)p2 + 0x20) = (int)((char*)a2 + 0x38);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_c079bfc3681dd773.cpp

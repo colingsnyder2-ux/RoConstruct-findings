@@ -1,22 +1,5 @@
-// from server: 87% by colin
-struct IStage
-{
-    float sub_005CF520();
-};
-
-float IStage::sub_005CF520()
-{
-    float total = 0.0f;
-    int i = 0;
-    if (i < *(int *)((char *)this + 0x38))
-    {
-        do
-        {
-            int obj = *(int *)(*(int *)((char *)this + 0x34) + i * 4);
-            float v = (*(float (__thiscall **)(int))(*(int *)obj + 0x10))(obj);
-            total = total + v;
-            i++;
-        } while (i < *(int *)((char *)this + 0x38));
-    }
-    return total;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_kernel_refined_5c38644fb10b0c46.cpp

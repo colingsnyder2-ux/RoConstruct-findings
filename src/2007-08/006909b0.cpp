@@ -1,27 +1,5 @@
-// from server: 45% by colin
-struct CXTSplitterWnd {
-    int func_006909b0(int, int, int);
-};
-
-extern "C" int __stdcall func_00630652(int, int);
-extern "C" int __stdcall func_00630520(int);
-extern "C" int __stdcall func_00630202(int);
-extern "C" int __stdcall func_007385b0();
-extern "C" int __stdcall func_00738ad2(int);
-extern "C" int __stdcall func_0062ff4a(int);
-
-int CXTSplitterWnd::func_006909b0(int a, int b, int c)
-{
-    int v = func_00630652(a, b);
-    v = func_00630520(v);
-    v = func_00630202(v);
-    if (v == c)
-        return 0;
-    int ebp = func_007385b0();
-    func_00738ad2(0);
-    func_00738ad2(ebp);
-    func_0062ff4a(0);
-    func_0062ff4a(5);
-    (*(int (__thiscall **)(void *))(*(int *)this + 0x148))(this);
-    return v;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_5fa15bc5bd808c16.cpp

@@ -1,82 +1,281 @@
-// roc 2007-03 0050b1e0  unit: seg_00500000  size: 200 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0050b1e0
-//
-// 0050b1e0  53                   push ebx
-// 0050b1e1  57                   push edi
-// 0050b1e2  bfcc000000           mov edi, 0xcc
-// 0050b1e7  397e14               cmp dword ptr [esi + 0x14], edi
-// 0050b1ea  7418                 je 0x50b204
-// 0050b1ec  8b8680010000         mov eax, dword ptr [esi + 0x180]
-// 0050b1f2  8b08                 mov ecx, dword ptr [eax]
-// 0050b1f4  56                   push esi
-// 0050b1f5  ffd1                 call ecx
-// 0050b1f7  83c404               add esp, 4
-// 0050b1fa  c7467800000000       mov dword ptr [esi + 0x78], 0
-// 0050b201  897e14               mov dword ptr [esi + 0x14], edi
-// 0050b204  8b9680010000         mov edx, dword ptr [esi + 0x180]
-// 0050b20a  807a0800             cmp byte ptr [edx + 8], 0
-// 0050b20e  747d                 je 0x50b28d
-// 0050b210  8d7e78               lea edi, [esi + 0x78]
-// 0050b213  8b07                 mov eax, dword ptr [edi]
-// 0050b215  3b4660               cmp eax, dword ptr [esi + 0x60]
-// 0050b218  7347                 jae 0x50b261
-// 0050b21a  8d9b00000000         lea ebx, [ebx]
-// 0050b220  8b4e08               mov ecx, dword ptr [esi + 8]
-// 0050b223  85c9                 test ecx, ecx
-// 0050b225  7417                 je 0x50b23e
-// 0050b227  894104               mov dword ptr [ecx + 4], eax
-// 0050b22a  8b4608               mov eax, dword ptr [esi + 8]
-// 0050b22d  8b4e60               mov ecx, dword ptr [esi + 0x60]
-// 0050b230  894808               mov dword ptr [eax + 8], ecx
-// 0050b233  8b5608               mov edx, dword ptr [esi + 8]
-// 0050b236  8b02                 mov eax, dword ptr [edx]
-// 0050b238  56                   push esi
-// 0050b239  ffd0                 call eax
-// 0050b23b  83c404               add esp, 4
-// 0050b23e  8b8e84010000         mov ecx, dword ptr [esi + 0x184]
-// 0050b244  8b5104               mov edx, dword ptr [ecx + 4]
-// 0050b247  8b1f                 mov ebx, dword ptr [edi]
-// 0050b249  6a00                 push 0
-// 0050b24b  57                   push edi
-// 0050b24c  6a00                 push 0
-// 0050b24e  56                   push esi
-// 0050b24f  ffd2                 call edx
-// 0050b251  8b07                 mov eax, dword ptr [edi]
-// 0050b253  83c410               add esp, 0x10
-// 0050b256  3bc3                 cmp eax, ebx
-// 0050b258  7449                 je 0x50b2a3
-// 0050b25a  8bc8                 mov ecx, eax
-// 0050b25c  3b4e60               cmp ecx, dword ptr [esi + 0x60]
-// 0050b25f  72bf                 jb 0x50b220
-// 0050b261  8b9680010000         mov edx, dword ptr [esi + 0x180]
-// 0050b267  8b4204               mov eax, dword ptr [edx + 4]
-// 0050b26a  56                   push esi
-// 0050b26b  ffd0                 call eax
-// 0050b26d  8b8e80010000         mov ecx, dword ptr [esi + 0x180]
-// 0050b273  8b11                 mov edx, dword ptr [ecx]
-// 0050b275  56                   push esi
-// 0050b276  ffd2                 call edx
-// 0050b278  c70700000000         mov dword ptr [edi], 0
-// 0050b27e  8b8680010000         mov eax, dword ptr [esi + 0x180]
-// 0050b284  83c408               add esp, 8
-// 0050b287  80780800             cmp byte ptr [eax + 8], 0
-// 0050b28b  7586                 jne 0x50b213
-// 0050b28d  33c9                 xor ecx, ecx
-// 0050b28f  384e41               cmp byte ptr [esi + 0x41], cl
-// 0050b292  5f                   pop edi
-// 0050b293  0f95c1               setne cl
-// 0050b296  b001                 mov al, 1
-// 0050b298  5b                   pop ebx
-// 0050b299  81c1cd000000         add ecx, 0xcd
-// 0050b29f  894e14               mov dword ptr [esi + 0x14], ecx
-// 0050b2a2  c3                   ret 
-// 0050b2a3  5f                   pop edi
-// 0050b2a4  32c0                 xor al, al
-// 0050b2a6  5b                   pop ebx
-// 0050b2a7  c3                   ret 
-// library jpeg-6b/jdapistd.c (function _output_pass_setup)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdapistd.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jdapistd.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface code for the decompression half
+ * of the JPEG library.  These are the "standard" API routines that are
+ * used in the normal full-decompression case.  They are not used by a
+ * transcoding-only application.  Note that if an application links in
+ * jpeg_start_decompress, it will end up linking in the entire decompressor.
+ * We thus must separate this file from jdapimin.c to avoid linking the
+ * whole decompression library into a transcoder.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Forward declarations */
+LOCAL(boolean) output_pass_setup JPP((j_decompress_ptr cinfo));
+
+
+/*
+ * Decompression initialization.
+ * jpeg_read_header must be completed before calling this.
+ *
+ * If a multipass operating mode was selected, this will do all but the
+ * last pass, and thus may take a great deal of time.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_start_decompress (j_decompress_ptr cinfo)
+{
+  if (cinfo->global_state == DSTATE_READY) {
+    /* First call: initialize master control, select active modules */
+    jinit_master_decompress(cinfo);
+    if (cinfo->buffered_image) {
+      /* No more work here; expecting jpeg_start_output next */
+      cinfo->global_state = DSTATE_BUFIMAGE;
+      return TRUE;
+    }
+    cinfo->global_state = DSTATE_PRELOAD;
+  }
+  if (cinfo->global_state == DSTATE_PRELOAD) {
+    /* If file has multiple scans, absorb them all into the coef buffer */
+    if (cinfo->inputctl->has_multiple_scans) {
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+      for (;;) {
+	int retcode;
+	/* Call progress monitor hook if present */
+	if (cinfo->progress != NULL)
+	  (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+	/* Absorb some more input */
+	retcode = (*cinfo->inputctl->consume_input) (cinfo);
+	if (retcode == JPEG_SUSPENDED)
+	  return FALSE;
+	if (retcode == JPEG_REACHED_EOI)
+	  break;
+	/* Advance progress counter if appropriate */
+	if (cinfo->progress != NULL &&
+	    (retcode == JPEG_ROW_COMPLETED || retcode == JPEG_REACHED_SOS)) {
+	  if (++cinfo->progress->pass_counter >= cinfo->progress->pass_limit) {
+	    /* jdmaster underestimated number of scans; ratchet up one scan */
+	    cinfo->progress->pass_limit += (long) cinfo->total_iMCU_rows;
+	  }
+	}
+      }
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif /* D_MULTISCAN_FILES_SUPPORTED */
+    }
+    cinfo->output_scan_number = cinfo->input_scan_number;
+  } else if (cinfo->global_state != DSTATE_PRESCAN)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  /* Perform any dummy output passes, and set up for the final pass */
+  return output_pass_setup(cinfo);
+}
+
+
+/*
+ * Set up for an output pass, and perform any dummy pass(es) needed.
+ * Common subroutine for jpeg_start_decompress and jpeg_start_output.
+ * Entry: global_state = DSTATE_PRESCAN only if previously suspended.
+ * Exit: If done, returns TRUE and sets global_state for proper output mode.
+ *       If suspended, returns FALSE and sets global_state = DSTATE_PRESCAN.
+ */
+
+LOCAL(boolean)
+output_pass_setup (j_decompress_ptr cinfo)
+{
+  if (cinfo->global_state != DSTATE_PRESCAN) {
+    /* First call: do pass setup */
+    (*cinfo->master->prepare_for_output_pass) (cinfo);
+    cinfo->output_scanline = 0;
+    cinfo->global_state = DSTATE_PRESCAN;
+  }
+  /* Loop over any required dummy passes */
+  while (cinfo->master->is_dummy_pass) {
+#ifdef QUANT_2PASS_SUPPORTED
+    /* Crank through the dummy pass */
+    while (cinfo->output_scanline < cinfo->output_height) {
+      JDIMENSION last_scanline;
+      /* Call progress monitor hook if present */
+      if (cinfo->progress != NULL) {
+	cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+	cinfo->progress->pass_limit = (long) cinfo->output_height;
+	(*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+      }
+      /* Process some data */
+      last_scanline = cinfo->output_scanline;
+      (*cinfo->main->process_data) (cinfo, (JSAMPARRAY) NULL,
+				    &cinfo->output_scanline, (JDIMENSION) 0);
+      if (cinfo->output_scanline == last_scanline)
+	return FALSE;		/* No progress made, must suspend */
+    }
+    /* Finish up dummy pass, and set up for another one */
+    (*cinfo->master->finish_output_pass) (cinfo);
+    (*cinfo->master->prepare_for_output_pass) (cinfo);
+    cinfo->output_scanline = 0;
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif /* QUANT_2PASS_SUPPORTED */
+  }
+  /* Ready for application to drive output pass through
+   * jpeg_read_scanlines or jpeg_read_raw_data.
+   */
+  cinfo->global_state = cinfo->raw_data_out ? DSTATE_RAW_OK : DSTATE_SCANNING;
+  return TRUE;
+}
+
+
+/*
+ * Read some scanlines of data from the JPEG decompressor.
+ *
+ * The return value will be the number of lines actually read.
+ * This may be less than the number requested in several cases,
+ * including bottom of image, data source suspension, and operating
+ * modes that emit multiple scanlines at a time.
+ *
+ * Note: we warn about excess calls to jpeg_read_scanlines() since
+ * this likely signals an application programmer error.  However,
+ * an oversize buffer (max_lines > scanlines remaining) is not an error.
+ */
+
+GLOBAL(JDIMENSION)
+jpeg_read_scanlines (j_decompress_ptr cinfo, JSAMPARRAY scanlines,
+		     JDIMENSION max_lines)
+{
+  JDIMENSION row_ctr;
+
+  if (cinfo->global_state != DSTATE_SCANNING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  if (cinfo->output_scanline >= cinfo->output_height) {
+    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
+    return 0;
+  }
+
+  /* Call progress monitor hook if present */
+  if (cinfo->progress != NULL) {
+    cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+    cinfo->progress->pass_limit = (long) cinfo->output_height;
+    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+  }
+
+  /* Process some data */
+  row_ctr = 0;
+  (*cinfo->main->process_data) (cinfo, scanlines, &row_ctr, max_lines);
+  cinfo->output_scanline += row_ctr;
+  return row_ctr;
+}
+
+
+/*
+ * Alternate entry point to read raw data.
+ * Processes exactly one iMCU row per call, unless suspended.
+ */
+
+GLOBAL(JDIMENSION)
+jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
+		    JDIMENSION max_lines)
+{
+  JDIMENSION lines_per_iMCU_row;
+
+  if (cinfo->global_state != DSTATE_RAW_OK)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  if (cinfo->output_scanline >= cinfo->output_height) {
+    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
+    return 0;
+  }
+
+  /* Call progress monitor hook if present */
+  if (cinfo->progress != NULL) {
+    cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+    cinfo->progress->pass_limit = (long) cinfo->output_height;
+    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+  }
+
+  /* Verify that at least one iMCU row can be returned. */
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
+  if (max_lines < lines_per_iMCU_row)
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
+
+  /* Decompress directly into user's buffer. */
+  if (! (*cinfo->coef->decompress_data) (cinfo, data))
+    return 0;			/* suspension forced, can do nothing more */
+
+  /* OK, we processed one iMCU row. */
+  cinfo->output_scanline += lines_per_iMCU_row;
+  return lines_per_iMCU_row;
+}
+
+
+/* Additional entry points for buffered-image mode. */
+
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+
+/*
+ * Initialize for an output pass in buffered-image mode.
+ */
+
+GLOBAL(boolean)
+jpeg_start_output (j_decompress_ptr cinfo, int scan_number)
+{
+  if (cinfo->global_state != DSTATE_BUFIMAGE &&
+      cinfo->global_state != DSTATE_PRESCAN)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  /* Limit scan number to valid range */
+  if (scan_number <= 0)
+    scan_number = 1;
+  if (cinfo->inputctl->eoi_reached &&
+      scan_number > cinfo->input_scan_number)
+    scan_number = cinfo->input_scan_number;
+  cinfo->output_scan_number = scan_number;
+  /* Perform any dummy output passes, and set up for the real pass */
+  return output_pass_setup(cinfo);
+}
+
+
+/*
+ * Finish up after an output pass in buffered-image mode.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_finish_output (j_decompress_ptr cinfo)
+{
+  if ((cinfo->global_state == DSTATE_SCANNING ||
+       cinfo->global_state == DSTATE_RAW_OK) && cinfo->buffered_image) {
+    /* Terminate this pass. */
+    /* We do not require the whole pass to have been completed. */
+    (*cinfo->master->finish_output_pass) (cinfo);
+    cinfo->global_state = DSTATE_BUFPOST;
+  } else if (cinfo->global_state != DSTATE_BUFPOST) {
+    /* BUFPOST = repeat call after a suspension, anything else is error */
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  /* Read markers looking for SOS or EOI */
+  while (cinfo->input_scan_number <= cinfo->output_scan_number &&
+	 ! cinfo->inputctl->eoi_reached) {
+    if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
+      return FALSE;		/* Suspend, come back later */
+  }
+  cinfo->global_state = DSTATE_BUFIMAGE;
+  return TRUE;
+}
+
+#endif /* D_MULTISCAN_FILES_SUPPORTED */

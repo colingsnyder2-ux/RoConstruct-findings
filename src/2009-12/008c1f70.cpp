@@ -1,158 +1,1407 @@
-// roc 2009-12 008c1f70  unit: CXTPImageEditorDlg::CDlgToolBar  size: 479 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008c1f70
-//
-// 008c1f70  6aff                 push -1
-// 008c1f72  68833f9600           push 0x963f83
-// 008c1f77  64a100000000         mov eax, dword ptr fs:[0]
-// 008c1f7d  50                   push eax
-// 008c1f7e  81eca4000000         sub esp, 0xa4
-// 008c1f84  a10052b600           mov eax, dword ptr [0xb65200]
-// 008c1f89  33c4                 xor eax, esp
-// 008c1f8b  898424a0000000       mov dword ptr [esp + 0xa0], eax
-// 008c1f92  53                   push ebx
-// 008c1f93  55                   push ebp
-// 008c1f94  56                   push esi
-// 008c1f95  57                   push edi
-// 008c1f96  a10052b600           mov eax, dword ptr [0xb65200]
-// 008c1f9b  33c4                 xor eax, esp
-// 008c1f9d  50                   push eax
-// 008c1f9e  8d8424b8000000       lea eax, [esp + 0xb8]
-// 008c1fa5  64a300000000         mov dword ptr fs:[0], eax
-// 008c1fab  8bf1                 mov esi, ecx
-// 008c1fad  56                   push esi
-// 008c1fae  8d4c2464             lea ecx, [esp + 0x64]
-// 008c1fb2  89742428             mov dword ptr [esp + 0x28], esi
-// 008c1fb6  e83522f3ff           call 0x7f41f0
-// 008c1fbb  56                   push esi
-// 008c1fbc  8d4c2418             lea ecx, [esp + 0x18]
-// 008c1fc0  c78424c400000000000000 mov dword ptr [esp + 0xc4], 0
-// 008c1fcb  e80093f8ff           call 0x84b2d0
-// 008c1fd0  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 008c1fd4  8d442414             lea eax, [esp + 0x14]
-// 008c1fd8  50                   push eax
-// 008c1fd9  51                   push ecx
-// 008c1fda  8d4c2438             lea ecx, [esp + 0x38]
-// 008c1fde  e84d93f8ff           call 0x84b330
-// 008c1fe3  8b4654               mov eax, dword ptr [esi + 0x54]
-// 008c1fe6  c68424c000000001     mov byte ptr [esp + 0xc0], 1
-// 008c1fee  8d4c2430             lea ecx, [esp + 0x30]
-// 008c1ff2  3dfffeff00           cmp eax, 0xfffeff
-// 008c1ff7  740d                 je 0x8c2006
-// 008c1ff9  50                   push eax
-// 008c1ffa  8d542418             lea edx, [esp + 0x18]
-// 008c1ffe  52                   push edx
-// 008c1fff  e8fa25f3ff           call 0x7f45fe
-// 008c2004  eb77                 jmp 0x8c207d
-// 008c2006  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 008c200a  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 008c200e  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 008c2012  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 008c2016  68ffffff00           push 0xffffff
-// 008c201b  8d442418             lea eax, [esp + 0x18]
-// 008c201f  50                   push eax
-// 008c2020  e8d925f3ff           call 0x7f45fe
-// 008c2025  8bc7                 mov eax, edi
-// 008c2027  2bc3                 sub eax, ebx
-// 008c2029  99                   cdq 
-// 008c202a  2bc2                 sub eax, edx
-// 008c202c  8bc8                 mov ecx, eax
-// 008c202e  8bc6                 mov eax, esi
-// 008c2030  2bc5                 sub eax, ebp
-// 008c2032  99                   cdq 
-// 008c2033  68ebebeb00           push 0xebebeb
-// 008c2038  d1f9                 sar ecx, 1
-// 008c203a  51                   push ecx
-// 008c203b  2bc2                 sub eax, edx
-// 008c203d  d1f8                 sar eax, 1
-// 008c203f  50                   push eax
-// 008c2040  53                   push ebx
-// 008c2041  894c243c             mov dword ptr [esp + 0x3c], ecx
-// 008c2045  55                   push ebp
-// 008c2046  8d4c2444             lea ecx, [esp + 0x44]
-// 008c204a  8944243c             mov dword ptr [esp + 0x3c], eax
-// 008c204e  e843440600           call 0x926496
-// 008c2053  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 008c2057  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 008c205b  68ebebeb00           push 0xebebeb
-// 008c2060  2bf8                 sub edi, eax
-// 008c2062  2bf1                 sub esi, ecx
-// 008c2064  2bfb                 sub edi, ebx
-// 008c2066  57                   push edi
-// 008c2067  2bf5                 sub esi, ebp
-// 008c2069  56                   push esi
-// 008c206a  03c3                 add eax, ebx
-// 008c206c  03cd                 add ecx, ebp
-// 008c206e  50                   push eax
-// 008c206f  51                   push ecx
-// 008c2070  8d4c2444             lea ecx, [esp + 0x44]
-// 008c2074  e81d440600           call 0x926496
-// 008c2079  8b742424             mov esi, dword ptr [esp + 0x24]
-// 008c207d  837e5800             cmp dword ptr [esi + 0x58], 0
-// 008c2081  7527                 jne 0x8c20aa
-// 008c2083  e848d9f6ff           call 0x82f9d0
-// 008c2088  6a15                 push 0x15
-// 008c208a  8bc8                 mov ecx, eax
-// 008c208c  e86fd0f6ff           call 0x82f100
-// 008c2091  8bf0                 mov esi, eax
-// 008c2093  e838d9f6ff           call 0x82f9d0
-// 008c2098  6a15                 push 0x15
-// 008c209a  8bc8                 mov ecx, eax
-// 008c209c  e85fd0f6ff           call 0x82f100
-// 008c20a1  56                   push esi
-// 008c20a2  50                   push eax
-// 008c20a3  8d4c241c             lea ecx, [esp + 0x1c]
-// 008c20a7  51                   push ecx
-// 008c20a8  eb4f                 jmp 0x8c20f9
-// 008c20aa  6a00                 push 0
-// 008c20ac  6a00                 push 0
-// 008c20ae  8d54241c             lea edx, [esp + 0x1c]
-// 008c20b2  52                   push edx
-// 008c20b3  8d4c243c             lea ecx, [esp + 0x3c]
-// 008c20b7  e83c25f3ff           call 0x7f45f8
-// 008c20bc  8b3558ca9800         mov esi, dword ptr [0x98ca58]
-// 008c20c2  6aff                 push -1
-// 008c20c4  6aff                 push -1
-// 008c20c6  8d44241c             lea eax, [esp + 0x1c]
-// 008c20ca  50                   push eax
-// 008c20cb  ffd6                 call esi
-// 008c20cd  68ffffff00           push 0xffffff
-// 008c20d2  68ffffff00           push 0xffffff
-// 008c20d7  8d4c241c             lea ecx, [esp + 0x1c]
-// 008c20db  51                   push ecx
-// 008c20dc  8d4c243c             lea ecx, [esp + 0x3c]
-// 008c20e0  e81325f3ff           call 0x7f45f8
-// 008c20e5  6aff                 push -1
-// 008c20e7  6aff                 push -1
-// 008c20e9  8d54241c             lea edx, [esp + 0x1c]
-// 008c20ed  52                   push edx
-// 008c20ee  ffd6                 call esi
-// 008c20f0  6a00                 push 0
-// 008c20f2  6a00                 push 0
-// 008c20f4  8d44241c             lea eax, [esp + 0x1c]
-// 008c20f8  50                   push eax
-// 008c20f9  8d4c243c             lea ecx, [esp + 0x3c]
-// 008c20fd  e8f624f3ff           call 0x7f45f8
-// 008c2102  8d4c2430             lea ecx, [esp + 0x30]
-// 008c2106  c68424c000000000     mov byte ptr [esp + 0xc0], 0
-// 008c210e  e82d94f8ff           call 0x84b540
-// 008c2113  8d4c2460             lea ecx, [esp + 0x60]
-// 008c2117  c78424c0000000ffffffff mov dword ptr [esp + 0xc0], 0xffffffff
-// 008c2122  e8c320f3ff           call 0x7f41ea
-// 008c2127  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 008c212e  64890d00000000       mov dword ptr fs:[0], ecx
-// 008c2135  59                   pop ecx
-// 008c2136  5f                   pop edi
-// 008c2137  5e                   pop esi
-// 008c2138  5d                   pop ebp
-// 008c2139  5b                   pop ebx
-// 008c213a  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 008c2141  33cc                 xor ecx, esp
-// 008c2143  e85232f3ff           call 0x7f539a
-// 008c2148  81c4b0000000         add esp, 0xb0
-// 008c214e  c3                   ret 
-// copied from an identical function in another client (function ?OnPaint@CXTPImageEditorPicker@@IAEXXZ)
-
 // roc-cl: 21022
 // roc-lang: cpp
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPImageEditor.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPImageEditor.cpp : implementation of the CXTPImageEditorDlg class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+#include "Common/Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+
+#include "XTPImageEditor.h"
+#include "XTPCommandBar.h"
+#include "XTPMouseManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+#define UNDO_COUNT 15
+#define CLR_TO_RGBQUAD(clr) (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
+
+void CXTPImageEditorPicture::CAlphaBitmap::CreateEditorBitmap(int nWidth, int nHeight)
+{
+	BITMAPINFOHEADER BMI;
+	// Fill in the header info.
+	ZeroMemory (&BMI, sizeof(BMI));
+	BMI.biSize = sizeof(BITMAPINFOHEADER);
+	BMI.biWidth = nWidth;
+	BMI.biHeight = nHeight;
+	BMI.biPlanes = 1;
+	BMI.biBitCount = 32;
+	BMI.biCompression = BI_RGB;   // No compression
+
+	UINT* pSrcBits = NULL;
+	Attach(CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPicture
+
+
+CXTPImageEditorPicture::CXTPImageEditorPicture()
+{
+	m_pCurrentBitmap = NULL;
+	m_pPictureBitmap = NULL;
+
+	m_pParentWnd = NULL;
+
+	m_bTracked = FALSE;
+
+	m_clrDraw = 0;
+
+	m_hCursorLine = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_LINE);
+	m_hCursorFillColor = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_FILLCOLOR);
+	m_hCursorPencil = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_PENCIL);
+	m_hCursorPickColor = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_PICKCOLOR);
+
+}
+
+CXTPImageEditorPicture::~CXTPImageEditorPicture()
+{
+	if (m_pPictureBitmap)
+	{
+		delete m_pPictureBitmap;
+	}
+	if (m_pCurrentBitmap)
+	{
+		delete m_pCurrentBitmap;
+	}
+
+	while (!m_lstUndo.IsEmpty())
+	{
+		CBitmap* pBitmap = m_lstUndo.RemoveTail();
+		if (pBitmap) delete pBitmap;
+	}
+
+	while (!m_lstRedo.IsEmpty())
+	{
+		CBitmap* pBitmap = m_lstRedo.RemoveTail();
+		if (pBitmap) delete pBitmap;
+	}
+
+}
+
+void CXTPImageEditorPicture::Init(UINT nID, CXTPImageEditorDlg* pParentWnd)
+{
+	m_pParentWnd = pParentWnd;
+
+	SubclassDlgItem(nID, pParentWnd);
+	m_szPicture = pParentWnd->m_szPicture;
+
+	CRect rc;
+	GetWindowRect(rc);
+
+	m_szItem = CSize (rc.Width() / m_szPicture.cx, rc.Height() / m_szPicture.cy);
+
+	CSize sz(m_szItem.cx * m_szPicture.cx, m_szItem.cy * m_szPicture.cy);
+
+	SetWindowPos(&CWnd::wndTop, rc.left, rc.top, sz.cx + 1, sz.cy + 1, SWP_NOMOVE);
+
+
+	m_dcPicture.CreateCompatibleDC(NULL);
+}
+
+XTPImageEditorTools CXTPImageEditorPicture::GetSelectedTool()
+{
+	ASSERT(m_pParentWnd);
+	if (!m_pParentWnd)
+		return xtpToolPencil;
+
+	return m_pParentWnd->m_toolSelected;
+}
+COLORREF CXTPImageEditorPicture::GetSelectedColor()
+{
+	ASSERT(m_pParentWnd);
+	if (m_pParentWnd && m_pParentWnd->m_pSelected)
+	{
+		return m_pParentWnd->m_pSelected->GetColor();
+	}
+	return 0;
+}
+
+BEGIN_MESSAGE_MAP(CXTPImageEditorPicture, CStatic)
+	//{{AFX_MSG_MAP(CXTPImageEditorPicture)
+	ON_WM_PAINT()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CAPTURECHANGED()
+	ON_WM_LBUTTONUP()
+	ON_WM_SETCURSOR()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPicture message handlers
+
+BOOL CXTPImageEditorPicture::OnSetCursor(CWnd* /*pWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	::SetCursor(
+		GetSelectedTool() == xtpToolFill ? m_hCursorFillColor :
+		GetSelectedTool() == xtpToolPencil ? m_hCursorPencil :
+		GetSelectedTool() == xtpToolGetColor ? m_hCursorPickColor : m_hCursorLine
+	);
+
+	return TRUE;
+}
+
+void CXTPImageEditorPicture::OnPaint()
+{
+	CPaintDC dcPaint(this); // device context for painting
+	CXTPClientRect rc(this);
+	CXTPBufferDC dc(dcPaint, rc);
+
+	dc.FillSolidRect(rc, RGB(255, 255, 255));
+
+	BOOL bAlpha = m_pPictureBitmap != 0 && m_pPictureBitmap->m_bAlpha;
+
+	PINT pBits = 0;
+	PBITMAPINFO pbmi = 0;
+	UINT nSize;
+
+	if (m_pPictureBitmap)
+	{
+		if (!CXTPImageManagerIcon::GetBitmapBits(dc, (HBITMAP)m_pPictureBitmap->GetSafeHandle(), pbmi, (LPVOID&)pBits, nSize))
+			return;
+	}
+	if (pbmi == NULL || pBits == NULL)
+	{
+		return;
+	}
+
+	for (int x = 0; x < rc.Width(); x++)
+	for (int y = 0; y < rc.Height(); y++)
+	{
+		CPoint pt = CPoint(m_szPicture.cx * x / rc.Width(), m_szPicture.cy * y / rc.Height());
+
+		COLORREF clr;
+		if (bAlpha)
+		{
+			clr = pBits[(pt.y * pbmi->bmiHeader.biWidth + pt.x)];
+
+			int nAlpha = (clr & 0xFF000000) >> 24;
+
+			int nColor = (((x +3) / 4)+ ((y +3)/ 4)) % 2 == 0 ? 255 : 235;
+
+			clr = RGB(nColor - (nColor -  GetBValue(clr)) * nAlpha / 255,
+					nColor -  (nColor - GetGValue(clr)) * nAlpha / 255,
+					nColor -  (nColor - GetRValue(clr)) * nAlpha / 255);
+
+
+		}
+		else
+		{
+
+			clr = m_pPictureBitmap == NULL ? XTPCOLOR_ERASE : pBits[(pt.y * pbmi->bmiHeader.biWidth + pt.x)];
+			clr = CLR_TO_RGBQUAD(clr);
+
+			if (clr == XTPCOLOR_ERASE)
+				clr = (((x +3) / 4)+ ((y +3)/ 4)) % 2 == 0 ? RGB(255, 255, 255) : RGB(235, 235, 235);
+
+
+		}
+		dc.SetPixel(x, rc.Height() - y - 1, clr);
+	}
+
+	free(pBits);
+	free(pbmi);
+
+	dc.Draw3dRect(rc, 0, 0);
+}
+
+COLORREF CXTPImageEditorPicture::GetPicturePixel(CPoint point)
+{
+	CAlphaBitmap bmp;
+	bmp.CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+
+	CBitmap* pOldBitmap = m_dcPicture.SelectObject(&bmp);
+	m_dcPicture.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
+	if (m_pPictureBitmap)
+		m_dcPicture.DrawState(0, m_szPicture, m_pPictureBitmap, DSS_NORMAL, (CBrush*)NULL);
+	COLORREF clr = m_dcPicture.GetPixel(point);
+
+
+	m_dcPicture.SelectObject(pOldBitmap);
+	return clr;
+}
+
+
+
+CPoint CXTPImageEditorPicture::ClientToPicture(CPoint pt)
+{
+	ASSERT(m_szItem.cx > 0 && m_szItem.cy > 0);
+	return CPoint(pt.x / m_szItem.cx, pt.y / m_szItem.cy);
+}
+
+void CXTPImageEditorPicture::CopyBitmap(CAlphaBitmap* pBitmapCopyTo, CAlphaBitmap* pBitmapCopyFrom, CSize sz, CPoint ptOffset, COLORREF clrTransparentFrom, COLORREF clrTransparentTo, CDC* pDC)
+{
+	CDC dc;
+	dc.CreateCompatibleDC(pDC);
+
+	pBitmapCopyTo->CreateEditorBitmap(sz.cx, sz.cy);
+
+	CBitmap* pOldBitmap = dc.SelectObject(pBitmapCopyTo);
+	dc.FillSolidRect(0, 0, sz.cx, sz.cy, XTPCOLOR_ERASE);
+
+	if (pBitmapCopyFrom)
+	{
+		dc.DrawState(ptOffset, sz, pBitmapCopyFrom, DSS_NORMAL, (CBrush*)NULL);
+
+		if (clrTransparentFrom != clrTransparentTo && !pBitmapCopyFrom->m_bAlpha)
+		{
+			for (int x = 0; x < sz.cx; x++)
+			{
+				for (int y = 0; y < sz.cy; y++)
+				{
+					if (dc.GetPixel(x, y) == clrTransparentFrom)
+						dc.SetPixel(x, y, clrTransparentTo);
+				}
+			}
+		}
+	}
+
+	dc.SelectObject(pOldBitmap);
+
+	pBitmapCopyTo->m_bAlpha = pBitmapCopyFrom ? pBitmapCopyFrom->m_bAlpha : FALSE;
+
+
+}
+
+void CXTPImageEditorPicture::OnPictureChanged()
+{
+	Invalidate(FALSE);
+	m_pParentWnd->OnPictureChanged();
+}
+
+void CXTPImageEditorPicture::Apply()
+{
+	while (!m_lstRedo.IsEmpty())
+	{
+		CBitmap* pBitmap = m_lstRedo.RemoveTail();
+		if (pBitmap) delete pBitmap;
+	}
+
+	if (m_lstUndo.GetCount() > UNDO_COUNT)
+	{
+		CBitmap* pBitmap = m_lstUndo.RemoveHead();
+		if (pBitmap) delete pBitmap;
+	}
+
+	m_lstUndo.AddTail(m_pCurrentBitmap);
+	m_pCurrentBitmap = NULL;
+
+	OnPictureChanged();
+}
+
+
+void CXTPImageEditorPicture::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	ASSERT(m_pCurrentBitmap == NULL);
+
+	switch (GetSelectedTool())
+	{
+	case xtpToolFill:
+		{
+			m_pCurrentBitmap = m_pPictureBitmap;
+
+			m_pPictureBitmap = new CAlphaBitmap();
+			CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture);
+
+			CBitmap* pOldBitmap = m_dcPicture.SelectObject(m_pPictureBitmap);
+			CXTPBrushDC brush(m_dcPicture, GetSelectedColor());
+
+			CPoint ptFill(ClientToPicture(point));
+
+			m_dcPicture.ExtFloodFill(ptFill.x, ptFill.y, GetPicturePixel(ptFill), FLOODFILLSURFACE);
+			m_dcPicture.SelectObject(pOldBitmap);
+
+			if (m_pCurrentBitmap && m_pCurrentBitmap->m_bAlpha)
+				FixAlphaLayer(m_pPictureBitmap, m_pCurrentBitmap);
+
+			Apply();
+		}
+		break;
+
+	case xtpToolGetColor:
+		{
+			COLORREF clr = GetPicturePixel(ClientToPicture(point));
+			m_pParentWnd->m_wndPicker.SetColor(clr);
+			m_pParentWnd->SetSelected(&m_pParentWnd->m_wndPicker);
+			m_pParentWnd->m_toolSelected = m_pParentWnd->m_toolPrevious;
+		}
+		break;
+	case xtpToolPencil:
+	case xtpToolRectangle:
+	case xtpToolCircle:
+	case xtpToolLine:
+		{
+
+			m_pCurrentBitmap = m_pPictureBitmap;
+
+			m_pPictureBitmap = new CAlphaBitmap();
+			CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture);
+
+			m_clrDraw = GetSelectedColor() != GetPicturePixel(ClientToPicture(point)) ? GetSelectedColor() : XTPCOLOR_ERASE;
+
+			m_bTracked = TRUE;
+			m_ptTracked = point;
+			SetCapture();
+
+			OnMouseMove(nFlags, point);
+		}
+		break;
+	default :
+		ASSERT(FALSE);
+
+	}
+
+	CStatic::OnLButtonDown(nFlags, point);
+}
+
+
+void CXTPImageEditorDlg::FixAlphaLayer(LPBYTE pBits, UINT nCount)
+{
+	if (pBits == 0)
+		return;
+
+	LPBYTE pBitsI = pBits;
+
+	for (UINT i = 0; i < nCount; i++)
+	{
+		if (*(LPDWORD)pBitsI == 0) *(LPDWORD)pBitsI = XTPCOLOR_ERASE;
+
+		int nAlpha = pBitsI[3];
+		if (nAlpha != 0)
+		{
+			pBitsI[0] = BYTE(pBitsI[0] * 255 / nAlpha);
+			pBitsI[1] = BYTE(pBitsI[1] * 255 / nAlpha);
+			pBitsI[2] = BYTE(pBitsI[2] * 255 / nAlpha);
+		}
+
+		pBitsI += 4;
+	}
+}
+
+void CXTPImageEditorPicture::FixAlphaLayer(CAlphaBitmap* pDest, CAlphaBitmap* pSrc)
+{
+	if (pSrc == 0 || pDest == 0)
+		return;
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PINT pDestBits = 0, pSrcBits = 0;
+	PBITMAPINFO pDestBmi = 0, pSrcBmi = 0;
+
+	UINT nSize;
+
+	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, (HBITMAP)pDest->GetSafeHandle(), pDestBmi, (LPVOID&)pDestBits, nSize))
+		return;
+
+	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, (HBITMAP)pSrc->GetSafeHandle(), pSrcBmi, (LPVOID&)pSrcBits, nSize))
+	{
+		free(pDestBits);
+		free(pDestBmi);
+		return;
+	}
+
+	PINT pFixedBits = NULL;
+
+	HBITMAP hBitmapAlpha = CreateDIBSection(dcSrc, pDestBmi, DIB_RGB_COLORS, (void**)&pFixedBits, NULL, 0);
+
+	if (hBitmapAlpha && pFixedBits)
+	{
+		MEMCPY_S(pFixedBits, pDestBits, nSize);
+
+		for (UINT i = 0; i < nSize / 4; i++)
+		{
+			if (pDestBits[i] != pSrcBits[i])
+			{
+				if (pDestBits[i] != XTPCOLOR_ERASE)
+					pFixedBits[i] |= 0xFF000000;
+			}
+		}
+
+		pDest->DeleteObject();
+		pDest->Attach(hBitmapAlpha);
+	}
+
+	free(pDestBits);
+	free(pDestBmi);
+	free(pSrcBits);
+	free(pSrcBmi);
+
+}
+
+void CXTPImageEditorPicture::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bTracked)
+	{
+		if (GetSelectedTool() == xtpToolPencil)
+		{
+			CAlphaBitmap* pBitmap = new CAlphaBitmap();
+			CopyBitmap(pBitmap, m_pPictureBitmap, m_szPicture);
+
+			CBitmap* pOldBitmap = m_dcPicture.SelectObject(pBitmap);
+
+			m_dcPicture.SetPixel(ClientToPicture(point), m_clrDraw);
+			m_dcPicture.SelectObject(pOldBitmap);
+
+			if (m_pPictureBitmap->m_bAlpha)
+				FixAlphaLayer(pBitmap, m_pPictureBitmap);
+
+			if (m_pPictureBitmap) delete m_pPictureBitmap;
+
+			m_pPictureBitmap = pBitmap;
+
+			Invalidate(FALSE);
+			OnPictureChanged();
+		}
+		else
+		{
+			CAlphaBitmap* pBitmap = new CAlphaBitmap();
+			CopyBitmap(pBitmap, m_pCurrentBitmap, m_szPicture);
+
+			CBitmap* pOldBitmap = m_dcPicture.SelectObject(pBitmap);
+
+			CRect rcReftangle(ClientToPicture(m_ptTracked), ClientToPicture(point));
+			rcReftangle.NormalizeRect();
+
+			if (GetSelectedTool() == xtpToolRectangle)
+			{
+				m_dcPicture.Draw3dRect(rcReftangle, GetSelectedColor(), GetSelectedColor());
+			}
+			if (GetSelectedTool() == xtpToolCircle)
+			{
+				CXTPPenDC pen(m_dcPicture, GetSelectedColor());
+				CXTPBrushDC brush(m_dcPicture, XTPCOLOR_ERASE);
+				m_dcPicture.Ellipse(rcReftangle);
+			}
+			if (GetSelectedTool() == xtpToolLine)
+			{
+				CXTPPenDC pen(m_dcPicture, GetSelectedColor());
+				m_dcPicture.MoveTo(ClientToPicture(m_ptTracked));
+				m_dcPicture.LineTo(ClientToPicture(point));
+			}
+
+			m_dcPicture.SelectObject(pOldBitmap);
+
+			if (m_pPictureBitmap->m_bAlpha)
+				FixAlphaLayer(pBitmap, m_pCurrentBitmap);
+
+			if (m_pPictureBitmap) delete m_pPictureBitmap;
+			m_pPictureBitmap = pBitmap;
+
+			Invalidate(FALSE);
+			OnPictureChanged();
+
+		}
+
+	}
+
+	CStatic::OnMouseMove(nFlags, point);
+}
+
+void CXTPImageEditorPicture::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	m_bTracked = FALSE;
+	ReleaseCapture();
+
+	CStatic::OnLButtonUp(nFlags, point);
+}
+
+void CXTPImageEditorPicture::OnCaptureChanged(CWnd* pWnd)
+{
+	m_bTracked = FALSE;
+	Apply();
+
+	CStatic::OnCaptureChanged(pWnd);
+}
+
+void CXTPImageEditorPicture::Undo()
+{
+	if (!m_lstUndo.IsEmpty())
+	{
+		CAlphaBitmap* pBitmap = m_lstUndo.RemoveTail();
+
+		m_lstRedo.AddTail(m_pPictureBitmap);
+
+		m_pPictureBitmap = pBitmap;
+
+		OnPictureChanged();
+	}
+}
+
+void CXTPImageEditorPicture::Redo()
+{
+	if (!m_lstRedo.IsEmpty())
+	{
+		CAlphaBitmap* pBitmap = m_lstRedo.RemoveTail();
+
+		m_lstUndo.AddTail(m_pPictureBitmap);
+
+		m_pPictureBitmap = pBitmap;
+
+		OnPictureChanged();
+	}
+}
+
+
+void CXTPImageEditorPicture::Clear()
+{
+	m_pCurrentBitmap = m_pPictureBitmap;
+	m_pPictureBitmap = NULL;
+	Apply();
+}
+
+void CXTPImageEditorPicture::MovePicture(CPoint ptOffset)
+{
+	m_pCurrentBitmap = m_pPictureBitmap;
+
+	m_pPictureBitmap = new CAlphaBitmap();
+	CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture, ptOffset);
+
+	Apply();
+}
+
+
+void CXTPImageEditorPicture::Copy()
+{
+	if (!OpenClipboard ())
+	{
+		return;
+	}
+
+	if (!::EmptyClipboard ())
+	{
+		::CloseClipboard ();
+		return;
+	}
+
+	CAlphaBitmap bitmapCopy;
+	CopyBitmap(&bitmapCopy, m_pPictureBitmap, m_szPicture, 0, XTPCOLOR_ERASE, GetXtremeColor(COLOR_3DFACE));
+
+	HANDLE hclipData = ::SetClipboardData (CF_BITMAP, bitmapCopy.Detach ());
+	if (hclipData == NULL)
+	{
+		TRACE (_T ("CXTPImageEditorPicture::Copy() error. Error code = %x\n"), GetLastError ());
+	}
+
+	if (bitmapCopy.m_bAlpha)
+	{
+		SetClipboardData(XTPImageManager()->m_nAlphaClipFormat, GlobalAlloc(GMEM_MOVEABLE, 1));
+	}
+
+	::CloseClipboard ();
+}
+
+void CXTPImageEditorPicture::Paste()
+{
+	COleDataObject data;
+	if (!data.AttachClipboard ())
+	{
+		return;
+	}
+	if (!data.IsDataAvailable (CF_BITMAP))
+	{
+		return;
+	}
+
+	tagSTGMEDIUM dataMedium;
+	if (!data.GetData (CF_BITMAP, &dataMedium))
+	{
+		return;
+	}
+
+	if (!dataMedium.hBitmap)
+		return;
+
+	CAlphaBitmap bmpClip;
+
+	BOOL bAlpha = FALSE;
+	FORMATETC fetc;
+	static TCHAR sz[256] ;
+
+	data.BeginEnumFormats();
+	while (data.GetNextFormat(&fetc))
+	{
+		if (GetClipboardFormatName((UINT)fetc.cfFormat, sz, 254))
+		{
+			CString str(sz);
+			if (str.Find(_T("DIB32")) > 0)
+			{
+				bAlpha = TRUE;
+				break;
+			}
+		}
+	}
+
+	bmpClip.m_bAlpha = bAlpha ? bAlpha : data.IsDataAvailable(XTPImageManager()->m_nAlphaClipFormat);
+	bmpClip.Attach(dataMedium.hBitmap);
+
+
+	m_pCurrentBitmap = m_pPictureBitmap;
+
+	m_pPictureBitmap = new CAlphaBitmap();
+	CopyBitmap(m_pPictureBitmap, &bmpClip, m_szPicture, 0, GetXtremeColor(COLOR_3DFACE), XTPCOLOR_ERASE);
+
+	bmpClip.Detach();
+
+	Apply();
+
+}
+
+
+void CXTPImageEditorPicture::Load()
+{
+	CString strFilter;
+	VERIFY(XTPResourceManager()->LoadString(&strFilter, XTP_IDS_IMAGEEDITOR_FILTER));
+	CFileDialog fd(TRUE, NULL, NULL, OFN_HIDEREADONLY, strFilter);
+
+	if (fd.DoModal() == IDOK)
+	{
+
+		CString strExtension = fd.GetFileExt();
+		strExtension.MakeLower();
+
+		if (strExtension == _T("ico"))
+		{
+
+			HBITMAP hBitmap = CXTPImageManagerIcon::LoadAlphaIcon(fd.GetPathName(), m_szPicture.cx);
+
+			if (!hBitmap)
+			{
+				HICON hIcon = (HICON)LoadImage(0, fd.GetPathName(),
+					IMAGE_ICON, m_szPicture.cx, m_szPicture.cy, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+
+				if (!hIcon)
+					return;
+
+				m_pCurrentBitmap = m_pPictureBitmap;
+				m_pPictureBitmap = new CAlphaBitmap();
+
+				CDC dc;
+				dc.CreateCompatibleDC(NULL);
+
+				m_pPictureBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+
+				CBitmap* pOldBitmap = dc.SelectObject(m_pPictureBitmap);
+				dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
+
+				dc.DrawState(0, CSize(0, 0), hIcon, DSS_NORMAL, (CBrush*)NULL);
+
+				dc.SelectObject(pOldBitmap);
+
+				DestroyIcon(hIcon);
+			}
+			else
+			{
+
+				m_pCurrentBitmap = m_pPictureBitmap;
+				m_pPictureBitmap = new CAlphaBitmap();
+
+
+				CAlphaBitmap bmpFile(TRUE);
+				bmpFile.Attach(hBitmap);
+
+				CopyBitmap(m_pPictureBitmap, &bmpFile, m_szPicture);
+			}
+
+			Apply();
+
+
+		}
+		else if (strExtension == _T("bmp") || strExtension == _T("png"))
+		{
+
+			BOOL bAlphaBitmap = FALSE;
+
+			HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromFile(fd.GetPathName(), &bAlphaBitmap);
+
+			if (!hBmp)
+				return;
+
+			CAlphaBitmap bmpFile(bAlphaBitmap);
+			bmpFile.Attach(hBmp);
+
+			m_pCurrentBitmap = m_pPictureBitmap;
+			m_pPictureBitmap = new CAlphaBitmap();
+
+			CopyBitmap(m_pPictureBitmap, &bmpFile, m_szPicture);
+
+			Apply();
+		}
+		else
+		{
+			LPPICTURE pPict = NULL;
+
+			if (OleLoadPicturePath((LPOLESTR)XTP_CT2CW(fd.GetPathName()), NULL, 0, 0, IID_IPicture, (LPVOID*)&pPict) == S_OK)
+			{
+
+				m_pCurrentBitmap = m_pPictureBitmap;
+				m_pPictureBitmap = new CAlphaBitmap();
+
+				CDC dc;
+				dc.CreateCompatibleDC(NULL);
+
+				m_pPictureBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+
+				CBitmap* pOldBitmap = dc.SelectObject(m_pPictureBitmap);
+				dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
+
+				long hmWidth;
+				long hmHeight;
+
+				pPict->get_Width(&hmWidth);
+				pPict->get_Height(&hmHeight);
+
+				pPict->Render(dc, 0, 0,
+					m_szPicture.cx, m_szPicture.cy, 0, hmHeight-1,
+					hmWidth, -hmHeight, 0);
+
+				dc.SelectObject(pOldBitmap);
+
+				Apply();
+
+				pPict->Release();
+
+			}
+
+
+		}
+	}
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPicker
+
+IMPLEMENT_DYNAMIC(CXTPImageEditorPicker, CStatic)
+
+CXTPImageEditorPicker::CXTPImageEditorPicker()
+{
+	m_clr = 0;
+	m_bSelected = FALSE;
+}
+
+
+void CXTPImageEditorPicker::SetColor(COLORREF clr)
+{
+	m_clr = clr;
+	if (m_hWnd) Invalidate(FALSE);
+}
+COLORREF CXTPImageEditorPicker::GetColor()
+{
+	return m_clr;
+}
+
+void CXTPImageEditorPicker::SetSelected(BOOL bSelected)
+{
+	m_bSelected = bSelected;
+	if (m_hWnd) Invalidate(FALSE);
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPImageEditorPicker, CStatic)
+	//{{AFX_MSG_MAP(CXTPImageEditorPicker)
+	ON_WM_PAINT()
+	ON_WM_LBUTTONDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPicker message handlers
+
+
+void CXTPImageEditorPicker::OnPaint()
+{
+	CPaintDC dcPaint(this); // device context for painting
+	CXTPClientRect rc(this);
+	CXTPBufferDC dc(dcPaint, rc);
+
+	if (m_clr != XTPCOLOR_ERASE)
+	{
+		dc.FillSolidRect(rc, m_clr);
+	}
+	else
+	{
+
+		CRect rcItem(rc);
+		dc.FillSolidRect(rc, RGB(0xFF, 0xFF, 0xFF));
+		dc.FillSolidRect(rcItem.left, rcItem.top, rcItem.Width() / 2, rcItem.Height() / 2, RGB(235, 235, 235));
+		dc.FillSolidRect(rcItem.left + rcItem.Width() / 2, rcItem.top + rcItem.Height() / 2,
+			rcItem.Width() - (rcItem.Width() / 2), rcItem.Height() - (rcItem.Height() / 2), RGB(235, 235, 235));
+
+	}
+	if (!m_bSelected)
+	{
+		dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_3DDKSHADOW));
+	}
+	else
+	{
+		dc.Draw3dRect(rc, 0, 0);
+		rc.DeflateRect(1, 1);
+		dc.Draw3dRect(rc, RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF));
+		rc.DeflateRect(1, 1);
+		dc.Draw3dRect(rc, 0, 0);
+	}
+
+}
+
+void CXTPImageEditorPicker::OnLButtonDown(UINT /*nFlags*/, CPoint /*point*/)
+{
+	NMHDR mHDR;
+	mHDR.hwndFrom = m_hWnd;
+	mHDR.code = NM_CLICK;
+	mHDR.idFrom = GetDlgCtrlID();
+
+	GetParent()->SendMessage(WM_NOTIFY,
+		(WPARAM)mHDR.idFrom, (LPARAM)&mHDR);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPreview
+
+CXTPImageEditorPreview::CXTPImageEditorPreview()
+{
+	m_pParentWnd = 0;
+}
+
+void CXTPImageEditorPreview::Init(UINT nID, CXTPImageEditorDlg* pParentWnd)
+{
+	m_pParentWnd = pParentWnd;
+
+	SubclassDlgItem(nID, pParentWnd);
+	m_szPicture = pParentWnd->m_szPicture;
+
+	ModifyStyleEx(WS_EX_STATICEDGE, 0);
+
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPImageEditorPreview, CStatic)
+	//{{AFX_MSG_MAP(CXTPImageEditorPreview)
+	ON_WM_PAINT()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorPreview message handlers
+
+void CXTPImageEditorPreview::OnPaint()
+{
+	CPaintDC dcPaint(this); // device context for painting
+	CXTPClientRect rc(this);
+	CXTPBufferDC dc(dcPaint, rc);
+	dc.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+
+
+	CRect rcButton (10, (rc.Height() - m_szPicture.cy) / 2, 10 + m_szPicture.cx, (rc.Height() - m_szPicture.cy) / 2 + m_szPicture.cy);
+	CRect rcFrame(rcButton);
+	rcFrame.InflateRect(3, 3);
+
+	dc.Draw3dRect(rcFrame, RGB(0xFF, 0xFF, 0xFF), GetXtremeColor(COLOR_3DSHADOW));
+	rcFrame.InflateRect(1, 1);
+	dc.Draw3dRect(rcFrame, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
+
+	ASSERT(m_pParentWnd);
+	if (!m_pParentWnd)
+		return;
+	CXTPImageEditorPicture::CAlphaBitmap* pBitmap = m_pParentWnd->m_wndPicture.m_pPictureBitmap;
+
+	if (pBitmap)
+	{
+		if (pBitmap->m_bAlpha)
+		{
+			HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap((HBITMAP)pBitmap->GetSafeHandle());
+			if (hBitmap)
+			{
+				CXTPImageManagerIcon::DrawAlphaBitmap(&dc, hBitmap, rcButton.TopLeft(), m_szPicture);
+
+				DeleteObject(hBitmap);
+			}
+		}
+		else
+		{
+			CXTPImageEditorPicture::CAlphaBitmap bmpClient;
+			CXTPImageEditorPicture::CopyBitmap(&bmpClient, pBitmap, m_szPicture, 0, XTPCOLOR_ERASE, GetXtremeColor(COLOR_3DFACE), &dc);
+
+			dc.DrawState(rcButton.TopLeft(), m_szPicture, &bmpClient, DSS_NORMAL, (CBrush*)NULL);
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CDlgToolBar dialog
+
+BEGIN_MESSAGE_MAP(CXTPImageEditorDlg::CDlgToolBar, CToolBar)
+	{ WM_IDLEUPDATECMDUI, 0, 0, 0, AfxSig_lwl, (AFX_PMSG)(AFX_PMSGW)(LRESULT (AFX_MSG_CALL CWnd::*)(WPARAM, LPARAM))&CXTPImageEditorDlg::CDlgToolBar::OnIdleUpdateCmdUI },
+END_MESSAGE_MAP()
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorDlg dialog
+
+CXTPImageEditorDlg::CXTPImageEditorDlg(CWnd* pParent /*= NULL*/, BOOL bCommandBarsEditor)
+	: m_bCommandBarsEditor(bCommandBarsEditor)
+{
+	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(XTP_IDD_IMAGEEDITOR_DIALOG), pParent);
+
+	m_toolSelected = xtpToolPencil;
+
+	m_pSelected = NULL;
+	m_szPicture = CSize(16, 16);
+	m_toolPrevious = XTPImageEditorTools(-1);
+}
+
+void CXTPImageEditorDlg::GetIcon(CXTPImageManagerIconHandle* pHandle)
+{
+	ASSERT(pHandle);
+	if (!pHandle)
+		return;
+
+	if (m_wndPicture.m_pPictureBitmap)
+	{
+		if (m_wndPicture.m_pPictureBitmap->m_bAlpha)
+		{
+			pHandle->CopyHandle((HBITMAP)m_wndPicture.m_pPictureBitmap->GetSafeHandle());
+		}
+		else
+		{
+
+			CImageList imgList;
+			imgList.Create(m_szPicture.cx, m_szPicture.cy, ILC_COLOR24 | ILC_MASK, 0, 1);
+			imgList.Add(m_wndPicture.m_pPictureBitmap, XTPCOLOR_ERASE);
+
+			if (imgList.GetImageCount() != 1)
+				return;
+
+			*pHandle = imgList.ExtractIcon(0);
+		}
+	}
+}
+
+void CXTPImageEditorDlg::SetIconSize(CSize szIcon)
+{
+	m_szPicture = szIcon;
+}
+void CXTPImageEditorDlg::SetIcon(CXTPImageManagerIconHandle& icon)
+{
+	if (icon.IsEmpty())
+		return;
+
+	ASSERT(m_wndPicture.m_pPictureBitmap == NULL);
+	m_szPicture = icon.GetExtent();
+
+	CXTPImageManagerIconHandle iconHandle;
+	iconHandle.CopyHandle(icon);
+
+	if (iconHandle.IsAlpha())
+	{
+		iconHandle.PreMultiply();
+
+		CXTPImageEditorPicture::CAlphaBitmap* pBitmap = new CXTPImageEditorPicture::CAlphaBitmap(TRUE);
+
+		LPBYTE lpBits;
+		pBitmap->Attach(CXTPImageManagerIcon::CopyAlphaBitmap(iconHandle.GetBitmap(), &lpBits));
+
+		FixAlphaLayer(lpBits, m_szPicture.cx * m_szPicture.cy);
+		m_wndPicture.m_pPictureBitmap = pBitmap;
+
+	}
+	else
+	{
+		CXTPImageEditorPicture::CAlphaBitmap* pBitmap = new CXTPImageEditorPicture::CAlphaBitmap();
+
+		CDC dc;
+		dc.CreateCompatibleDC(NULL);
+
+		pBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+
+		CBitmap* pOldBitmap = dc.SelectObject(pBitmap);
+		dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
+
+		dc.DrawState(0, CSize(0, 0), iconHandle.GetIcon(), DSS_NORMAL, (CBrush*)NULL);
+
+		dc.SelectObject(pOldBitmap);
+
+		m_wndPicture.m_pPictureBitmap = pBitmap;
+	}
+
+}
+
+void CXTPImageEditorDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CXTPImageEditorDlg)
+	DDX_Control(pDX, XTP_IDC_STATIC_TOOLS, m_gboxTools);
+	DDX_Control(pDX, XTP_IDC_STATIC_MOVE, m_gboxMove);
+	//}}AFX_DATA_MAP
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPImageEditorDlg, CDialog)
+	//{{AFX_MSG_MAP(CXTPImageEditorDlg)
+	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+	ON_WM_DESTROY()
+
+	ON_NOTIFY(NM_CLICK, XTP_IDC_CLR_PICKER, OnPickerClick)
+	ON_NOTIFY_RANGE(NM_CLICK, XTP_IDS_CLR_BLACK, XTP_IDS_CLR_FUCHSIA, OnSelectorClick)
+	ON_NOTIFY(NM_CLICK, XTP_IDC_CLR_ERASE, OnEraseClick)
+
+	ON_UPDATE_COMMAND_UI_RANGE(XTP_ID_BUTTON_PENCIL, XTP_ID_BUTTON_CIRCLE, OnUpdateButtonTool)
+	ON_COMMAND_RANGE(XTP_ID_BUTTON_PENCIL, XTP_ID_BUTTON_CIRCLE, OnButtonTool)
+
+	ON_UPDATE_COMMAND_UI(XTP_ID_BUTTON_UNDO, OnUpdateButtonUndo)
+	ON_COMMAND(XTP_ID_BUTTON_UNDO, OnButtonUndo)
+
+	ON_UPDATE_COMMAND_UI(XTP_ID_BUTTON_REDO, OnUpdateButtonRedo)
+	ON_COMMAND(XTP_ID_BUTTON_REDO, OnButtonRedo)
+
+	ON_COMMAND(XTP_ID_BUTTON_CLEAR, OnButtonClear)
+	ON_COMMAND(XTP_ID_BUTTON_COPY, OnButtonCopy)
+	ON_COMMAND(XTP_ID_BUTTON_PASTE, OnButtonPaste)
+	ON_COMMAND(XTP_ID_BUTTON_OPEN, OnButtonOpen)
+	ON_COMMAND_RANGE(XTP_IDC_BUTTON_LEFT, XTP_IDC_BUTTON_RIGHT, OnMoveButton)
+	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
+	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPImageEditorDlg message handlers
+
+BOOL CXTPImageEditorDlg::OnInitDialog()
+{
+	UINT nButtonsTools[] =
+	{
+		XTP_ID_BUTTON_PENCIL,
+		XTP_ID_BUTTON_FILL,
+		XTP_ID_BUTTON_UNDO,
+		XTP_ID_BUTTON_REDO,
+		XTP_ID_BUTTON_GETCOLOR,
+		XTP_ID_BUTTON_LINE,
+		XTP_ID_BUTTON_COPY,
+		XTP_ID_BUTTON_PASTE,
+		XTP_ID_BUTTON_RECTANGLE,
+		XTP_ID_BUTTON_CIRCLE,
+		XTP_ID_BUTTON_CLEAR,
+		XTP_ID_BUTTON_OPEN
+	};
+
+
+	UINT nButtonsMove[] =
+	{
+		XTP_IDC_BUTTON_LEFT,
+		XTP_IDC_BUTTON_DOWN,
+		XTP_IDC_BUTTON_UP,
+		XTP_IDC_BUTTON_RIGHT
+	};
+
+	const struct
+	{
+		COLORREF clr;
+		UINT nID;
+		POINT ptOffset;
+	}
+	colors[] =
+	{
+		RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK           , {0, 0},
+		RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED        , {2, 0},
+		RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW     , {3, 0},
+		RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE       , {6, 0},
+		RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN           , {4, 0},
+		RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL            , {5, 0},
+		RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE            , {6, 1},
+		RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50          , {1, 0},
+		RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED             , {2, 1},
+		RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET          , {7, 0},
+		RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK            , {7, 1},
+		RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW          , {3, 1},
+		RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN    , {4, 1},
+		RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE       , {5, 1},
+		RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25          , {1, 1},
+		RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE           , {0, 1}
+	};
+
+	CDialog::OnInitDialog();
+
+	CRect rcTools;
+	m_gboxTools.GetWindowRect(&rcTools);
+	ScreenToClient(rcTools);
+
+	m_wndToolbarTools.Create(this, WS_CHILD | WS_VISIBLE | CBRS_SIZE_FIXED | CBRS_TOOLTIPS | CBRS_ALIGN_TOP);
+	m_wndToolbarTools.ModifyStyle(0, TBSTYLE_FLAT);
+	m_wndToolbarTools.SetButtons(nButtonsTools, 12);
+
+
+	int i;
+
+	int nCount = m_wndToolbarTools.GetToolBarCtrl().GetButtonCount();
+	for (i = 0; i < nCount; i++)
+	{
+		UINT nStyle = m_wndToolbarTools.GetButtonStyle(i);
+		if (((i + 1) % 4) == 0) nStyle |= TBBS_WRAPPED;
+		m_wndToolbarTools.SetButtonStyle(i, nStyle);
+	}
+
+	CSize sz = m_wndToolbarTools.CalcDynamicLayout(0, LM_HORZ);
+	m_wndToolbarTools.SetWindowPos(&CWnd::wndTop, rcTools.left - 7, rcTools.top - 4, sz.cx, sz.cy, 0);
+
+
+	CRect rcMove;
+	m_gboxMove.GetWindowRect(&rcMove);
+	ScreenToClient(rcMove);
+
+	m_wndToolbarMove.Create(this, WS_CHILD | WS_VISIBLE | CBRS_SIZE_FIXED | CBRS_TOOLTIPS | CBRS_ALIGN_TOP);
+	m_wndToolbarMove.ModifyStyle(0, TBSTYLE_FLAT);
+	m_wndToolbarMove.SetButtons(nButtonsMove, 4);
+
+
+	if (CXTPImageManager::IsAlphaIconsImageListSupported())
+	{
+		m_ilToolbarTools.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
+		HBITMAP hBitmap = CXTPImageManagerIcon::LoadAlphaBitmap(XTP_IDB_TOOLBAR_TOOLS32);
+		m_ilToolbarTools.Add(CBitmap::FromHandle(hBitmap), (CBitmap*)0);
+
+		m_ilToolbarMove.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
+
+		m_ilToolbarMove.Add(CBitmap::FromHandle(hBitmap), (CBitmap*)0);
+		for (i = 0; i < 12; i++) m_ilToolbarMove.Remove(0);
+		DeleteObject(hBitmap);
+	}
+	else
+	{
+		m_ilToolbarTools.Create(XTP_IDB_TOOLBAR_TOOLS, 16, 1, RGB(192, 192, 192));
+		m_ilToolbarMove.Create(XTP_IDB_TOOLBAR_TOOLS, 16, 1, RGB(192, 192, 192));
+
+		for (i = 0; i < 12; i++) m_ilToolbarMove.Remove(0);
+	}
+
+	m_wndToolbarTools.GetToolBarCtrl().SendMessage(TB_SETIMAGELIST, 0, (LPARAM)m_ilToolbarTools.GetSafeHandle());
+	m_wndToolbarMove.GetToolBarCtrl().SendMessage(TB_SETIMAGELIST, 0, (LPARAM)m_ilToolbarMove.GetSafeHandle());
+
+
+	sz = m_wndToolbarMove.CalcDynamicLayout(0, LM_HORZ);
+	m_wndToolbarMove.SetWindowPos(&CWnd::wndTop, rcMove.left - 7, rcMove.top - 4, sz.cx, sz.cy, 0);
+
+
+
+	CRect rcColors;
+	GetDlgItem(XTP_IDC_STATIC_COLORS)->GetWindowRect(&rcColors);
+	ScreenToClient(rcColors);
+
+	for (i = 0; i < _countof(colors); i++)
+	{
+		CRect rcItem(CPoint(rcColors.left, rcColors.top - 4), CSize(11, 11));
+		rcItem.OffsetRect(colors[i].ptOffset.x * 13 , colors[i].ptOffset.y * 13);
+
+		m_wndSelector[i].Create(NULL, WS_CHILD | WS_VISIBLE | SS_NOTIFY, rcItem, this, colors[i].nID);
+		m_wndSelector[i].SetColor(colors[i].clr);
+
+	}
+	SetSelected(&m_wndSelector[0]);
+
+	m_wndSelectorErase.SubclassDlgItem(XTP_IDC_CLR_ERASE, this);
+	m_wndSelectorErase.SetColor(XTPCOLOR_ERASE);
+
+	m_wndPicker.SubclassDlgItem(XTP_IDC_CLR_PICKER, this);
+
+
+	m_wndPicture.Init(XTP_IDC_STATIC_PICTURE, this);
+	m_wndPreview.Init(XTP_IDC_STATIC_PREVIEW, this);
+
+	if (m_bCommandBarsEditor)
+	{
+		XTPMouseManager()->AddTrustedWindow(m_hWnd);
+	}
+
+	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+void CXTPImageEditorDlg::OnDestroy()
+{
+	if (m_bCommandBarsEditor)
+	{
+		XTPMouseManager()->RemoveTrustedWindow(m_hWnd);
+	}
+
+	CDialog::OnDestroy();
+}
+
+LRESULT CXTPImageEditorDlg::OnKickIdle(WPARAM, LPARAM)
+{
+	SendMessageToDescendants(WM_IDLEUPDATECMDUI);
+	return 0;
+}
+
+void CXTPImageEditorDlg::SetSelected(CXTPImageEditorPicker* pPicker)
+{
+	if (m_pSelected != NULL)
+		m_pSelected->SetSelected(FALSE);
+
+	if (pPicker)
+		pPicker->SetSelected(TRUE);
+
+	m_pSelected = pPicker;
+}
+
+void CXTPImageEditorDlg::OnPickerClick(NMHDR* /*pNMHDR*/, LRESULT* /*pResult*/)
+{
+	CColorDialog cd(m_wndPicker.GetColor(), 0, this);
+	if (cd.DoModal())
+	{
+		m_wndPicker.SetColor(cd.GetColor());
+		SetSelected(&m_wndPicker);
+	}
+
+}
+void CXTPImageEditorDlg::OnEraseClick(NMHDR* pNMHDR, LRESULT* /*pResult*/)
+{
+	CXTPImageEditorPicker* pWnd = DYNAMIC_DOWNCAST(CXTPImageEditorPicker, CWnd::FromHandlePermanent(pNMHDR->hwndFrom));
+	ASSERT(pWnd);
+	SetSelected(pWnd);
+
+}
+
+void CXTPImageEditorDlg::OnSelectorClick(UINT /*id*/, NMHDR* pNMHDR, LRESULT* /*pResult*/)
+{
+	CXTPImageEditorPicker* pWnd = DYNAMIC_DOWNCAST(CXTPImageEditorPicker, CWnd::FromHandlePermanent(pNMHDR->hwndFrom));
+	ASSERT(pWnd);
+	SetSelected(pWnd);
+}
+
+
+void CXTPImageEditorDlg::OnUpdateButtonTool(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_toolSelected == (int)pCmdUI->m_nID - XTP_ID_BUTTON_PENCIL);
+}
+
+void CXTPImageEditorDlg::OnButtonTool(UINT nID)
+{
+	m_toolPrevious = m_toolSelected == xtpToolGetColor ? m_toolPrevious : m_toolSelected;
+	m_toolSelected = (XTPImageEditorTools)(nID - XTP_ID_BUTTON_PENCIL);
+}
+
+
+void CXTPImageEditorDlg::OnPictureChanged()
+{
+	m_wndPreview.Invalidate(FALSE);
+}
+
+void CXTPImageEditorDlg::OnUpdateButtonUndo(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(!m_wndPicture.m_lstUndo.IsEmpty());
+}
+
+void CXTPImageEditorDlg::OnButtonUndo()
+{
+	m_wndPicture.Undo();
+}
+
+void CXTPImageEditorDlg::OnUpdateButtonRedo(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(!m_wndPicture.m_lstRedo.IsEmpty());
+}
+
+void CXTPImageEditorDlg::OnButtonRedo()
+{
+	m_wndPicture.Redo();
+}
+
+void CXTPImageEditorDlg::OnButtonClear()
+{
+	m_wndPicture.Clear();
+}
+void CXTPImageEditorDlg::OnButtonCopy()
+{
+	m_wndPicture.Copy();
+}
+void CXTPImageEditorDlg::OnButtonPaste()
+{
+	m_wndPicture.Paste();
+}
+void CXTPImageEditorDlg::OnButtonOpen()
+{
+	m_wndPicture.Load();
+}
+
+void CXTPImageEditorDlg::OnMoveButton(UINT nID)
+{
+	m_wndPicture.MovePicture(
+		nID == XTP_IDC_BUTTON_LEFT ? CPoint(-1, 0) :
+		nID == XTP_IDC_BUTTON_RIGHT ? CPoint(+1, 0) :
+		nID == XTP_IDC_BUTTON_UP ? CPoint(0, -1) : CPoint(0, +1));
+}
+
+
+BOOL CXTPImageEditorDlg::OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* pResult)
+{
+	ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
+
+	// need to handle both ANSI and UNICODE versions of the message
+	TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
+	TOOLTIPTEXTW* pTTTW = (TOOLTIPTEXTW*)pNMHDR;
+	TCHAR szFullText[256];
+	CString strTipText;
+	UINT nID = (UINT)pNMHDR->idFrom;
+
+	if (nID != 0) // will be zero on a separator
+	{
+		// don't handle the message if no string resource found
+		if (AfxLoadString(nID, szFullText) == 0)
+			return FALSE;
+
+		// this is the command id, not the button index
+		AfxExtractSubString(strTipText, szFullText, 1, '\n');
+	}
+#ifndef _UNICODE
+	if (pNMHDR->code == TTN_NEEDTEXTA)
+		lstrcpyn(pTTTA->szText, strTipText, _countof(pTTTA->szText));
+	else
+		_mbstowcsz(pTTTW->szText, strTipText, _countof(pTTTW->szText));
+#else
+	if (pNMHDR->code == TTN_NEEDTEXTA)
+		_wcstombsz(pTTTA->szText, strTipText, _countof(pTTTA->szText));
+	else
+		lstrcpyn(pTTTW->szText, strTipText, _countof(pTTTW->szText));
+#endif
+	*pResult = 0;
+
+	// bring the tooltip window above other popup windows
+	::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0,
+		SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+
+	return TRUE;    // message was handled
+}

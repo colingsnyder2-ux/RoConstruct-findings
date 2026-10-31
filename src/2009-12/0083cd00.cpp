@@ -1,162 +1,526 @@
-// roc 2009-12 0083cd00  unit: CXTPControlPopupColor  size: 535 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0083cd00
-//
-// 0083cd00  6aff                 push -1
-// 0083cd02  6840c89500           push 0x95c840
-// 0083cd07  64a100000000         mov eax, dword ptr fs:[0]
-// 0083cd0d  50                   push eax
-// 0083cd0e  83ec6c               sub esp, 0x6c
-// 0083cd11  55                   push ebp
-// 0083cd12  56                   push esi
-// 0083cd13  57                   push edi
-// 0083cd14  a10052b600           mov eax, dword ptr [0xb65200]
-// 0083cd19  33c4                 xor eax, esp
-// 0083cd1b  50                   push eax
-// 0083cd1c  8d44247c             lea eax, [esp + 0x7c]
-// 0083cd20  64a300000000         mov dword ptr fs:[0], eax
-// 0083cd26  8be9                 mov ebp, ecx
-// 0083cd28  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 0083cd2f  e80cc4fcff           call 0x809140
-// 0083cd34  8bf0                 mov esi, eax
-// 0083cd36  8bce                 mov ecx, esi
-// 0083cd38  e863dbfcff           call 0x80a8a0
-// 0083cd3d  85c0                 test eax, eax
-// 0083cd3f  0f85bd010000         jne 0x83cf02
-// 0083cd45  56                   push esi
-// 0083cd46  8bb42494000000       mov esi, dword ptr [esp + 0x94]
-// 0083cd4d  8bce                 mov ecx, esi
-// 0083cd4f  e86c0efdff           call 0x80dbc0
-// 0083cd54  8bce                 mov ecx, esi
-// 0083cd56  e895c3fcff           call 0x8090f0
-// 0083cd5b  8bce                 mov ecx, esi
-// 0083cd5d  85c0                 test eax, eax
-// 0083cd5f  0f8539010000         jne 0x83ce9e
-// 0083cd65  8d442428             lea eax, [esp + 0x28]
-// 0083cd69  50                   push eax
-// 0083cd6a  e80129cfff           call 0x52f670
-// 0083cd6f  50                   push eax
-// 0083cd70  ff15ecc99800         call dword ptr [0x98c9ec]
-// 0083cd76  85c0                 test eax, eax
-// 0083cd78  0f8484010000         je 0x83cf02
-// 0083cd7e  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 0083cd82  51                   push ecx
-// 0083cd83  e8dc75fbff           call 0x7f4364
-// 0083cd88  50                   push eax
-// 0083cd89  6a00                 push 0
-// 0083cd8b  8d4c2458             lea ecx, [esp + 0x58]
-// 0083cd8f  e8ecea0000           call 0x84b880
-// 0083cd94  8b542434             mov edx, dword ptr [esp + 0x34]
-// 0083cd98  52                   push edx
-// 0083cd99  c784248800000000000000 mov dword ptr [esp + 0x88], 0
-// 0083cda4  e8bb75fbff           call 0x7f4364
-// 0083cda9  50                   push eax
-// 0083cdaa  6a00                 push 0
-// 0083cdac  8d4c2444             lea ecx, [esp + 0x44]
-// 0083cdb0  e8cbea0000           call 0x84b880
-// 0083cdb5  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 0083cdb9  33c0                 xor eax, eax
-// 0083cdbb  89442464             mov dword ptr [esp + 0x64], eax
-// 0083cdbf  89442468             mov dword ptr [esp + 0x68], eax
-// 0083cdc3  8944246c             mov dword ptr [esp + 0x6c], eax
-// 0083cdc7  89442470             mov dword ptr [esp + 0x70], eax
-// 0083cdcb  89442474             mov dword ptr [esp + 0x74], eax
-// 0083cdcf  89442478             mov dword ptr [esp + 0x78], eax
-// 0083cdd3  8d442464             lea eax, [esp + 0x64]
-// 0083cdd7  50                   push eax
-// 0083cdd8  6a18                 push 0x18
-// 0083cdda  51                   push ecx
-// 0083cddb  c684249000000001     mov byte ptr [esp + 0x90], 1
-// 0083cde3  ff155cb19800         call dword ptr [0x98b15c]
-// 0083cde9  db44246c             fild dword ptr [esp + 0x6c]
-// 0083cded  dc3530159b00         fdiv qword ptr [0x9b1530]
-// 0083cdf3  e8f87efbff           call 0x7f4cf0
-// 0083cdf8  8b54246c             mov edx, dword ptr [esp + 0x6c]
-// 0083cdfc  8bca                 mov ecx, edx
-// 0083cdfe  2bc8                 sub ecx, eax
-// 0083ce00  8b442468             mov eax, dword ptr [esp + 0x68]
-// 0083ce04  894c241c             mov dword ptr [esp + 0x1c], ecx
-// 0083ce08  8b8d84010000         mov ecx, dword ptr [ebp + 0x184]
-// 0083ce0e  89542424             mov dword ptr [esp + 0x24], edx
-// 0083ce12  51                   push ecx
-// 0083ce13  8d54241c             lea edx, [esp + 0x1c]
-// 0083ce17  52                   push edx
-// 0083ce18  8d4c2458             lea ecx, [esp + 0x58]
-// 0083ce1c  c744242000000000     mov dword ptr [esp + 0x20], 0
-// 0083ce24  89442428             mov dword ptr [esp + 0x28], eax
-// 0083ce28  e8d177fbff           call 0x7f45fe
-// 0083ce2d  6a01                 push 1
-// 0083ce2f  8d44241c             lea eax, [esp + 0x1c]
-// 0083ce33  50                   push eax
-// 0083ce34  8d4c2444             lea ecx, [esp + 0x44]
-// 0083ce38  e8c177fbff           call 0x7f45fe
-// 0083ce3d  8d4c243c             lea ecx, [esp + 0x3c]
-// 0083ce41  c684248400000000     mov byte ptr [esp + 0x84], 0
-// 0083ce49  e842eb0000           call 0x84b990
-// 0083ce4e  8d4c2450             lea ecx, [esp + 0x50]
-// 0083ce52  c7842484000000ffffffff mov dword ptr [esp + 0x84], 0xffffffff
-// 0083ce5d  e82eeb0000           call 0x84b990
-// 0083ce62  8d4c2428             lea ecx, [esp + 0x28]
-// 0083ce66  51                   push ecx
-// 0083ce67  ff1584ca9800         call dword ptr [0x98ca84]
-// 0083ce6d  50                   push eax
-// 0083ce6e  8bce                 mov ecx, esi
-// 0083ce70  e8ebfefcff           call 0x80cd60
-// 0083ce75  8b542434             mov edx, dword ptr [esp + 0x34]
-// 0083ce79  8b353cb19800         mov esi, dword ptr [0x98b13c]
-// 0083ce7f  52                   push edx
-// 0083ce80  ffd6                 call esi
-// 0083ce82  8b442438             mov eax, dword ptr [esp + 0x38]
-// 0083ce86  50                   push eax
-// 0083ce87  ffd6                 call esi
-// 0083ce89  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
-// 0083ce8d  64890d00000000       mov dword ptr fs:[0], ecx
-// 0083ce94  59                   pop ecx
-// 0083ce95  5f                   pop edi
-// 0083ce96  5e                   pop esi
-// 0083ce97  5d                   pop ebp
-// 0083ce98  83c478               add esp, 0x78
-// 0083ce9b  c20800               ret 8
-// 0083ce9e  e89d01fdff           call 0x80d040
-// 0083cea3  85c0                 test eax, eax
-// 0083cea5  745b                 je 0x83cf02
-// 0083cea7  8bce                 mov ecx, esi
-// 0083cea9  e89201fdff           call 0x80d040
-// 0083ceae  8d4c2410             lea ecx, [esp + 0x10]
-// 0083ceb2  51                   push ecx
-// 0083ceb3  8bce                 mov ecx, esi
-// 0083ceb5  8bf8                 mov edi, eax
-// 0083ceb7  e854c2fcff           call 0x809110
-// 0083cebc  0fb6b584010000       movzx esi, byte ptr [ebp + 0x184]
-// 0083cec3  0fb69585010000       movzx edx, byte ptr [ebp + 0x185]
-// 0083ceca  0fb68586010000       movzx eax, byte ptr [ebp + 0x186]
-// 0083ced1  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0083ced5  81ce00ffffff         or esi, 0xffffff00
-// 0083cedb  c1e608               shl esi, 8
-// 0083cede  0bf2                 or esi, edx
-// 0083cee0  c1e608               shl esi, 8
-// 0083cee3  0bf0                 or esi, eax
-// 0083cee5  b867666666           mov eax, 0x66666667
-// 0083ceea  f7e9                 imul ecx
-// 0083ceec  d1fa                 sar edx, 1
-// 0083ceee  8bca                 mov ecx, edx
-// 0083cef0  c1e91f               shr ecx, 0x1f
-// 0083cef3  03ca                 add ecx, edx
-// 0083cef5  0faf4c2410           imul ecx, dword ptr [esp + 0x10]
-// 0083cefa  85c9                 test ecx, ecx
-// 0083cefc  7e04                 jle 0x83cf02
-// 0083cefe  8bc6                 mov eax, esi
-// 0083cf00  f3ab                 rep stosd dword ptr es:[edi], eax
-// 0083cf02  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
-// 0083cf06  64890d00000000       mov dword ptr fs:[0], ecx
-// 0083cf0d  59                   pop ecx
-// 0083cf0e  5f                   pop edi
-// 0083cf0f  5e                   pop esi
-// 0083cf10  5d                   pop ebp
-// 0083cf11  83c478               add esp, 0x78
-// 0083cf14  c20800               ret 8
-// copied from an identical function in another client (function ?RedrawIcon@CXTPControlPopupColor@@AAEXPAVCXTPImageManagerIcon@@AAVCXTPImageManagerIconHandle@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlPopupColor.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPControlPopupColor.cpp : implementation of the CXTPControlPopupColor class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+#include "Common/Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPControlPopup.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopupColor.h"
+#include "XTPCommandBar.h"
+#include "XTPPaintManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define CLR_TO_RGBQUAD(clr) (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
+
+#define XTP_SELECTOR_SIZE 18
+#define XTP_SELECTOR_MARGIN 2
+
+#define XTP_SELECTOR_WIDTH (XTP_SELECTOR_SIZE * 8 + XTP_SELECTOR_MARGIN * 2)
+#define XTP_SELECTOR_HEIGHT (XTP_SELECTOR_SIZE * 5 + XTP_SELECTOR_MARGIN * 2)
+
+IMPLEMENT_XTP_CONTROL(CXTPControlPopupColor, CXTPControlPopup)
+
+CXTPControlPopupColor::CXTPControlPopupColor()
+{
+	m_controlType = xtpControlSplitButtonPopup;
+	m_clr = (COLORREF)-1;
+	EnableAutomation();
+}
+
+CXTPControlPopupColor::~CXTPControlPopupColor()
+{
+}
+
+void CXTPControlPopupColor::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControlPopup::Copy(pControl, bRecursive);
+	m_clr = ((CXTPControlPopupColor*)pControl)->m_clr;
+}
+
+void CXTPControlPopupColor::RedrawIcon(CXTPImageManagerIcon* pImage, CXTPImageManagerIconHandle& hHandle)
+{
+	CXTPImageManagerIconHandle& hIcon = pImage->GetIcon();
+
+	if (hIcon.IsEmpty())
+		return;
+
+	hHandle.CopyHandle(hIcon);
+
+	if (!hHandle.IsAlpha())
+	{
+		ICONINFO info;
+
+		if (GetIconInfo(hHandle.GetIcon(), &info))
+		{
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				ZeroMemory(&bmp, sizeof(BITMAP));
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+				int nHeight = int((double)bmp.bmHeight / 5);
+
+				CRect rc(0, bmp.bmHeight - nHeight, bmp.bmWidth, bmp.bmHeight);
+				dc.FillSolidRect(rc, m_clr);
+				dcMask.FillSolidRect(rc, 1);
+			}
+
+			hHandle = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
+		}
+	}
+	else if (hHandle.PreMultiply())
+	{
+		LPDWORD pBits = (LPDWORD)hHandle.PreMultiply();
+		CSize szIcon = hHandle.GetExtent();
+
+		DWORD dwColor = 0xFF000000 | CLR_TO_RGBQUAD(m_clr);
+		int nCount = (szIcon.cy / 5) * szIcon.cx;
+
+		for (int i = 0; i < nCount; i++)
+		{
+			*pBits++ = dwColor;
+		}
+	}
+}
+
+void CXTPControlPopupColor::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+
+		CXTPImageManagerIconSet* pIconSet = GetImageManager()->GetIconSet(GetIconId());
+		if (pIconSet)
+		{
+			pIconSet->RefreshAll();
+
+			CXTPImageManagerIconSet::CIconSetMap* pMap = pIconSet->GetIcons();
+
+			POSITION pos = pMap->GetStartPosition();
+			UINT nWidth;
+			CXTPImageManagerIcon* pImage;
+			while (pos != NULL)
+			{
+				pMap->GetNextAssoc(pos, nWidth, pImage);
+
+				CXTPImageManagerIconHandle hIcon;
+				RedrawIcon(pImage, hIcon);
+
+				if (!hIcon.IsEmpty())
+				{
+					pImage->SetIcon(hIcon);
+				}
+			}
+			RedrawParent(FALSE);
+		}
+	}
+}
+
+
+COLORREF CXTPControlPopupColor::GetColor() const
+{
+	return m_clr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_XTP_CONTROL(CXTPControlButtonColor, CXTPControlButton)
+
+
+CXTPControlButtonColor::CXTPControlButtonColor()
+{
+	SetStyle(xtpButtonCaption);
+	m_clr = COLORREF_NULL;
+}
+
+void CXTPControlButtonColor::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControlButton::Copy(pControl, bRecursive);
+	m_clr = ((CXTPControlButtonColor*)pControl)->m_clr;
+}
+
+void CXTPControlButtonColor::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPControlButton::DoPropExchange(pPX);
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_1041)
+	{
+		PX_DWord(pPX, _T("Color"), m_clr, COLORREF_NULL);
+	}
+}
+
+CSize CXTPControlButtonColor::GetSize(CDC* /*pDC*/)
+{
+	return CSize(XTP_SELECTOR_WIDTH, max(23, GetPaintManager()->GetControlHeight()));
+}
+
+void CXTPControlButtonColor::Draw(CDC* pDC)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	CXTPFontDC font (pDC, pPaintManager->GetRegularFont());
+
+	pPaintManager->DrawControlEntry(pDC, this);
+	pDC->SetTextColor(pPaintManager->GetControlTextColor(this));
+
+	CRect rcText = GetRect();
+	pPaintManager->DrawControlText(pDC, this, &rcText, TRUE, FALSE, TRUE, FALSE);
+
+	if (m_clr != COLORREF_NULL)
+	{
+		CRect rcButton(CPoint(m_rcControl.left + 2, m_rcControl.CenterPoint().y - XTP_SELECTOR_SIZE / 2), CSize(XTP_SELECTOR_SIZE, XTP_SELECTOR_SIZE));
+		rcButton.DeflateRect(3, 3);
+
+		if (GetEnabled())
+			pDC->FillSolidRect(rcButton, m_clr);
+
+		pDC->Draw3dRect(rcButton, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
+	}
+}
+
+void CXTPControlButtonColor::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+		RedrawParent(FALSE);
+	}
+}
+
+COLORREF CXTPControlButtonColor::GetColor() const
+{
+	return m_clr;
+}
+
+
+struct CXTPControlColorSelector::CColorInfo
+{
+	CColorInfo(COLORREF _clrButton, UINT _toolTipID)
+	{
+		clrButton = _clrButton;
+		toolTipID = _toolTipID;
+	}
+
+	COLORREF clrButton;
+	UINT  toolTipID;
+	CString strTip;
+};
+
+static CXTPControlColorSelector::CColorInfo extendedColors[] =
+{
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x33, 0x00), XTP_IDS_CLR_BROWN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x00), XTP_IDS_CLR_OLIVE_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x33, 0x00), XTP_IDS_CLR_DARK_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x33, 0x66), XTP_IDS_CLR_DARK_TEAL),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x99), XTP_IDS_CLR_INDIGO),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x33), XTP_IDS_CLR_GRAY80),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x66, 0x00), XTP_IDS_CLR_ORANGE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x66, 0x66, 0x99), XTP_IDS_CLR_BLUEGRAY),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x99, 0x00), XTP_IDS_CLR_LIGHTORANGE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0xCC, 0x00), XTP_IDS_CLR_LIME),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x99, 0x66), XTP_IDS_CLR_SEA_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0xCC, 0xCC), XTP_IDS_CLR_AQUA),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x66, 0xFF), XTP_IDS_CLR_LIGHT_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x99, 0x99), XTP_IDS_CLR_GRAY40),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xCC, 0x00), XTP_IDS_CLR_GOLD),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xCC, 0xFF), XTP_IDS_CLR_SKY_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x33, 0x66), XTP_IDS_CLR_PLUM),
+	CXTPControlColorSelector::CColorInfo(RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x99, 0xCC), XTP_IDS_CLR_ROSE),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xCC, 0x99), XTP_IDS_CLR_TAN),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0x99), XTP_IDS_CLR_LIGHT_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0xFF, 0xCC), XTP_IDS_CLR_LIGHT_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0xFF, 0xFF), XTP_IDS_CLR_LIGHT_TURQUOISE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0xCC, 0xFF), XTP_IDS_CLR_PALE_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0x99, 0xFF), XTP_IDS_CLR_LAVENDER),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE),
+};
+
+IMPLEMENT_XTP_CONTROL(CXTPControlColorSelector, CXTPControl)
+
+
+CXTPControlColorSelector::CXTPControlColorSelector()
+{
+	EnableAutomation();
+
+	m_nSelected = -1;
+	m_clr = (COLORREF)-1;
+	SetFlags(xtpFlagNoMovable);
+
+	int nCount = GetItemCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		XTPResourceManager()->LoadString(&extendedColors[i].strTip, extendedColors[i].toolTipID);
+	}
+	m_nPressed = -1;
+}
+
+CSize CXTPControlColorSelector::GetSize(CDC* /*pDC*/)
+{
+
+	return CSize (XTP_SELECTOR_WIDTH, XTP_SELECTOR_HEIGHT);
+}
+
+INT_PTR CXTPControlColorSelector::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	int nIndex = HitTest(point);
+	if (nIndex == -1)
+		return 0;
+
+	INT_PTR nHit = extendedColors[nIndex].toolTipID;
+
+	CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), GetRect(nIndex), nHit, extendedColors[nIndex].strTip);
+
+	return nHit;
+}
+
+CRect CXTPControlColorSelector::GetRect(int nIndex) const
+{
+	int x = nIndex % 8, y = nIndex / 8;
+
+	return CRect(
+		CPoint(
+			XTP_SELECTOR_MARGIN + m_rcControl.left + x * XTP_SELECTOR_SIZE,
+			XTP_SELECTOR_MARGIN + m_rcControl.top + y * XTP_SELECTOR_SIZE),
+		CSize(XTP_SELECTOR_SIZE, XTP_SELECTOR_SIZE));
+}
+
+int CXTPControlColorSelector::HitTest(CPoint point) const
+{
+	int nCount = GetItemCount();
+
+	if (!m_rcControl.PtInRect(point))
+		return -1;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if (GetRect(i).PtInRect(point))
+			return i;
+	}
+
+	return -1;
+}
+
+void CXTPControlColorSelector::Draw(CDC* pDC)
+{
+	int nCount = GetItemCount();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CRect rcButton = GetRect(i);
+
+		if (i == m_nSelected || extendedColors[i].clrButton == m_clr)
+		{
+			BOOL bPressed = GetPressed() && i == m_nSelected;
+			GetPaintManager()->DrawRectangle(pDC, rcButton, i == m_nSelected, bPressed, GetEnabled(), extendedColors[i].clrButton == m_clr, FALSE, xtpBarTypeNormal, xtpBarPopup);
+		}
+
+
+		rcButton.DeflateRect(3, 3);
+		if (GetEnabled())
+			pDC->FillSolidRect(rcButton, extendedColors[i].clrButton);
+
+		pDC->Draw3dRect(rcButton, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
+
+	}
+}
+
+void CXTPControlColorSelector::SetSelectedItem(int nItem)
+{
+	if (m_nSelected != nItem)
+	{
+		m_nSelected = nItem;
+		RedrawParent();
+	}
+}
+
+void CXTPControlColorSelector::OnMouseMove(CPoint point)
+{
+	int nHit = HitTest(point);
+	if (nHit != -1)
+	{
+		SetSelectedItem(nHit);
+	}
+}
+
+BOOL CXTPControlColorSelector::OnSetSelected(int bSelected)
+{
+	if (!bSelected) m_nSelected = -1;
+
+	if (IsKeyboardSelected(bSelected) && !m_bSelected)
+	{
+		SetSelectedItem(bSelected == TRUE_KEYBOARD_PREV ? GetItemCount() - 1 : 0);
+	}
+
+	return CXTPControl::OnSetSelected(bSelected);
+}
+
+BOOL CXTPControlColorSelector::IsFocused() const
+{
+	return GetSelected();
+}
+
+int CXTPControlColorSelector::GetItemCount() const
+{
+	return sizeof(extendedColors) / sizeof(extendedColors[0]);
+}
+
+BOOL CXTPControlColorSelector::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
+{
+	ASSERT(IsFocused());
+
+	if (!IsFocused())
+		return FALSE;
+
+	CXTPDrawHelpers::KeyToLayout(GetParent(), nChar);
+
+	switch (nChar)
+	{
+	case VK_HOME:
+		SetSelectedItem(0);
+		return TRUE;
+
+	case VK_END:
+		SetSelectedItem(GetItemCount() - 1);
+		return TRUE;
+
+	case VK_LEFT:
+		if (m_nSelected <= 0)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected - 1);
+		return TRUE;
+
+	case VK_RIGHT:
+		if (m_nSelected >= GetItemCount() - 1)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected + 1);
+		return TRUE;
+
+	case VK_UP:
+		if (m_nSelected < 8)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected - 8);
+		return TRUE;
+
+	case VK_DOWN:
+		if (m_nSelected >= GetItemCount() - 8)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected + 8);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void CXTPControlColorSelector::OnExecute()
+{
+	if (m_nPressed != -1)
+	{
+		m_clr = extendedColors[m_nPressed].clrButton;
+	}
+	CXTPControl::OnExecute();
+
+}
+
+
+COLORREF CXTPControlColorSelector::GetColor() const
+{
+	return m_clr;
+}
+
+void CXTPControlColorSelector::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+		RedrawParent();
+	}
+}
+
+
+void CXTPControlColorSelector::OnClick(BOOL bKeyboard, CPoint pt)
+{
+	if (!GetEnabled()) return;
+
+	int nHit = bKeyboard ? m_nSelected : HitTest(pt);
+	if (nHit == -1) return;
+
+	m_nPressed = nHit;
+
+	if (!bKeyboard)
+	{
+		ClickToolBarButton();
+	}
+	else
+	{
+		OnExecute();
+	}
+	m_nPressed = -1;
+}
+
+void CXTPControlColorSelector::OnLButtonUp(CPoint point)
+{
+	if (GetEnabled() && m_pParent->GetPosition() == xtpBarPopup)
+	{
+		OnClick(TRUE, point);
+	}
+}
+

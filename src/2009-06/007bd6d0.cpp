@@ -1,105 +1,365 @@
-// roc 2009-06 007bd6d0  unit: CXTPCommandBarAnimation::PAUCAnimateInfo::?$CArray  size: 306 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 007bd6d0
-//
-// 007bd6d0  6aff                 push -1
-// 007bd6d2  68c8448700           push 0x8744c8
-// 007bd6d7  64a100000000         mov eax, dword ptr fs:[0]
-// 007bd6dd  50                   push eax
-// 007bd6de  83ec18               sub esp, 0x18
-// 007bd6e1  53                   push ebx
-// 007bd6e2  55                   push ebp
-// 007bd6e3  56                   push esi
-// 007bd6e4  57                   push edi
-// 007bd6e5  a1304fa200           mov eax, dword ptr [0xa24f30]
-// 007bd6ea  33c4                 xor eax, esp
-// 007bd6ec  50                   push eax
-// 007bd6ed  8d44242c             lea eax, [esp + 0x2c]
-// 007bd6f1  64a300000000         mov dword ptr fs:[0], eax
-// 007bd6f7  8bd9                 mov ebx, ecx
-// 007bd6f9  895c2414             mov dword ptr [esp + 0x14], ebx
-// 007bd6fd  8b03                 mov eax, dword ptr [ebx]
-// 007bd6ff  50                   push eax
-// 007bd700  8d4c241c             lea ecx, [esp + 0x1c]
-// 007bd704  e899c1f5ff           call 0x7198a2
-// 007bd709  33ed                 xor ebp, ebp
-// 007bd70b  396b24               cmp dword ptr [ebx + 0x24], ebp
-// 007bd70e  c744243400000000     mov dword ptr [esp + 0x34], 0
-// 007bd716  0f8e98000000         jle 0x7bd7b4
-// 007bd71c  8d642400             lea esp, [esp]
-// 007bd720  85ed                 test ebp, ebp
-// 007bd722  0f8cd5000000         jl 0x7bd7fd
-// 007bd728  3b6b24               cmp ebp, dword ptr [ebx + 0x24]
-// 007bd72b  0f8dcc000000         jge 0x7bd7fd
-// 007bd731  8b4b20               mov ecx, dword ptr [ebx + 0x20]
-// 007bd734  8b34a9               mov esi, dword ptr [ecx + ebp*4]
-// 007bd737  8d04a9               lea eax, [ecx + ebp*4]
-// 007bd73a  33ff                 xor edi, edi
-// 007bd73c  397e2c               cmp dword ptr [esi + 0x2c], edi
-// 007bd73f  7e2f                 jle 0x7bd770
-// 007bd741  33db                 xor ebx, ebx
-// 007bd743  85db                 test ebx, ebx
-// 007bd745  0f8cb2000000         jl 0x7bd7fd
-// 007bd74b  3b7e2c               cmp edi, dword ptr [esi + 0x2c]
-// 007bd74e  0f8da9000000         jge 0x7bd7fd
-// 007bd754  8b4628               mov eax, dword ptr [esi + 0x28]
-// 007bd757  03c3                 add eax, ebx
-// 007bd759  50                   push eax
-// 007bd75a  8d4c241c             lea ecx, [esp + 0x1c]
-// 007bd75e  e8e5ed0800           call 0x84c548
-// 007bd763  47                   inc edi
-// 007bd764  83c310               add ebx, 0x10
-// 007bd767  3b7e2c               cmp edi, dword ptr [esi + 0x2c]
-// 007bd76a  7cd7                 jl 0x7bd743
-// 007bd76c  8b5c2414             mov ebx, dword ptr [esp + 0x14]
-// 007bd770  56                   push esi
-// 007bd771  8d54241c             lea edx, [esp + 0x1c]
-// 007bd775  52                   push edx
-// 007bd776  8bcb                 mov ecx, ebx
-// 007bd778  e863fcffff           call 0x7bd3e0
-// 007bd77d  6a00                 push 0
-// 007bd77f  8d4c241c             lea ecx, [esp + 0x1c]
-// 007bd783  e870e90800           call 0x84c0f8
-// 007bd788  837e2006             cmp dword ptr [esi + 0x20], 6
-// 007bd78c  7e1c                 jle 0x7bd7aa
-// 007bd78e  6a01                 push 1
-// 007bd790  55                   push ebp
-// 007bd791  8d4b1c               lea ecx, [ebx + 0x1c]
-// 007bd794  e8c74ef9ff           call 0x752660
-// 007bd799  8bce                 mov ecx, esi
-// 007bd79b  e8d0feffff           call 0x7bd670
-// 007bd7a0  56                   push esi
-// 007bd7a1  e88cb2f5ff           call 0x718a32
-// 007bd7a6  83c404               add esp, 4
-// 007bd7a9  4d                   dec ebp
-// 007bd7aa  45                   inc ebp
-// 007bd7ab  3b6b24               cmp ebp, dword ptr [ebx + 0x24]
-// 007bd7ae  0f8c6cffffff         jl 0x7bd720
-// 007bd7b4  837b2400             cmp dword ptr [ebx + 0x24], 0
-// 007bd7b8  751e                 jne 0x7bd7d8
-// 007bd7ba  837b1000             cmp dword ptr [ebx + 0x10], 0
-// 007bd7be  7418                 je 0x7bd7d8
-// 007bd7c0  8b03                 mov eax, dword ptr [ebx]
-// 007bd7c2  8b4020               mov eax, dword ptr [eax + 0x20]
-// 007bd7c5  6843cd0a00           push 0xacd43
-// 007bd7ca  50                   push eax
-// 007bd7cb  ff1584ee8900         call dword ptr [0x89ee84]
-// 007bd7d1  c7431000000000       mov dword ptr [ebx + 0x10], 0
-// 007bd7d8  8d4c2418             lea ecx, [esp + 0x18]
-// 007bd7dc  c7442434ffffffff     mov dword ptr [esp + 0x34], 0xffffffff
-// 007bd7e4  e8b3c0f5ff           call 0x71989c
-// 007bd7e9  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 007bd7ed  64890d00000000       mov dword ptr fs:[0], ecx
-// 007bd7f4  59                   pop ecx
-// 007bd7f5  5f                   pop edi
-// 007bd7f6  5e                   pop esi
-// 007bd7f7  5d                   pop ebp
-// 007bd7f8  5b                   pop ebx
-// 007bd7f9  83c424               add esp, 0x24
-// 007bd7fc  c3                   ret 
-// 007bd7fd  e8e2b4f5ff           call 0x718ce4
-// copied from an identical function in another client (function ?OnAnimate@CXTPCommandBarAnimation@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCommandBarAnimation.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPCommandBarAnimation.cpp : implementation file
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPImageManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPCommandBarAnimation.h"
+#include "XTPCommandBar.h"
+#include "XTPPaintManager.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+CXTPCommandBarAnimation::CAnimateInfo::CAnimateInfo()
+{
+	hbmSrc = 0;
+	pSrcBits = 0;
+	hbmSrcBack = 0;
+	pSrcBackBits = 0;
+	SetRectEmpty(&rcPaint);
+	m_nAnimation = 0;
+}
+
+CXTPCommandBarAnimation::CAnimateInfo::~CAnimateInfo()
+{
+	DeleteObject(hbmSrc);
+	DeleteObject(hbmSrcBack);
+}
+
+CXTPCommandBarAnimation::CXTPCommandBarAnimation(CXTPCommandBar* pCommandBar)
+{
+	m_bInvalidate = FALSE;
+	m_pParent = pCommandBar;
+	m_nTimer = 0;
+
+	m_bAnimation = FALSE;
+	m_bDoubleBuffer = FALSE;
+}
+
+CXTPCommandBarAnimation::~CXTPCommandBarAnimation()
+{
+	RemoveAnimations();
+}
+
+void CXTPCommandBarAnimation::RemoveAnimations()
+{
+	for (int i = 0; i < m_arrAnimation.GetSize(); i++)
+	{
+		delete m_arrAnimation[i];
+	}
+
+	m_arrAnimation.RemoveAll();
+
+	if (m_nTimer && m_pParent->GetSafeHwnd())
+	{
+		m_pParent->KillTimer(XTP_TID_ANIMATION);
+	}
+	m_nTimer = 0;
+}
+
+void CXTPCommandBarAnimation::AlphaBlendU(PBYTE pDest, PBYTE pSrcBack, int cx, int cy, PBYTE pSrc, BYTE byAlpha)
+{
+	const BYTE byDiff = (BYTE)(255 - byAlpha);
+
+	for (int i = 0; i < cx * cy * 4; i++)
+	{
+		pDest[0] = (BYTE)((pSrcBack[0] * byDiff + pSrc[0] * byAlpha) >> 8);
+
+		pDest += 1;
+		pSrcBack += 1;
+		pSrc += 1;
+	}
+}
+
+#define MAXANIMATION 6
+
+BOOL CXTPCommandBarAnimation::IsAnimationEnabled() const
+{
+	return m_bAnimation || m_pParent->GetPaintManager()->m_bEnableAnimation;
+}
+
+void CXTPCommandBarAnimation::AnimateRect(CClientDC& dc, CAnimateInfo* pai)
+{
+	CRect rcPaint = pai->rcPaint;
+	int cx = rcPaint.Width();
+	int cy = rcPaint.Height();
+
+	CDC memDC;
+	memDC.CreateCompatibleDC(&dc);
+
+	if (pai->m_nAnimation == MAXANIMATION)
+	{
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(memDC, m_bmpCache);
+
+		dc.BitBlt(rcPaint.left, rcPaint.top, cx, cy,
+			&memDC, rcPaint.left, rcPaint.top, SRCCOPY);
+
+		::SelectObject(memDC, hOldBitmap);
+	}
+	else
+	{
+		BYTE* pDestBits = NULL;
+		HBITMAP hbmDest = CXTPImageManager::Create32BPPDIBSection(dc, cx, cy, &pDestBits);
+
+		AlphaBlendU(pDestBits, pai->pSrcBackBits, cx, cy, pai->pSrcBits, (BYTE)(255 * pai->m_nAnimation / MAXANIMATION));
+
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(memDC, hbmDest);
+
+		dc.BitBlt(rcPaint.left, rcPaint.top, cx, cy, &memDC, 0, 0, SRCCOPY);
+
+		::SelectObject(memDC, hOldBitmap);
+		DeleteObject(hbmDest);
+	}
+
+	pai->m_nAnimation++;
+}
+
+void CXTPCommandBarAnimation::OnAnimate()
+{
+	CClientDC dc(m_pParent);
+
+	for (int i = 0; i < m_arrAnimation.GetSize(); i++)
+	{
+		CAnimateInfo* pai = m_arrAnimation[i];
+
+		for (int j = 0; j < pai->arrExclude.GetSize(); j++)
+			dc.ExcludeClipRect(&pai->arrExclude[j]);
+
+		AnimateRect(dc, pai);
+
+		dc.SelectClipRgn(NULL);
+
+		if (pai->m_nAnimation > MAXANIMATION)
+		{
+			m_arrAnimation.RemoveAt(i);
+			delete pai;
+			i--;
+		}
+	}
+
+	if (m_arrAnimation.GetSize() == 0 && m_nTimer)
+	{
+		m_pParent->KillTimer(XTP_TID_ANIMATION);
+		m_nTimer = 0;
+	}
+}
+
+void CXTPCommandBarAnimation::RemoveIntersections(LPCRECT rcPaint, BOOL bAddExclude)
+{
+	for (int i = 0; i < m_arrAnimation.GetSize(); i++)
+	{
+		CAnimateInfo* paiOld = m_arrAnimation[i];
+
+		CRect rcIntersect;
+		if (rcIntersect.IntersectRect(&paiOld->rcPaint, rcPaint))
+		{
+			if (rcIntersect == paiOld->rcPaint)
+			{
+				m_arrAnimation.RemoveAt(i);
+				delete paiOld;
+				i--;
+			}
+			else if (bAddExclude)
+			{
+				paiOld->arrExclude.Add((RECT&)*rcPaint);
+			}
+		}
+	}
+}
+
+void CXTPCommandBarAnimation::AddAnimation(CClientDC& dc, CAnimateInfo* pai)
+{
+	RemoveIntersections(&pai->rcPaint, FALSE);
+
+	m_arrAnimation.Add(pai);
+
+	if (m_nTimer == 0)
+	{
+		m_nTimer = m_pParent->SetTimer(XTP_TID_ANIMATION, 50, NULL);
+	}
+
+	AnimateRect(dc, pai);
+}
+
+void CXTPCommandBarAnimation::OnDestroy()
+{
+	m_bmpCache.DeleteObject();
+	RemoveAnimations();
+}
+
+void CXTPCommandBarAnimation::RedrawRect(LPCRECT lpRect, BOOL bAnimate)
+{
+	if (lpRect == NULL)
+	{
+		m_bmpCache.DeleteObject();
+	}
+
+	if (lpRect == NULL || m_bmpCache.GetSafeHandle() == 0 || !IsAnimationEnabled())
+	{
+		m_bInvalidate = TRUE;
+		m_pParent->InvalidateRect(lpRect, FALSE);
+		return;
+	}
+
+	CClientDC dc(m_pParent);
+	CXTPClientRect rc(m_pParent);
+	CRect rcPaint(lpRect);
+
+	CDC dcDraw;
+	dcDraw.CreateCompatibleDC(&dc);
+
+	CBitmap bmpDraw;
+	bmpDraw.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
+	HBITMAP hOldBitmapDraw = (HBITMAP)::SelectObject(dcDraw, bmpDraw);
+
+	CRgn rgn;
+	rgn.CreateRectRgnIndirect(rcPaint);
+	dcDraw.SelectClipRgn(&rgn);
+
+	m_pParent->DrawCommandBar(&dcDraw, rcPaint);
+
+	dcDraw.SelectClipRgn(0);
+
+	CDC dcCache;
+	dcCache.CreateCompatibleDC(&dc);
+	HBITMAP hOldBitmapCache = (HBITMAP)::SelectObject(dcCache, m_bmpCache);
+
+	if (!bAnimate)
+	{
+		RemoveIntersections(&rcPaint, TRUE);
+
+		dcCache.BitBlt(rcPaint.left, rcPaint.top, rcPaint.Width(), rcPaint.Height(),
+			&dcDraw, rcPaint.left, rcPaint.top, SRCCOPY);
+
+		dc.BitBlt(rcPaint.left, rcPaint.top, rcPaint.Width(), rcPaint.Height(),
+			&dcDraw, rcPaint.left, rcPaint.top, SRCCOPY);
+	}
+	else
+	{
+		CAnimateInfo* pai = new CAnimateInfo;
+		pai->rcPaint = rcPaint;
+		pai->m_nAnimation = 1;
+		pai->hbmSrc = CXTPImageManager::Create32BPPDIBSection(dc, rcPaint.Width(), rcPaint.Height(), &pai->pSrcBits);
+		pai->hbmSrcBack = CXTPImageManager::Create32BPPDIBSection(dc, rcPaint.Width(), rcPaint.Height(), &pai->pSrcBackBits);
+
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(&dc);
+
+		CDC dcSrcBack;
+		dcSrcBack.CreateCompatibleDC(&dc);
+
+		HBITMAP hOldBitmapSrc = (HBITMAP)::SelectObject(dcSrc, pai->hbmSrc);
+		HBITMAP hOldBitmapSrcBack = (HBITMAP)::SelectObject(dcSrcBack,  pai->hbmSrcBack);
+
+		dcSrc.BitBlt(0, 0, rcPaint.Width(), rcPaint.Height(), &dcDraw, rcPaint.left, rcPaint.top, SRCCOPY);
+
+		dcSrcBack.BitBlt(0, 0, rcPaint.Width(), rcPaint.Height(), &dcCache, rcPaint.left, rcPaint.top, SRCCOPY);
+
+		dcCache.BitBlt(rcPaint.left, rcPaint.top, rcPaint.Width(), rcPaint.Height(), &dcSrc, 0, 0, SRCCOPY);
+
+		::SelectObject(dcSrcBack, hOldBitmapSrcBack);
+		::SelectObject(dcSrc, hOldBitmapSrc);
+
+		if (memcmp(pai->pSrcBits, pai->pSrcBackBits, rcPaint.Width() * rcPaint.Height() * 4) == 0)
+		{
+			delete pai;
+		}
+		else
+		{
+			AddAnimation(dc, pai);
+		}
+	}
+
+	::SelectObject(dcCache, hOldBitmapCache);
+	::SelectObject(dcDraw, hOldBitmapDraw);
+}
+
+void CXTPCommandBarAnimation::OnPaint(CPaintDC& paintDC)
+{
+	CXTPClientRect rc(m_pParent);
+	CRect rcPaint(paintDC.m_ps.rcPaint);
+
+	if (m_bmpCache.GetSafeHandle())
+	{
+		BITMAP bmpInfo;
+		m_bmpCache.GetBitmap(&bmpInfo);
+
+		if (bmpInfo.bmHeight != rc.Height() || bmpInfo.bmWidth != rc.Width())
+			m_bmpCache.DeleteObject();
+	}
+
+	if (!m_bDoubleBuffer && !IsAnimationEnabled())
+	{
+		m_bmpCache.DeleteObject();
+
+		CXTPBufferDC memDC(paintDC);
+		m_pParent->DrawCommandBar(&memDC, rcPaint);
+
+		RemoveAnimations();
+	}
+	else if (m_bInvalidate || m_bmpCache.GetSafeHandle() == 0)
+	{
+		CDC memDC;
+		memDC.CreateCompatibleDC(&paintDC);
+
+		if (!m_bmpCache.GetSafeHandle())
+		{
+			m_bmpCache.CreateCompatibleBitmap(&paintDC, rc.Width(), rc.Height());
+			rcPaint = rc;
+		}
+
+		CBitmap* pOldBitmap = memDC.SelectObject(&m_bmpCache);
+
+		CRgn rgn;
+		rgn.CreateRectRgnIndirect(rcPaint);
+		memDC.SelectClipRgn(&rgn);
+
+		m_pParent->DrawCommandBar(&memDC, rcPaint);
+
+		memDC.SelectClipRgn(0);
+
+		paintDC.BitBlt(rcPaint.left, rcPaint.top, rcPaint.Width(), rcPaint.Height(),
+			&memDC, rcPaint.left, rcPaint.top, SRCCOPY);
+
+		memDC.SelectObject(pOldBitmap);
+
+		RemoveAnimations();
+	}
+	else
+	{
+		CXTPCompatibleDC memDC(&paintDC, &m_bmpCache);
+		paintDC.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
+	}
+
+	m_bInvalidate = FALSE;
+}

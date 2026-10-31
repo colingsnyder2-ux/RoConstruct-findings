@@ -1,18 +1,5 @@
-// from server: 96% by colin
-extern "C" int __cdecl sub_006b2c10();
-extern "C" unsigned short __cdecl sub_006b3070(int);
-
-struct CXTPResourceManager
-{
-    char pad[0xc];
-    unsigned short m_nID;
-    void SetResourceID();
-};
-
-void CXTPResourceManager::SetResourceID()
-{
-    unsigned short r = sub_006b3070(sub_006b2c10());
-    if (r == 0)
-        r = 0x409;
-    m_nID = r;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_7c5d0871c187f8e9.cpp

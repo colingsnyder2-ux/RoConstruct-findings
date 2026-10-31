@@ -1,175 +1,361 @@
 // from server: 100% by auto
-// roc 2012-06 00669ab0  unit: seg_00660000  size: 491 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00669ab0
-//
-// 00669ab0  83ec14               sub esp, 0x14
-// 00669ab3  53                   push ebx
-// 00669ab4  56                   push esi
-// 00669ab5  8b742420             mov esi, dword ptr [esp + 0x20]
-// 00669ab9  8b86dc000000         mov eax, dword ptr [esi + 0xdc]
-// 00669abf  8b9e44010000         mov ebx, dword ptr [esi + 0x144]
-// 00669ac5  57                   push edi
-// 00669ac6  8b7c2438             mov edi, dword ptr [esp + 0x38]
-// 00669aca  8b0f                 mov ecx, dword ptr [edi]
-// 00669acc  8d0440               lea eax, [eax + eax*2]
-// 00669acf  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00669ad3  3b4c243c             cmp ecx, dword ptr [esp + 0x3c]
-// 00669ad7  0f83b7010000         jae 0x669c94
-// 00669add  55                   push ebp
-// 00669ade  8bff                 mov edi, edi
-// 00669ae0  8b542430             mov edx, dword ptr [esp + 0x30]
-// 00669ae4  8b12                 mov edx, dword ptr [edx]
-// 00669ae6  8b442434             mov eax, dword ptr [esp + 0x34]
-// 00669aea  3bd0                 cmp edx, eax
-// 00669aec  0f83b2000000         jae 0x669ba4
-// 00669af2  8b4b34               mov ecx, dword ptr [ebx + 0x34]
-// 00669af5  8b6b3c               mov ebp, dword ptr [ebx + 0x3c]
-// 00669af8  2be9                 sub ebp, ecx
-// 00669afa  2bc2                 sub eax, edx
-// 00669afc  896c2410             mov dword ptr [esp + 0x10], ebp
-// 00669b00  3be8                 cmp ebp, eax
-// 00669b02  7206                 jb 0x669b0a
-// 00669b04  89442410             mov dword ptr [esp + 0x10], eax
-// 00669b08  8be8                 mov ebp, eax
-// 00669b0a  8b8650010000         mov eax, dword ptr [esi + 0x150]
-// 00669b10  8b4004               mov eax, dword ptr [eax + 4]
-// 00669b13  55                   push ebp
-// 00669b14  51                   push ecx
-// 00669b15  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 00669b19  8d7b08               lea edi, [ebx + 8]
-// 00669b1c  57                   push edi
-// 00669b1d  8d1491               lea edx, [ecx + edx*4]
-// 00669b20  52                   push edx
-// 00669b21  56                   push esi
-// 00669b22  ffd0                 call eax
-// 00669b24  8b4b30               mov ecx, dword ptr [ebx + 0x30]
-// 00669b27  83c414               add esp, 0x14
-// 00669b2a  3b4e20               cmp ecx, dword ptr [esi + 0x20]
-// 00669b2d  7560                 jne 0x669b8f
-// 00669b2f  837e3c00             cmp dword ptr [esi + 0x3c], 0
-// 00669b33  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 00669b3b  7e52                 jle 0x669b8f
-// 00669b3d  8b86dc000000         mov eax, dword ptr [esi + 0xdc]
-// 00669b43  897c2414             mov dword ptr [esp + 0x14], edi
-// 00669b47  bf01000000           mov edi, 1
-// 00669b4c  3bc7                 cmp eax, edi
-// 00669b4e  7c2c                 jl 0x669b7c
-// 00669b50  83cdff               or ebp, 0xffffffff
-// 00669b53  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
-// 00669b56  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00669b5a  8b02                 mov eax, dword ptr [edx]
-// 00669b5c  51                   push ecx
-// 00669b5d  6a01                 push 1
-// 00669b5f  55                   push ebp
-// 00669b60  50                   push eax
-// 00669b61  6a00                 push 0
-// 00669b63  50                   push eax
-// 00669b64  e87799feff           call 0x6534e0
-// 00669b69  8b86dc000000         mov eax, dword ptr [esi + 0xdc]
-// 00669b6f  47                   inc edi
-// 00669b70  83c418               add esp, 0x18
-// 00669b73  4d                   dec ebp
-// 00669b74  3bf8                 cmp edi, eax
-// 00669b76  7edb                 jle 0x669b53
-// 00669b78  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00669b7c  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00669b80  8344241404           add dword ptr [esp + 0x14], 4
-// 00669b85  41                   inc ecx
-// 00669b86  3b4e3c               cmp ecx, dword ptr [esi + 0x3c]
-// 00669b89  894c2428             mov dword ptr [esp + 0x28], ecx
-// 00669b8d  7cb8                 jl 0x669b47
-// 00669b8f  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00669b93  0128                 add dword ptr [eax], ebp
-// 00669b95  016b34               add dword ptr [ebx + 0x34], ebp
-// 00669b98  296b30               sub dword ptr [ebx + 0x30], ebp
-// 00669b9b  8b7c243c             mov edi, dword ptr [esp + 0x3c]
-// 00669b9f  e989000000           jmp 0x669c2d
-// 00669ba4  837b3000             cmp dword ptr [ebx + 0x30], 0
-// 00669ba8  0f85e5000000         jne 0x669c93
-// 00669bae  8b5334               mov edx, dword ptr [ebx + 0x34]
-// 00669bb1  3b533c               cmp edx, dword ptr [ebx + 0x3c]
-// 00669bb4  7d77                 jge 0x669c2d
-// 00669bb6  837e3c00             cmp dword ptr [esi + 0x3c], 0
-// 00669bba  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 00669bc2  7e63                 jle 0x669c27
-// 00669bc4  8d4308               lea eax, [ebx + 8]
-// 00669bc7  89442414             mov dword ptr [esp + 0x14], eax
-// 00669bcb  eb03                 jmp 0x669bd0
-// 00669bcd  8d4900               lea ecx, [ecx]
-// 00669bd0  8b433c               mov eax, dword ptr [ebx + 0x3c]
-// 00669bd3  8b7b34               mov edi, dword ptr [ebx + 0x34]
-// 00669bd6  3bf8                 cmp edi, eax
-// 00669bd8  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
-// 00669bdb  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00669bdf  8b2a                 mov ebp, dword ptr [edx]
-// 00669be1  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00669be5  894c2410             mov dword ptr [esp + 0x10], ecx
-// 00669be9  7d25                 jge 0x669c10
-// 00669beb  8d47ff               lea eax, [edi - 1]
-// 00669bee  89442418             mov dword ptr [esp + 0x18], eax
-// 00669bf2  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00669bf6  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00669bfa  51                   push ecx
-// 00669bfb  6a01                 push 1
-// 00669bfd  57                   push edi
-// 00669bfe  55                   push ebp
-// 00669bff  52                   push edx
-// 00669c00  55                   push ebp
-// 00669c01  e8da98feff           call 0x6534e0
-// 00669c06  47                   inc edi
-// 00669c07  83c418               add esp, 0x18
-// 00669c0a  3b7c241c             cmp edi, dword ptr [esp + 0x1c]
-// 00669c0e  7ce2                 jl 0x669bf2
-// 00669c10  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00669c14  8344241404           add dword ptr [esp + 0x14], 4
-// 00669c19  40                   inc eax
-// 00669c1a  3b463c               cmp eax, dword ptr [esi + 0x3c]
-// 00669c1d  89442428             mov dword ptr [esp + 0x28], eax
-// 00669c21  7cad                 jl 0x669bd0
-// 00669c23  8b7c243c             mov edi, dword ptr [esp + 0x3c]
-// 00669c27  8b433c               mov eax, dword ptr [ebx + 0x3c]
-// 00669c2a  894334               mov dword ptr [ebx + 0x34], eax
-// 00669c2d  8b4b34               mov ecx, dword ptr [ebx + 0x34]
-// 00669c30  3b4b3c               cmp ecx, dword ptr [ebx + 0x3c]
-// 00669c33  7552                 jne 0x669c87
-// 00669c35  8b07                 mov eax, dword ptr [edi]
-// 00669c37  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 00669c3b  8b9654010000         mov edx, dword ptr [esi + 0x154]
-// 00669c41  8b5204               mov edx, dword ptr [edx + 4]
-// 00669c44  50                   push eax
-// 00669c45  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 00669c48  51                   push ecx
-// 00669c49  50                   push eax
-// 00669c4a  8d4b08               lea ecx, [ebx + 8]
-// 00669c4d  51                   push ecx
-// 00669c4e  56                   push esi
-// 00669c4f  ffd2                 call edx
-// 00669c51  ff07                 inc dword ptr [edi]
-// 00669c53  8b86dc000000         mov eax, dword ptr [esi + 0xdc]
-// 00669c59  014338               add dword ptr [ebx + 0x38], eax
-// 00669c5c  8b442434             mov eax, dword ptr [esp + 0x34]
-// 00669c60  83c414               add esp, 0x14
-// 00669c63  394338               cmp dword ptr [ebx + 0x38], eax
-// 00669c66  7c07                 jl 0x669c6f
-// 00669c68  c7433800000000       mov dword ptr [ebx + 0x38], 0
-// 00669c6f  394334               cmp dword ptr [ebx + 0x34], eax
-// 00669c72  7c07                 jl 0x669c7b
-// 00669c74  c7433400000000       mov dword ptr [ebx + 0x34], 0
-// 00669c7b  8b8edc000000         mov ecx, dword ptr [esi + 0xdc]
-// 00669c81  034b34               add ecx, dword ptr [ebx + 0x34]
-// 00669c84  894b3c               mov dword ptr [ebx + 0x3c], ecx
-// 00669c87  8b542440             mov edx, dword ptr [esp + 0x40]
-// 00669c8b  3917                 cmp dword ptr [edi], edx
-// 00669c8d  0f824dfeffff         jb 0x669ae0
-// 00669c93  5d                   pop ebp
-// 00669c94  5f                   pop edi
-// 00669c95  5e                   pop esi
-// 00669c96  5b                   pop ebx
-// 00669c97  83c414               add esp, 0x14
-// 00669c9a  c3                   ret 
-// library jpeg-6b/jcprepct.c (function _pre_process_context)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcprepct.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcprepct.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains the compression preprocessing controller.
+ * This controller manages the color conversion, downsampling,
+ * and edge expansion steps.
+ *
+ * Most of the complexity here is associated with buffering input rows
+ * as required by the downsampler.  See the comments at the head of
+ * jcsample.c for the downsampler's needs.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* At present, jcsample.c can request context rows only for smoothing.
+ * In the future, we might also need context rows for CCIR601 sampling
+ * or other more-complex downsampling procedures.  The code to support
+ * context rows should be compiled only if needed.
+ */
+#ifdef INPUT_SMOOTHING_SUPPORTED
+#define CONTEXT_ROWS_SUPPORTED
+#endif
+
+
+/*
+ * For the simple (no-context-row) case, we just need to buffer one
+ * row group's worth of pixels for the downsampling step.  At the bottom of
+ * the image, we pad to a full row group by replicating the last pixel row.
+ * The downsampler's last output row is then replicated if needed to pad
+ * out to a full iMCU row.
+ *
+ * When providing context rows, we must buffer three row groups' worth of
+ * pixels.  Three row groups are physically allocated, but the row pointer
+ * arrays are made five row groups high, with the extra pointers above and
+ * below "wrapping around" to point to the last and first real row groups.
+ * This allows the downsampler to access the proper context rows.
+ * At the top and bottom of the image, we create dummy context rows by
+ * copying the first or last real pixel row.  This copying could be avoided
+ * by pointer hacking as is done in jdmainct.c, but it doesn't seem worth the
+ * trouble on the compression side.
+ */
+
+
+/* Private buffer controller object */
+
+typedef struct {
+  struct jpeg_c_prep_controller pub; /* public fields */
+
+  /* Downsampling input buffer.  This buffer holds color-converted data
+   * until we have enough to do a downsample step.
+   */
+  JSAMPARRAY color_buf[MAX_COMPONENTS];
+
+  JDIMENSION rows_to_go;	/* counts rows remaining in source image */
+  int next_buf_row;		/* index of next row to store in color_buf */
+
+#ifdef CONTEXT_ROWS_SUPPORTED	/* only needed for context case */
+  int this_row_group;		/* starting row index of group to process */
+  int next_buf_stop;		/* downsample when we reach this index */
+#endif
+} my_prep_controller;
+
+typedef my_prep_controller * my_prep_ptr;
+
+
+/*
+ * Initialize for a processing pass.
+ */
+
+METHODDEF(void)
+start_pass_prep (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
+{
+  my_prep_ptr prep = (my_prep_ptr) cinfo->prep;
+
+  if (pass_mode != JBUF_PASS_THRU)
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+
+  /* Initialize total-height counter for detecting bottom of image */
+  prep->rows_to_go = cinfo->image_height;
+  /* Mark the conversion buffer empty */
+  prep->next_buf_row = 0;
+#ifdef CONTEXT_ROWS_SUPPORTED
+  /* Preset additional state variables for context mode.
+   * These aren't used in non-context mode, so we needn't test which mode.
+   */
+  prep->this_row_group = 0;
+  /* Set next_buf_stop to stop after two row groups have been read in. */
+  prep->next_buf_stop = 2 * cinfo->max_v_samp_factor;
+#endif
+}
+
+
+/*
+ * Expand an image vertically from height input_rows to height output_rows,
+ * by duplicating the bottom row.
+ */
+
+LOCAL(void)
+expand_bottom_edge (JSAMPARRAY image_data, JDIMENSION num_cols,
+		    int input_rows, int output_rows)
+{
+  register int row;
+
+  for (row = input_rows; row < output_rows; row++) {
+    jcopy_sample_rows(image_data, input_rows-1, image_data, row,
+		      1, num_cols);
+  }
+}
+
+
+/*
+ * Process some data in the simple no-context case.
+ *
+ * Preprocessor output data is counted in "row groups".  A row group
+ * is defined to be v_samp_factor sample rows of each component.
+ * Downsampling will produce this much data from each max_v_samp_factor
+ * input rows.
+ */
+
+METHODDEF(void)
+pre_process_data (j_compress_ptr cinfo,
+		  JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
+		  JDIMENSION in_rows_avail,
+		  JSAMPIMAGE output_buf, JDIMENSION *out_row_group_ctr,
+		  JDIMENSION out_row_groups_avail)
+{
+  my_prep_ptr prep = (my_prep_ptr) cinfo->prep;
+  int numrows, ci;
+  JDIMENSION inrows;
+  jpeg_component_info * compptr;
+
+  while (*in_row_ctr < in_rows_avail &&
+	 *out_row_group_ctr < out_row_groups_avail) {
+    /* Do color conversion to fill the conversion buffer. */
+    inrows = in_rows_avail - *in_row_ctr;
+    numrows = cinfo->max_v_samp_factor - prep->next_buf_row;
+    numrows = (int) MIN((JDIMENSION) numrows, inrows);
+    (*cinfo->cconvert->color_convert) (cinfo, input_buf + *in_row_ctr,
+				       prep->color_buf,
+				       (JDIMENSION) prep->next_buf_row,
+				       numrows);
+    *in_row_ctr += numrows;
+    prep->next_buf_row += numrows;
+    prep->rows_to_go -= numrows;
+    /* If at bottom of image, pad to fill the conversion buffer. */
+    if (prep->rows_to_go == 0 &&
+	prep->next_buf_row < cinfo->max_v_samp_factor) {
+      for (ci = 0; ci < cinfo->num_components; ci++) {
+	expand_bottom_edge(prep->color_buf[ci], cinfo->image_width,
+			   prep->next_buf_row, cinfo->max_v_samp_factor);
+      }
+      prep->next_buf_row = cinfo->max_v_samp_factor;
+    }
+    /* If we've filled the conversion buffer, empty it. */
+    if (prep->next_buf_row == cinfo->max_v_samp_factor) {
+      (*cinfo->downsample->downsample) (cinfo,
+					prep->color_buf, (JDIMENSION) 0,
+					output_buf, *out_row_group_ctr);
+      prep->next_buf_row = 0;
+      (*out_row_group_ctr)++;
+    }
+    /* If at bottom of image, pad the output to a full iMCU height.
+     * Note we assume the caller is providing a one-iMCU-height output buffer!
+     */
+    if (prep->rows_to_go == 0 &&
+	*out_row_group_ctr < out_row_groups_avail) {
+      for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+	   ci++, compptr++) {
+	expand_bottom_edge(output_buf[ci],
+			   compptr->width_in_blocks * DCTSIZE,
+			   (int) (*out_row_group_ctr * compptr->v_samp_factor),
+			   (int) (out_row_groups_avail * compptr->v_samp_factor));
+      }
+      *out_row_group_ctr = out_row_groups_avail;
+      break;			/* can exit outer loop without test */
+    }
+  }
+}
+
+
+#ifdef CONTEXT_ROWS_SUPPORTED
+
+/*
+ * Process some data in the context case.
+ */
+
+METHODDEF(void)
+pre_process_context (j_compress_ptr cinfo,
+		     JSAMPARRAY input_buf, JDIMENSION *in_row_ctr,
+		     JDIMENSION in_rows_avail,
+		     JSAMPIMAGE output_buf, JDIMENSION *out_row_group_ctr,
+		     JDIMENSION out_row_groups_avail)
+{
+  my_prep_ptr prep = (my_prep_ptr) cinfo->prep;
+  int numrows, ci;
+  int buf_height = cinfo->max_v_samp_factor * 3;
+  JDIMENSION inrows;
+
+  while (*out_row_group_ctr < out_row_groups_avail) {
+    if (*in_row_ctr < in_rows_avail) {
+      /* Do color conversion to fill the conversion buffer. */
+      inrows = in_rows_avail - *in_row_ctr;
+      numrows = prep->next_buf_stop - prep->next_buf_row;
+      numrows = (int) MIN((JDIMENSION) numrows, inrows);
+      (*cinfo->cconvert->color_convert) (cinfo, input_buf + *in_row_ctr,
+					 prep->color_buf,
+					 (JDIMENSION) prep->next_buf_row,
+					 numrows);
+      /* Pad at top of image, if first time through */
+      if (prep->rows_to_go == cinfo->image_height) {
+	for (ci = 0; ci < cinfo->num_components; ci++) {
+	  int row;
+	  for (row = 1; row <= cinfo->max_v_samp_factor; row++) {
+	    jcopy_sample_rows(prep->color_buf[ci], 0,
+			      prep->color_buf[ci], -row,
+			      1, cinfo->image_width);
+	  }
+	}
+      }
+      *in_row_ctr += numrows;
+      prep->next_buf_row += numrows;
+      prep->rows_to_go -= numrows;
+    } else {
+      /* Return for more data, unless we are at the bottom of the image. */
+      if (prep->rows_to_go != 0)
+	break;
+      /* When at bottom of image, pad to fill the conversion buffer. */
+      if (prep->next_buf_row < prep->next_buf_stop) {
+	for (ci = 0; ci < cinfo->num_components; ci++) {
+	  expand_bottom_edge(prep->color_buf[ci], cinfo->image_width,
+			     prep->next_buf_row, prep->next_buf_stop);
+	}
+	prep->next_buf_row = prep->next_buf_stop;
+      }
+    }
+    /* If we've gotten enough data, downsample a row group. */
+    if (prep->next_buf_row == prep->next_buf_stop) {
+      (*cinfo->downsample->downsample) (cinfo,
+					prep->color_buf,
+					(JDIMENSION) prep->this_row_group,
+					output_buf, *out_row_group_ctr);
+      (*out_row_group_ctr)++;
+      /* Advance pointers with wraparound as necessary. */
+      prep->this_row_group += cinfo->max_v_samp_factor;
+      if (prep->this_row_group >= buf_height)
+	prep->this_row_group = 0;
+      if (prep->next_buf_row >= buf_height)
+	prep->next_buf_row = 0;
+      prep->next_buf_stop = prep->next_buf_row + cinfo->max_v_samp_factor;
+    }
+  }
+}
+
+
+/*
+ * Create the wrapped-around downsampling input buffer needed for context mode.
+ */
+
+LOCAL(void)
+create_context_buffer (j_compress_ptr cinfo)
+{
+  my_prep_ptr prep = (my_prep_ptr) cinfo->prep;
+  int rgroup_height = cinfo->max_v_samp_factor;
+  int ci, i;
+  jpeg_component_info * compptr;
+  JSAMPARRAY true_buffer, fake_buffer;
+
+  /* Grab enough space for fake row pointers for all the components;
+   * we need five row groups' worth of pointers for each component.
+   */
+  fake_buffer = (JSAMPARRAY)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(cinfo->num_components * 5 * rgroup_height) *
+				SIZEOF(JSAMPROW));
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    /* Allocate the actual buffer space (3 row groups) for this component.
+     * We make the buffer wide enough to allow the downsampler to edge-expand
+     * horizontally within the buffer, if it so chooses.
+     */
+    true_buffer = (*cinfo->mem->alloc_sarray)
+      ((j_common_ptr) cinfo, JPOOL_IMAGE,
+       (JDIMENSION) (((long) compptr->width_in_blocks * DCTSIZE *
+		      cinfo->max_h_samp_factor) / compptr->h_samp_factor),
+       (JDIMENSION) (3 * rgroup_height));
+    /* Copy true buffer row pointers into the middle of the fake row array */
+    MEMCOPY(fake_buffer + rgroup_height, true_buffer,
+	    3 * rgroup_height * SIZEOF(JSAMPROW));
+    /* Fill in the above and below wraparound pointers */
+    for (i = 0; i < rgroup_height; i++) {
+      fake_buffer[i] = true_buffer[2 * rgroup_height + i];
+      fake_buffer[4 * rgroup_height + i] = true_buffer[i];
+    }
+    prep->color_buf[ci] = fake_buffer + rgroup_height;
+    fake_buffer += 5 * rgroup_height; /* point to space for next component */
+  }
+}
+
+#endif /* CONTEXT_ROWS_SUPPORTED */
+
+
+/*
+ * Initialize preprocessing controller.
+ */
+
+GLOBAL(void)
+jinit_c_prep_controller (j_compress_ptr cinfo, boolean need_full_buffer)
+{
+  my_prep_ptr prep;
+  int ci;
+  jpeg_component_info * compptr;
+
+  if (need_full_buffer)		/* safety check */
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+
+  prep = (my_prep_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_prep_controller));
+  cinfo->prep = (struct jpeg_c_prep_controller *) prep;
+  prep->pub.start_pass = start_pass_prep;
+
+  /* Allocate the color conversion buffer.
+   * We make the buffer wide enough to allow the downsampler to edge-expand
+   * horizontally within the buffer, if it so chooses.
+   */
+  if (cinfo->downsample->need_context_rows) {
+    /* Set up to provide context rows */
+#ifdef CONTEXT_ROWS_SUPPORTED
+    prep->pub.pre_process_data = pre_process_context;
+    create_context_buffer(cinfo);
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+  } else {
+    /* No context, just make it tall enough for one row group */
+    prep->pub.pre_process_data = pre_process_data;
+    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+	 ci++, compptr++) {
+      prep->color_buf[ci] = (*cinfo->mem->alloc_sarray)
+	((j_common_ptr) cinfo, JPOOL_IMAGE,
+	 (JDIMENSION) (((long) compptr->width_in_blocks * DCTSIZE *
+			cinfo->max_h_samp_factor) / compptr->h_samp_factor),
+	 (JDIMENSION) cinfo->max_v_samp_factor);
+    }
+  }
+}

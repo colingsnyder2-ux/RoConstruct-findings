@@ -1,2 +1,0 @@
-layer upstream: 0 compile errors
-jpeg: linked=True test_exit=0; 335 object functions, 262 byte-identical to unique 2008 functions (256 of >=16 bytes)

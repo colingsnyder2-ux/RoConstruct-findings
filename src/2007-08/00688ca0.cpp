@@ -1,25 +1,5 @@
-// from server: 31% by colin
-struct CXMLEnumerator {
-    void* field_10;
-    void Destroy();
-    ~CXMLEnumerator();
-};
-
-extern "C" void __cdecl sub_62FC62(void*);
-extern "C" void __cdecl sub_684D30(void*);
-
-void CXMLEnumerator::Destroy()
-{
-    if (field_10 != 0) {
-        void** vtbl = *(void***)field_10;
-        void (*fn)(void*) = (void (*)(void*))vtbl[2];
-        fn(field_10);
-    }
-    sub_684D30(this);
-}
-
-CXMLEnumerator::~CXMLEnumerator()
-{
-    Destroy();
-    sub_62FC62(this);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_8e59254efc93533a.cpp

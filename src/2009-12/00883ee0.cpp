@@ -1,221 +1,1061 @@
-// roc 2009-12 00883ee0  unit: XTPPaintThemes::CXTPOffice2003Theme  size: 669 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00883ee0
-//
-// 00883ee0  6aff                 push -1
-// 00883ee2  68180a9600           push 0x960a18
-// 00883ee7  64a100000000         mov eax, dword ptr fs:[0]
-// 00883eed  50                   push eax
-// 00883eee  83ec48               sub esp, 0x48
-// 00883ef1  53                   push ebx
-// 00883ef2  55                   push ebp
-// 00883ef3  56                   push esi
-// 00883ef4  57                   push edi
-// 00883ef5  a10052b600           mov eax, dword ptr [0xb65200]
-// 00883efa  33c4                 xor eax, esp
-// 00883efc  50                   push eax
-// 00883efd  8d44245c             lea eax, [esp + 0x5c]
-// 00883f01  64a300000000         mov dword ptr fs:[0], eax
-// 00883f07  8bf1                 mov esi, ecx
-// 00883f09  8b4c2474             mov ecx, dword ptr [esp + 0x74]
-// 00883f0d  8b8100010000         mov eax, dword ptr [ecx + 0x100]
-// 00883f13  83f804               cmp eax, 4
-// 00883f16  7511                 jne 0x883f29
-// 00883f18  83b9f800000002       cmp dword ptr [ecx + 0xf8], 2
-// 00883f1f  c744241401000000     mov dword ptr [esp + 0x14], 1
-// 00883f27  7508                 jne 0x883f31
-// 00883f29  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 00883f31  33ed                 xor ebp, ebp
-// 00883f33  396c247c             cmp dword ptr [esp + 0x7c], ebp
-// 00883f37  7537                 jne 0x883f70
-// 00883f39  396c2414             cmp dword ptr [esp + 0x14], ebp
-// 00883f3d  7412                 je 0x883f51
-// 00883f3f  8b44246c             mov eax, dword ptr [esp + 0x6c]
-// 00883f43  c70006000000         mov dword ptr [eax], 6
-// 00883f49  896804               mov dword ptr [eax + 4], ebp
-// 00883f4c  e916020000           jmp 0x884167
-// 00883f51  8b442478             mov eax, dword ptr [esp + 0x78]
-// 00883f55  8b7c246c             mov edi, dword ptr [esp + 0x6c]
-// 00883f59  55                   push ebp
-// 00883f5a  50                   push eax
-// 00883f5b  51                   push ecx
-// 00883f5c  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
-// 00883f60  51                   push ecx
-// 00883f61  57                   push edi
-// 00883f62  8bce                 mov ecx, esi
-// 00883f64  e8f75c0000           call 0x889c60
-// 00883f69  8bc7                 mov eax, edi
-// 00883f6b  e9f7010000           jmp 0x884167
-// 00883f70  8b4120               mov eax, dword ptr [ecx + 0x20]
-// 00883f73  8d542438             lea edx, [esp + 0x38]
-// 00883f77  52                   push edx
-// 00883f78  50                   push eax
-// 00883f79  ff1550cc9800         call dword ptr [0x98cc50]
-// 00883f7f  8b7c2478             mov edi, dword ptr [esp + 0x78]
-// 00883f83  8b8fc0000000         mov ecx, dword ptr [edi + 0xc0]
-// 00883f89  8b5c2470             mov ebx, dword ptr [esp + 0x70]
-// 00883f8d  8b97c4000000         mov edx, dword ptr [edi + 0xc4]
-// 00883f93  8b87c8000000         mov eax, dword ptr [edi + 0xc8]
-// 00883f99  894c2428             mov dword ptr [esp + 0x28], ecx
-// 00883f9d  8b8fcc000000         mov ecx, dword ptr [edi + 0xcc]
-// 00883fa3  8954242c             mov dword ptr [esp + 0x2c], edx
-// 00883fa7  89442430             mov dword ptr [esp + 0x30], eax
-// 00883fab  894c2434             mov dword ptr [esp + 0x34], ecx
-// 00883faf  3bdd                 cmp ebx, ebp
-// 00883fb1  7403                 je 0x883fb6
-// 00883fb3  8b6b04               mov ebp, dword ptr [ebx + 4]
-// 00883fb6  6a27                 push 0x27
-// 00883fb8  8bce                 mov ecx, esi
-// 00883fba  e88196f7ff           call 0x7fd640
-// 00883fbf  50                   push eax
-// 00883fc0  55                   push ebp
-// 00883fc1  8d4c2450             lea ecx, [esp + 0x50]
-// 00883fc5  e83677fcff           call 0x84b700
-// 00883fca  8b97b0000000         mov edx, dword ptr [edi + 0xb0]
-// 00883fd0  8b442474             mov eax, dword ptr [esp + 0x74]
-// 00883fd4  8b8000010000         mov eax, dword ptr [eax + 0x100]
-// 00883fda  8b8fb8000000         mov ecx, dword ptr [edi + 0xb8]
-// 00883fe0  8bafb4000000         mov ebp, dword ptr [edi + 0xb4]
-// 00883fe6  89542418             mov dword ptr [esp + 0x18], edx
-// 00883fea  8b97bc000000         mov edx, dword ptr [edi + 0xbc]
-// 00883ff0  c744246400000000     mov dword ptr [esp + 0x64], 0
-// 00883ff8  894c2420             mov dword ptr [esp + 0x20], ecx
-// 00883ffc  89542424             mov dword ptr [esp + 0x24], edx
-// 00884000  83f803               cmp eax, 3
-// 00884003  0f84c2000000         je 0x8840cb
-// 00884009  83f802               cmp eax, 2
-// 0088400c  0f84b9000000         je 0x8840cb
-// 00884012  85c0                 test eax, eax
-// 00884014  743c                 je 0x884052
-// 00884016  83f801               cmp eax, 1
-// 00884019  7437                 je 0x884052
-// 0088401b  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00884020  7530                 jne 0x884052
-// 00884022  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
-// 00884026  8b542474             mov edx, dword ptr [esp + 0x74]
-// 0088402a  51                   push ecx
-// 0088402b  57                   push edi
-// 0088402c  8b7c2474             mov edi, dword ptr [esp + 0x74]
-// 00884030  52                   push edx
-// 00884031  53                   push ebx
-// 00884032  57                   push edi
-// 00884033  8bce                 mov ecx, esi
-// 00884035  e8265c0000           call 0x889c60
-// 0088403a  8d4c2448             lea ecx, [esp + 0x48]
-// 0088403e  c7442464ffffffff     mov dword ptr [esp + 0x64], 0xffffffff
-// 00884046  e84577fcff           call 0x84b790
-// 0088404b  8bc7                 mov eax, edi
-// 0088404d  e915010000           jmp 0x884167
-// 00884052  83bf9400000000       cmp dword ptr [edi + 0x94], 0
-// 00884059  7537                 jne 0x884092
-// 0088405b  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 0088405f  6a27                 push 0x27
-// 00884061  83c2fc               add edx, -4
-// 00884064  52                   push edx
-// 00884065  8d47fc               lea eax, [edi - 4]
-// 00884068  50                   push eax
-// 00884069  8d4d04               lea ecx, [ebp + 4]
-// 0088406c  51                   push ecx
-// 0088406d  50                   push eax
-// 0088406e  53                   push ebx
-// 0088406f  8bce                 mov ecx, esi
-// 00884071  e82aabf7ff           call 0x7feba0
-// 00884076  83be4405000000       cmp dword ptr [esi + 0x544], 0
-// 0088407d  0f85c0000000         jne 0x884143
-// 00884083  8b542424             mov edx, dword ptr [esp + 0x24]
-// 00884087  8d47fd               lea eax, [edi - 3]
-// 0088408a  83c2fd               add edx, -3
-// 0088408d  e9a0000000           jmp 0x884132
-// 00884092  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00884097  0f85a6000000         jne 0x884143
-// 0088409d  6a27                 push 0x27
-// 0088409f  8d45fc               lea eax, [ebp - 4]
-// 008840a2  50                   push eax
-// 008840a3  51                   push ecx
-// 008840a4  50                   push eax
-// 008840a5  8b442428             mov eax, dword ptr [esp + 0x28]
-// 008840a9  83c004               add eax, 4
-// 008840ac  50                   push eax
-// 008840ad  53                   push ebx
-// 008840ae  8bce                 mov ecx, esi
-// 008840b0  e8ebaaf7ff           call 0x7feba0
-// 008840b5  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 008840b9  8b542418             mov edx, dword ptr [esp + 0x18]
-// 008840bd  6a14                 push 0x14
-// 008840bf  83c5fd               add ebp, -3
-// 008840c2  55                   push ebp
-// 008840c3  51                   push ecx
-// 008840c4  55                   push ebp
-// 008840c5  83c205               add edx, 5
-// 008840c8  52                   push edx
-// 008840c9  eb70                 jmp 0x88413b
-// 008840cb  83bf9400000000       cmp dword ptr [edi + 0x94], 0
-// 008840d2  6a27                 push 0x27
-// 008840d4  753f                 jne 0x884115
-// 008840d6  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 008840da  8d47fc               lea eax, [edi - 4]
-// 008840dd  50                   push eax
-// 008840de  83c1fc               add ecx, -4
-// 008840e1  51                   push ecx
-// 008840e2  50                   push eax
-// 008840e3  8b442428             mov eax, dword ptr [esp + 0x28]
-// 008840e7  83c004               add eax, 4
-// 008840ea  50                   push eax
-// 008840eb  53                   push ebx
-// 008840ec  8bce                 mov ecx, esi
-// 008840ee  e8adaaf7ff           call 0x7feba0
-// 008840f3  83be4405000000       cmp dword ptr [esi + 0x544], 0
-// 008840fa  7547                 jne 0x884143
-// 008840fc  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 00884100  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00884104  6a14                 push 0x14
-// 00884106  8d47fd               lea eax, [edi - 3]
-// 00884109  50                   push eax
-// 0088410a  83c1fd               add ecx, -3
-// 0088410d  51                   push ecx
-// 0088410e  50                   push eax
-// 0088410f  83c205               add edx, 5
-// 00884112  52                   push edx
-// 00884113  eb26                 jmp 0x88413b
-// 00884115  8d4102               lea eax, [ecx + 2]
-// 00884118  52                   push edx
-// 00884119  50                   push eax
-// 0088411a  8d4d04               lea ecx, [ebp + 4]
-// 0088411d  51                   push ecx
-// 0088411e  50                   push eax
-// 0088411f  53                   push ebx
-// 00884120  8bce                 mov ecx, esi
-// 00884122  e879aaf7ff           call 0x7feba0
-// 00884127  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0088412b  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0088412f  83c003               add eax, 3
-// 00884132  6a14                 push 0x14
-// 00884134  52                   push edx
-// 00884135  50                   push eax
-// 00884136  83c505               add ebp, 5
-// 00884139  55                   push ebp
-// 0088413a  50                   push eax
-// 0088413b  53                   push ebx
-// 0088413c  8bce                 mov ecx, esi
-// 0088413e  e85daaf7ff           call 0x7feba0
-// 00884143  8b74246c             mov esi, dword ptr [esp + 0x6c]
-// 00884147  8d4c2448             lea ecx, [esp + 0x48]
-// 0088414b  c70600000000         mov dword ptr [esi], 0
-// 00884151  c7460400000000       mov dword ptr [esi + 4], 0
-// 00884158  c7442464ffffffff     mov dword ptr [esp + 0x64], 0xffffffff
-// 00884160  e82b76fcff           call 0x84b790
-// 00884165  8bc6                 mov eax, esi
-// 00884167  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 0088416b  64890d00000000       mov dword ptr fs:[0], ecx
-// 00884172  59                   pop ecx
-// 00884173  5f                   pop edi
-// 00884174  5e                   pop esi
-// 00884175  5d                   pop ebp
-// 00884176  5b                   pop ebx
-// 00884177  83c454               add esp, 0x54
-// 0088417a  c21400               ret 0x14
-// copied from an identical function in another client (function ?DrawCommandBarSeparator@CXTPOffice2003Theme@XTPPaintThemes@@MAE?AVCSize@@PAVCDC@@PAVCXTPCommandBar@@PAVCXTPControl@@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPOffice2003Theme.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPOffice2003Theme.cpp : implementation of the CXTPOffice2003Theme class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+
+#include "XTPPaintManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPToolBar.h"
+#include "XTPPopupBar.h"
+#include "XTPDialogBar.h"
+#include "XTPControlComboBox.h"
+#include "XTPControls.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+using namespace XTPPaintThemes;
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+
+CXTPOffice2003Theme::CXTPOffice2003Theme()
+{
+	m_iconsInfo.bUseFadedIcons = FALSE;
+	m_iconsInfo.bIconsWithShadow = FALSE;
+
+	m_grcLunaChecked.SetStandardValue(RGB(255, 213, 140), RGB(255, 173, 85));
+	m_grcLunaPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
+	m_grcLunaSelected.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
+
+	m_bPlainSeparators = FALSE;
+}
+
+CXTPOffice2003Theme::~CXTPOffice2003Theme()
+{
+
+}
+
+
+
+
+
+void CXTPOffice2003Theme::RefreshMetrics()
+{
+	CXTPOfficeTheme::RefreshMetrics();
+
+	HWND hWnd = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : 0;
+	m_themeStatusBar.OpenThemeData(hWnd, L"STATUS");
+
+	m_clrMenuExpandedGripper.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_WINDOW), GetXtremeColor(XPCOLOR_MENUBAR_EXPANDED), 550), GetXtremeColor(XPCOLOR_MENUBAR_EXPANDED));
+
+	m_clrCommandBar.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd), GetXtremeColor(COLOR_3DFACE));
+	m_clrDockBar.SetStandardValue(GetXtremeColor(COLOR_3DFACE), XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd));
+
+	m_clrTearOffGripper.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
+	m_clrToolbarShadow.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
+	m_clrFloatingGripper.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrPopupControl.SetStandardValue(GetXtremeColor(XPCOLOR_MENUBAR_FACE),
+		XTPColorManager()->LightColor(GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DFACE), 550));
+
+	m_clrToolbarExpand.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(XPCOLOR_3DFACE), GetXtremeColor(COLOR_3DSHADOW), 51), GetXtremeColor(COLOR_3DSHADOW));
+
+	m_bLunaTheme = FALSE;
+
+	m_clrMenuExpand.SetStandardValue(GetXtremeColor(XPCOLOR_MENUBAR_FACE),
+		XTPColorManager()->LightColor(GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DFACE), 550));
+
+	m_clrStatusPane.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 70));
+
+
+	m_arrColor[XPCOLOR_SPLITTER_FACE].SetStandardValue(XTPColorManager()->grcDockBar.clrDark);
+
+	if (XTPColorManager()->IsLowResolution())
+	{
+		m_clrCommandBar.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		m_clrDockBar.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		m_clrPopupControl.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		m_clrToolbarExpand.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	}
+
+	switch (GetCurrentSystemTheme())
+	{
+	case xtpSystemThemeBlue:
+	case xtpSystemThemeRoyale:
+	case xtpSystemThemeAero:
+		{
+			m_clrDockBar.SetStandardValue(RGB(158, 190, 245), RGB(196, 218, 250));
+			m_clrToolbarShadow.SetStandardValue(RGB(59, 97, 156));
+			m_clrCommandBar.SetStandardValue(RGB(221, 236, 254), RGB(129, 169, 226), 0.75f);
+
+			m_clrFloatingGripper.SetStandardValue(RGB(42, 102, 201));
+			m_clrPopupControl.SetStandardValue(RGB(227, 239, 255), RGB(147, 181, 231));
+			m_clrToolbarExpand.SetStandardValue(RGB(117, 166, 241), RGB(0, 53, 145), 0.75f);
+			m_clrMenuExpandedGripper.SetStandardValue(RGB(203, 221, 246), RGB(121, 161, 220));
+
+			m_clrMenuExpand.SetStandardValue(0xFEEFE3, 0xE2A981);
+
+			m_clrStatusPane.SetStandardValue(RGB(211, 211, 211));
+			m_clrShadowFactor = RGB(0x16, 0x1E, 0x36);
+			m_clrTearOffGripper.SetStandardValue(RGB(169, 199, 240));
+
+			m_clrDisabledIcon.SetStandardValue(RGB(233, 236, 242), RGB(97, 122, 172));
+
+			m_arrColor[XPCOLOR_EDITCTRLBORDER].SetStandardValue(RGB(203, 225, 252));
+			m_arrColor[XPCOLOR_3DFACE].SetStandardValue(RGB(216, 231, 252));
+			m_arrColor[XPCOLOR_3DSHADOW].SetStandardValue(RGB(158, 190, 245));
+			m_arrColor[COLOR_APPWORKSPACE].SetStandardValue(RGB(144, 153, 174));
+			m_arrColor[XPCOLOR_LABEL].SetStandardValue(RGB(189, 211, 247));
+
+			INT nElements[] =
+			{
+				XPCOLOR_TOOLBAR_GRIPPER, XPCOLOR_SEPARATOR, XPCOLOR_DISABLED, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_BORDER, XPCOLOR_HIGHLIGHT, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_HIGHLIGHT_CHECKED, XPCOLOR_TOOLBAR_FACE, XPCOLOR_PUSHED_TEXT
+			};
+			COLORREF clrValues[] =
+			{
+				RGB(39, 65, 118), RGB(106, 140, 203), RGB(109, 150, 208), RGB(246, 246, 246), RGB(0, 45, 150), RGB(255, 238, 194), RGB(0, 0, 128), RGB(0, 0, 128), RGB(0, 0, 128), RGB(254, 128, 62), RGB(255, 192, 111), RGB(196, 219, 249), 0
+			};
+			SetColors(sizeof(nElements)/sizeof(INT), nElements, clrValues);
+
+			m_bLunaTheme = TRUE;
+		}
+		break;
+
+	case xtpSystemThemeOlive:
+		{
+			m_clrDockBar.SetStandardValue(RGB(217, 217, 167), RGB(242, 241, 228));
+			m_clrCommandBar.SetStandardValue(RGB(244, 247, 222), RGB(183, 198, 145), 0.3f);
+
+			m_clrToolbarShadow.SetStandardValue(RGB(96, 128, 88));
+			m_clrFloatingGripper.SetStandardValue(RGB(116, 134, 94));
+			m_clrPopupControl.SetStandardValue(RGB(236, 240, 213), RGB(194, 206, 159));
+			m_clrToolbarExpand.SetStandardValue(RGB(176, 194, 140), RGB(96, 119, 107), 0.3f);
+
+			m_clrMenuExpandedGripper.SetStandardValue(RGB(230, 230, 209), RGB(164, 180, 120), 0.3f);
+
+			m_clrMenuExpand.SetStandardValue(0xD5F0EC, 0x93C6B8);
+
+			m_clrStatusPane.SetStandardValue(RGB(211, 211, 211));
+			m_clrShadowFactor = RGB(0x1F, 0x22, 0x19);
+
+			m_clrDisabledIcon.SetStandardValue(RGB(243, 244, 240), RGB(131, 144, 113));
+			m_clrTearOffGripper.SetStandardValue(RGB(197, 212, 159));
+
+			m_arrColor[XPCOLOR_EDITCTRLBORDER].SetStandardValue(RGB(216, 227, 182));
+			m_arrColor[XPCOLOR_3DFACE].SetStandardValue(RGB(226, 231, 191));
+			m_arrColor[XPCOLOR_3DSHADOW].SetStandardValue(RGB(171, 192, 138));
+			m_arrColor[COLOR_APPWORKSPACE].SetStandardValue(RGB(151, 160, 123));
+			m_arrColor[XPCOLOR_LABEL].SetStandardValue(RGB(222, 227, 189));
+
+
+			INT nElements[] =
+			{
+				XPCOLOR_TOOLBAR_GRIPPER, XPCOLOR_SEPARATOR, XPCOLOR_DISABLED, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_BORDER, XPCOLOR_HIGHLIGHT, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_HIGHLIGHT_CHECKED, XPCOLOR_TOOLBAR_FACE, XPCOLOR_PUSHED_TEXT
+			};
+			COLORREF clrValues[] =
+			{
+				RGB(81, 94, 51), RGB(96, 128, 88), RGB(159, 174, 122), RGB(244, 244, 238), RGB(117, 141, 94), RGB(255, 238, 194), RGB(63, 93, 56), RGB(63, 93, 56), RGB(63, 93, 56), RGB(254, 128, 62), RGB(255, 192, 111), RGB(209, 222, 173), 0
+			};
+			SetColors(sizeof(nElements)/sizeof(INT), nElements, clrValues);
+
+			m_bLunaTheme = TRUE;
+		}
+		break;
+
+	case xtpSystemThemeSilver:
+		{
+			m_clrDockBar.SetStandardValue(RGB(215, 215, 229), RGB(243, 243, 247));
+			m_clrToolbarShadow.SetStandardValue(RGB(124, 124, 148));
+			m_clrCommandBar.SetStandardValue(RGB(249, 249, 255), RGB(156, 155, 183), 0.75f);
+
+			m_clrFloatingGripper.SetStandardValue(RGB(122, 121, 153));
+			m_clrPopupControl.SetStandardValue(RGB(233, 231, 241), RGB(186, 185, 205));
+			m_clrToolbarExpand.SetStandardValue(RGB(179, 178, 200), RGB(118, 116, 146), 0.75f);
+			m_clrMenuExpandedGripper.SetStandardValue(RGB(215, 215, 226), RGB(133, 131, 162));
+
+			m_clrMenuExpand.SetStandardValue(0xF1E8E8, 0xC5AEB0);
+
+			m_clrStatusPane.SetStandardValue(RGB(236, 234, 218));
+			m_clrShadowFactor = RGB(0x24, 0x20, 0x29);
+
+			m_clrDisabledIcon.SetStandardValue(RGB(247, 245, 249), RGB(122, 121, 153));
+			m_clrTearOffGripper.SetStandardValue(RGB(192, 192, 211));
+
+			m_arrColor[XPCOLOR_EDITCTRLBORDER].SetStandardValue(RGB(214, 211, 231));
+			m_arrColor[XPCOLOR_3DFACE].SetStandardValue(RGB(223, 223, 234));
+			m_arrColor[XPCOLOR_3DSHADOW].SetStandardValue(RGB(177, 176, 195));
+			m_arrColor[COLOR_APPWORKSPACE].SetStandardValue(RGB(155, 154, 179));
+			m_arrColor[XPCOLOR_LABEL].SetStandardValue(RGB(214, 215, 231));
+
+			INT nElements[] =
+			{
+				XPCOLOR_TOOLBAR_GRIPPER, XPCOLOR_SEPARATOR, XPCOLOR_DISABLED, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_BORDER, XPCOLOR_HIGHLIGHT, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_HIGHLIGHT_CHECKED, XPCOLOR_TOOLBAR_FACE, XPCOLOR_PUSHED_TEXT
+			};
+			COLORREF clrValues[] =
+			{
+				RGB(84, 84, 117), RGB(110, 109, 143), RGB(168, 167, 190), RGB(253, 250, 255), RGB(124, 124, 148), RGB(255, 238, 194), RGB(75, 75, 111), RGB(75, 75, 111), RGB(75, 75, 111), RGB(254, 128, 62), RGB(255, 192, 111), RGB(219, 218, 228), 0
+			};
+			SetColors(sizeof(nElements)/sizeof(INT), nElements, clrValues);
+
+			m_bLunaTheme = TRUE;
+		}
+		break;
+	}
+
+	if (m_bLunaTheme)
+	{
+		m_arrColor[XPCOLOR_HIGHLIGHT_DISABLED_BORDER].SetStandardValue(RGB(141, 141, 141));
+		m_arrColor[XPCOLOR_TOOLBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
+		m_arrColor[XPCOLOR_MENUBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
+		m_arrColor[XPCOLOR_FLOATBAR_BORDER].SetStandardValue(m_clrFloatingGripper);
+	}
+
+
+
+	CreateGradientCircle();
+}
+
+
+
+void CXTPOffice2003Theme::FillDockBar(CDC* pDC, CXTPDockBar* pBar)
+{
+	if (((CWnd*)pBar)->GetStyle() & CBRS_RIGHT)
+		pDC->FillSolidRect(CXTPClientRect((CWnd*)pBar), m_clrDockBar.clrDark);
+	else
+	{
+		CXTPClientRect rc((CWnd*)pBar);
+		CRect rcFill(rc.left, rc.top, max(rc.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2), rc.bottom);
+
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrDockBar, TRUE, rc);
+	}
+}
+void CXTPOffice2003Theme::ExcludeCorners(CDC* pDC, CRect rc)
+{
+	pDC->ExcludeClipRect(rc.left, rc.top, rc.left + 1, rc.top + 1);
+	pDC->ExcludeClipRect(rc.right - 1, rc.top, rc.right, rc.top + 1);
+	pDC->ExcludeClipRect(rc.left, rc.bottom - 1, rc.left + 1, rc.bottom);
+	pDC->ExcludeClipRect(rc.right - 1, rc.bottom - 1, rc.right, rc.bottom);
+}
+
+void CXTPOffice2003Theme::DrawPopupBarGripper(CDC* pDC, int x, int y, int cx, int cy, BOOL bExpanded)
+{
+	XTPDrawHelpers()->GradientFill(pDC, CRect(CPoint(x, y), CSize(cx, cy)),
+		bExpanded ? m_clrMenuExpandedGripper : m_clrCommandBar, TRUE);
+}
+
+BOOL CXTPOffice2003Theme::HasFloatingBarGradientEntry(CXTPCommandBar* pBar)
+{
+	return !IsFlatToolBar(pBar) && ((pBar->GetFlags() & xtpFlagAlignAny) != 0);
+}
+
+void CXTPOffice2003Theme::FillCommandBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	CXTPClientRect rc((CWnd*)pBar);
+
+	if (pBar->GetPosition() == xtpBarPopup)
+	{
+		Rectangle(pDC, rc, XPCOLOR_MENUBAR_BORDER, XPCOLOR_MENUBAR_FACE);
+
+		FillIntersectRect(pDC, (CXTPPopupBar*)pBar, GetXtremeColor(XPCOLOR_MENUBAR_FACE));
+	}
+	else if (IsFlatToolBar(pBar))
+	{
+		CRect rcFill(rc.left, rc.top, max(rc.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2), rc.bottom);
+		if (IsDockingPosition(pBar->GetPosition()))
+		{
+			CWnd* pParent = pBar->GetParent();
+			if (pParent)
+			{
+				CRect rcClient;
+				pParent->GetWindowRect(rcClient);
+				pBar->ScreenToClient(rcClient);
+				rcFill = CRect(rcClient.left, rc.top, rcClient.left + max(rcClient.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2), rc.bottom);
+			}
+		}
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrDockBar, TRUE, rc);
+
+		if (pBar->GetPosition() == xtpBarFloating)
+		{
+			COLORREF clr = GetXtremeColor(XPCOLOR_FLOATBAR_BORDER);
+			pDC->Draw3dRect(rc, clr, clr);
+			rc.DeflateRect(1, 1);
+			pDC->Draw3dRect(rc, clr, clr);
+
+			pDC->SetPixel(2, 2, clr);
+			pDC->SetPixel(rc.right - 2, 2, clr);
+			pDC->SetPixel(2, rc.bottom - 2, clr);
+			pDC->SetPixel(rc.right - 2, rc.bottom - 2, clr);
+		}
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+	{
+		COLORREF clr3DFace = GetXtremeColor(COLOR_3DFACE);
+		pDC->FillSolidRect(rc, clr3DFace);
+
+		CWnd* pWnd = pBar->GetParent();
+		if (pWnd)
+		{
+			CXTPWindowRect rcFill((CWnd*)pWnd);
+			pBar->ScreenToClient(rcFill);
+			rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
+			XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrDockBar, TRUE, rc);
+
+			pDC->ExcludeClipRect(rc.left, rc.top, rc.left + 3, rc.bottom);
+			ExcludeCorners(pDC, CRect(rc.left + 3, rc.top + 1, rc.right, rc.bottom - 1));
+		}
+
+		CRect rcFill = rc;
+		rcFill.top += 1;
+
+		int nFirst = pBar->GetControls()->GetNext(-1, +1, FALSE, TRUE);
+		if (nFirst != -1)
+		{
+			CRect rcRow = pBar->GetControls()->GetAt(nFirst)->GetRowRect();
+			rcFill.bottom = rcRow.bottom + 1;
+		}
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrCommandBar, FALSE);
+		pDC->FillSolidRect(rcFill.left, rcFill.bottom, rcFill.Width(), rc.Height() - rcFill.Height() - 2, m_clrCommandBar.clrDark);
+
+		pDC->FillSolidRect(rc.left + 5, rc.bottom - 1, rc.Width() - 7, 1, m_clrToolbarShadow);
+
+		pDC->SelectClipRgn(0);
+	}
+	else if (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight)
+	{
+		COLORREF clr3DFace = GetXtremeColor(COLOR_3DFACE);
+		pDC->FillSolidRect(rc, clr3DFace);
+
+		CWnd* pWnd = pBar->GetParent();
+		if (pWnd)
+		{
+			if (pWnd->GetStyle() & CBRS_RIGHT)
+				pDC->FillSolidRect(rc, m_clrDockBar.clrDark);
+			else
+			{
+				CXTPWindowRect rcFill((CWnd*)pWnd);
+				pBar->ScreenToClient(rcFill);
+				rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
+				XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrDockBar, TRUE, rc);
+			}
+
+			pDC->ExcludeClipRect(rc.left, rc.top, rc.right, rc.top + 3);
+			ExcludeCorners(pDC, CRect(rc.left + 1, rc.top + 3, rc.right - 1, rc.bottom));
+		}
+
+		CRect rcFill = rc;
+		rcFill.left += 1;
+
+		int nFirst = pBar->GetControls()->GetNext(-1, +1, FALSE, TRUE);
+		if (nFirst != -1)
+		{
+			CRect rcRow = pBar->GetControls()->GetAt(nFirst)->GetRowRect();
+			rcFill.right = rcRow.right + 1;
+		}
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrCommandBar, TRUE);
+		pDC->FillSolidRect(rc.right - 1, rc.top + 5 , 1, rc.Height() - 7, m_clrToolbarShadow);
+
+		pDC->SelectClipRgn(0);
+	}
+	else if (pBar->GetPosition() == xtpBarFloating && HasFloatingBarGradientEntry(pBar))
+	{
+		pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
+
+		COLORREF clrBorder = GetXtremeColor(XPCOLOR_FLOATBAR_BORDER);
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+		rc.DeflateRect(1, 1);
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+		CXTPFontDC font(pDC, GetSmCaptionFont());
+		CSize sz = pDC->GetTextExtent(_T(" "), 1);
+
+		CRect rcFill(rc.left + 2, rc.top + 2 + max(15, sz.cy), rc.right - 2, rc.bottom - 2);
+
+		for (int i = 0; i < pBar->GetControlCount(); i++)
+		{
+			CXTPControl* pControl = pBar->GetControl(i);
+
+			if (pControl->GetWrap() && pControl->IsVisible() && pControl->GetRect().top > rcFill.top)
+			{
+				CRect rcRow(rcFill.left, rcFill.top, rcFill.right, pControl->GetRowRect().top);
+				XTPDrawHelpers()->GradientFill(pDC, rcRow, m_clrCommandBar, FALSE);
+
+				rcFill.top = rcRow.bottom;
+			}
+		}
+
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, m_clrCommandBar, FALSE);
+
+		pDC->SetPixel(2, 2, clrBorder);
+		pDC->SetPixel(rc.right - 2, 2, clrBorder);
+		pDC->SetPixel(2, rc.bottom - 2, clrBorder);
+		pDC->SetPixel(rc.right - 2, rc.bottom - 2, clrBorder);
+
+	}
+	else
+	{
+		CXTPOfficeTheme::FillCommandBarEntry(pDC, pBar);
+	}
+}
+
+CSize CXTPOffice2003Theme::DrawCommandBarSeparator(CDC* pDC, CXTPCommandBar* pBar, CXTPControl* pControl, BOOL bDraw)
+{
+	BOOL bSkipWrapSeparators = pBar->GetPosition() == xtpBarFloating && pBar->GetType() != xtpBarTypePopup;
+
+	if (!bDraw && bSkipWrapSeparators)
+	{
+		return CSize(6, 0);
+	}
+
+	if (!bDraw)
+	{
+		return CXTPOfficeTheme::DrawCommandBarSeparator(pDC, pBar, pControl, bDraw);
+	}
+
+	CRect rc;
+	pBar->GetClientRect(&rc);
+	CRect rcControl = pControl->GetRect();
+	CXTPPenDC pen (*pDC, GetXtremeColor(XPCOLOR_SEPARATOR));
+	CRect rcRow = pControl->GetRowRect();
+
+	if (pBar->GetPosition() == xtpBarRight || pBar->GetPosition() == xtpBarLeft)
+	{
+		if (!pControl->GetWrap())
+		{
+			Line(pDC, rcRow.left + 4, rcControl.top - 4, rcRow.right - 4, rcControl.top - 4, XPCOLOR_SEPARATOR);
+			if (!m_bPlainSeparators) Line(pDC, rcRow.left + 5, rcControl.top - 3, rcRow.right - 3, rcControl.top - 3, COLOR_3DHIGHLIGHT);
+		}
+		else
+		{
+			Line(pDC, rcRow.right + 2, rcRow.top + 4, rcRow.right + 2, rcRow.bottom, XPCOLOR_SEPARATOR);
+			Line(pDC, rcRow.right + 3, rcRow.top + 5, rcRow.right + 3, rcRow.bottom, COLOR_3DHIGHLIGHT);
+		}
+
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom || bSkipWrapSeparators)
+	{
+		if (!pControl->GetWrap())
+		{
+			Line(pDC, rcControl.left - 4, rcRow.top + 4, rcControl.left - 4, rcRow.bottom - 4, XPCOLOR_SEPARATOR);
+			if (!m_bPlainSeparators) Line(pDC, rcControl.left - 3, rcRow.top + 5, rcControl.left - 3, rcRow.bottom - 3, COLOR_3DHIGHLIGHT);
+		}
+		else if (!bSkipWrapSeparators)
+		{
+			Line(pDC, rcRow.left + 4, rcRow.top - 4, rcRow.right, rcRow.top - 4, XPCOLOR_SEPARATOR);
+			Line(pDC, rcRow.left + 5, rcRow.top - 3, rcRow.right, rcRow.top - 3, COLOR_3DHIGHLIGHT);
+		}
+	}
+	else return CXTPOfficeTheme::DrawCommandBarSeparator(pDC, pBar, pControl, bDraw);
+
+	return 0;
+}
+
+CSize CXTPOffice2003Theme::DrawDialogBarGripper(CDC* pDC, CXTPDialogBar* pBar, BOOL bDraw)
+{
+	CSize sz(8, max(25, m_nTextHeight + 6));
+
+	if (pDC && bDraw)
+	{
+		CRect rcGripper;
+		pBar->GetClientRect(&rcGripper);
+
+		rcGripper.DeflateRect(3, 3);
+		rcGripper.bottom = rcGripper.top + sz.cy;
+
+		if (pBar->IsActive())
+		{
+			if (m_bLunaTheme)
+				XTPDrawHelpers()->GradientFill(pDC, rcGripper, m_grcLunaChecked, FALSE);
+			else
+				pDC->FillSolidRect(rcGripper, GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+		}
+		else
+		{
+			XTPDrawHelpers()->GradientFill(pDC, rcGripper, m_clrCommandBar, FALSE);
+		}
+
+		for (int y = rcGripper.top + 4; y < rcGripper.bottom - 5; y += 4)
+		{
+			pDC->FillSolidRect(CRect(4 + 2, y + 1, 6 + 2, y + 3), GetXtremeColor(COLOR_WINDOW));
+			pDC->FillSolidRect(CRect(3 + 2, y, 5 + 2, y + 2), GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+		}
+	}
+
+	return sz;
+}
+
+CSize CXTPOffice2003Theme::DrawCommandBarGripper(CDC* pDC, CXTPCommandBar* pBar, BOOL bDraw)
+{
+	if (pBar->IsDialogBar())
+		return DrawDialogBarGripper(pDC, (CXTPDialogBar*)pBar, bDraw);
+
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	if (pBar->GetPosition() == xtpBarPopup && pBar->GetType() == xtpBarTypePopup)
+	{
+		return CXTPOfficeTheme::DrawCommandBarGripper(pDC, pBar, bDraw);
+	}
+	else if (pBar->GetPosition() == xtpBarFloating)
+	{
+		return CXTPOfficeTheme::DrawCommandBarGripper(pDC, pBar, bDraw);
+	}
+	else if (pBar->GetPosition() == xtpBarRight || pBar->GetPosition() == xtpBarLeft)
+	{
+		if (!pDC || !bDraw) return CSize(0, 8 + 1);
+		for (int x = 5; x < rc.Width() - 7; x += 4)
+		{
+			pDC->FillSolidRect(CRect(x + 1, 4 + 3, x + 3, 6 + 3), GetXtremeColor(COLOR_WINDOW));
+			pDC->FillSolidRect(CRect(x, 3 + 3, x + 2, 5 + 3), GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+		}
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+	{
+		if (!pDC || !bDraw) return CSize(6, 0);
+		for (int y = 5; y < rc.Height() - 7; y += 4)
+		{
+			pDC->FillSolidRect(CRect(7, y + 1, 9, y + 3), GetXtremeColor(COLOR_WINDOW));
+			pDC->FillSolidRect(CRect(6, y, 8, y + 2), GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+		}
+	}
+	return 0;
+
+}
+
+void CXTPOffice2003Theme::RectangleEx(CDC* pDC, CRect rc, int nColorBorder, BOOL bHoriz, CXTPPaintManagerColorGradient& color)
+{
+	GradientFill(pDC, rc, color.clrLight, color.clrDark, bHoriz);
+	Draw3dRect(pDC, rc, nColorBorder, nColorBorder);
+}
+
+void CXTPOffice2003Theme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition barPosition /*= xtpBarPopup*/)
+{
+	if (bPopuped)
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rc, m_clrPopupControl, FALSE);
+		Draw3dRect(pDC, rc, XPCOLOR_MENUBAR_BORDER, XPCOLOR_MENUBAR_BORDER);
+	}
+	else if (m_bLunaTheme && barType != xtpBarTypePopup && (IsDockingPosition(barPosition) || (barPosition == xtpBarFloating)))
+	{
+		BOOL bHoriz = IsVerticalPosition(barPosition);
+		if (!bEnabled)
+		{
+			if (IsKeyboardSelected(bSelected))
+				RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, bHoriz, bChecked ? m_grcLunaPushed : m_grcLunaSelected);
+			else if (bChecked)
+				RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_DISABLED_BORDER, bHoriz, m_grcLunaChecked);
+			return;
+		}
+		else if (bChecked == 2 && !bSelected && !bPressed)
+		{
+			Rectangle(pDC, rc, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_3DFACE);
+		}
+		else if (bChecked && !bSelected && !bPressed) RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, bHoriz, m_grcLunaChecked);
+		else if (bChecked && bSelected && !bPressed) RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, bHoriz, m_grcLunaPushed);
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, bHoriz, m_grcLunaPushed);
+		else if (bSelected || bPressed) RectangleEx(pDC, rc, XPCOLOR_HIGHLIGHT_BORDER, bHoriz, m_grcLunaSelected);
+
+	}
+	else CXTPOfficeTheme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
+}
+
+void CXTPOffice2003Theme::DrawExpandSymbols(CDC* pDC, BOOL bVertical, CRect rc, BOOL bHiddenExists, COLORREF clr)
+{
+	if (!bVertical)
+	{
+		CPoint pt = CPoint(rc.left + rc.Width()/2, rc.bottom - 6);
+		CXTPPenDC pen(*pDC, clr);
+		Line(pDC, CPoint(pt.x -2 , pt.y - 4), CPoint(pt.x + 3, pt.y - 4));
+		Triangle(pDC, CPoint(pt.x -2 , pt.y - 1), CPoint(pt.x + 2, pt.y - 1), CPoint (pt.x, pt.y + 1), clr);
+
+		if (bHiddenExists)
+		{
+			Triangle(pDC, CPoint(rc.left + 3, rc.top + 5), CPoint(rc.left + 4, rc.top + 6), CPoint(rc.left + 3, rc.top + 7), clr);
+			Triangle(pDC, CPoint(rc.left + 7, rc.top + 5), CPoint(rc.left + 8, rc.top + 6), CPoint(rc.left + 7, rc.top + 7), clr);
+		}
+	}
+	else
+	{
+		CPoint pt = CPoint(rc.right - 5, rc.CenterPoint().y);
+		CXTPPenDC pen(*pDC, clr);
+		Line(pDC, CPoint(pt.x - 5 , pt.y - 2), CPoint(pt.x - 5, pt.y + 3));
+
+		Triangle(pDC, CPoint(pt.x , pt.y), CPoint(pt.x - 2, pt.y - 2), CPoint (pt.x - 2, pt.y + 2), clr);
+
+		if (bHiddenExists)
+		{
+			Triangle(pDC, CPoint(rc.left + 5, rc.top + 3), CPoint(rc.left + 6, rc.top + 4), CPoint(rc.left + 7, rc.top + 3), clr);
+			Triangle(pDC, CPoint(rc.left + 5, rc.top + 7), CPoint(rc.left + 6, rc.top + 8), CPoint(rc.left + 7, rc.top + 7), clr);
+		}
+	}
+}
+
+CSize CXTPOffice2003Theme::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
+{
+	if (controlType == xtpButtonExpandToolbar)
+	{
+		if (!bDraw)
+		{
+			CSize szBar = *(CSize*)lpParam;
+			if (!IsVerticalPosition(pBar->GetPosition()))
+				pButton->SetRect(CRect(szBar.cx - (11 + 1), 1, szBar.cx - 0, szBar.cy - 0));
+			else
+				pButton->SetRect(CRect(0, szBar.cy - (11 + 1), szBar.cx - 0, szBar.cy - 0));
+		}
+		else
+		{
+			CRect rc = pButton->GetRect();
+			if (!IsVerticalPosition(pBar->GetPosition()))
+			{
+				pDC->ExcludeClipRect(rc.right - 1, rc.top, rc.right, rc.top + 1);
+				pDC->ExcludeClipRect(rc.right - 1, rc.bottom - 1, rc.right, rc.bottom);
+				pDC->ExcludeClipRect(rc.left, rc.top + 1, rc.left + 1, rc.bottom - 1);
+			}
+			else
+			{
+				pDC->ExcludeClipRect(rc.left, rc.bottom - 1, rc.left + 1, rc.bottom);
+				pDC->ExcludeClipRect(rc.right - 1, rc.bottom - 1, rc.right, rc.bottom);
+				pDC->ExcludeClipRect(rc.left + 1, rc.top, rc.right - 1, rc.top + 1);
+			}
+
+			if (pButton->GetPopuped())
+			{
+				if (m_bLunaTheme) GradientFill(pDC, rc, m_grcLunaPushed.clrLight, m_grcLunaPushed.clrDark, IsVerticalPosition(pBar->GetPosition()));
+				else pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+			}
+			else if (pButton->GetSelected())
+			{
+				if (m_bLunaTheme) GradientFill(pDC, rc, m_grcLunaSelected.clrLight, m_grcLunaSelected.clrDark, IsVerticalPosition(pBar->GetPosition()));
+				else pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT));
+			}
+			else
+			{
+				XTPDrawHelpers()->GradientFill(pDC, rc, m_clrToolbarExpand, IsVerticalPosition(pBar->GetPosition()));
+			}
+
+			COLORREF clrText = GetXtremeColor(pButton->GetPopuped() ? XPCOLOR_TOOLBAR_TEXT: pButton->GetSelected() ? XPCOLOR_HIGHLIGHT_TEXT : XPCOLOR_TOOLBAR_TEXT);
+			BOOL bHiddenExists = *(BOOL*)lpParam;
+
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), CRect(CPoint(rc.left + 1, rc.top + 1), rc.Size()) , bHiddenExists, GetXtremeColor(COLOR_BTNHIGHLIGHT));
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), rc, bHiddenExists, clrText);
+
+			pDC->SelectClipRgn(0);
+		}
+		return 0;
+	}
+	if (controlType == xtpButtonExpandMenu)
+	{
+		if (bDraw)
+		{
+			CXTPPaintManager::DrawControlEntry(pDC, pButton);
+			CRect rcButton = pButton->GetRect();
+			int nCenter = rcButton.CenterPoint().x;
+
+			m_ilGradientCircle.Draw(pDC, 0, CPoint(nCenter - 7, rcButton.top + 1), ILD_NORMAL);
+
+			int nTop = rcButton.top + 5;
+			CXTPPenDC pen(pDC->GetSafeHdc(), 0);
+			pDC->MoveTo(nCenter - 2, nTop);
+			pDC->LineTo(nCenter, nTop + 2);
+			pDC->LineTo(nCenter + 3, nTop - 1);
+			pDC->MoveTo(nCenter - 2, nTop + 1);
+			pDC->LineTo(nCenter, nTop + 3);
+			pDC->LineTo(nCenter + 3, nTop);
+
+			pDC->MoveTo(nCenter - 2, nTop + 4);
+			pDC->LineTo(nCenter, nTop + 6);
+			pDC->LineTo(nCenter + 3, nTop + 3);
+			pDC->MoveTo(nCenter - 2, nTop + 5);
+			pDC->LineTo(nCenter, nTop + 7);
+			pDC->LineTo(nCenter + 3, nTop + 4);
+
+		}
+		return CSize(0, 18);
+	}
+
+	return CXTPOfficeTheme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+}
+
+
+void CXTPOffice2003Theme::CreateGradientCircle()
+{
+
+	const BYTE clrMask[16 * 16] =
+	{
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0xEA, 0xC6, 0xB4, 0xB4, 0xB4, 0xC6, 0xFC, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xEA, 0xEA, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x7E, 0x7E, 0xC6, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xEA, 0xFC, 0xFC, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x7E, 0x6C, 0x5A, 0x90, 0xFF, 0xFF,
+		0xFF, 0xEA, 0xFC, 0xFC, 0xFC, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x7E, 0x6C, 0x5A, 0x36, 0x7E, 0xFF,
+		0xEA, 0xFC, 0xFC, 0xFC, 0xFC, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x7E, 0x6C, 0x5A, 0x36, 0x24, 0xEA,
+		0xEA, 0xFC, 0xFC, 0xFC, 0xFC, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x7E, 0x6C, 0x48, 0x36, 0x24, 0x5A,
+		0xEA, 0xEA, 0xEA, 0xEA, 0xEA, 0xEA, 0xC6, 0xB4, 0x90, 0x90, 0x7E, 0x6C, 0x48, 0x24, 0x12, 0x24,
+		0xC6, 0xEA, 0xEA, 0xEA, 0xC6, 0xC6, 0xC6, 0xB4, 0x90, 0x7E, 0x7E, 0x48, 0x36, 0x24, 0x12, 0x12,
+		0xC6, 0xC6, 0xC6, 0xC6, 0xC6, 0xB4, 0xB4, 0x90, 0x7E, 0x7E, 0x6C, 0x48, 0x36, 0x12, 0x12, 0x00,
+		0xC6, 0xB4, 0xB4, 0xB4, 0xB4, 0xB4, 0x90, 0x7E, 0x7E, 0x6C, 0x5A, 0x36, 0x24, 0x12, 0x00, 0x00,
+		0xC6, 0x90, 0x90, 0x90, 0x90, 0x90, 0x7E, 0x7E, 0x6C, 0x6C, 0x48, 0x36, 0x24, 0x12, 0x00, 0x36,
+		0xFC, 0x90, 0x7E, 0x7E, 0x7E, 0x7E, 0x6C, 0x6C, 0x5A, 0x5A, 0x36, 0x24, 0x12, 0x00, 0x00, 0xB4,
+		0xFF, 0xC6, 0x6C, 0x6C, 0x6C, 0x6C, 0x5A, 0x5A, 0x5A, 0x48, 0x36, 0x24, 0x12, 0x00, 0x48, 0xFF,
+		0xFF, 0xFF, 0xB4, 0x6C, 0x5A, 0x5A, 0x5A, 0x48, 0x48, 0x36, 0x24, 0x12, 0x00, 0x36, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xC6, 0x5A, 0x48, 0x48, 0x48, 0x36, 0x24, 0x24, 0x12, 0x6C, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0xB4, 0x6C, 0x48, 0x36, 0x5A, 0x7E, 0xEA, 0xFF, 0xFF, 0xFF, 0xFF
+	};
+
+	m_ilGradientCircle.DeleteImageList();
+
+	COLORREF clrLight = m_clrMenuExpand.clrLight;
+	COLORREF clrDark = m_clrMenuExpand.clrDark;
+
+	CWindowDC dc(CWnd::GetDesktopWindow());
+
+	CDC dcCircle;
+	dcCircle.CreateCompatibleDC(&dc);
+	CBitmap bmp;
+	VERIFY(bmp.CreateCompatibleBitmap(&dc, 16, 16));
+	CBitmap* pOldBitmap = (CBitmap*)dcCircle.SelectObject(&bmp);
+
+	for (int i = 0; i < 16 * 16; i++)
+	{
+		int n = clrMask[i];
+
+		int nRed = GetRValue(clrDark) - n * (GetRValue(clrDark) - GetRValue(clrLight)) / 0xFF;
+		int nGreen = GetGValue(clrDark) - n * (GetGValue(clrDark) - GetGValue(clrLight)) / 0xFF;
+		int nBlue = GetBValue(clrDark) - n * (GetBValue(clrDark) - GetBValue(clrLight)) / 0xFF;
+		dcCircle.SetPixel(i / 16, i % 16, n == 0xFF ? RGB(0, 0xFF, 0) : RGB(nRed, nGreen, nBlue));
+	}
+
+	dcCircle.SelectObject(pOldBitmap);
+
+	m_ilGradientCircle.Create(16, 16, ILC_COLOR24 | ILC_MASK, 1, 0);
+	m_ilGradientCircle.Add(&bmp, RGB(0, 0xFF, 0));
+
+	ASSERT(m_ilGradientCircle.GetImageCount() == 1);
+
+}
+
+
+#define RGB_TO_RGBQUAD(r, g, b) (RGB(b, g, r))
+
+
+HBITMAP CXTPOffice2003Theme::GetModernBitmap(UINT nIDResource)
+{
+	static const struct
+	{
+		DWORD rgbqFrom;
+		DWORD rgbqTo;
+	}
+	modernColorMap[] =
+	{
+		{ RGB_TO_RGBQUAD(0, 128, 0), RGB_TO_RGBQUAD(0, 151, 94) },
+		{ RGB_TO_RGBQUAD(255, 0, 0), RGB_TO_RGBQUAD(255, 87, 42) },
+		{ RGB_TO_RGBQUAD(128, 0, 0), RGB_TO_RGBQUAD(213, 79, 74) },
+		{ RGB_TO_RGBQUAD(0, 0, 255), RGB_TO_RGBQUAD(58, 123, 252) },
+		{ RGB_TO_RGBQUAD(0, 0, 128), RGB_TO_RGBQUAD(1, 81, 205) },
+		{ RGB_TO_RGBQUAD(128, 128, 128), RGB_TO_RGBQUAD(149, 147, 145) },
+		{ RGB_TO_RGBQUAD(128, 128, 0), RGB_TO_RGBQUAD(228, 167, 8) },
+		{ RGB_TO_RGBQUAD(192, 192, 192), RGB_TO_RGBQUAD(205, 198, 187) },
+		{ RGB_TO_RGBQUAD(255, 255, 0), RGB_TO_RGBQUAD(255, 218, 33) }
+	};
+
+
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return NULL;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_BITMAP);
+	if (!hInst)
+		return NULL;
+
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_BITMAP);
+	if (hRsrc == NULL)
+		return NULL;
+
+	HGLOBAL hglb = LoadResource(hInst, hRsrc);
+	if (hglb == NULL)
+		return NULL;
+
+	LPBITMAPINFOHEADER lpBitmap = (LPBITMAPINFOHEADER)LockResource(hglb);
+	if (lpBitmap == NULL)
+		return NULL;
+
+	// make copy of BITMAPINFOHEADER so we can modify the color table
+	const int nColorTableSize = 16;
+	UINT nSize = lpBitmap->biSize + nColorTableSize * sizeof(RGBQUAD);
+	LPBITMAPINFOHEADER lpBitmapInfo = (LPBITMAPINFOHEADER)::malloc(nSize);
+	if (lpBitmapInfo == NULL)
+		return NULL;
+
+	MEMCPY_S(lpBitmapInfo, lpBitmap, nSize);
+
+	// color table is in RGBQUAD DIB format
+	DWORD* pColorTable =
+		(DWORD*)(((LPBYTE)lpBitmapInfo) + (UINT)lpBitmapInfo->biSize);
+
+	COLORREF clrMask = XTPImageManager()->GetMaskColor();
+
+	for (int iColor = 0; iColor < nColorTableSize; iColor++)
+	{
+		// look for matching RGBQUAD color in original
+		for (int i = 0; i < _countof(modernColorMap); i++)
+		{
+			if (pColorTable[iColor] == modernColorMap[i].rgbqFrom
+				&& clrMask != pColorTable[iColor])
+			{
+				pColorTable[iColor] = modernColorMap[i].rgbqTo;
+				break;
+			}
+		}
+	}
+
+	int nWidth = (int)lpBitmapInfo->biWidth;
+	int nHeight = (int)lpBitmapInfo->biHeight;
+	HDC hDCScreen = ::GetDC(NULL);
+	HBITMAP hbm = ::CreateCompatibleBitmap(hDCScreen, nWidth, nHeight);
+
+	if (hbm != NULL)
+	{
+		HDC hDCGlyphs = ::CreateCompatibleDC(hDCScreen);
+		HBITMAP hbmOld = (HBITMAP)::SelectObject(hDCGlyphs, hbm);
+
+		LPBYTE lpBits;
+		lpBits = (LPBYTE)(lpBitmap + 1);
+		lpBits += ((size_t)1 << (lpBitmapInfo->biBitCount)) * sizeof(RGBQUAD);
+
+		StretchDIBits(hDCGlyphs, 0, 0, nWidth, nHeight, 0, 0, nWidth, nHeight,
+			lpBits, (LPBITMAPINFO)lpBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+		SelectObject(hDCGlyphs, hbmOld);
+		::DeleteDC(hDCGlyphs);
+	}
+	::ReleaseDC(NULL, hDCScreen);
+
+	// free copy of bitmap info struct and resource itself
+	::free(lpBitmapInfo);
+	::FreeResource(hglb);
+
+	return hbm;
+}
+
+BOOL CXTPOffice2003Theme::LoadModernToolbarIcons(UINT nIDResource)
+{
+
+	HBITMAP hbm = GetModernBitmap(nIDResource);
+	if (!hbm)
+		return FALSE;
+
+	CBitmap bmp;
+	bmp.Attach(hbm);
+
+	return XTPImageManager()->SetIcons(nIDResource, bmp);
+}
+
+BOOL CXTPOffice2003Theme::LoadModernToolbarIcons(UINT nIDResource, UINT* pCommands, int nCount, CSize szIcon)
+{
+	HBITMAP hbm = GetModernBitmap(nIDResource);
+	if (!hbm)
+		return FALSE;
+
+	CBitmap bmp;
+	bmp.Attach(hbm);
+
+	return XTPImageManager()->SetIcons(bmp, pCommands, nCount, szIcon);
+}
+
+
+
+CRect CXTPOffice2003Theme::GetCommandBarBorders(CXTPCommandBar* pBar)
+{
+	if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+		return CRect(4, 2, 2, 2);
+	else return CXTPOfficeTheme::GetCommandBarBorders(pBar);
+}
+
+CSize CXTPOffice2003Theme::DrawTearOffGripper(CDC* pDC, CRect rcGripper, BOOL bSelected, BOOL bDraw)
+{
+	if (bDraw)
+	{
+		CRect rc(1, 1, rcGripper.right + 1, rcGripper.Height() + 1);
+		pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_MENUBAR_FACE));
+		rc.DeflateRect(1, 1);
+		int nLeft = rc.CenterPoint().x - min(32, rcGripper.Width() /2 - 10);
+		int nRight = rc.CenterPoint().x + min(32, rcGripper.Width() /2 - 10);
+
+		if (bSelected)
+			Rectangle(pDC, rc, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT);
+		else
+			pDC->FillSolidRect(rc, m_clrTearOffGripper);
+
+		for (int x = nLeft; x < nRight; x += 4)
+		{
+			pDC->FillSolidRect(CRect(x + 1, 4 + 1, x + 3, 6 + 1), GetXtremeColor(COLOR_BTNHIGHLIGHT));
+			pDC->FillSolidRect(CRect(x, 3 + 1, x + 2, 5 + 1), GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+		}
+	}
+
+	return CSize(0, 9);
+}
+
+void CXTPOffice2003Theme::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
+{
+	if (m_themeStatusBar.IsAppThemed())
+	{
+		CRect rcGripper(rcClient.right - 18, rcClient.top, rcClient.right, rcClient.bottom);
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), SP_GRIPPER, 0, &rcGripper, 0);
+
+	}
+	else
+	{
+		CXTPPenDC penBorder(*pDC, GetXtremeColor(COLOR_3DSHADOW));
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+			pDC->MoveTo(rcClient.Width() - i * 5, rcClient.Height() - 1);
+			pDC->LineTo(rcClient.Width(), rcClient.Height() - 1 - i * 5);
+
+			pDC->MoveTo(rcClient.Width() - 1 - i * 5, rcClient.Height() - 1);
+			pDC->LineTo(rcClient.Width(), rcClient.Height() - 2 - i * 5);
+
+			pDC->MoveTo(rcClient.Width() - 2 - i * 5, rcClient.Height() - 1);
+			pDC->LineTo(rcClient.Width(), rcClient.Height() - 3 - i * 5);
+		}
+
+		CXTPPenDC penBorderWhite(*pDC, GetXtremeColor(COLOR_BTNHIGHLIGHT));
+		for (i = 0; i < 3; i++)
+		{
+			pDC->MoveTo(rcClient.Width() - 3 - i * 5, rcClient.Height() - 1);
+			pDC->LineTo(rcClient.Width(), rcClient.Height() - 4 - i * 5);
+		}
+
+	}
+}
+
+void CXTPOffice2003Theme::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL bGripperPane)
+{
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
+	{
+		CXTPPaintManager::DrawStatusBarPaneBorder(pDC, rc, pPane, bGripperPane);
+	}
+	else
+	{
+		pDC->Draw3dRect(rc, m_clrStatusPane, m_clrStatusPane);
+	}
+}
+
+
+CXTPWhidbeyTheme::CXTPWhidbeyTheme()
+{
+	m_systemTheme = xtpSystemThemeUnknown;
+	m_bPlainSeparators = TRUE;
+}
+
+CXTPWhidbeyTheme::~CXTPWhidbeyTheme()
+{
+
+}
+
+void CXTPWhidbeyTheme::RefreshMetrics()
+{
+	CXTPOffice2003Theme::RefreshMetrics();
+
+	m_clrToolbarExpand.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DFACE), 550),
+		GetXtremeColor(COLOR_3DSHADOW));
+
+	if (XTPColorManager()->IsLowResolution())
+	{
+		m_clrToolbarExpand.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	}
+
+	switch (XTPColorManager()->GetCurrentSystemTheme())
+	{
+	case xtpSystemThemeBlue:
+		m_clrCommandBar.SetStandardValue(RGB(250, 249, 245), RGB(192, 192, 168), 0.75f);
+		m_clrToolbarExpand.SetStandardValue(RGB(238, 237, 234), RGB(152, 152, 126), 0.75f);
+		m_clrDockBar.SetStandardValue(RGB(229, 229, 215), RGB(244, 241, 231));
+		m_clrToolbarShadow.SetStandardValue(RGB(163, 163, 124));
+		m_clrMenuExpandedGripper.SetStandardValue(RGB(204, 199, 186));
+		m_clrMenuExpand.SetStandardValue(m_clrCommandBar);
+		m_clrDisabledIcon.SetStandardValue(RGB(247, 245, 249), RGB(122, 121, 153));
+		break;
+
+	case xtpSystemThemeOlive:
+		m_clrCommandBar.SetStandardValue(RGB(250, 249, 245), RGB(192, 192, 168), 0.75f);
+		m_clrToolbarExpand.SetStandardValue(RGB(238, 237, 234), RGB(176, 172, 158), 0.75f);
+		m_clrDockBar.SetStandardValue(RGB(229, 229, 215), RGB(244, 241, 231));
+		m_clrToolbarShadow.SetStandardValue(RGB(163, 163, 124));
+		m_clrMenuExpandedGripper.SetStandardValue(RGB(204, 199, 186));
+		m_clrMenuExpand.SetStandardValue(m_clrCommandBar);
+		m_clrDisabledIcon.SetStandardValue(RGB(236, 233, 216), RGB(172, 168, 153));
+
+		m_arrColor[XPCOLOR_HIGHLIGHT].SetStandardValue(RGB(182, 198, 141));
+		m_arrColor[XPCOLOR_HIGHLIGHT_PUSHED].SetStandardValue(RGB(147, 160, 112));
+		m_arrColor[XPCOLOR_HIGHLIGHT_CHECKED].SetStandardValue(RGB(182, 198, 141));
+		m_arrColor[XPCOLOR_PUSHED_TEXT].SetStandardValue(RGB(255, 255, 255));
+		break;
+
+	case xtpSystemThemeSilver:
+		m_clrCommandBar.SetStandardValue(RGB(243, 244, 250), RGB(153, 151, 181), 0.75f);
+		m_clrToolbarExpand.SetStandardValue(RGB(179, 178, 200), RGB(118, 116, 146), 0.75f);
+		m_clrDockBar.SetStandardValue(RGB(215, 215, 229), RGB(243, 243, 247));
+		m_clrMenuExpandedGripper.SetStandardValue(RGB(215, 215, 226), RGB(133, 131, 162));
+		m_clrMenuExpand.SetStandardValue(0xF1E8E8, 0xC5AEB0);
+		m_clrToolbarShadow.SetStandardValue(RGB(124, 124, 148));
+		m_clrDisabledIcon.SetStandardValue(RGB(247, 245, 249), RGB(122, 121, 153));
+
+		m_arrColor[XPCOLOR_TOOLBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
+		m_arrColor[XPCOLOR_MENUBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
+		m_arrColor[XPCOLOR_SEPARATOR].SetStandardValue(RGB(110, 109, 143));
+		m_arrColor[XPCOLOR_TOOLBAR_GRIPPER].SetStandardValue(RGB(84, 84, 117));
+		m_arrColor[XPCOLOR_TOOLBAR_FACE].SetStandardValue(RGB(219, 218, 228));
+		m_clrTearOffGripper.SetStandardValue(RGB(192, 192, 211));
+		m_clrFloatingGripper.SetStandardValue(RGB(122, 121, 153));
+		m_arrColor[XPCOLOR_FLOATBAR_BORDER].SetStandardValue(RGB(122, 121, 153));
+
+		INT nElements[] =
+		{
+			XPCOLOR_HIGHLIGHT, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_HIGHLIGHT_CHECKED, XPCOLOR_PUSHED_TEXT
+		};
+		COLORREF clrValues[] =
+		{
+			RGB(255, 238, 194), RGB(75, 75, 111), RGB(75, 75, 111), RGB(75, 75, 111), RGB(254, 128, 62), RGB(255, 192, 111), 0
+		};
+		SetColors(sizeof(nElements)/sizeof(INT), nElements, clrValues);
+
+		break;
+	}
+
+	CreateGradientCircle();
+}

@@ -1,60 +1,388 @@
-// roc 2009-06 0077f310  unit: CXTThemeManagerStyleHost  size: 142 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0077f310
-//
-// 0077f310  53                   push ebx
-// 0077f311  8b5c2408             mov ebx, dword ptr [esp + 8]
-// 0077f315  56                   push esi
-// 0077f316  8bf1                 mov esi, ecx
-// 0077f318  837e0c00             cmp dword ptr [esi + 0xc], 0
-// 0077f31c  7504                 jne 0x77f322
-// 0077f31e  85db                 test ebx, ebx
-// 0077f320  7477                 je 0x77f399
-// 0077f322  56                   push esi
-// 0077f323  e828fbffff           call 0x77ee50
-// 0077f328  8bc8                 mov ecx, eax
-// 0077f32a  83c108               add ecx, 8
-// 0077f32d  e840d20c00           call 0x84c572
-// 0077f332  837e0400             cmp dword ptr [esi + 4], 0
-// 0077f336  7417                 je 0x77f34f
-// 0077f338  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 0077f33b  85c9                 test ecx, ecx
-// 0077f33d  7410                 je 0x77f34f
-// 0077f33f  8b01                 mov eax, dword ptr [ecx]
-// 0077f341  8b5004               mov edx, dword ptr [eax + 4]
-// 0077f344  6a01                 push 1
-// 0077f346  ffd2                 call edx
-// 0077f348  c7460c00000000       mov dword ptr [esi + 0xc], 0
-// 0077f34f  85db                 test ebx, ebx
-// 0077f351  741d                 je 0x77f370
-// 0077f353  8b06                 mov eax, dword ptr [esi]
-// 0077f355  8b5004               mov edx, dword ptr [eax + 4]
-// 0077f358  8bce                 mov ecx, esi
-// 0077f35a  ffd2                 call edx
-// 0077f35c  53                   push ebx
-// 0077f35d  8bc8                 mov ecx, eax
-// 0077f35f  89460c               mov dword ptr [esi + 0xc], eax
-// 0077f362  e809ffffff           call 0x77f270
-// 0077f367  c7460401000000       mov dword ptr [esi + 4], 1
-// 0077f36e  eb0e                 jmp 0x77f37e
-// 0077f370  c7460c00000000       mov dword ptr [esi + 0xc], 0
-// 0077f377  c7460400000000       mov dword ptr [esi + 4], 0
-// 0077f37e  8b06                 mov eax, dword ptr [esi]
-// 0077f380  8b5008               mov edx, dword ptr [eax + 8]
-// 0077f383  8bce                 mov ecx, esi
-// 0077f385  ffd2                 call edx
-// 0077f387  56                   push esi
-// 0077f388  8bce                 mov ecx, esi
-// 0077f38a  e8c1faffff           call 0x77ee50
-// 0077f38f  8bc8                 mov ecx, eax
-// 0077f391  83c108               add ecx, 8
-// 0077f394  e8d3d10c00           call 0x84c56c
-// 0077f399  5e                   pop esi
-// 0077f39a  5b                   pop ebx
-// 0077f39b  c20400               ret 4
-// copied from an identical function in another client (function ?SetTheme@CXTThemeManagerStyleHost@@QAEXPAVCXTThemeManagerStyle@@@Z)
-
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTThemeManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTThemeManager.cpp: implementation of the CXTThemeManager class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "XTThemeManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+CProcessLocal<CXTThemeManager> CXTThemeManager::m_sThemeManager;
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyle
+
+CXTThemeManagerStyle::CXTThemeManagerStyle()
+: m_enumTheme(xtThemeDefault)
+, m_pFactory(NULL)
+{
+
+}
+
+CXTThemeManagerStyle::~CXTThemeManagerStyle()
+{
+
+}
+
+void CXTThemeManagerStyle::RefreshMetrics()
+{
+
+}
+
+BOOL CXTThemeManagerStyle::IsOfficeTheme()
+{
+	return m_enumTheme != xtThemeDefault;
+}
+
+BOOL CXTThemeManagerStyle::TakeSnapShot(CWnd* pWndOwner)
+{
+	CWnd *pWndParent = pWndOwner->GetParent();
+	if (::IsWindow(pWndParent->GetSafeHwnd()))
+	{
+		if (m_bmpSnapShot.GetSafeHandle() != NULL)
+			m_bmpSnapShot.DeleteObject();
+
+		//convert our coordinates to our parent coordinates.
+		CXTPWindowRect rc(pWndOwner);
+		pWndParent->ScreenToClient(&rc);
+
+		//copy what's on the parents background at this point
+		CDC *pDC = pWndParent->GetDC();
+
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+		m_bmpSnapShot.CreateCompatibleBitmap(pDC, rc.Width(), rc.Height());
+
+		CXTPBitmapDC bitmapDC(&memDC, &m_bmpSnapShot);
+		memDC.BitBlt(0, 0, rc.Width(), rc.Height(), pDC, rc.left, rc.top, SRCCOPY);
+
+		pWndParent->ReleaseDC(pDC);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTThemeManagerStyle::DrawTransparentBack(CDC* pDC, CWnd* pWndOwner)
+{
+	if (::GetWindowLong(pWndOwner->GetSafeHwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT)
+	{
+		// Get background.
+		if (!TakeSnapShot(pWndOwner))
+			return FALSE;
+
+		CXTPClientRect rc(pWndOwner);
+
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+
+		CXTPBitmapDC bitmapDC(&memDC, &m_bmpSnapShot);
+		pDC->BitBlt(0, 0, rc.Width(), rc.Height(), &memDC, 0, 0, SRCCOPY);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyleFactory
+
+IMPLEMENT_DYNCREATE(CXTThemeManagerStyleFactory, CObject)
+
+CXTThemeManagerStyleFactory::CXTThemeManagerStyleFactory()
+: m_pTheme(NULL)
+, m_pNextFactory(NULL)
+{
+	XTThemeManager()->m_factoryList.AddHead(this);
+	m_hostList.Construct(offsetof(CXTThemeManagerStyleHost, m_pNextHost));
+}
+
+CXTThemeManagerStyleFactory::~CXTThemeManagerStyleFactory()
+{
+	SAFE_DELETE(m_pTheme);
+	XTThemeManager()->m_factoryList.Remove(this);
+	m_hostList.RemoveAll();
+}
+
+CXTThemeManagerStyle* CXTThemeManagerStyleFactory::CreateTheme(XTThemeStyle /*theme*/)
+{
+	ASSERT(FALSE);
+	return NULL;
+}
+
+void CXTThemeManagerStyleFactory::SetTheme(CXTThemeManagerStyle* pTheme)
+{
+	ASSERT(pTheme);
+	if (!pTheme)
+		return;
+
+	SAFE_DELETE(m_pTheme);
+	m_pTheme = pTheme;
+
+	m_pTheme->m_pFactory = this;
+	m_pTheme->RefreshMetrics();
+
+	for (CXTThemeManagerStyleHost* pHost = m_hostList.GetHead();
+			pHost != NULL; pHost = pHost->m_pNextHost)
+	{
+		pHost->OnThemeChanged();
+	}
+}
+
+void CXTThemeManagerStyleFactory::SetTheme(XTThemeStyle theme)
+{
+	SetTheme(CreateTheme(theme));
+}
+
+CXTThemeManagerStyle* CXTThemeManagerStyleFactory::GetSafeTheme()
+{
+	if (m_pTheme == 0)
+	{
+		m_pTheme = CreateTheme(XTThemeManager()->m_enumTheme);
+
+		m_pTheme->m_pFactory = this;
+		m_pTheme->RefreshMetrics();
+	}
+	return m_pTheme;
+}
+
+void CXTThemeManagerStyleFactory::RefreshMetrics()
+{
+	if (m_pTheme)
+	{
+		m_pTheme->RefreshMetrics();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyleHost
+
+CXTThemeManagerStyleHost::CXTThemeManagerStyleHost(CRuntimeClass* pThemeFactoryClass)
+{
+	m_bAutoDeleteCustomFactory = FALSE;
+
+	m_pDefaultFactory = NULL;
+	m_pCustomFactory = NULL;
+	m_pNextHost = NULL;
+	m_pThemeFactoryClass = NULL;
+
+	if (pThemeFactoryClass)
+	{
+		InitStyleHost(pThemeFactoryClass);
+	}
+}
+
+void CXTThemeManagerStyleHost::InitStyleHost(CRuntimeClass* pThemeFactoryClass)
+{
+	ASSERT(pThemeFactoryClass);
+	if (!pThemeFactoryClass)
+		return;
+	ASSERT(pThemeFactoryClass->IsDerivedFrom(RUNTIME_CLASS(CXTThemeManagerStyleFactory)));
+
+	if (m_pDefaultFactory)
+	{
+		m_pDefaultFactory->m_hostList.Remove(this);
+	}
+
+	m_pThemeFactoryClass = pThemeFactoryClass;
+
+	m_pDefaultFactory = XTThemeManager()->GetDefaultThemeFactory(pThemeFactoryClass);
+	m_pDefaultFactory->m_hostList.AddHead(this);
+}
+
+CXTThemeManagerStyleHost::~CXTThemeManagerStyleHost()
+{
+	GetSafeThemeFactory()->m_hostList.Remove(this);
+
+	if (m_bAutoDeleteCustomFactory)
+	{
+		SAFE_DELETE(m_pCustomFactory);
+	}
+}
+
+CXTThemeManagerStyleFactory* CXTThemeManagerStyleHost::CreateThemeFactory()
+{
+	return (CXTThemeManagerStyleFactory*)m_pThemeFactoryClass->CreateObject();
+}
+
+CXTThemeManagerStyleFactory* CXTThemeManagerStyleHost::GetSafeThemeFactory() const
+{
+	if (m_pCustomFactory != NULL)
+		return m_pCustomFactory;
+
+	return m_pDefaultFactory;
+}
+
+
+CXTThemeManagerStyle* CXTThemeManagerStyleHost::GetSafeTheme() const
+{
+	CXTThemeManagerStyleFactory* pFactory = GetSafeThemeFactory();
+	ASSERT(pFactory);
+	if (!pFactory)
+		return NULL;
+
+	return pFactory->GetSafeTheme();
+}
+
+void CXTThemeManagerStyleHost::SetTheme (XTThemeStyle theme)
+{
+	SetTheme(m_pDefaultFactory->CreateTheme(theme));
+}
+
+void CXTThemeManagerStyleHost::SetTheme (CXTThemeManagerStyle* pTheme)
+{
+	if (m_pCustomFactory == NULL && pTheme == NULL)
+		return;
+
+	GetSafeThemeFactory()->m_hostList.Remove(this);
+
+	if (m_bAutoDeleteCustomFactory)
+	{
+		SAFE_DELETE(m_pCustomFactory);
+	}
+	if (pTheme != NULL)
+	{
+		m_pCustomFactory = CreateThemeFactory();
+		m_pCustomFactory->SetTheme(pTheme);
+		m_bAutoDeleteCustomFactory = TRUE;
+	}
+	else
+	{
+		m_pCustomFactory = NULL;
+		m_bAutoDeleteCustomFactory = FALSE;
+	}
+
+	OnThemeChanged();
+	GetSafeThemeFactory()->m_hostList.AddHead(this);
+}
+
+void CXTThemeManagerStyleHost::AttachThemeFactory(CXTThemeManagerStyleFactory* pFactory)
+{
+	GetSafeThemeFactory()->m_hostList.Remove(this);
+
+	if (m_bAutoDeleteCustomFactory)
+	{
+		SAFE_DELETE(m_pCustomFactory);
+	}
+	m_pCustomFactory = pFactory;
+	m_bAutoDeleteCustomFactory = FALSE;
+
+	OnThemeChanged();
+	GetSafeThemeFactory()->m_hostList.AddHead(this);
+}
+
+void CXTThemeManagerStyleHost::OnThemeChanged()
+{
+	// Can be overridden by subclass
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTThemeManager::CXTThemeManager()
+{
+	m_factoryList.Construct(offsetof(CXTThemeManagerStyleFactory, m_pNextFactory));
+	m_enumTheme = xtThemeDefault;
+}
+
+CXTThemeManager::~CXTThemeManager()
+{
+	POSITION pos = m_mapDefaultFactories.GetStartPosition();
+	void* pThemeFactoryClass;
+	CXTThemeManagerStyleFactory* pFactory = 0;
+	while (pos)
+	{
+		m_mapDefaultFactories.GetNextAssoc(pos, pThemeFactoryClass, (void *&)pFactory);
+		SAFE_DELETE(pFactory);
+	}
+
+	ASSERT(m_factoryList.m_pHead == 0);
+	m_factoryList.RemoveAll();
+}
+
+CXTThemeManagerStyleFactory* CXTThemeManager::GetDefaultThemeFactory(CRuntimeClass* pThemeFactoryClass)
+{
+	ASSERT(pThemeFactoryClass);
+	if (!pThemeFactoryClass)
+		return 0;
+	ASSERT(pThemeFactoryClass->IsDerivedFrom(RUNTIME_CLASS(CXTThemeManagerStyleFactory)));
+
+	CXTThemeManagerStyleFactory* pFactory = 0;
+
+	if (!m_mapDefaultFactories.Lookup(pThemeFactoryClass, (void *&)pFactory))
+	{
+		pFactory = (CXTThemeManagerStyleFactory*)pThemeFactoryClass->CreateObject();
+		m_mapDefaultFactories.SetAt(pThemeFactoryClass, pFactory);
+	}
+
+	return pFactory;
+}
+
+void CXTThemeManager::SetTheme(XTThemeStyle eTheme)
+{
+	if (m_enumTheme == eTheme)
+		return;
+
+	m_enumTheme = eTheme;
+
+	RefreshXtremeColors();
+
+	POSITION pos = m_mapDefaultFactories.GetStartPosition();
+	void* pThemeFactoryClass;
+	CXTThemeManagerStyleFactory* pFactory = 0;
+	while (pos)
+	{
+		m_mapDefaultFactories.GetNextAssoc(pos, pThemeFactoryClass, (void *&)pFactory);
+
+		pFactory->SetTheme(eTheme);
+	}
+}
+
+void CXTThemeManager::RefreshMetrics()
+{
+	RefreshXtremeColors();
+
+	for (CXTThemeManagerStyleFactory* pFactory = m_factoryList.GetHead();
+			pFactory != NULL; pFactory = pFactory->m_pNextFactory)
+	{
+		pFactory->RefreshMetrics();
+	}
+}
+
+_XTP_EXT_CLASS CXTThemeManager* AFX_CDECL XTThemeManager()
+{
+	return CXTThemeManager::m_sThemeManager.GetData();
+}

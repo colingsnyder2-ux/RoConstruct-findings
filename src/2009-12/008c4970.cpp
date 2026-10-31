@@ -1,79 +1,457 @@
-// roc 2009-12 008c4970  unit: CXTPCustomizeToolbarsPage  size: 222 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008c4970
-//
-// 008c4970  6aff                 push -1
-// 008c4972  6823439600           push 0x964323
-// 008c4977  64a100000000         mov eax, dword ptr fs:[0]
-// 008c497d  50                   push eax
-// 008c497e  83ec0c               sub esp, 0xc
-// 008c4981  56                   push esi
-// 008c4982  57                   push edi
-// 008c4983  a10052b600           mov eax, dword ptr [0xb65200]
-// 008c4988  33c4                 xor eax, esp
-// 008c498a  50                   push eax
-// 008c498b  8d442418             lea eax, [esp + 0x18]
-// 008c498f  64a300000000         mov dword ptr fs:[0], eax
-// 008c4995  8bf1                 mov esi, ecx
-// 008c4997  8974240c             mov dword ptr [esp + 0xc], esi
-// 008c499b  e8a8f7f2ff           call 0x7f4148
-// 008c49a0  c7465400000000       mov dword ptr [esi + 0x54], 0
-// 008c49a7  c7465800000000       mov dword ptr [esi + 0x58], 0
-// 008c49ae  c6462401             mov byte ptr [esi + 0x24], 1
-// 008c49b2  8d7e5c               lea edi, [esi + 0x5c]
-// 008c49b5  6a01                 push 1
-// 008c49b7  8bcf                 mov ecx, edi
-// 008c49b9  c744242400000000     mov dword ptr [esp + 0x24], 0
-// 008c49c1  c706bc94a000         mov dword ptr [esi], 0xa094bc
-// 008c49c7  e8746dfaff           call 0x86b740
-// 008c49cc  6820299f00           push 0x9f2920
-// 008c49d1  6a00                 push 0
-// 008c49d3  8bcf                 mov ecx, edi
-// 008c49d5  c644242801           mov byte ptr [esp + 0x28], 1
-// 008c49da  e82173faff           call 0x86bd00
-// 008c49df  8bcf                 mov ecx, edi
-// 008c49e1  e8ca73faff           call 0x86bdb0
-// 008c49e6  85c0                 test eax, eax
-// 008c49e8  743c                 je 0x8c4a26
-// 008c49ea  8d442410             lea eax, [esp + 0x10]
-// 008c49ee  50                   push eax
-// 008c49ef  6a01                 push 1
-// 008c49f1  6a00                 push 0
-// 008c49f3  6a00                 push 0
-// 008c49f5  6a03                 push 3
-// 008c49f7  6a00                 push 0
-// 008c49f9  8bcf                 mov ecx, edi
-// 008c49fb  e87070faff           call 0x86ba70
-// 008c4a00  85c0                 test eax, eax
-// 008c4a02  7c22                 jl 0x8c4a26
-// 008c4a04  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 008c4a08  8b542414             mov edx, dword ptr [esp + 0x14]
-// 008c4a0c  894e68               mov dword ptr [esi + 0x68], ecx
-// 008c4a0f  89566c               mov dword ptr [esi + 0x6c], edx
-// 008c4a12  8bc6                 mov eax, esi
-// 008c4a14  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008c4a18  64890d00000000       mov dword ptr fs:[0], ecx
-// 008c4a1f  59                   pop ecx
-// 008c4a20  5f                   pop edi
-// 008c4a21  5e                   pop esi
-// 008c4a22  83c418               add esp, 0x18
-// 008c4a25  c3                   ret 
-// 008c4a26  b80d000000           mov eax, 0xd
-// 008c4a2b  8bc8                 mov ecx, eax
-// 008c4a2d  894e6c               mov dword ptr [esi + 0x6c], ecx
-// 008c4a30  8bcf                 mov ecx, edi
-// 008c4a32  894668               mov dword ptr [esi + 0x68], eax
-// 008c4a35  e8666dfaff           call 0x86b7a0
-// 008c4a3a  8bc6                 mov eax, esi
-// 008c4a3c  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008c4a40  64890d00000000       mov dword ptr fs:[0], ecx
-// 008c4a47  59                   pop ecx
-// 008c4a48  5f                   pop edi
-// 008c4a49  5e                   pop esi
-// 008c4a4a  83c418               add esp, 0x18
-// 008c4a4d  c3                   ret 
-// copied from an identical function in another client (function ??0CXTPCustomizeToolbarsPageCheckListBox@@QAE@XZ)
-
 // roc-cl: 30729
 // roc-lang: cpp
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPCustomizeToolbarsPage.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPCustomizeToolbarsPage.cpp : implementation of the CXTPCustomizeToolbarsPage class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+
+#include "XTPCustomizeToolbarsPage.h"
+#include "XTPCustomizeSheet.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPCustomizeTools.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeToolbarsPageCheckListBox
+CXTPCustomizeToolbarsPageCheckListBox::CXTPCustomizeToolbarsPageCheckListBox()
+{
+	m_themeHelper.OpenThemeData(NULL, L"BUTTON");
+
+	SIZE size;
+	if (m_themeHelper.IsAppThemeReady() && SUCCEEDED(m_themeHelper.GetThemePartSize(NULL, BP_CHECKBOX, 0, NULL, TS_TRUE, &size)))
+	{
+		m_sizeCheck = size;
+	}
+	else
+	{
+		m_sizeCheck = CSize(13, 13);
+		m_themeHelper.CloseThemeData();
+	}
+}
+
+CXTPCustomizeToolbarsPageCheckListBox::~CXTPCustomizeToolbarsPageCheckListBox()
+{
+}
+
+BEGIN_MESSAGE_MAP(CXTPCustomizeToolbarsPageCheckListBox, CCheckListBox)
+	ON_MESSAGE(WM_SETFONT, OnSetFont)
+END_MESSAGE_MAP()
+
+
+void CXTPCustomizeToolbarsPageCheckListBox::PreSubclassWindow()
+{
+	CCheckListBox::PreSubclassWindow();
+
+	if ((GetStyle() & (LBS_OWNERDRAWFIXED | LBS_HASSTRINGS))
+		== (LBS_OWNERDRAWFIXED | LBS_HASSTRINGS))
+	{
+		SetItemHeight(0, max(m_sizeCheck.cy + 3, CalcMinimumItemHeight()));
+	}
+}
+
+LRESULT CXTPCustomizeToolbarsPageCheckListBox::OnSetFont(WPARAM, LPARAM)
+{
+	Default();
+
+	if ((GetStyle() & (LBS_OWNERDRAWFIXED | LBS_HASSTRINGS))
+		== (LBS_OWNERDRAWFIXED | LBS_HASSTRINGS))
+	{
+		SetItemHeight(0, max(m_sizeCheck.cy + 3, CalcMinimumItemHeight()));
+	}
+
+	return 0;
+}
+
+void CXTPCustomizeToolbarsPageCheckListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// You must override DrawItem and MeasureItem for LBS_OWNERDRAWVARIABLE
+	ASSERT((GetStyle() & (LBS_OWNERDRAWFIXED | LBS_HASSTRINGS)) ==
+		(LBS_OWNERDRAWFIXED | LBS_HASSTRINGS));
+
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+
+	if (((LONG)(lpDrawItemStruct->itemID) >= 0) &&
+		(lpDrawItemStruct->itemAction & (ODA_DRAWENTIRE | ODA_SELECT)))
+	{
+		int cyItem = GetItemHeight(lpDrawItemStruct->itemID);
+		BOOL fDisabled = !IsWindowEnabled() || !IsEnabled(lpDrawItemStruct->itemID);
+
+		COLORREF newTextColor = fDisabled ?
+			RGB(0x80, 0x80, 0x80) : GetSysColor(COLOR_WINDOWTEXT);  // light gray
+		COLORREF oldTextColor = pDC->SetTextColor(newTextColor);
+
+		COLORREF newBkColor = GetSysColor(COLOR_WINDOW);
+		COLORREF oldBkColor = pDC->SetBkColor(newBkColor);
+
+		if (!fDisabled && ((lpDrawItemStruct->itemState & ODS_SELECTED) != 0))
+		{
+			pDC->SetTextColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
+			pDC->SetBkColor(GetSysColor(COLOR_HIGHLIGHT));
+		}
+
+		if (m_cyText == 0)
+			VERIFY(cyItem >= CalcMinimumItemHeight());
+
+		CString strText;
+		GetText(lpDrawItemStruct->itemID, strText);
+
+		pDC->ExtTextOut(lpDrawItemStruct->rcItem.left + 2,
+			lpDrawItemStruct->rcItem.top + max(0, (cyItem - m_cyText) / 2),
+			ETO_OPAQUE, &(lpDrawItemStruct->rcItem), strText, (int)strText.GetLength(), NULL);
+
+		pDC->SetTextColor(oldTextColor);
+		pDC->SetBkColor(oldBkColor);
+	}
+
+	if ((lpDrawItemStruct->itemAction & ODA_FOCUS) != 0)
+		pDC->DrawFocusRect(&(lpDrawItemStruct->rcItem));
+}
+
+
+void CXTPCustomizeToolbarsPageCheckListBox::PreDrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	DRAWITEMSTRUCT drawItem;
+	memcpy(&drawItem, lpDrawItemStruct, sizeof(DRAWITEMSTRUCT));
+
+	if ((((LONG)drawItem.itemID) >= 0) &&
+		((drawItem.itemAction & (ODA_DRAWENTIRE | ODA_SELECT)) != 0))
+	{
+		int cyItem = GetItemHeight(drawItem.itemID);
+
+		CDC* pDC = CDC::FromHandle(drawItem.hDC);
+
+		int nCheck = GetCheck(drawItem.itemID);
+
+		CRect rectCheck = drawItem.rcItem;
+		rectCheck.left += 1;
+		rectCheck.top += 1 + max(0, (cyItem - m_sizeCheck.cy) / 2);
+		rectCheck.right = rectCheck.left + m_sizeCheck.cx;
+		rectCheck.bottom = rectCheck.top + m_sizeCheck.cy;
+
+		CRect rectItem = drawItem.rcItem;
+		rectItem.right = rectItem.left + m_sizeCheck.cx + 2;
+		CRect rectCheckBox = OnGetCheckPosition(rectItem, rectCheck);
+
+		if (m_themeHelper.IsAppThemeReady())
+		{
+			m_themeHelper.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX,
+				nCheck ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL, &rectCheckBox, NULL);
+		}
+		else
+		{
+			ASSERT(rectCheck.IntersectRect(rectItem, rectCheckBox));
+			ASSERT((rectCheck == rectCheckBox) && (rectCheckBox.Size() == m_sizeCheck));
+
+			pDC->DrawFrameControl(rectCheckBox, DFC_BUTTON, DFCS_BUTTONCHECK | (nCheck ? DFCS_CHECKED : 0));
+		}
+	}
+
+	drawItem.rcItem.left = drawItem.rcItem.left + m_sizeCheck.cx + 3;
+
+	DrawItem(&drawItem);
+}
+
+BOOL CXTPCustomizeToolbarsPageCheckListBox::OnChildNotify(UINT message, WPARAM wParam, LPARAM lParam,
+	LRESULT* pResult)
+{
+	if (message == WM_DRAWITEM)
+	{
+		ASSERT(pResult == NULL);       // no return value expected
+		PreDrawItem((LPDRAWITEMSTRUCT)lParam);
+		return TRUE;
+	}
+
+	return CCheckListBox::OnChildNotify(message, wParam, lParam, pResult);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeToolbarsPage property page
+
+IMPLEMENT_DYNCREATE(CXTPCustomizeToolbarsPage, CPropertyPage)
+
+CXTPCustomizeToolbarsPage::CXTPCustomizeToolbarsPage(CXTPCustomizeSheet* pSheet)
+	: CPropertyPage(CXTPCustomizeToolbarsPage::IDD), m_pSheet(pSheet)
+{
+	//{{AFX_DATA_INIT(CXTPCustomizeToolbarsPage)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+}
+
+CXTPCustomizeToolbarsPage::~CXTPCustomizeToolbarsPage()
+{
+}
+
+void CXTPCustomizeToolbarsPage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CXTPCustomizeToolbarsPage)
+		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, XTP_IDC_LIST_TOOLBARS, m_checkList);
+	DDX_Control(pDX, XTP_IDC_BUTTON_RENAME, m_btnRename);
+	DDX_Control(pDX, XTP_IDC_BUTTON_NEW, m_btnNew);
+	DDX_Control(pDX, XTP_IDC_BUTTON_DELETE, m_btnDelete);
+	DDX_Control(pDX, XTP_IDC_BUTTON_RESET, m_btnReset);
+	//}}AFX_DATA_MAP
+}
+
+
+BOOL CXTPCustomizeToolbarsPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+	if (m_pSheet->GetCommandBars()->IsLayoutRTL())
+	{
+		m_checkList.ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+	}
+
+	RefreshToolbarsList();
+
+	return FALSE;
+}
+
+void CXTPCustomizeToolbarsPage::RefreshToolbarsList()
+{
+	int nIndexSel = 0;
+	int nIndex = m_checkList.GetCurSel();
+	if (nIndex != LB_ERR)
+	{
+		nIndexSel = (int)m_checkList.GetItemData(nIndex);
+	}
+	int nTopIndex = m_checkList.GetTopIndex();
+
+	m_checkList.ResetContent();
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+	int nCount = pCommandBars->GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+
+		if (!pToolBar->IsCustomizeDialogPresent())
+			continue;
+
+		if (!pToolBar->IsCloseable() && !pToolBar->IsVisible())
+			continue;
+
+		nIndex = m_checkList.AddString(pToolBar->GetTitle());
+		m_checkList.SetCheck(nIndex, pToolBar->IsVisible());
+		m_checkList.SetItemData(nIndex, i);
+
+		if (i == nIndexSel) m_checkList.SetCurSel(nIndex);
+	}
+
+	if (m_checkList.GetTopIndex() != nTopIndex)
+		m_checkList.SetTopIndex(nTopIndex);
+
+	OnSelectionChanged();
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPCustomizeToolbarsPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CXTPCustomizeToolbarsPage)
+		// NOTE: the ClassWizard will add message map macros here
+	ON_LBN_SELCHANGE(XTP_IDC_LIST_TOOLBARS, OnSelectionChanged)
+	ON_CLBN_CHKCHANGE(XTP_IDC_LIST_TOOLBARS, OnChkChange)
+	ON_BN_CLICKED(XTP_IDC_BUTTON_NEW, OnNewToolbar)
+	ON_BN_CLICKED(XTP_IDC_BUTTON_RENAME, OnRenameToolbar)
+	ON_BN_CLICKED(XTP_IDC_BUTTON_DELETE, OnDeleteToolbar)
+	ON_BN_CLICKED(XTP_IDC_BUTTON_RESET, OnResetToolbar)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeToolbarsPage message handlers
+
+
+void CXTPCustomizeToolbarsPage::OnSelectionChanged()
+{
+	int nIndex = m_checkList.GetCurSel();
+
+	if (nIndex != LB_ERR)
+	{
+		CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+		int i = (int)m_checkList.GetItemData(nIndex);
+
+		if (i >= 0 && i < pCommandBars->GetCount())
+		{
+			CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+
+			BOOL bBuiltIn = pToolBar->IsBuiltIn();
+			m_btnReset.EnableWindow(bBuiltIn);
+			m_btnRename.EnableWindow(!bBuiltIn);
+			m_btnDelete.EnableWindow(!bBuiltIn);
+
+		}
+	}
+	else
+	{
+		m_btnReset.EnableWindow(FALSE);
+		m_btnRename.EnableWindow(FALSE);
+		m_btnDelete.EnableWindow(FALSE);
+	}
+}
+
+void CXTPCustomizeToolbarsPage::OnChkChange()
+{
+	int nIndex = m_checkList.GetCurSel();
+	if (nIndex == LB_ERR)
+		return;
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+	int i = (int)m_checkList.GetItemData(nIndex);
+	if (i >= 0 && i < pCommandBars->GetCount())
+	{
+		CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+		if (!pToolBar->IsCloseable())
+		{
+			m_checkList.SetCheck(nIndex, 1);
+
+		}
+		else
+		{
+			BOOL bVisible = m_checkList.GetCheck(nIndex);
+			pToolBar->SetVisible(bVisible);
+		}
+	}
+	RefreshToolbarsList();
+}
+
+void CXTPCustomizeToolbarsPage::OnNewToolbar()
+{
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+
+	CXTPNewToolbarDlg dlg(m_pSheet, pCommandBars);
+	if (dlg.DoModal() == IDOK)
+	{
+		CXTPToolBar* pToolBar = pCommandBars->AddCustomBar(dlg.m_strToolbar, dlg.m_nNewID);
+
+		RefreshToolbarsList();
+
+		pCommandBars->GetSite()->SendMessage(WM_XTP_CUSTOMIZATION_ADDTOOLBAR, 0, (LPARAM)pToolBar);
+	}
+}
+
+void CXTPCustomizeToolbarsPage::OnRenameToolbar()
+{
+	int nIndex = m_checkList.GetCurSel();
+	if (nIndex == LB_ERR)
+		return;
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+
+	int i = (int)m_checkList.GetItemData(nIndex);
+	if (i < 0 || i >= pCommandBars->GetCount())
+		return;
+
+	CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+
+	if (pToolBar->IsBuiltIn())
+		return;
+
+
+	CXTPNewToolbarDlg dlg(m_pSheet, pCommandBars, pToolBar);
+	if (dlg.DoModal() == IDOK)
+	{
+		pToolBar->SetTitle(dlg.m_strToolbar);
+
+		m_checkList.DeleteString(nIndex);
+		nIndex = m_checkList.InsertString(nIndex, pToolBar->GetTitle());
+		m_checkList.SetCheck(nIndex, pToolBar->IsVisible());
+		m_checkList.SetItemData(nIndex, i);
+		m_checkList.SetCurSel(nIndex);
+
+	}
+}
+
+
+void CXTPCustomizeToolbarsPage::OnDeleteToolbar()
+{
+	int nIndex = m_checkList.GetCurSel();
+	if (nIndex == LB_ERR)
+		return;
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+
+	int i = (int)m_checkList.GetItemData(nIndex);
+	if (i < 0 || i >= pCommandBars->GetCount())
+		return;
+
+	CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+
+	if (pToolBar->IsBuiltIn())
+		return;
+
+	CString strMessage;
+
+	CString strDelete;
+	VERIFY(XTPResourceManager()->LoadString(&strDelete, XTP_IDS_CONFIRM_DELETE));
+	strMessage.Format(strDelete, (LPCTSTR)pToolBar->GetTitle());
+
+	if (m_pSheet->MessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) == IDOK)
+	{
+		pCommandBars->GetSite()->SendMessage(WM_XTP_CUSTOMIZATION_DELETETOOLBAR, 0, (LPARAM)pToolBar);
+
+		pCommandBars->Remove(pToolBar);
+		RefreshToolbarsList();
+	}
+}
+
+void CXTPCustomizeToolbarsPage::OnResetToolbar()
+{
+	int nIndex = m_checkList.GetCurSel();
+	if (nIndex == LB_ERR)
+		return;
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+
+	int i = (int)m_checkList.GetItemData(nIndex);
+	if (i < 0 || i >= pCommandBars->GetCount())
+		return;
+
+	CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
+
+	if (!pToolBar->IsBuiltIn())
+		return;
+
+	CString strMessage, strTitle = pToolBar->GetTitle(), strReset;
+
+	VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+	strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+	if (m_pSheet->MessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+		return;
+
+	pToolBar->Reset(FALSE);
+	RefreshToolbarsList();
+}

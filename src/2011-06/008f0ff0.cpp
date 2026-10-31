@@ -1,177 +1,601 @@
-// roc 2011-06 008f0ff0  unit: PAVCXTShadowWnd::?$CList  size: 505 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 008f0ff0
-//
-// 008f0ff0  6aff                 push -1
-// 008f0ff2  68a4e9a000           push 0xa0e9a4
-// 008f0ff7  64a100000000         mov eax, dword ptr fs:[0]
-// 008f0ffd  50                   push eax
-// 008f0ffe  51                   push ecx
-// 008f0fff  53                   push ebx
-// 008f1000  55                   push ebp
-// 008f1001  56                   push esi
-// 008f1002  57                   push edi
-// 008f1003  a12058c900           mov eax, dword ptr [0xc95820]
-// 008f1008  33c4                 xor eax, esp
-// 008f100a  50                   push eax
-// 008f100b  8d442418             lea eax, [esp + 0x18]
-// 008f100f  64a300000000         mov dword ptr fs:[0], eax
-// 008f1015  8be9                 mov ebp, ecx
-// 008f1017  837d2800             cmp dword ptr [ebp + 0x28], 0
-// 008f101b  753a                 jne 0x8f1057
-// 008f101d  6884000000           push 0x84
-// 008f1022  e83790f1ff           call 0x80a05e
-// 008f1027  83c404               add esp, 4
-// 008f102a  89442414             mov dword ptr [esp + 0x14], eax
-// 008f102e  c744242000000000     mov dword ptr [esp + 0x20], 0
-// 008f1036  85c0                 test eax, eax
-// 008f1038  7411                 je 0x8f104b
-// 008f103a  8bc8                 mov ecx, eax
-// 008f103c  e84fedffff           call 0x8efd90
-// 008f1041  c7442420ffffffff     mov dword ptr [esp + 0x20], 0xffffffff
-// 008f1049  eb14                 jmp 0x8f105f
-// 008f104b  33c0                 xor eax, eax
-// 008f104d  c7442420ffffffff     mov dword ptr [esp + 0x20], 0xffffffff
-// 008f1055  eb08                 jmp 0x8f105f
-// 008f1057  8d4d1c               lea ecx, [ebp + 0x1c]
-// 008f105a  e8e1f2ffff           call 0x8f0340
-// 008f105f  8b5c244c             mov ebx, dword ptr [esp + 0x4c]
-// 008f1063  8bf0                 mov esi, eax
-// 008f1065  895e68               mov dword ptr [esi + 0x68], ebx
-// 008f1068  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008f106c  89466c               mov dword ptr [esi + 0x6c], eax
-// 008f106f  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 008f1073  894e70               mov dword ptr [esi + 0x70], ecx
-// 008f1076  8b542444             mov edx, dword ptr [esp + 0x44]
-// 008f107a  895674               mov dword ptr [esi + 0x74], edx
-// 008f107d  8b442448             mov eax, dword ptr [esp + 0x48]
-// 008f1081  894678               mov dword ptr [esi + 0x78], eax
-// 008f1084  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 008f1088  8b542430             mov edx, dword ptr [esp + 0x30]
-// 008f108c  83ec10               sub esp, 0x10
-// 008f108f  8bc4                 mov eax, esp
-// 008f1091  8908                 mov dword ptr [eax], ecx
-// 008f1093  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 008f1097  895004               mov dword ptr [eax + 4], edx
-// 008f109a  8b542448             mov edx, dword ptr [esp + 0x48]
-// 008f109e  894808               mov dword ptr [eax + 8], ecx
-// 008f10a1  89500c               mov dword ptr [eax + 0xc], edx
-// 008f10a4  8b442438             mov eax, dword ptr [esp + 0x38]
-// 008f10a8  50                   push eax
-// 008f10a9  8bce                 mov ecx, esi
-// 008f10ab  e850f8ffff           call 0x8f0900
-// 008f10b0  6a14                 push 0x14
-// 008f10b2  e8a78ff1ff           call 0x80a05e
-// 008f10b7  8bf8                 mov edi, eax
-// 008f10b9  83c404               add esp, 4
-// 008f10bc  897c244c             mov dword ptr [esp + 0x4c], edi
-// 008f10c0  c744242001000000     mov dword ptr [esp + 0x20], 1
-// 008f10c8  85ff                 test edi, edi
-// 008f10ca  7414                 je 0x8f10e0
-// 008f10cc  8bcf                 mov ecx, edi
-// 008f10ce  e81d000100           call 0x9010f0
-// 008f10d3  c707149fad00         mov dword ptr [edi], 0xad9f14
-// 008f10d9  897710               mov dword ptr [edi + 0x10], esi
-// 008f10dc  8bcf                 mov ecx, edi
-// 008f10de  eb02                 jmp 0x8f10e2
-// 008f10e0  33c9                 xor ecx, ecx
-// 008f10e2  898e80000000         mov dword ptr [esi + 0x80], ecx
-// 008f10e8  8b11                 mov edx, dword ptr [ecx]
-// 008f10ea  8b421c               mov eax, dword ptr [edx + 0x1c]
-// 008f10ed  53                   push ebx
-// 008f10ee  c7442424ffffffff     mov dword ptr [esp + 0x24], 0xffffffff
-// 008f10f6  ffd0                 call eax
-// 008f10f8  56                   push esi
-// 008f10f9  8bcd                 mov ecx, ebp
-// 008f10fb  e8a0f4ffff           call 0x8f05a0
-// 008f1100  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 008f1104  8b542440             mov edx, dword ptr [esp + 0x40]
-// 008f1108  83ec10               sub esp, 0x10
-// 008f110b  8bc4                 mov eax, esp
-// 008f110d  8908                 mov dword ptr [eax], ecx
-// 008f110f  8b4c2454             mov ecx, dword ptr [esp + 0x54]
-// 008f1113  895004               mov dword ptr [eax + 4], edx
-// 008f1116  8b542458             mov edx, dword ptr [esp + 0x58]
-// 008f111a  894808               mov dword ptr [eax + 8], ecx
-// 008f111d  8bce                 mov ecx, esi
-// 008f111f  89500c               mov dword ptr [eax + 0xc], edx
-// 008f1122  e849f0ffff           call 0x8f0170
-// 008f1127  8b4620               mov eax, dword ptr [esi + 0x20]
-// 008f112a  8b3d001aa400         mov edi, dword ptr [0xa41a00]
-// 008f1130  6a00                 push 0
-// 008f1132  6af8                 push -8
-// 008f1134  50                   push eax
-// 008f1135  ffd7                 call edi
-// 008f1137  837e6400             cmp dword ptr [esi + 0x64], 0
-// 008f113b  745b                 je 0x8f1198
-// 008f113d  8b0df821a400         mov ecx, dword ptr [0xa421f8]
-// 008f1143  6a13                 push 0x13
-// 008f1145  6a00                 push 0
-// 008f1147  6a00                 push 0
-// 008f1149  6a00                 push 0
-// 008f114b  6a00                 push 0
-// 008f114d  51                   push ecx
-// 008f114e  8bce                 mov ecx, esi
-// 008f1150  e8d592f1ff           call 0x80a42a
-// 008f1155  8b4e7c               mov ecx, dword ptr [esi + 0x7c]
-// 008f1158  85c9                 test ecx, ecx
-// 008f115a  7410                 je 0x8f116c
-// 008f115c  8b11                 mov edx, dword ptr [ecx]
-// 008f115e  8b4204               mov eax, dword ptr [edx + 4]
-// 008f1161  6a01                 push 1
-// 008f1163  ffd0                 call eax
-// 008f1165  c7467c00000000       mov dword ptr [esi + 0x7c], 0
-// 008f116c  ff15e819a400         call dword ptr [0xa419e8]
-// 008f1172  50                   push eax
-// 008f1173  e8b091f1ff           call 0x80a328
-// 008f1178  8b4820               mov ecx, dword ptr [eax + 0x20]
-// 008f117b  6a00                 push 0
-// 008f117d  6a00                 push 0
-// 008f117f  51                   push ecx
-// 008f1180  ff15ec19a400         call dword ptr [0xa419ec]
-// 008f1186  8b5620               mov edx, dword ptr [esi + 0x20]
-// 008f1189  6a00                 push 0
-// 008f118b  6a01                 push 1
-// 008f118d  6a01                 push 1
-// 008f118f  52                   push edx
-// 008f1190  ff15741ca400         call dword ptr [0xa41c74]
-// 008f1196  eb17                 jmp 0x8f11af
-// 008f1198  a1f821a400           mov eax, dword ptr [0xa421f8]
-// 008f119d  6a53                 push 0x53
-// 008f119f  6a00                 push 0
-// 008f11a1  6a00                 push 0
-// 008f11a3  6a00                 push 0
-// 008f11a5  6a00                 push 0
-// 008f11a7  50                   push eax
-// 008f11a8  8bce                 mov ecx, esi
-// 008f11aa  e87b92f1ff           call 0x80a42a
-// 008f11af  e86096f1ff           call 0x80a814
-// 008f11b4  85c0                 test eax, eax
-// 008f11b6  740b                 je 0x8f11c3
-// 008f11b8  8b10                 mov edx, dword ptr [eax]
-// 008f11ba  8bc8                 mov ecx, eax
-// 008f11bc  8b427c               mov eax, dword ptr [edx + 0x7c]
-// 008f11bf  ffd0                 call eax
-// 008f11c1  eb02                 jmp 0x8f11c5
-// 008f11c3  33c0                 xor eax, eax
-// 008f11c5  8b4820               mov ecx, dword ptr [eax + 0x20]
-// 008f11c8  8b5620               mov edx, dword ptr [esi + 0x20]
-// 008f11cb  51                   push ecx
-// 008f11cc  6af8                 push -8
-// 008f11ce  52                   push edx
-// 008f11cf  ffd7                 call edi
-// 008f11d1  8bc6                 mov eax, esi
-// 008f11d3  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008f11d7  64890d00000000       mov dword ptr fs:[0], ecx
-// 008f11de  59                   pop ecx
-// 008f11df  5f                   pop edi
-// 008f11e0  5e                   pop esi
-// 008f11e1  5d                   pop ebp
-// 008f11e2  5b                   pop ebx
-// 008f11e3  83c410               add esp, 0x10
-// 008f11e6  c22800               ret 0x28
-// copied from an identical function in another client (function ?CreateShadow@CXTShadowsManager@@AAEPAVCXTShadowWnd@@HVCRect@@0PAUHWND__@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTWndShadow.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTWndShadow.cpp: implementation of the CXTWndShadow class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTGlobal.h"
+#include "XTWndHook.h"
+#include "XTMemDC.h"
+#include "XTWndShadow.h"
+#include "XTThemeManager.h"
+#include "XTNotify.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+const UINT XT_WM_PARENTPOSCHANGED = (WM_XTP_CONTROLS_BASE + 27);
+const UINT XT_WM_DESTROY = (WM_XTP_CONTROLS_BASE + 28);
+#define  TID_DRAWSHADOW 1
+
+void CXTShadowsManager::CShadowList::AddShadow(CXTShadowWnd* pShadow)
+{
+	pShadow->LongShadow(this);
+	AddTail(pShadow);
+}
+
+void CXTShadowsManager::CShadowList::RemoveShadow(CXTShadowWnd* pShadow)
+{
+	POSITION pos = Find(pShadow);
+	ASSERT(pos);
+	RemoveAt(pos);
+}
+
+class CXTShadowHook : public CXTWndHook
+{
+public:
+	CXTShadowHook(CXTShadowWnd* pShadow)
+	{
+		m_pShadow = pShadow;
+	}
+	LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		LRESULT nRes = CXTWndHook::WindowProc(message, wParam, lParam);
+		m_pShadow->OnHookMessage(message, wParam, lParam);
+		return nRes;
+	}
+	CXTShadowWnd* m_pShadow;
+};
+
+CXTShadowsManager::CXTShadowsManager()
+{
+	HMODULE hLib = GetModuleHandle(_T("USER32"));
+
+	m_pfnUpdateLayeredWindow = NULL;
+
+	if (hLib)
+	{
+		m_pfnUpdateLayeredWindow = (LPFNUPDATELAYEREDWINDOW) GetProcAddress(hLib, "UpdateLayeredWindow");
+	}
+}
+
+CXTShadowsManager::~CXTShadowsManager()
+{
+	ASSERT(m_lstShadow.IsEmpty());
+
+	while (!m_lstPool.IsEmpty())
+	{
+		delete m_lstPool.RemoveHead();
+	}
+}
+
+void CXTShadowsManager::SetShadow(HWND hWnd, const CRect& rcExclude)
+{
+	CreateShadow(TRUE, hWnd, rcExclude);
+	CreateShadow(FALSE, hWnd, rcExclude);
+}
+
+
+void CXTShadowsManager::SetShadow(CRect rcWnd, HWND hWnd)
+{
+	CreateShadow(TRUE, rcWnd, CXTPEmptyRect(), hWnd);
+	CreateShadow(FALSE, rcWnd, CXTPEmptyRect(), hWnd);
+}
+
+CXTShadowWnd* CXTShadowsManager::CreateShadow(BOOL bHoriz, CRect rcWnd, CRect rcExclude, HWND hWnd)
+{
+	CXTShadowWnd* pShadow = m_lstPool.IsEmpty() ?
+		new CXTShadowWnd: m_lstPool.RemoveHead();
+
+	ASSERT(pShadow->m_pHook == 0 && pShadow->m_hwndHook == 0);
+	pShadow->m_hwndHook = hWnd;
+	pShadow->m_rcExclude = rcExclude;
+
+	pShadow->Create(bHoriz, rcWnd);
+
+	pShadow->m_pHook = new CXTShadowHook(pShadow);
+	pShadow->m_pHook->HookWindow(hWnd);
+
+
+	m_lstShadow.AddShadow(pShadow);
+	pShadow->ExcludeRect(rcExclude);
+
+	SetWindowLongPtr(pShadow->m_hWnd, GWLP_HWNDPARENT, 0);
+
+	if (pShadow->m_bPseudoShadow)
+	{
+		pShadow->SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		SAFE_DELETE(pShadow->m_pShadowDC);
+		CWnd::GetDesktopWindow()->Invalidate(FALSE);
+		pShadow->SetTimer(TID_DRAWSHADOW, 1, NULL);
+	}
+	else
+	{
+		pShadow->SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+	}
+	SetWindowLongPtr(pShadow->m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)AfxGetMainWnd()->m_hWnd);
+
+	return pShadow;
+}
+
+CXTShadowWnd* CXTShadowsManager::CreateShadow(BOOL bHoriz, HWND hWnd, CRect rcExclude)
+{
+	CXTPWindowRect rcWnd(hWnd);
+
+	CXTShadowWnd* pShadow = CreateShadow(bHoriz, rcWnd, rcExclude, hWnd);
+	pShadow->m_bAutoPosition = TRUE;
+
+	return pShadow;
+
+}
+
+void CXTShadowsManager::DestroyShadow(CXTShadowWnd* pWnd)
+{
+	SAFE_DELETE(pWnd->m_pHook);
+	SAFE_DELETE(pWnd->m_pShadowDC);
+	pWnd->m_bAutoPosition = FALSE;
+	pWnd->m_hwndHook = 0;
+
+	if (pWnd->m_hWnd)
+	{
+		pWnd->ShowWindow(SW_HIDE);
+	}
+
+	m_lstShadow.RemoveShadow(pWnd);
+	m_lstPool.AddTail(pWnd);
+}
+
+CXTShadowWnd::CXTShadowWnd()
+{
+	m_pHook = 0;
+	m_bAutoPosition = FALSE;
+	m_hwndHook = 0;
+	m_pShadowDC = 0;
+
+	m_nWidth = 0;
+	m_bHoriz = FALSE;
+	m_bAlphaShadow = FALSE;
+	m_bPseudoShadow = FALSE;
+}
+
+BEGIN_MESSAGE_MAP(CXTShadowWnd, CWnd)
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	ON_WM_SIZE()
+	ON_WM_NCHITTEST_EX()
+	ON_MESSAGE_VOID(XT_WM_PARENTPOSCHANGED, OnParentPosChanged)
+	ON_MESSAGE_VOID(XT_WM_DESTROY, OnSelfDestroy)
+	ON_WM_TIMER()
+END_MESSAGE_MAP()
+
+int CXTShadowWnd::OnHookMessage(UINT nMessage, WPARAM& , LPARAM& lParam)
+{
+	if (nMessage == WM_DESTROY)
+	{
+		PostMessage(XT_WM_DESTROY);
+	}
+	if (nMessage == WM_WINDOWPOSCHANGED)
+	{
+		LPWINDOWPOS lpwp = (LPWINDOWPOS) lParam;
+
+		if ((lpwp->flags & (SWP_NOMOVE | SWP_NOSIZE)) != (SWP_NOMOVE | SWP_NOSIZE))
+		{
+			ASSERT(m_hwndHook);
+			PostMessage(XT_WM_PARENTPOSCHANGED);
+		}
+	}
+	return 0;
+}
+
+void CXTShadowWnd::OnSelfDestroy()
+{
+	XTShadowsManager()->DestroyShadow(this);
+}
+void CXTShadowWnd::OnParentPosChanged()
+{
+	CWnd* pWnd = CWnd::FromHandle(m_hwndHook);
+
+	if (m_hwndHook && pWnd)
+	{
+		if (m_bAutoPosition)
+		{
+
+			int nWidth = m_nWidth;
+			CXTPWindowRect rcWindow(pWnd);
+			CRect rcShadow;
+			if (m_bHoriz) rcShadow.SetRect(rcWindow.left + nWidth, rcWindow.bottom, rcWindow.right + nWidth, rcWindow.bottom + nWidth);
+			else rcShadow.SetRect(rcWindow.right, rcWindow.top + nWidth, rcWindow.right + nWidth, rcWindow.bottom);
+
+
+			CXTPWindowRect rc(this);
+			if (rcShadow != rc)
+			{
+				MoveWindow(rcShadow, TRUE);
+				LongShadow(&XTShadowsManager()->m_lstShadow);
+				SetWindowRgn(NULL, FALSE);
+				ExcludeRect(m_rcExclude);
+
+				if (m_bPseudoShadow)
+				{
+					SetWindowPos(0, 0, 0, 0, 0, SWP_HIDEWINDOW | (XTThemeManager()->GetTheme() != xtThemeDefault ? 0 : SWP_NOZORDER) | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+					SAFE_DELETE(m_pShadowDC);
+					GetDesktopWindow()->Invalidate(FALSE);
+					SetTimer(TID_DRAWSHADOW, 1, NULL);
+				}
+			}
+
+		}
+		else
+			LongShadow(&XTShadowsManager()->m_lstShadow);
+	}
+}
+
+void CXTShadowWnd::OnTimer(UINT_PTR nID)
+{
+	if (nID == TID_DRAWSHADOW)
+	{
+		KillTimer(TID_DRAWSHADOW);
+		if (m_hwndHook && m_hWnd)
+		{
+			SetWindowPos(0, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		}
+		return;
+	}
+	CWnd::OnTimer(nID);
+
+}
+
+BOOL CXTShadowWnd::Create(BOOL bHoriz, CRect rcWindow)
+{
+	m_bAlphaShadow = XTShadowsManager()->AlphaShadow();
+	m_bPseudoShadow = XTShadowsManager()->PseudoShadow();
+
+	if (m_hWnd == 0)
+	{
+		int nFlags = 0;
+
+#ifndef NOALPHASHADOW
+		if (m_bAlphaShadow) nFlags = 0x80000;
+#endif
+		CString strClass = ::AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+		if (!CreateEx(WS_EX_TOOLWINDOW | nFlags, strClass, 0, WS_POPUP, CXTPEmptyRect(), AfxGetMainWnd(), 0))
+			return FALSE;
+	}
+
+	SetWindowRgn(NULL, FALSE);
+
+	m_nWidth = m_bAlphaShadow || m_bPseudoShadow ? 4 : 2;
+
+	m_bHoriz = bHoriz;
+
+	CRect rcShadow;
+	if (rcWindow.IsRectEmpty())
+		rcShadow.SetRectEmpty();
+	else
+	{
+		if (bHoriz) rcShadow.SetRect(rcWindow.left + m_nWidth, rcWindow.bottom, rcWindow.right + m_nWidth, rcWindow.bottom + m_nWidth);
+			else rcShadow.SetRect(rcWindow.right, rcWindow.top + m_nWidth, rcWindow.right + m_nWidth, rcWindow.bottom);
+	}
+	MoveWindow(rcShadow, FALSE);
+	return TRUE;
+}
+
+LRESULT CXTShadowWnd::OnNcHitTest(CPoint)
+{
+	return (LRESULT)HTTRANSPARENT;
+}
+
+void CXTShadowWnd::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rcClient(this);
+
+	if (m_bPseudoShadow) DrawPseudoShadow(&dc, rcClient);
+	else dc.FillSolidRect(rcClient, m_bAlphaShadow ? 0 : GetXtremeColor(COLOR_3DSHADOW));
+}
+
+// utility functions
+static inline int BoundValue(int iValue, int min, int max)
+{
+	return ((iValue > max) ? max : ((iValue < min) ? min : iValue));
+}
+
+static inline COLORREF AlphaPixel(COLORREF crPixel, int i)
+{
+	return RGB(
+		BoundValue(GetRValue(crPixel) - i, 0, 255),
+		BoundValue(GetGValue(crPixel) - i, 0, 255),
+		BoundValue(GetBValue(crPixel) - i, 0, 255));
+}
+
+void CXTShadowWnd::DrawPseudoShadow(CDC* pDC, CRect& rcClient)
+{
+	if (!m_pShadowDC)
+	{
+		CreatePseudoShadow();
+	}
+	ASSERT(m_pShadowDC);
+	pDC->BitBlt(0, 0, rcClient.Width(), rcClient.Height(), m_pShadowDC, 0, 0, SRCCOPY);
+}
+
+void CXTShadowWnd::ComputePseudoShadow(CDC* pDC, CRect& rcShadow)
+{
+	int x, y;
+
+	if (!m_bHoriz)
+	{
+		ASSERT(rcShadow.Width() == 4);
+
+		for (x = 0; x < 4; x++)
+		{
+			for (y = 0; y < 4; y++)
+			{
+				pDC->SetPixel(3 - x, y, AlphaPixel(pDC->GetPixel(3 - x, y), 3 * (x + 1) * (y + 1)));
+			}
+		}
+
+		for (x = 0; x < 4; ++x)
+		{
+			for (y = 4; y < rcShadow.bottom; ++y)
+			{
+				pDC->SetPixel(x, y, AlphaPixel(pDC->GetPixel(x, y), 15 * (4 - x)));
+			}
+		}
+	}
+	else
+	{
+		ASSERT(rcShadow.Height() == 4);
+
+		// draw shadow on left-bottom
+		for (x = 0; x < 4; x++)
+		{
+			for (y = 0; y < 4; y++)
+			{
+				pDC->SetPixel(x, 3 - y, AlphaPixel(pDC->GetPixel(x, 3 - y), 3 * (x + 1) * (y + 1)));
+			}
+		}
+
+		// draw shadow on bottom
+		for (y = 0; y < 4; ++y)
+		{
+			for (x = 4; x < rcShadow.right - 4; x++)
+				pDC->SetPixel(x, y, AlphaPixel(pDC->GetPixel(x, y), 15 * (4 - y)));
+		}
+
+		// draw shadow on right-bottom
+		for (x = 0; x < 4; x++)
+		{
+			for (y = 0; y < 4; y++)
+			{
+				pDC->SetPixel(rcShadow.right - x - 1 , 3 - y, AlphaPixel(pDC->GetPixel(rcShadow.right - x - 1, 3 - y), 3 * (x + 1) * (y + 1)));
+			}
+		}
+	}
+}
+
+void CXTShadowWnd::CreatePseudoShadow()
+{
+	ASSERT(!m_pShadowDC);
+	SAFE_DELETE(m_pShadowDC);
+
+	CXTPWindowRect rc(this);
+
+	CWindowDC dcScreen(NULL); // Take snapshot of relevant screen areas
+	m_pShadowDC = new CXTMemDC(&dcScreen, rc, COLORREF_NULL);
+	m_pShadowDC->Discard();
+	m_pShadowDC->FromDC();
+
+	rc.OffsetRect(-rc.TopLeft());
+	ComputePseudoShadow(m_pShadowDC, rc);
+}
+
+BOOL CXTShadowWnd::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+BOOL CXTShadowWnd::ExcludeRect(CRect rcExclude)
+{
+	CXTPWindowRect rcWindow(this);
+	CRect rcIntersect;
+	if (rcIntersect.IntersectRect(rcWindow, rcExclude))
+	{
+		CXTPClientRect rcClient(this);
+		HRGN hrgnClip = ::CreateRectRgnIndirect(&rcClient);
+
+		rcIntersect.OffsetRect(-rcWindow.TopLeft());
+		HRGN hrgnIntersect = ::CreateRectRgnIndirect(&rcIntersect);
+		CombineRgn(hrgnClip, hrgnClip, hrgnIntersect, RGN_DIFF);
+		DeleteObject(hrgnIntersect);
+
+		if (!SetWindowRgn(hrgnClip, FALSE))
+			DeleteObject(hrgnClip);
+	}
+	return TRUE;
+}
+
+void CXTShadowWnd::LongShadow(CXTShadowsManager::CShadowList* pList)
+{
+	CXTPWindowRect rcWindow(this);
+
+	POSITION pos = pList->GetHeadPosition();
+	while (pos)
+	{
+		CXTShadowWnd* pWnd = pList->GetNext(pos);
+		if (m_bHoriz == !pWnd->m_bHoriz)
+		{
+			CXTPWindowRect rc(pWnd);
+			if (m_bHoriz == FALSE)
+			{
+				if (rcWindow.top == rc.bottom -1 && rcWindow.right < rc.right && rcWindow.right > rc.left)
+				{
+					rcWindow.top -= 2 * rc.Height();
+					MoveWindow(rcWindow);
+				}
+			}
+			else
+			{
+
+				if (rcWindow.left == rc.right - 1 && rcWindow.top > rc.top && rcWindow.bottom < rc.bottom)
+				{
+					rcWindow.left -= 2 * rc.Width() + 1;
+					MoveWindow(rcWindow);
+				}
+			}
+		}
+	}
+}
+
+UINT CXTShadowWnd::Factor(int& nR, int& nG, int& nB, double dFactor)
+{
+	return (int(nR * dFactor) << 16) + (int(nG * dFactor) << 8) + (int(nB * dFactor));
+}
+
+void CXTShadowWnd::OnSize(UINT nType, int cx, int cy)
+{
+	CWnd::OnSize(nType, cx, cy);
+
+	if (!cx || !cy || !m_bAlphaShadow || !XTShadowsManager()->m_pfnUpdateLayeredWindow)
+		return;
+
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 255;
+	bf.AlphaFormat = 0x01;
+
+	POINT pt = {0, 0};
+	int x, y;
+	HBITMAP hbitmap;
+	BITMAPINFO bmi;
+
+	CClientDC cDC(this);
+	CDC dc;
+	dc.CreateCompatibleDC(&cDC);
+
+	// zero the memory for the bitmap info
+	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = cx;
+	bmi.bmiHeader.biHeight = cy;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;         // four 8-bit components
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = cx * cy * 4;
+
+	VOID *pvBits;
+
+	// create our DIB section and select the bitmap into the dc
+	hbitmap = CreateDIBSection(cDC, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+
+	if (pvBits == NULL)
+		return;
+
+	typedef unsigned int UINT32;
+
+	#define FOR(x, y) for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
+
+	// set shadow color.
+	COLORREF crShadowFactor = (XTThemeManager()->GetTheme() == xtThemeOffice2003) ?
+		GetMSO2003Color(XPCOLOR_SHADOW_FACTOR): GetXtremeColor(XPCOLOR_SHADOW_FACTOR);
+
+	int nR = GetRValue(crShadowFactor);
+	int nG = GetGValue(crShadowFactor);
+	int nB = GetBValue(crShadowFactor);
+
+	int nFactor = 1;
+
+	if (!m_bHoriz)
+	{
+		ASSERT(cx == 4);
+
+		FOR(x, y) ((UINT32 *)pvBits)[3 - x + (cy - 1 - y) * cx] = (UINT32) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+			+ Factor(nR, nG, nB, double((x + 1) * (y + 1))/20);
+
+		for (x = 3; x >= 0; x--)
+		{
+			UINT nColor = 0x0F000000 * nFactor * (4 - x) + Factor(nR, nG, nB, double(4 - x)/4);
+
+			for (y = 0; y < cy - 4; y++) ((UINT32 *)pvBits)[x + y * cx] = nColor;
+		}
+	}
+	else
+	{
+		ASSERT(cy == 4);
+
+		FOR(x, y) ((UINT32 *)pvBits)[ x + y * cx] = (UINT32) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+			+ Factor(nR, nG, nB, double((x + 1) * (y + 1))/20);
+
+		for (y = 0; y < 4; y++)
+		{
+			UINT nColor = 0x0F000000 * nFactor * (y + 1) + Factor(nR, nG, nB, double(y + 1)/4);
+
+			for (x = 4; x < cx - 4; x++) ((UINT32 *)pvBits)[x + y * cx] = nColor;
+		}
+
+		FOR(x, y) ((UINT32 *)pvBits)[ cx - 1 - x + y * cx] = (UINT32) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+			+ Factor(nR, nG, nB, double((x + 1) * (y + 1))/20);
+	}
+
+
+	HBITMAP hOld = (HBITMAP)SelectObject(dc, hbitmap);
+
+	SIZE sz = {cx, cy};
+
+	XTShadowsManager()->m_pfnUpdateLayeredWindow((HWND)GetSafeHwnd(), (HDC)0, 0, &sz, dc.GetSafeHdc(), &pt, 0, &bf, 0x02);
+
+	SelectObject(dc, hOld);
+	DeleteObject(hbitmap);
+	dc.DeleteDC();
+}
+
+// Uncomment this line to disable alpha shadow. DEBUG ONLY
+// #define NOALPHASHADOW
+
+BOOL CXTShadowsManager::AlphaShadow()
+{
+#ifdef NOALPHASHADOW
+	return FALSE;
+#endif
+	return (m_pfnUpdateLayeredWindow != NULL);
+}
+BOOL CXTShadowsManager::PseudoShadow()
+{
+	if (AlphaShadow())
+		return FALSE;
+	return !XTAuxData().bUseSolidShadows;
+}
+
+_XTP_EXT_CLASS CXTShadowsManager* AFX_CDECL XTShadowsManager()
+{
+	static CXTShadowsManager instance;
+	return &instance;
+}

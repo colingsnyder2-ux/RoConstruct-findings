@@ -1,19 +1,5 @@
-// from server: 79% by colin
-struct CXTPCommandBarKeyboardTip {
-    char pad[0x74];
-    void* field_74;
-    void* getAt(int index);
-    void setSelected(int index);
-};
-
-void CXTPCommandBarKeyboardTip::setSelected(int index) {
-    void* p = getAt(index);
-    if (p != 0) {
-        int (__stdcall *fn1)(void*) = *(int (__stdcall **)(void*))((char*)(*(void**)p) + 0x160);
-        int r = fn1(p);
-        int flag = (r == 0) ? 1 : 0;
-        void (__stdcall *fn2)(void*, int) = *(void (__stdcall **)(void*, int))((char*)(*(void**)p) + 0x15c);
-        fn2(p, flag);
-    }
-    *(int*)((char*)field_74 + 0x4c) = 1;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_7b4e5d78aa001f92.cpp

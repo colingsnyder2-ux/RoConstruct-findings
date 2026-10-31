@@ -1,19 +1,5 @@
-// from server: 95% by colin
-struct S_func_006d29a0
-{
-    char pad[0x24];
-    int* data;
-    int count;
-    void setAt(int index, int value);
-};
-
-void S_func_006d29a0::setAt(int index, int value)
-{
-    if (index < 0 || index >= count)
-    {
-        extern void __cdecl fail_0062ff20();
-        fail_0062ff20();
-        return;
-    }
-    data[index] = value;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_be4400402719d20a.cpp

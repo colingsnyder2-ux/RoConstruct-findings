@@ -1,35 +1,5 @@
-// from server: 72% by colin
-struct CXTPDockingPaneSplitterContainer {
-    char pad[0x1b8];
-    int field_0x1b8;
-    int f();
-};
-
-struct Helper {
-    int method_a();
-    int method_b();
-    int method_c();
-};
-
-extern "C" Helper* __stdcall sub_668f70();
-
-int CXTPDockingPaneSplitterContainer::f()
-{
-    int v = field_0x1b8;
-    if (v == 5)
-    {
-        Helper* h = sub_668f70();
-        if (h->method_a() == 0)
-        {
-            Helper* h2 = sub_668f70();
-            return h2->method_c();
-        }
-        return 0;
-    }
-    if (v == 4)
-    {
-        Helper* h3 = sub_668f70();
-        return h3->method_b();
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ccbe3fdaa0936aec.cpp

@@ -1,20 +1,5 @@
-// from server: 46% by TrollStein
-struct CXTPCommandBarKeyboardTip {
-    void __cdecl SetSite(void* pSite);
-};
-
-extern "C" void __stdcall sub_630490(void* p);
-extern "C" void __stdcall sub_63048a(void* p);
-extern "C" void __stdcall sub_630a1e(void* p);
-extern "C" void* __stdcall sub_6321d0(void* p);
-
-void CXTPCommandBarKeyboardTip::SetSite(void* pSite)
-{
-    char buf[0x58];
-    sub_630490(buf);
-    void* p = sub_6321d0(*(void**)((char*)this + 0x6c));
-    void* vtbl = *(void**)p;
-    void* fn = *(void**)((char*)vtbl + 0x104);
-    ((void (__stdcall*)(void*, void*, void*))fn)(p, this, buf);
-    sub_63048a(buf);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_7b4e5d78aa001f92.cpp

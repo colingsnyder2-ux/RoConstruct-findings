@@ -1,220 +1,770 @@
-// roc 2009-12 007ce710  unit: RBX::PartDropTool  size: 610 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 007ce710
-//
-// 007ce710  55                   push ebp
-// 007ce711  8bec                 mov ebp, esp
-// 007ce713  83e4c0               and esp, 0xffffffc0
-// 007ce716  83ec34               sub esp, 0x34
-// 007ce719  53                   push ebx
-// 007ce71a  56                   push esi
-// 007ce71b  57                   push edi
-// 007ce71c  8d642400             lea esp, [esp]
-// 007ce720  8b5d10               mov ebx, dword ptr [ebp + 0x10]
-// 007ce723  8b7d08               mov edi, dword ptr [ebp + 8]
-// 007ce726  43                   inc ebx
-// 007ce727  c1e304               shl ebx, 4
-// 007ce72a  035f0c               add ebx, dword ptr [edi + 0xc]
-// 007ce72d  be04000000           mov esi, 4
-// 007ce732  8b43e8               mov eax, dword ptr [ebx - 0x18]
-// 007ce735  c744241002000000     mov dword ptr [esp + 0x10], 2
-// 007ce73d  3bc6                 cmp eax, esi
-// 007ce73f  7405                 je 0x7ce746
-// 007ce741  83f803               cmp eax, 3
-// 007ce744  7571                 jne 0x7ce7b7
-// 007ce746  3973f8               cmp dword ptr [ebx - 8], esi
-// 007ce749  7447                 je 0x7ce792
-// 007ce74b  837bf803             cmp dword ptr [ebx - 8], 3
-// 007ce74f  7566                 jne 0x7ce7b7
-// 007ce751  dd43f0               fld qword ptr [ebx - 0x10]
-// 007ce754  83ec08               sub esp, 8
-// 007ce757  dd1c24               fstp qword ptr [esp]
-// 007ce75a  8d442428             lea eax, [esp + 0x28]
-// 007ce75e  6850ec9e00           push 0x9eec50
-// 007ce763  50                   push eax
-// 007ce764  ff15dcb79800         call dword ptr [0x98b7dc]
-// 007ce76a  8d442430             lea eax, [esp + 0x30]
-// 007ce76e  83c410               add esp, 0x10
-// 007ce771  8d5001               lea edx, [eax + 1]
-// 007ce774  8a08                 mov cl, byte ptr [eax]
-// 007ce776  40                   inc eax
-// 007ce777  84c9                 test cl, cl
-// 007ce779  75f9                 jne 0x7ce774
-// 007ce77b  2bc2                 sub eax, edx
-// 007ce77d  50                   push eax
-// 007ce77e  8d4c2424             lea ecx, [esp + 0x24]
-// 007ce782  51                   push ecx
-// 007ce783  57                   push edi
-// 007ce784  e807240000           call 0x7d0b90
-// 007ce789  83c40c               add esp, 0xc
-// 007ce78c  8943f0               mov dword ptr [ebx - 0x10], eax
-// 007ce78f  8973f8               mov dword ptr [ebx - 8], esi
-// 007ce792  8b53f0               mov edx, dword ptr [ebx - 0x10]
-// 007ce795  8b420c               mov eax, dword ptr [edx + 0xc]
-// 007ce798  85c0                 test eax, eax
-// 007ce79a  7567                 jne 0x7ce803
-// 007ce79c  3973e8               cmp dword ptr [ebx - 0x18], esi
-// 007ce79f  0f84a0010000         je 0x7ce945
-// 007ce7a5  83c3e0               add ebx, -0x20
-// 007ce7a8  53                   push ebx
-// 007ce7a9  57                   push edi
-// 007ce7aa  e881f7ffff           call 0x7cdf30
-// 007ce7af  83c408               add esp, 8
-// 007ce7b2  e98e010000           jmp 0x7ce945
-// 007ce7b7  8d73f0               lea esi, [ebx - 0x10]
-// 007ce7ba  6a0f                 push 0xf
-// 007ce7bc  83c3e0               add ebx, -0x20
-// 007ce7bf  53                   push ebx
-// 007ce7c0  57                   push edi
-// 007ce7c1  e8baf6ffff           call 0x7cde80
-// 007ce7c6  83c40c               add esp, 0xc
-// 007ce7c9  83780800             cmp dword ptr [eax + 8], 0
-// 007ce7cd  7512                 jne 0x7ce7e1
-// 007ce7cf  6a0f                 push 0xf
-// 007ce7d1  56                   push esi
-// 007ce7d2  57                   push edi
-// 007ce7d3  e8a8f6ffff           call 0x7cde80
-// 007ce7d8  83c40c               add esp, 0xc
-// 007ce7db  83780800             cmp dword ptr [eax + 8], 0
-// 007ce7df  7415                 je 0x7ce7f6
-// 007ce7e1  50                   push eax
-// 007ce7e2  57                   push edi
-// 007ce7e3  8bce                 mov ecx, esi
-// 007ce7e5  8bd3                 mov edx, ebx
-// 007ce7e7  8bc3                 mov eax, ebx
-// 007ce7e9  e842f8ffff           call 0x7ce030
-// 007ce7ee  83c408               add esp, 8
-// 007ce7f1  e94f010000           jmp 0x7ce945
-// 007ce7f6  56                   push esi
-// 007ce7f7  53                   push ebx
-// 007ce7f8  57                   push edi
-// 007ce7f9  e802cefcff           call 0x79b600
-// 007ce7fe  e93f010000           jmp 0x7ce942
-// 007ce803  89442414             mov dword ptr [esp + 0x14], eax
-// 007ce807  b801000000           mov eax, 1
-// 007ce80c  39450c               cmp dword ptr [ebp + 0xc], eax
-// 007ce80f  89442410             mov dword ptr [esp + 0x10], eax
-// 007ce813  0f8e99000000         jle 0x7ce8b2
-// 007ce819  8d73e0               lea esi, [ebx - 0x20]
-// 007ce81c  8d642400             lea esp, [esp]
-// 007ce820  837e0804             cmp dword ptr [esi + 8], 4
-// 007ce824  744d                 je 0x7ce873
-// 007ce826  837e0803             cmp dword ptr [esi + 8], 3
-// 007ce82a  0f8582000000         jne 0x7ce8b2
-// 007ce830  dd06                 fld qword ptr [esi]
-// 007ce832  83ec08               sub esp, 8
-// 007ce835  dd1c24               fstp qword ptr [esp]
-// 007ce838  8d442428             lea eax, [esp + 0x28]
-// 007ce83c  6850ec9e00           push 0x9eec50
-// 007ce841  50                   push eax
-// 007ce842  ff15dcb79800         call dword ptr [0x98b7dc]
-// 007ce848  8d442430             lea eax, [esp + 0x30]
-// 007ce84c  83c410               add esp, 0x10
-// 007ce84f  8d5001               lea edx, [eax + 1]
-// 007ce852  8a08                 mov cl, byte ptr [eax]
-// 007ce854  40                   inc eax
-// 007ce855  84c9                 test cl, cl
-// 007ce857  75f9                 jne 0x7ce852
-// 007ce859  2bc2                 sub eax, edx
-// 007ce85b  50                   push eax
-// 007ce85c  8d4c2424             lea ecx, [esp + 0x24]
-// 007ce860  51                   push ecx
-// 007ce861  57                   push edi
-// 007ce862  e829230000           call 0x7d0b90
-// 007ce867  83c40c               add esp, 0xc
-// 007ce86a  8906                 mov dword ptr [esi], eax
-// 007ce86c  c7460804000000       mov dword ptr [esi + 8], 4
-// 007ce873  8b16                 mov edx, dword ptr [esi]
-// 007ce875  8b7a0c               mov edi, dword ptr [edx + 0xc]
-// 007ce878  b8fdffffff           mov eax, 0xfffffffd
-// 007ce87d  2b442414             sub eax, dword ptr [esp + 0x14]
-// 007ce881  3bf8                 cmp edi, eax
-// 007ce883  7211                 jb 0x7ce896
-// 007ce885  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 007ce888  6888ec9e00           push 0x9eec88
-// 007ce88d  51                   push ecx
-// 007ce88e  e8adcafcff           call 0x79b340
-// 007ce893  83c408               add esp, 8
-// 007ce896  8b442410             mov eax, dword ptr [esp + 0x10]
-// 007ce89a  017c2414             add dword ptr [esp + 0x14], edi
-// 007ce89e  8b7d08               mov edi, dword ptr [ebp + 8]
-// 007ce8a1  40                   inc eax
-// 007ce8a2  83ee10               sub esi, 0x10
-// 007ce8a5  3b450c               cmp eax, dword ptr [ebp + 0xc]
-// 007ce8a8  89442410             mov dword ptr [esp + 0x10], eax
-// 007ce8ac  0f8c6effffff         jl 0x7ce820
-// 007ce8b2  8b542414             mov edx, dword ptr [esp + 0x14]
-// 007ce8b6  8b4710               mov eax, dword ptr [edi + 0x10]
-// 007ce8b9  52                   push edx
-// 007ce8ba  83c034               add eax, 0x34
-// 007ce8bd  50                   push eax
-// 007ce8be  57                   push edi
-// 007ce8bf  e86c290000           call 0x7d1230
-// 007ce8c4  89442428             mov dword ptr [esp + 0x28], eax
-// 007ce8c8  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 007ce8cc  83c40c               add esp, 0xc
-// 007ce8cf  33ff                 xor edi, edi
-// 007ce8d1  89442418             mov dword ptr [esp + 0x18], eax
-// 007ce8d5  85c0                 test eax, eax
-// 007ce8d7  7e4c                 jle 0x7ce925
-// 007ce8d9  c1e004               shl eax, 4
-// 007ce8dc  8bc8                 mov ecx, eax
-// 007ce8de  8bc3                 mov eax, ebx
-// 007ce8e0  2bc1                 sub eax, ecx
-// 007ce8e2  89442414             mov dword ptr [esp + 0x14], eax
-// 007ce8e6  eb0c                 jmp 0x7ce8f4
-// 007ce8e8  eb06                 jmp 0x7ce8f0
-// 007ce8ea  8d9b00000000         lea ebx, [ebx]
-// 007ce8f0  8b442414             mov eax, dword ptr [esp + 0x14]
-// 007ce8f4  8b00                 mov eax, dword ptr [eax]
-// 007ce8f6  8b700c               mov esi, dword ptr [eax + 0xc]
-// 007ce8f9  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 007ce8fd  56                   push esi
-// 007ce8fe  83c010               add eax, 0x10
-// 007ce901  50                   push eax
-// 007ce902  03d7                 add edx, edi
-// 007ce904  52                   push edx
-// 007ce905  e8dc630200           call 0x7f4ce6
-// 007ce90a  8b442424             mov eax, dword ptr [esp + 0x24]
-// 007ce90e  8344242010           add dword ptr [esp + 0x20], 0x10
-// 007ce913  48                   dec eax
-// 007ce914  83c40c               add esp, 0xc
-// 007ce917  03fe                 add edi, esi
-// 007ce919  89442418             mov dword ptr [esp + 0x18], eax
-// 007ce91d  85c0                 test eax, eax
-// 007ce91f  7fcf                 jg 0x7ce8f0
-// 007ce921  8b442410             mov eax, dword ptr [esp + 0x10]
-// 007ce925  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 007ce928  c1e004               shl eax, 4
-// 007ce92b  2bd8                 sub ebx, eax
-// 007ce92d  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 007ce931  57                   push edi
-// 007ce932  50                   push eax
-// 007ce933  51                   push ecx
-// 007ce934  e857220000           call 0x7d0b90
-// 007ce939  8903                 mov dword ptr [ebx], eax
-// 007ce93b  c7430804000000       mov dword ptr [ebx + 8], 4
-// 007ce942  83c40c               add esp, 0xc
-// 007ce945  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 007ce949  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 007ce94c  ba01000000           mov edx, 1
-// 007ce951  2bd1                 sub edx, ecx
-// 007ce953  03c2                 add eax, edx
-// 007ce955  ba01000000           mov edx, 1
-// 007ce95a  2bd1                 sub edx, ecx
-// 007ce95c  015510               add dword ptr [ebp + 0x10], edx
-// 007ce95f  83f801               cmp eax, 1
-// 007ce962  89450c               mov dword ptr [ebp + 0xc], eax
-// 007ce965  0f8fb5fdffff         jg 0x7ce720
-// 007ce96b  5f                   pop edi
-// 007ce96c  5e                   pop esi
-// 007ce96d  5b                   pop ebx
-// 007ce96e  8be5                 mov esp, ebp
-// 007ce970  5d                   pop ebp
-// 007ce971  c3                   ret 
-// copied from an identical function in another client (function _luaV_concat)
-
 // from server: 100% by tester
 // roc-lang: c
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4-dll lvm.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+** $Id: lvm.c,v 2.63.1.3 2007/12/28 15:32:23 roberto Exp $
+** Lua virtual machine
+** See Copyright Notice in lua.h
+*/
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define lvm_c
+#define LUA_CORE
+
+#include "lua.h"
+
+#include "ldebug.h"
+#include "ldo.h"
+#include "lfunc.h"
+#include "lgc.h"
+#include "lobject.h"
+#include "lopcodes.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "ltable.h"
+#include "ltm.h"
+#include "lvm.h"
+
+
+
+/* limit for table tag-method chains (to avoid loops) */
+#define MAXTAGLOOP	100
+
+
+const TValue *luaV_tonumber (const TValue *obj, TValue *n) {
+  lua_Number num;
+  if (ttisnumber(obj)) return obj;
+  if (ttisstring(obj) && luaO_str2d(svalue(obj), &num)) {
+    setnvalue(n, num);
+    return n;
+  }
+  else
+    return NULL;
+}
+
+
+int luaV_tostring (lua_State *L, StkId obj) {
+  if (!ttisnumber(obj))
+    return 0;
+  else {
+    char s[LUAI_MAXNUMBER2STR];
+    lua_Number n = nvalue(obj);
+    lua_number2str(s, n);
+    setsvalue2s(L, obj, luaS_new(L, s));
+    return 1;
+  }
+}
+
+
+static void traceexec (lua_State *L, const Instruction *pc) {
+  lu_byte mask = L->hookmask;
+  const Instruction *oldpc = L->savedpc;
+  L->savedpc = pc;
+  if ((mask & LUA_MASKCOUNT) && L->hookcount == 0) {
+    resethookcount(L);
+    luaD_callhook(L, LUA_HOOKCOUNT, -1);
+  }
+  if (mask & LUA_MASKLINE) {
+    Proto *p = ci_func(L->ci)->l.p;
+    int npc = pcRel(pc, p);
+    int newline = getline(p, npc);
+    /* call linehook when enter a new function, when jump back (loop),
+       or when enter a new line */
+    if (npc == 0 || pc <= oldpc || newline != getline(p, pcRel(oldpc, p)))
+      luaD_callhook(L, LUA_HOOKLINE, newline);
+  }
+}
+
+
+static void callTMres (lua_State *L, StkId res, const TValue *f,
+                        const TValue *p1, const TValue *p2) {
+  ptrdiff_t result = savestack(L, res);
+  setobj2s(L, L->top, f);  /* push function */
+  setobj2s(L, L->top+1, p1);  /* 1st argument */
+  setobj2s(L, L->top+2, p2);  /* 2nd argument */
+  luaD_checkstack(L, 3);
+  L->top += 3;
+  luaD_call(L, L->top - 3, 1);
+  res = restorestack(L, result);
+  L->top--;
+  setobjs2s(L, res, L->top);
+}
+
+
+
+static void callTM (lua_State *L, const TValue *f, const TValue *p1,
+                    const TValue *p2, const TValue *p3) {
+  setobj2s(L, L->top, f);  /* push function */
+  setobj2s(L, L->top+1, p1);  /* 1st argument */
+  setobj2s(L, L->top+2, p2);  /* 2nd argument */
+  setobj2s(L, L->top+3, p3);  /* 3th argument */
+  luaD_checkstack(L, 4);
+  L->top += 4;
+  luaD_call(L, L->top - 4, 0);
+}
+
+
+void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
+  int loop;
+  for (loop = 0; loop < MAXTAGLOOP; loop++) {
+    const TValue *tm;
+    if (ttistable(t)) {  /* `t' is a table? */
+      Table *h = hvalue(t);
+      const TValue *res = luaH_get(h, key); /* do a primitive get */
+      if (!ttisnil(res) ||  /* result is no nil? */
+          (tm = fasttm(L, h->metatable, TM_INDEX)) == NULL) { /* or no TM? */
+        setobj2s(L, val, res);
+        return;
+      }
+      /* else will try the tag method */
+    }
+    else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_INDEX)))
+      luaG_typeerror(L, t, "index");
+    if (ttisfunction(tm)) {
+      callTMres(L, val, tm, t, key);
+      return;
+    }
+    t = tm;  /* else repeat with `tm' */ 
+  }
+  luaG_runerror(L, "loop in gettable");
+}
+
+
+void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
+  int loop;
+  for (loop = 0; loop < MAXTAGLOOP; loop++) {
+    const TValue *tm;
+    if (ttistable(t)) {  /* `t' is a table? */
+      Table *h = hvalue(t);
+      TValue *oldval = luaH_set(L, h, key); /* do a primitive set */
+      if (!ttisnil(oldval) ||  /* result is no nil? */
+          (tm = fasttm(L, h->metatable, TM_NEWINDEX)) == NULL) { /* or no TM? */
+        setobj2t(L, oldval, val);
+        luaC_barriert(L, h, val);
+        return;
+      }
+      /* else will try the tag method */
+    }
+    else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_NEWINDEX)))
+      luaG_typeerror(L, t, "index");
+    if (ttisfunction(tm)) {
+      callTM(L, tm, t, key, val);
+      return;
+    }
+    t = tm;  /* else repeat with `tm' */ 
+  }
+  luaG_runerror(L, "loop in settable");
+}
+
+
+static int call_binTM (lua_State *L, const TValue *p1, const TValue *p2,
+                       StkId res, TMS event) {
+  const TValue *tm = luaT_gettmbyobj(L, p1, event);  /* try first operand */
+  if (ttisnil(tm))
+    tm = luaT_gettmbyobj(L, p2, event);  /* try second operand */
+  if (ttisnil(tm)) return 0;
+  callTMres(L, res, tm, p1, p2);
+  return 1;
+}
+
+
+static const TValue *get_compTM (lua_State *L, Table *mt1, Table *mt2,
+                                  TMS event) {
+  const TValue *tm1 = fasttm(L, mt1, event);
+  const TValue *tm2;
+  if (tm1 == NULL) return NULL;  /* no metamethod */
+  if (mt1 == mt2) return tm1;  /* same metatables => same metamethods */
+  tm2 = fasttm(L, mt2, event);
+  if (tm2 == NULL) return NULL;  /* no metamethod */
+  if (luaO_rawequalObj(tm1, tm2))  /* same metamethods? */
+    return tm1;
+  return NULL;
+}
+
+
+static int call_orderTM (lua_State *L, const TValue *p1, const TValue *p2,
+                         TMS event) {
+  const TValue *tm1 = luaT_gettmbyobj(L, p1, event);
+  const TValue *tm2;
+  if (ttisnil(tm1)) return -1;  /* no metamethod? */
+  tm2 = luaT_gettmbyobj(L, p2, event);
+  if (!luaO_rawequalObj(tm1, tm2))  /* different metamethods? */
+    return -1;
+  callTMres(L, L->top, tm1, p1, p2);
+  return !l_isfalse(L->top);
+}
+
+
+static int l_strcmp (const TString *ls, const TString *rs) {
+  const char *l = getstr(ls);
+  size_t ll = ls->tsv.len;
+  const char *r = getstr(rs);
+  size_t lr = rs->tsv.len;
+  for (;;) {
+    int temp = strcoll(l, r);
+    if (temp != 0) return temp;
+    else {  /* strings are equal up to a `\0' */
+      size_t len = strlen(l);  /* index of first `\0' in both strings */
+      if (len == lr)  /* r is finished? */
+        return (len == ll) ? 0 : 1;
+      else if (len == ll)  /* l is finished? */
+        return -1;  /* l is smaller than r (because r is not finished) */
+      /* both strings longer than `len'; go on comparing (after the `\0') */
+      len++;
+      l += len; ll -= len; r += len; lr -= len;
+    }
+  }
+}
+
+
+int luaV_lessthan (lua_State *L, const TValue *l, const TValue *r) {
+  int res;
+  if (ttype(l) != ttype(r))
+    return luaG_ordererror(L, l, r);
+  else if (ttisnumber(l))
+    return luai_numlt(nvalue(l), nvalue(r));
+  else if (ttisstring(l))
+    return l_strcmp(rawtsvalue(l), rawtsvalue(r)) < 0;
+  else if ((res = call_orderTM(L, l, r, TM_LT)) != -1)
+    return res;
+  return luaG_ordererror(L, l, r);
+}
+
+
+static int lessequal (lua_State *L, const TValue *l, const TValue *r) {
+  int res;
+  if (ttype(l) != ttype(r))
+    return luaG_ordererror(L, l, r);
+  else if (ttisnumber(l))
+    return luai_numle(nvalue(l), nvalue(r));
+  else if (ttisstring(l))
+    return l_strcmp(rawtsvalue(l), rawtsvalue(r)) <= 0;
+  else if ((res = call_orderTM(L, l, r, TM_LE)) != -1)  /* first try `le' */
+    return res;
+  else if ((res = call_orderTM(L, r, l, TM_LT)) != -1)  /* else try `lt' */
+    return !res;
+  return luaG_ordererror(L, l, r);
+}
+
+
+int luaV_equalval (lua_State *L, const TValue *t1, const TValue *t2) {
+  const TValue *tm;
+  lua_assert(ttype(t1) == ttype(t2));
+  switch (ttype(t1)) {
+    case LUA_TNIL: return 1;
+    case LUA_TNUMBER: return luai_numeq(nvalue(t1), nvalue(t2));
+    case LUA_TBOOLEAN: return bvalue(t1) == bvalue(t2);  /* true must be 1 !! */
+    case LUA_TLIGHTUSERDATA: return pvalue(t1) == pvalue(t2);
+    case LUA_TUSERDATA: {
+      if (uvalue(t1) == uvalue(t2)) return 1;
+      tm = get_compTM(L, uvalue(t1)->metatable, uvalue(t2)->metatable,
+                         TM_EQ);
+      break;  /* will try TM */
+    }
+    case LUA_TTABLE: {
+      if (hvalue(t1) == hvalue(t2)) return 1;
+      tm = get_compTM(L, hvalue(t1)->metatable, hvalue(t2)->metatable, TM_EQ);
+      break;  /* will try TM */
+    }
+    default: return gcvalue(t1) == gcvalue(t2);
+  }
+  if (tm == NULL) return 0;  /* no TM? */
+  callTMres(L, L->top, tm, t1, t2);  /* call TM */
+  return !l_isfalse(L->top);
+}
+
+
+void luaV_concat (lua_State *L, int total, int last) {
+  do {
+    StkId top = L->base + last + 1;
+    int n = 2;  /* number of elements handled in this pass (at least 2) */
+    if (!(ttisstring(top-2) || ttisnumber(top-2)) || !tostring(L, top-1)) {
+      if (!call_binTM(L, top-2, top-1, top-2, TM_CONCAT))
+        luaG_concaterror(L, top-2, top-1);
+    } else if (tsvalue(top-1)->len == 0)  /* second op is empty? */
+      (void)tostring(L, top - 2);  /* result is first op (as string) */
+    else {
+      /* at least two string values; get as many as possible */
+      size_t tl = tsvalue(top-1)->len;
+      char *buffer;
+      int i;
+      /* collect total length */
+      for (n = 1; n < total && tostring(L, top-n-1); n++) {
+        size_t l = tsvalue(top-n-1)->len;
+        if (l >= MAX_SIZET - tl) luaG_runerror(L, "string length overflow");
+        tl += l;
+      }
+      buffer = luaZ_openspace(L, &G(L)->buff, tl);
+      tl = 0;
+      for (i=n; i>0; i--) {  /* concat all strings */
+        size_t l = tsvalue(top-i)->len;
+        memcpy(buffer+tl, svalue(top-i), l);
+        tl += l;
+      }
+      setsvalue2s(L, top-n, luaS_newlstr(L, buffer, tl));
+    }
+    total -= n-1;  /* got `n' strings to create 1 new */
+    last -= n-1;
+  } while (total > 1);  /* repeat until only 1 result left */
+}
+
+
+static void Arith (lua_State *L, StkId ra, const TValue *rb,
+                   const TValue *rc, TMS op) {
+  TValue tempb, tempc;
+  const TValue *b, *c;
+  if ((b = luaV_tonumber(rb, &tempb)) != NULL &&
+      (c = luaV_tonumber(rc, &tempc)) != NULL) {
+    lua_Number nb = nvalue(b), nc = nvalue(c);
+    switch (op) {
+      case TM_ADD: setnvalue(ra, luai_numadd(nb, nc)); break;
+      case TM_SUB: setnvalue(ra, luai_numsub(nb, nc)); break;
+      case TM_MUL: setnvalue(ra, luai_nummul(nb, nc)); break;
+      case TM_DIV: setnvalue(ra, luai_numdiv(nb, nc)); break;
+      case TM_MOD: setnvalue(ra, luai_nummod(nb, nc)); break;
+      case TM_POW: setnvalue(ra, luai_numpow(nb, nc)); break;
+      case TM_UNM: setnvalue(ra, luai_numunm(nb)); break;
+      default: lua_assert(0); break;
+    }
+  }
+  else if (!call_binTM(L, rb, rc, ra, op))
+    luaG_aritherror(L, rb, rc);
+}
+
+
+
+/*
+** some macros for common tasks in `luaV_execute'
+*/
+
+#define runtime_check(L, c)	{ if (!(c)) break; }
+
+#define RA(i)	(base+GETARG_A(i))
+/* to be used after possible stack reallocation */
+#define RB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgR, base+GETARG_B(i))
+#define RC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgR, base+GETARG_C(i))
+#define RKB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgK, \
+	ISK(GETARG_B(i)) ? k+INDEXK(GETARG_B(i)) : base+GETARG_B(i))
+#define RKC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgK, \
+	ISK(GETARG_C(i)) ? k+INDEXK(GETARG_C(i)) : base+GETARG_C(i))
+#define KBx(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgK, k+GETARG_Bx(i))
+
+
+#define dojump(L,pc,i)	{(pc) += (i); luai_threadyield(L);}
+
+
+#define Protect(x)	{ L->savedpc = pc; {x;}; base = L->base; }
+
+
+#define arith_op(op,tm) { \
+        TValue *rb = RKB(i); \
+        TValue *rc = RKC(i); \
+        if (ttisnumber(rb) && ttisnumber(rc)) { \
+          lua_Number nb = nvalue(rb), nc = nvalue(rc); \
+          setnvalue(ra, op(nb, nc)); \
+        } \
+        else \
+          Protect(Arith(L, ra, rb, rc, tm)); \
+      }
+
+
+
+void luaV_execute (lua_State *L, int nexeccalls) {
+  LClosure *cl;
+  StkId base;
+  TValue *k;
+  const Instruction *pc;
+ reentry:  /* entry point */
+  lua_assert(isLua(L->ci));
+  pc = L->savedpc;
+  cl = &clvalue(L->ci->func)->l;
+  base = L->base;
+  k = cl->p->k;
+  /* main loop of interpreter */
+  for (;;) {
+    const Instruction i = *pc++;
+    StkId ra;
+    if ((L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT)) &&
+        (--L->hookcount == 0 || L->hookmask & LUA_MASKLINE)) {
+      traceexec(L, pc);
+      if (L->status == LUA_YIELD) {  /* did hook yield? */
+        L->savedpc = pc - 1;
+        return;
+      }
+      base = L->base;
+    }
+    /* warning!! several calls may realloc the stack and invalidate `ra' */
+    ra = RA(i);
+    lua_assert(base == L->base && L->base == L->ci->base);
+    lua_assert(base <= L->top && L->top <= L->stack + L->stacksize);
+    lua_assert(L->top == L->ci->top || luaG_checkopenop(i));
+    switch (GET_OPCODE(i)) {
+      case OP_MOVE: {
+        setobjs2s(L, ra, RB(i));
+        continue;
+      }
+      case OP_LOADK: {
+        setobj2s(L, ra, KBx(i));
+        continue;
+      }
+      case OP_LOADBOOL: {
+        setbvalue(ra, GETARG_B(i));
+        if (GETARG_C(i)) pc++;  /* skip next instruction (if C) */
+        continue;
+      }
+      case OP_LOADNIL: {
+        TValue *rb = RB(i);
+        do {
+          setnilvalue(rb--);
+        } while (rb >= ra);
+        continue;
+      }
+      case OP_GETUPVAL: {
+        int b = GETARG_B(i);
+        setobj2s(L, ra, cl->upvals[b]->v);
+        continue;
+      }
+      case OP_GETGLOBAL: {
+        TValue g;
+        TValue *rb = KBx(i);
+        sethvalue(L, &g, cl->env);
+        lua_assert(ttisstring(rb));
+        Protect(luaV_gettable(L, &g, rb, ra));
+        continue;
+      }
+      case OP_GETTABLE: {
+        Protect(luaV_gettable(L, RB(i), RKC(i), ra));
+        continue;
+      }
+      case OP_SETGLOBAL: {
+        TValue g;
+        sethvalue(L, &g, cl->env);
+        lua_assert(ttisstring(KBx(i)));
+        Protect(luaV_settable(L, &g, KBx(i), ra));
+        continue;
+      }
+      case OP_SETUPVAL: {
+        UpVal *uv = cl->upvals[GETARG_B(i)];
+        setobj(L, uv->v, ra);
+        luaC_barrier(L, uv, ra);
+        continue;
+      }
+      case OP_SETTABLE: {
+        Protect(luaV_settable(L, ra, RKB(i), RKC(i)));
+        continue;
+      }
+      case OP_NEWTABLE: {
+        int b = GETARG_B(i);
+        int c = GETARG_C(i);
+        sethvalue(L, ra, luaH_new(L, luaO_fb2int(b), luaO_fb2int(c)));
+        Protect(luaC_checkGC(L));
+        continue;
+      }
+      case OP_SELF: {
+        StkId rb = RB(i);
+        setobjs2s(L, ra+1, rb);
+        Protect(luaV_gettable(L, rb, RKC(i), ra));
+        continue;
+      }
+      case OP_ADD: {
+        arith_op(luai_numadd, TM_ADD);
+        continue;
+      }
+      case OP_SUB: {
+        arith_op(luai_numsub, TM_SUB);
+        continue;
+      }
+      case OP_MUL: {
+        arith_op(luai_nummul, TM_MUL);
+        continue;
+      }
+      case OP_DIV: {
+        arith_op(luai_numdiv, TM_DIV);
+        continue;
+      }
+      case OP_MOD: {
+        arith_op(luai_nummod, TM_MOD);
+        continue;
+      }
+      case OP_POW: {
+        arith_op(luai_numpow, TM_POW);
+        continue;
+      }
+      case OP_UNM: {
+        TValue *rb = RB(i);
+        if (ttisnumber(rb)) {
+          lua_Number nb = nvalue(rb);
+          setnvalue(ra, luai_numunm(nb));
+        }
+        else {
+          Protect(Arith(L, ra, rb, rb, TM_UNM));
+        }
+        continue;
+      }
+      case OP_NOT: {
+        int res = l_isfalse(RB(i));  /* next assignment may change this value */
+        setbvalue(ra, res);
+        continue;
+      }
+      case OP_LEN: {
+        const TValue *rb = RB(i);
+        switch (ttype(rb)) {
+          case LUA_TTABLE: {
+            setnvalue(ra, cast_num(luaH_getn(hvalue(rb))));
+            break;
+          }
+          case LUA_TSTRING: {
+            setnvalue(ra, cast_num(tsvalue(rb)->len));
+            break;
+          }
+          default: {  /* try metamethod */
+            Protect(
+              if (!call_binTM(L, rb, luaO_nilobject, ra, TM_LEN))
+                luaG_typeerror(L, rb, "get length of");
+            )
+          }
+        }
+        continue;
+      }
+      case OP_CONCAT: {
+        int b = GETARG_B(i);
+        int c = GETARG_C(i);
+        Protect(luaV_concat(L, c-b+1, c); luaC_checkGC(L));
+        setobjs2s(L, RA(i), base+b);
+        continue;
+      }
+      case OP_JMP: {
+        dojump(L, pc, GETARG_sBx(i));
+        continue;
+      }
+      case OP_EQ: {
+        TValue *rb = RKB(i);
+        TValue *rc = RKC(i);
+        Protect(
+          if (equalobj(L, rb, rc) == GETARG_A(i))
+            dojump(L, pc, GETARG_sBx(*pc));
+        )
+        pc++;
+        continue;
+      }
+      case OP_LT: {
+        Protect(
+          if (luaV_lessthan(L, RKB(i), RKC(i)) == GETARG_A(i))
+            dojump(L, pc, GETARG_sBx(*pc));
+        )
+        pc++;
+        continue;
+      }
+      case OP_LE: {
+        Protect(
+          if (lessequal(L, RKB(i), RKC(i)) == GETARG_A(i))
+            dojump(L, pc, GETARG_sBx(*pc));
+        )
+        pc++;
+        continue;
+      }
+      case OP_TEST: {
+        if (l_isfalse(ra) != GETARG_C(i))
+          dojump(L, pc, GETARG_sBx(*pc));
+        pc++;
+        continue;
+      }
+      case OP_TESTSET: {
+        TValue *rb = RB(i);
+        if (l_isfalse(rb) != GETARG_C(i)) {
+          setobjs2s(L, ra, rb);
+          dojump(L, pc, GETARG_sBx(*pc));
+        }
+        pc++;
+        continue;
+      }
+      case OP_CALL: {
+        int b = GETARG_B(i);
+        int nresults = GETARG_C(i) - 1;
+        if (b != 0) L->top = ra+b;  /* else previous instruction set top */
+        L->savedpc = pc;
+        switch (luaD_precall(L, ra, nresults)) {
+          case PCRLUA: {
+            nexeccalls++;
+            goto reentry;  /* restart luaV_execute over new Lua function */
+          }
+          case PCRC: {
+            /* it was a C function (`precall' called it); adjust results */
+            if (nresults >= 0) L->top = L->ci->top;
+            base = L->base;
+            continue;
+          }
+          default: {
+            return;  /* yield */
+          }
+        }
+      }
+      case OP_TAILCALL: {
+        int b = GETARG_B(i);
+        if (b != 0) L->top = ra+b;  /* else previous instruction set top */
+        L->savedpc = pc;
+        lua_assert(GETARG_C(i) - 1 == LUA_MULTRET);
+        switch (luaD_precall(L, ra, LUA_MULTRET)) {
+          case PCRLUA: {
+            /* tail call: put new frame in place of previous one */
+            CallInfo *ci = L->ci - 1;  /* previous frame */
+            int aux;
+            StkId func = ci->func;
+            StkId pfunc = (ci+1)->func;  /* previous function index */
+            if (L->openupval) luaF_close(L, ci->base);
+            L->base = ci->base = ci->func + ((ci+1)->base - pfunc);
+            for (aux = 0; pfunc+aux < L->top; aux++)  /* move frame down */
+              setobjs2s(L, func+aux, pfunc+aux);
+            ci->top = L->top = func+aux;  /* correct top */
+            lua_assert(L->top == L->base + clvalue(func)->l.p->maxstacksize);
+            ci->savedpc = L->savedpc;
+            ci->tailcalls++;  /* one more call lost */
+            L->ci--;  /* remove new frame */
+            goto reentry;
+          }
+          case PCRC: {  /* it was a C function (`precall' called it) */
+            base = L->base;
+            continue;
+          }
+          default: {
+            return;  /* yield */
+          }
+        }
+      }
+      case OP_RETURN: {
+        int b = GETARG_B(i);
+        if (b != 0) L->top = ra+b-1;
+        if (L->openupval) luaF_close(L, base);
+        L->savedpc = pc;
+        b = luaD_poscall(L, ra);
+        if (--nexeccalls == 0)  /* was previous function running `here'? */
+          return;  /* no: return */
+        else {  /* yes: continue its execution */
+          if (b) L->top = L->ci->top;
+          lua_assert(isLua(L->ci));
+          lua_assert(GET_OPCODE(*((L->ci)->savedpc - 1)) == OP_CALL);
+          goto reentry;
+        }
+      }
+      case OP_FORLOOP: {
+        lua_Number step = nvalue(ra+2);
+        lua_Number idx = luai_numadd(nvalue(ra), step); /* increment index */
+        lua_Number limit = nvalue(ra+1);
+        if (luai_numlt(0, step) ? luai_numle(idx, limit)
+                                : luai_numle(limit, idx)) {
+          dojump(L, pc, GETARG_sBx(i));  /* jump back */
+          setnvalue(ra, idx);  /* update internal index... */
+          setnvalue(ra+3, idx);  /* ...and external index */
+        }
+        continue;
+      }
+      case OP_FORPREP: {
+        const TValue *init = ra;
+        const TValue *plimit = ra+1;
+        const TValue *pstep = ra+2;
+        L->savedpc = pc;  /* next steps may throw errors */
+        if (!tonumber(init, ra))
+          luaG_runerror(L, LUA_QL("for") " initial value must be a number");
+        else if (!tonumber(plimit, ra+1))
+          luaG_runerror(L, LUA_QL("for") " limit must be a number");
+        else if (!tonumber(pstep, ra+2))
+          luaG_runerror(L, LUA_QL("for") " step must be a number");
+        setnvalue(ra, luai_numsub(nvalue(ra), nvalue(pstep)));
+        dojump(L, pc, GETARG_sBx(i));
+        continue;
+      }
+      case OP_TFORLOOP: {
+        StkId cb = ra + 3;  /* call base */
+        setobjs2s(L, cb+2, ra+2);
+        setobjs2s(L, cb+1, ra+1);
+        setobjs2s(L, cb, ra);
+        L->top = cb+3;  /* func. + 2 args (state and index) */
+        Protect(luaD_call(L, cb, GETARG_C(i)));
+        L->top = L->ci->top;
+        cb = RA(i) + 3;  /* previous call may change the stack */
+        if (!ttisnil(cb)) {  /* continue loop? */
+          setobjs2s(L, cb-1, cb);  /* save control variable */
+          dojump(L, pc, GETARG_sBx(*pc));  /* jump back */
+        }
+        pc++;
+        continue;
+      }
+      case OP_SETLIST: {
+        int n = GETARG_B(i);
+        int c = GETARG_C(i);
+        int last;
+        Table *h;
+        if (n == 0) {
+          n = cast_int(L->top - ra) - 1;
+          L->top = L->ci->top;
+        }
+        if (c == 0) c = cast_int(*pc++);
+        runtime_check(L, ttistable(ra));
+        h = hvalue(ra);
+        last = ((c-1)*LFIELDS_PER_FLUSH) + n;
+        if (last > h->sizearray)  /* needs more space? */
+          luaH_resizearray(L, h, last);  /* pre-alloc it at once */
+        for (; n > 0; n--) {
+          TValue *val = ra+n;
+          setobj2t(L, luaH_setnum(L, h, last--), val);
+          luaC_barriert(L, h, val);
+        }
+        continue;
+      }
+      case OP_CLOSE: {
+        luaF_close(L, ra);
+        continue;
+      }
+      case OP_CLOSURE: {
+        Proto *p;
+        Closure *ncl;
+        int nup, j;
+        p = cl->p->p[GETARG_Bx(i)];
+        nup = p->nups;
+        ncl = luaF_newLclosure(L, nup, cl->env);
+        ncl->l.p = p;
+        for (j=0; j<nup; j++, pc++) {
+          if (GET_OPCODE(*pc) == OP_GETUPVAL)
+            ncl->l.upvals[j] = cl->upvals[GETARG_B(*pc)];
+          else {
+            lua_assert(GET_OPCODE(*pc) == OP_MOVE);
+            ncl->l.upvals[j] = luaF_findupval(L, base + GETARG_B(*pc));
+          }
+        }
+        setclvalue(L, ra, ncl);
+        Protect(luaC_checkGC(L));
+        continue;
+      }
+      case OP_VARARG: {
+        int b = GETARG_B(i) - 1;
+        int j;
+        CallInfo *ci = L->ci;
+        int n = cast_int(ci->base - ci->func) - cl->p->numparams - 1;
+        if (b == LUA_MULTRET) {
+          Protect(luaD_checkstack(L, n));
+          ra = RA(i);  /* previous call may change the stack */
+          b = n;
+          L->top = ra + n;
+        }
+        for (j = 0; j < b; j++) {
+          if (j < n) {
+            setobjs2s(L, ra + j, ci->base - n + j);
+          }
+          else {
+            setnilvalue(ra + j);
+          }
+        }
+        continue;
+      }
+    }
+  }
+}
+

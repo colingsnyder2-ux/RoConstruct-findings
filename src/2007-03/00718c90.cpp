@@ -1,90 +1,532 @@
-// roc 2007-03 00718c90  unit: seg_00710000  size: 207 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00718c90
-//
-// 00718c90  83ec10               sub esp, 0x10
-// 00718c93  55                   push ebp
-// 00718c94  56                   push esi
-// 00718c95  57                   push edi
-// 00718c96  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 00718c9a  8bf1                 mov esi, ecx
-// 00718c9c  8b4620               mov eax, dword ptr [esi + 0x20]
-// 00718c9f  57                   push edi
-// 00718ca0  50                   push eax
-// 00718ca1  ff153ced7700         call dword ptr [0x77ed3c]
-// 00718ca7  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 00718caa  8b2d50ee7700         mov ebp, dword ptr [0x77ee50]
-// 00718cb0  6a00                 push 0
-// 00718cb2  6a00                 push 0
-// 00718cb4  680b130000           push 0x130b
-// 00718cb9  51                   push ecx
-// 00718cba  ffd5                 call ebp
-// 00718cbc  8d54240c             lea edx, [esp + 0xc]
-// 00718cc0  52                   push edx
-// 00718cc1  50                   push eax
-// 00718cc2  8b4620               mov eax, dword ptr [esi + 0x20]
-// 00718cc5  680a130000           push 0x130a
-// 00718cca  50                   push eax
-// 00718ccb  ffd5                 call ebp
-// 00718ccd  8bce                 mov ecx, esi
-// 00718ccf  e8f01e0200           call 0x73abc4
-// 00718cd4  2582000000           and eax, 0x82
-// 00718cd9  3d82000000           cmp eax, 0x82
-// 00718cde  7511                 jne 0x718cf1
-// 00718ce0  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00718ce4  890f                 mov dword ptr [edi], ecx
-// 00718ce6  8bc7                 mov eax, edi
-// 00718ce8  5f                   pop edi
-// 00718ce9  5e                   pop esi
-// 00718cea  5d                   pop ebp
-// 00718ceb  83c410               add esp, 0x10
-// 00718cee  c20400               ret 4
-// 00718cf1  3d80000000           cmp eax, 0x80
-// 00718cf6  7512                 jne 0x718d0a
-// 00718cf8  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00718cfc  895708               mov dword ptr [edi + 8], edx
-// 00718cff  8bc7                 mov eax, edi
-// 00718d01  5f                   pop edi
-// 00718d02  5e                   pop esi
-// 00718d03  5d                   pop ebp
-// 00718d04  83c410               add esp, 0x10
-// 00718d07  c20400               ret 4
-// 00718d0a  83f802               cmp eax, 2
-// 00718d0d  7512                 jne 0x718d21
-// 00718d0f  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00718d13  894704               mov dword ptr [edi + 4], eax
-// 00718d16  8bc7                 mov eax, edi
-// 00718d18  5f                   pop edi
-// 00718d19  5e                   pop esi
-// 00718d1a  5d                   pop ebp
-// 00718d1b  83c410               add esp, 0x10
-// 00718d1e  c20400               ret 4
-// 00718d21  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 00718d24  53                   push ebx
-// 00718d25  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 00718d29  2b5c2414             sub ebx, dword ptr [esp + 0x14]
-// 00718d2d  6a00                 push 0
-// 00718d2f  6a00                 push 0
-// 00718d31  682c130000           push 0x132c
-// 00718d36  51                   push ecx
-// 00718d37  ffd5                 call ebp
-// 00718d39  8bce                 mov ecx, esi
-// 00718d3b  8be8                 mov ebp, eax
-// 00718d3d  e87eb2fdff           call 0x6f3fc0
-// 00718d42  8b5704               mov edx, dword ptr [edi + 4]
-// 00718d45  03d3                 add edx, ebx
-// 00718d47  0fafd5               imul edx, ebp
-// 00718d4a  039040010000         add edx, dword ptr [eax + 0x140]
-// 00718d50  5b                   pop ebx
-// 00718d51  89570c               mov dword ptr [edi + 0xc], edx
-// 00718d54  8bc7                 mov eax, edi
-// 00718d56  5f                   pop edi
-// 00718d57  5e                   pop esi
-// 00718d58  5d                   pop ebp
-// 00718d59  83c410               add esp, 0x10
-// 00718d5c  c20400               ret 4
-// library xtp-11.2.2-vc8/Source\SkinFramework\XTPSkinObjectTab.cpp (function ?GetHeaderRect@CXTPSkinObjectTab@@IAE?AVCRect@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/SkinFramework/XTPSkinObjectTab.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPSkinObjectTab.cpp: implementation of the CXTPSkinObjectTab class.
+//
+// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPSkinObjectTab.h"
+#include "XTPSkinManager.h"
+#include "XTPSkinImage.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+#define DT_HIDEPREFIX       0x00100000
+
+AFX_INLINE BOOL IsLeft(DWORD dwStyle)
+{
+	return ((dwStyle & (TCS_VERTICAL|TCS_RIGHT|TCS_BOTTOM)) == TCS_VERTICAL);
+}
+AFX_INLINE BOOL IsRight(DWORD dwStyle)
+{
+	return ((dwStyle & (TCS_VERTICAL|TCS_RIGHT|TCS_BOTTOM)) == (TCS_VERTICAL|TCS_RIGHT));
+}
+AFX_INLINE BOOL IsTop(DWORD dwStyle)
+{
+	return ((dwStyle & (TCS_VERTICAL|TCS_RIGHT|TCS_BOTTOM)) == 0);
+}
+AFX_INLINE BOOL IsBottom(DWORD dwStyle)
+{
+	return ((dwStyle & (TCS_VERTICAL|TCS_RIGHT|TCS_BOTTOM)) == TCS_BOTTOM);
+}
+AFX_INLINE BOOL IsVert(DWORD dwStyle)
+{
+	return (IsRight(dwStyle) || IsLeft(dwStyle));
+}
+AFX_INLINE BOOL IsHorz(DWORD dwStyle)
+{
+	return (IsTop(dwStyle) || IsBottom(dwStyle));
+}
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+IMPLEMENT_DYNCREATE(CXTPSkinObjectTab, CXTPSkinObjectFrame)
+
+CXTPSkinObjectTab::CXTPSkinObjectTab()
+{
+	m_strClassName = _T("TAB");
+	m_nHotItem = -1;
+	m_bPaint = FALSE;
+}
+
+CXTPSkinObjectTab::~CXTPSkinObjectTab()
+{
+
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPSkinObjectTab, CXTPSkinObjectFrame)
+	//{{AFX_MSG_MAP(CXTPSkinObjectTab)
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPSkinObjectTab message handlers
+
+
+BOOL CXTPSkinObjectTab::OnEraseBkgnd(CDC* pDC)
+{
+	CXTPClientRect rc(this);
+	CXTPBufferDC dcMem(pDC->GetSafeHdc(), rc);
+	FillClient(&dcMem, rc);
+
+	return TRUE;
+}
+
+CRect CXTPSkinObjectTab::GetHeaderRect()
+{
+	CRect rcHeader;
+	GetClientRect(&rcHeader);
+
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	// get the selected tab item rect.
+	CRect rcItem;
+	pTabCtrl->GetItemRect(pTabCtrl->GetCurSel(), &rcItem);
+
+	DWORD dwStyle = GetStyle();
+
+	if (IsRight(dwStyle))
+	{
+		rcHeader.left = rcItem.left;
+	}
+	else if (IsLeft(dwStyle))
+	{
+		rcHeader.right = rcItem.right;
+	}
+	else if (IsBottom(dwStyle))
+	{
+		rcHeader.top = rcItem.top;
+	}
+	else
+	{
+		rcHeader.bottom = (rcHeader.top + rcItem.Height()) * pTabCtrl->GetRowCount() + GetMetrics()->m_cyEdge;
+	}
+	return rcHeader;
+}
+
+void CXTPSkinObjectTab::FillClient(CDC* pDC, CRect rc)
+{
+	FillBackground(pDC, rc);
+
+	if (GetStyle() & TCS_BUTTONS)
+		return;
+
+	CXTPSkinManagerClass* pClass = GetSkinClass();
+
+	CRect rcClient(rc);
+	CRect rcHeader = GetHeaderRect();
+
+	DWORD dwStyle = GetStyle();
+
+	if (IsRight(dwStyle))
+	{
+		rcClient.right = rcHeader.left;
+	}
+	else if (IsLeft(dwStyle))
+	{
+		rcClient.left = rcHeader.right;
+	}
+	else if (IsBottom(dwStyle))
+	{
+		rcClient.bottom = rcHeader.top;
+	}
+	else
+	{
+		rcClient.top = rcHeader.bottom;
+	}
+
+	pClass->DrawThemeBackground(pDC, TABP_PANE, 0, &rcClient);
+}
+
+
+void CXTPSkinObjectTab::FillTabFace(CDC* pDC, CRect rcItem, int iItem, int iCount, BOOL bSelected)
+{
+	if (GetStyle() & TCS_BUTTONS)
+	{
+		CXTPSkinManagerClass* pClassButton = GetSkinManager()->GetSkinClass(_T("BUTTON"));
+		int nState = bSelected? PBS_PRESSED: PBS_NORMAL;
+		pClassButton->DrawThemeBackground(pDC, BP_PUSHBUTTON, nState, rcItem);
+		return;
+	}
+
+	if (bSelected)
+	{
+		rcItem.InflateRect(2, 2, 2, 2);
+	}
+
+	CXTPSkinManagerClass* pClass = GetSkinClass();
+
+	int nStateId = bSelected ? TIS_SELECTED: m_nHotItem == iItem ? TIS_HOT : TIS_NORMAL;
+
+	pClass->DrawThemeBackground(pDC, iItem == 0 ? TABP_TOPTABITEMLEFTEDGE :
+		iItem == iCount - 1 && !bSelected ? TABP_TOPTABITEMRIGHTEDGE : TABP_TOPTABITEM,
+		nStateId, &rcItem);
+}
+
+
+void CXTPSkinObjectTab::DrawTabIcon(CDC* pDC, CRect& rcItem, int iItem)
+{
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	TC_ITEM tci;
+	tci.mask = TCIF_IMAGE;
+
+	if (!pTabCtrl->GetItem(iItem, &tci))
+		return;
+
+	CImageList* pImageList = pTabCtrl->GetImageList();
+	if (!pImageList || tci.iImage < 0)
+		return;
+
+	CPoint point = rcItem.TopLeft();
+
+	DWORD dwStyle = GetStyle();
+
+	if (IsHorz(dwStyle))
+	{
+		point.Offset(GetMetrics()->m_cxEdge * 2, IsTop(dwStyle) ? GetMetrics()->m_cyEdge : 1);
+	}
+	else
+	{
+		point.Offset(IsLeft(dwStyle) ? GetMetrics()->m_cxEdge : 1, GetMetrics()->m_cyEdge * 2);
+	}
+
+	// Draw any associated icons.
+	pImageList->Draw(pDC, tci.iImage, point, ILD_TRANSPARENT);
+
+	IMAGEINFO info;
+	pImageList->GetImageInfo(tci.iImage, &info);
+	CRect rcImage(info.rcImage);
+
+	if (IsHorz(dwStyle))
+	{
+		rcItem.left += rcImage.Width() + GetMetrics()->m_cxEdge;
+	}
+	else
+	{
+		rcItem.top += rcImage.Height() + GetMetrics()->m_cyEdge;
+	}
+}
+
+void CXTPSkinObjectTab::DrawTabText(CDC* pDC, CRect& rcItem, int iItem, int iCount,  BOOL bSelected)
+{
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	CString strCaption;
+	LPTSTR pszText = strCaption.GetBuffer(256);
+	pszText[0] = 0;
+
+	TC_ITEM tci;
+	tci.mask = TCIF_TEXT;
+	tci.pszText = pszText;
+	tci.cchTextMax = 255;
+
+	BOOL bResult = pTabCtrl->GetItem(iItem, &tci);
+	strCaption.ReleaseBuffer();
+
+#ifdef _UNICODE
+	if (!bResult)
+	{
+		char tText[256];
+		tText[0] = 0;
+
+		TC_ITEMA tcia;
+		::ZeroMemory(&tcia, sizeof(TC_ITEMA));
+
+		tcia.mask = TCIF_TEXT;
+
+		// Get the header item text and format
+		tcia.pszText = tText;
+		tcia.cchTextMax = 255;
+
+		::SendMessage(pTabCtrl->m_hWnd, TCM_GETITEMA, iItem, (LPARAM)&tcia);
+
+		strCaption = tText;
+	}
+#else
+	if (!bResult)
+		return;
+#endif
+
+	if (strCaption.GetLength() == 0)
+		return;
+
+	pDC->SetTextColor(GetColor(COLOR_BTNTEXT));
+
+	// Set the font for the tab label.
+	DWORD dwStyle = GetStyle();
+
+	CXTPSkinManagerClass* pClass = GetSkinClass();
+
+	int nStateId = bSelected ? TIS_SELECTED: m_nHotItem == iItem ? TIS_HOT : TIS_NORMAL;
+	int nPartId = iItem == 0 ? TABP_TOPTABITEMLEFTEDGE :
+		iItem == iCount - 1 && !bSelected ? TABP_TOPTABITEMRIGHTEDGE : TABP_TOPTABITEM;
+
+
+	// Draw the tab label.
+	if (IsHorz(dwStyle))
+	{
+		UINT dsFlags = DT_SINGLELINE | DT_VCENTER | DT_CENTER | DT_END_ELLIPSIS;
+		if (SendMessage(WM_QUERYUISTATE) & UISF_HIDEACCEL)
+		{
+			dsFlags |= DT_HIDEPREFIX;
+		}
+		if (!(GetStyle() & TCS_BUTTONS))
+		{
+			rcItem.top += bSelected ? -2 : 1;
+			rcItem.right -= iItem == 0 ? 3 : 0;
+		}
+		else
+		{
+			rcItem.top += bSelected ? 0 : -1;
+		}
+		pClass->DrawThemeText(pDC, nPartId, nStateId, strCaption, dsFlags, &rcItem);
+	}
+	else
+	{
+		CSize sz = pDC->GetTextExtent(strCaption);
+		rcItem.left = rcItem.right-(rcItem.Width()-sz.cy + 1)/ 2;
+		rcItem.top = rcItem.top+(rcItem.Height()-sz.cx + 1)/ 2;
+
+		pClass->DrawThemeText(pDC, nPartId, nStateId, strCaption, DT_SINGLELINE | DT_NOCLIP, &rcItem);
+	}
+}
+
+
+
+void CXTPSkinObjectTab::DrawTab(CDC* pDC, int iItem)
+{
+	CXTPClientRect rc(this);
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	// Get the current tab selection.
+	int iCurSel = pTabCtrl->GetCurSel();
+
+	// Get the tab item size.
+	CRect rcItem;
+	pTabCtrl->GetItemRect(iItem, &rcItem);
+
+	if (!CRect().IntersectRect(rcItem, rc))
+		return;
+
+	CRect rcItemFocus(rcItem);
+
+	// Draw the tab item.
+	BOOL bSelected = (iItem == iCurSel);
+	FillTabFace(pDC, rcItem, iItem, pTabCtrl->GetItemCount(), bSelected);
+	DrawTabIcon(pDC, rcItem, iItem);
+	DrawTabText(pDC, rcItem, iItem, iItem, bSelected);
+
+	// draw the focus rect
+	if (bSelected && ::GetFocus() == m_hWnd && (SendMessage(WM_QUERYUISTATE) & UISF_HIDEFOCUS) == 0)
+	{
+		rcItemFocus.DeflateRect(GetMetrics()->m_cxEdge / 2, GetMetrics()->m_cyEdge / 2);
+		pDC->DrawFocusRect(&rcItemFocus);
+	}
+}
+
+
+void CXTPSkinObjectTab::OnPaint()
+{
+	CXTPSkinObjectPaintDC dc(this);
+
+	if (dc.m_ps.hdc == 0)
+	{
+		FillClient(&dc, CXTPClientRect(this));
+	}
+
+	OnDraw(&dc);
+}
+
+LRESULT CXTPSkinObjectTab::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (m_bPaint)
+	{
+		return Default();
+	}
+
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		OnDraw(pDC);
+	}
+	return 1;
+}
+
+void CXTPSkinObjectTab::OnDraw(CDC* pDC)
+{
+	CRect rc = GetHeaderRect();
+	DWORD dwStyle = GetStyle();
+
+	if (IsRight(dwStyle))
+	{
+		rc.left -= 2;
+	}
+	else if (IsLeft(dwStyle))
+	{
+		rc.right += 2;
+	}
+	else if (IsBottom(dwStyle))
+	{
+		rc.top -= 2;
+	}
+	else
+	{
+		rc.bottom += 2;
+	}
+
+	CXTPBufferDC dcMem(*pDC, rc);
+	FillClient(&dcMem, CXTPClientRect(this));
+
+	if (m_bActiveX)
+	{
+		m_bPaint = TRUE;
+		CXTPBufferDC dcMem2(*pDC, rc);
+		DefWindowProc(WM_PAINT, (WPARAM)dcMem2.GetSafeHdc(), 0);
+		dcMem2.Discard();
+		m_bPaint = FALSE;
+	}
+
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	CXTPFontDC font(&dcMem, GetFont());
+	dcMem.SetBkMode(TRANSPARENT);
+
+	for (int iItem = 0; iItem < pTabCtrl->GetItemCount(); ++iItem)
+	{
+		DrawTab(&dcMem, iItem);
+	}
+
+	DrawTab(&dcMem, pTabCtrl->GetCurSel());
+}
+
+void CXTPSkinObjectTab::OnMouseLeave()
+{
+	OnMouseMove(0,CPoint(-1, -1));
+}
+
+void CXTPSkinObjectTab::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	int nHotItem = -1;
+	CTabCtrl* pTabCtrl = (CTabCtrl*)this;
+
+	for (int iItem = 0; iItem < pTabCtrl->GetItemCount(); ++iItem)
+	{
+		CRect rcItem;
+		pTabCtrl->GetItemRect(iItem, &rcItem);
+		if (rcItem.PtInRect(point))
+		{
+			nHotItem = iItem;
+			break;
+		}
+	}
+
+	if (nHotItem != m_nHotItem)
+	{
+		m_nHotItem = nHotItem;
+		InvalidateRect(GetHeaderRect(), FALSE);
+
+		if (m_nHotItem != -1)
+		{
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
+			_TrackMouseEvent(&tme);
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPSkinObjectTabClient
+
+////////////////////////////////////////////////////////////////////
+
+HBRUSH CXTPSkinObjectFrame::GetClientBrush(HDC hDC, HWND hWnd, UINT nCtlColor)
+{
+	if (m_dwDialogTexture != ETDT_ENABLETAB)
+	{
+		GrayCtlColor(hDC, hWnd, nCtlColor, GetMetrics()->m_brushDialog, GetColor(COLOR_BTNTEXT));
+		return GetMetrics()->m_brushDialog;
+	}
+
+	if (GetMetrics()->m_brushTabControl == NULL)
+	{
+		CWindowDC dcWindow(this);
+
+		CXTPSkinManagerClass* pClass = GetSkinManager()->GetSkinClass(_T("TAB"));
+
+		CString strImageFile = pClass->GetThemeString(TABP_BODY, 0, TMT_STOCKIMAGEFILE);
+		if (strImageFile.IsEmpty())
+		{
+			ASSERT(FALSE);
+			return GetMetrics()->m_brushDialog;
+		}
+
+		CXTPSkinImage* pImage = pClass->GetImages()->LoadFile(m_pManager->GetResourceFile(), strImageFile);
+
+		if (!pImage)
+		{
+			ASSERT(FALSE);
+			return GetMetrics()->m_brushDialog;
+		}
+
+		CRect rc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+
+		CBitmap bmp;
+		bmp.CreateCompatibleBitmap(&dcWindow, rc.Width(), rc.Height());
+
+		CXTPCompatibleDC dc(&dcWindow, bmp);
+
+		pImage->DrawImage(&dc, rc, rc, CRect(0, 0, 0, 0), COLORREF_NULL, ST_TRUESIZE, FALSE);
+
+		GetMetrics()->m_brushTabControl = ::CreatePatternBrush(bmp);
+	}
+
+
+	if (hWnd != m_hWnd)
+	{
+		CXTPWindowRect rcPaint(hWnd);
+		CXTPWindowRect rcBrush(m_hWnd);
+		::SetBrushOrgEx(hDC, rcBrush.left - rcPaint.left, rcBrush.top - rcPaint.top, NULL);
+
+		::SetBkMode(hDC, TRANSPARENT);
+		::SetTextColor(hDC, GetColor(COLOR_BTNTEXT));
+	}
+
+	return GetMetrics()->m_brushTabControl;
+
+}

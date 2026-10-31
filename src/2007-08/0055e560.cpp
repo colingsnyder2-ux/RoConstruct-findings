@@ -1,27 +1,5 @@
-// from server: 93% by colin
-struct CameraTiltUpCommand {
-    void doIt();
-};
-
-struct Camera {
-    char pad[0x228];
-    void* vtable;
-};
-
-struct CameraHolder {
-    char pad[0xc];
-    Camera* camera;
-};
-
-extern "C" void __stdcall sub_599570(int);
-
-void CameraTiltUpCommand::doIt() {
-    CameraHolder* holder = (CameraHolder*)this;
-    Camera* cam = holder->camera;
-    void** vtbl = *(void***)((char*)cam + 0x228);
-    typedef void* (__thiscall *Fn)(void*);
-    Fn fn = (Fn)vtbl[1];
-    void* result = fn((char*)cam + 0x228);
-    sub_599570(-1);
-    (void)result;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_camera_explicit_expressions_e24eceea55bd3e42.cpp

@@ -1,196 +1,906 @@
-// roc 2009-12 008e8a50  unit: CXTPTabPaintManager::CColorSetWinXP  size: 608 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008e8a50
-//
-// 008e8a50  6aff                 push -1
-// 008e8a52  68b8639600           push 0x9663b8
-// 008e8a57  64a100000000         mov eax, dword ptr fs:[0]
-// 008e8a5d  50                   push eax
-// 008e8a5e  83ec60               sub esp, 0x60
-// 008e8a61  53                   push ebx
-// 008e8a62  55                   push ebp
-// 008e8a63  56                   push esi
-// 008e8a64  57                   push edi
-// 008e8a65  a10052b600           mov eax, dword ptr [0xb65200]
-// 008e8a6a  33c4                 xor eax, esp
-// 008e8a6c  50                   push eax
-// 008e8a6d  8d442474             lea eax, [esp + 0x74]
-// 008e8a71  64a300000000         mov dword ptr fs:[0], eax
-// 008e8a77  894c2420             mov dword ptr [esp + 0x20], ecx
-// 008e8a7b  8bb42490000000       mov esi, dword ptr [esp + 0x90]
-// 008e8a82  8bbc2494000000       mov edi, dword ptr [esp + 0x94]
-// 008e8a89  2bb42488000000       sub esi, dword ptr [esp + 0x88]
-// 008e8a90  2bbc248c000000       sub edi, dword ptr [esp + 0x8c]
-// 008e8a97  6a2c                 push 0x2c
-// 008e8a99  33db                 xor ebx, ebx
-// 008e8a9b  8d44244c             lea eax, [esp + 0x4c]
-// 008e8a9f  53                   push ebx
-// 008e8aa0  50                   push eax
-// 008e8aa1  e8febff0ff           call 0x7f4aa4
-// 008e8aa6  83c40c               add esp, 0xc
-// 008e8aa9  c744244828000000     mov dword ptr [esp + 0x48], 0x28
-// 008e8ab1  399c249c000000       cmp dword ptr [esp + 0x9c], ebx
-// 008e8ab8  740a                 je 0x8e8ac4
-// 008e8aba  897c244c             mov dword ptr [esp + 0x4c], edi
-// 008e8abe  89742450             mov dword ptr [esp + 0x50], esi
-// 008e8ac2  eb08                 jmp 0x8e8acc
-// 008e8ac4  8974244c             mov dword ptr [esp + 0x4c], esi
-// 008e8ac8  897c2450             mov dword ptr [esp + 0x50], edi
-// 008e8acc  8b2d60b19800         mov ebp, dword ptr [0x98b160]
-// 008e8ad2  53                   push ebx
-// 008e8ad3  53                   push ebx
-// 008e8ad4  8d442420             lea eax, [esp + 0x20]
-// 008e8ad8  50                   push eax
-// 008e8ad9  b901000000           mov ecx, 1
-// 008e8ade  66894c2460           mov word ptr [esp + 0x60], cx
-// 008e8ae3  53                   push ebx
-// 008e8ae4  8d4c2458             lea ecx, [esp + 0x58]
-// 008e8ae8  51                   push ecx
-// 008e8ae9  ba20000000           mov edx, 0x20
-// 008e8aee  53                   push ebx
-// 008e8aef  668954246e           mov word ptr [esp + 0x6e], dx
-// 008e8af4  895c2470             mov dword ptr [esp + 0x70], ebx
-// 008e8af8  895c2430             mov dword ptr [esp + 0x30], ebx
-// 008e8afc  ffd5                 call ebp
-// 008e8afe  8944241c             mov dword ptr [esp + 0x1c], eax
-// 008e8b02  395c2418             cmp dword ptr [esp + 0x18], ebx
-// 008e8b06  0f848e010000         je 0x8e8c9a
-// 008e8b0c  53                   push ebx
-// 008e8b0d  53                   push ebx
-// 008e8b0e  8d54241c             lea edx, [esp + 0x1c]
-// 008e8b12  52                   push edx
-// 008e8b13  53                   push ebx
-// 008e8b14  8d442458             lea eax, [esp + 0x58]
-// 008e8b18  50                   push eax
-// 008e8b19  53                   push ebx
-// 008e8b1a  89742464             mov dword ptr [esp + 0x64], esi
-// 008e8b1e  897c2468             mov dword ptr [esp + 0x68], edi
-// 008e8b22  895c242c             mov dword ptr [esp + 0x2c], ebx
-// 008e8b26  ffd5                 call ebp
-// 008e8b28  8be8                 mov ebp, eax
-// 008e8b2a  395c2414             cmp dword ptr [esp + 0x14], ebx
-// 008e8b2e  0f8466010000         je 0x8e8c9a
-// 008e8b34  8d4c2428             lea ecx, [esp + 0x28]
-// 008e8b38  e871d90300           call 0x9264ae
-// 008e8b3d  53                   push ebx
-// 008e8b3e  899c2480000000       mov dword ptr [esp + 0x80], ebx
-// 008e8b45  ff1554b19800         call dword ptr [0x98b154]
-// 008e8b4b  50                   push eax
-// 008e8b4c  8d4c242c             lea ecx, [esp + 0x2c]
-// 008e8b50  e847d90300           call 0x92649c
-// 008e8b55  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 008e8b59  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 008e8b5d  51                   push ecx
-// 008e8b5e  52                   push edx
-// 008e8b5f  ff154cb19800         call dword ptr [0x98b14c]
-// 008e8b65  89442424             mov dword ptr [esp + 0x24], eax
-// 008e8b69  399c249c000000       cmp dword ptr [esp + 0x9c], ebx
-// 008e8b70  7406                 je 0x8e8b78
-// 008e8b72  8bce                 mov ecx, esi
-// 008e8b74  8bc7                 mov eax, edi
-// 008e8b76  eb04                 jmp 0x8e8b7c
-// 008e8b78  8bcf                 mov ecx, edi
-// 008e8b7a  8bc6                 mov eax, esi
-// 008e8b7c  895c2438             mov dword ptr [esp + 0x38], ebx
-// 008e8b80  895c243c             mov dword ptr [esp + 0x3c], ebx
-// 008e8b84  89442440             mov dword ptr [esp + 0x40], eax
-// 008e8b88  894c2444             mov dword ptr [esp + 0x44], ecx
-// 008e8b8c  e83f6ef4ff           call 0x82f9d0
-// 008e8b91  6a0f                 push 0xf
-// 008e8b93  8bc8                 mov ecx, eax
-// 008e8b95  e86665f4ff           call 0x82f100
-// 008e8b9a  50                   push eax
-// 008e8b9b  8d44243c             lea eax, [esp + 0x3c]
-// 008e8b9f  50                   push eax
-// 008e8ba0  8d4c2430             lea ecx, [esp + 0x30]
-// 008e8ba4  e855baf0ff           call 0x7f45fe
-// 008e8ba9  8b842498000000       mov eax, dword ptr [esp + 0x98]
-// 008e8bb0  8b4860               mov ecx, dword ptr [eax + 0x60]
-// 008e8bb3  8b5104               mov edx, dword ptr [ecx + 4]
-// 008e8bb6  8994249c000000       mov dword ptr [esp + 0x9c], edx
-// 008e8bbd  3bd0                 cmp edx, eax
-// 008e8bbf  7507                 jne 0x8e8bc8
-// 008e8bc1  ba03000000           mov edx, 3
-// 008e8bc6  eb09                 jmp 0x8e8bd1
-// 008e8bc8  33d2                 xor edx, edx
-// 008e8bca  394108               cmp dword ptr [ecx + 8], eax
-// 008e8bcd  0f94c2               sete dl
-// 008e8bd0  42                   inc edx
-// 008e8bd1  8b582c               mov ebx, dword ptr [eax + 0x2c]
-// 008e8bd4  85db                 test ebx, ebx
-// 008e8bd6  7505                 jne 0x8e8bdd
-// 008e8bd8  8d4306               lea eax, [ebx + 6]
-// 008e8bdb  eb1b                 jmp 0x8e8bf8
-// 008e8bdd  8b495c               mov ecx, dword ptr [ecx + 0x5c]
-// 008e8be0  49                   dec ecx
-// 008e8be1  3bd9                 cmp ebx, ecx
-// 008e8be3  750e                 jne 0x8e8bf3
-// 008e8be5  3984249c000000       cmp dword ptr [esp + 0x9c], eax
-// 008e8bec  b807000000           mov eax, 7
-// 008e8bf1  7505                 jne 0x8e8bf8
-// 008e8bf3  b805000000           mov eax, 5
-// 008e8bf8  6a00                 push 0
-// 008e8bfa  8d4c243c             lea ecx, [esp + 0x3c]
-// 008e8bfe  51                   push ecx
-// 008e8bff  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 008e8c03  52                   push edx
-// 008e8c04  8b542438             mov edx, dword ptr [esp + 0x38]
-// 008e8c08  50                   push eax
-// 008e8c09  52                   push edx
-// 008e8c0a  81c108020000         add ecx, 0x208
-// 008e8c10  e82b2cf8ff           call 0x86b840
-// 008e8c15  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008e8c19  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008e8c1d  50                   push eax
-// 008e8c1e  51                   push ecx
-// 008e8c1f  57                   push edi
-// 008e8c20  56                   push esi
-// 008e8c21  ff9424b0000000       call dword ptr [esp + 0xb0]
-// 008e8c28  8b94249c000000       mov edx, dword ptr [esp + 0x9c]
-// 008e8c2f  8b8424a4000000       mov eax, dword ptr [esp + 0xa4]
-// 008e8c36  8bb42498000000       mov esi, dword ptr [esp + 0x98]
-// 008e8c3d  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 008e8c44  8bbc2494000000       mov edi, dword ptr [esp + 0x94]
-// 008e8c4b  8b7f04               mov edi, dword ptr [edi + 4]
-// 008e8c4e  83c410               add esp, 0x10
-// 008e8c51  6a04                 push 4
-// 008e8c53  2bc2                 sub eax, edx
-// 008e8c55  50                   push eax
-// 008e8c56  2bce                 sub ecx, esi
-// 008e8c58  51                   push ecx
-// 008e8c59  52                   push edx
-// 008e8c5a  56                   push esi
-// 008e8c5b  6a00                 push 0
-// 008e8c5d  55                   push ebp
-// 008e8c5e  6a00                 push 0
-// 008e8c60  6a00                 push 0
-// 008e8c62  57                   push edi
-// 008e8c63  ff15f8ca9800         call dword ptr [0x98caf8]
-// 008e8c69  8b542424             mov edx, dword ptr [esp + 0x24]
-// 008e8c6d  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 008e8c71  52                   push edx
-// 008e8c72  50                   push eax
-// 008e8c73  ff154cb19800         call dword ptr [0x98b14c]
-// 008e8c79  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 008e8c7d  8b353cb19800         mov esi, dword ptr [0x98b13c]
-// 008e8c83  51                   push ecx
-// 008e8c84  ffd6                 call esi
-// 008e8c86  55                   push ebp
-// 008e8c87  ffd6                 call esi
-// 008e8c89  8d4c2428             lea ecx, [esp + 0x28]
-// 008e8c8d  c744247cffffffff     mov dword ptr [esp + 0x7c], 0xffffffff
-// 008e8c95  e80ed80300           call 0x9264a8
-// 008e8c9a  8b4c2474             mov ecx, dword ptr [esp + 0x74]
-// 008e8c9e  64890d00000000       mov dword ptr fs:[0], ecx
-// 008e8ca5  59                   pop ecx
-// 008e8ca6  5f                   pop edi
-// 008e8ca7  5e                   pop esi
-// 008e8ca8  5d                   pop ebp
-// 008e8ca9  5b                   pop ebx
-// 008e8caa  83c46c               add esp, 0x6c
-// 008e8cad  c22000               ret 0x20
-// copied from an identical function in another client (function ?DrawRotatedButton@CColorSetWinXP@CXTPTabPaintManager@@QAEXPAVCDC@@VCRect@@PAVCXTPTabManagerItem@@HP6AXHHPAI3@Z@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabPaintManagerColors.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPOffice2007Image.h"
+
+#include "XTPTabPaintManager.h"
+#include "XTPTabManager.h"
+#include "XTPTabPaintManager.inl"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+// CColorSet
+
+CXTPTabPaintManager::CColorSet::CColorSet()
+{
+	m_pPaintManager = NULL;
+}
+
+CXTPTabPaintManager::CColorSet::~CColorSet()
+{
+}
+
+BOOL CXTPTabPaintManager::CColorSet::IsAppThemed() const
+{
+	return FALSE;
+}
+
+void CXTPTabPaintManager::CColorSet::RefreshMetrics()
+{
+	RefreshXtremeColors();
+
+	m_clrFrameBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrHeaderFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrControlFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrPaneFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrBorderHighlight.SetStandardValue(GetXtremeColor(COLOR_BTNHILIGHT));
+
+	m_clrInActiveText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_clrNormalText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_clrSelectedText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_clrHighlightText.SetStandardValue(RGB(0, 0, 128));
+	m_clrDisabledText.SetStandardValue(GetXtremeColor(COLOR_GRAYTEXT));
+
+	m_csStateButton.clrFace.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	m_csStateButton.clrBorder.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHT));
+
+	m_csPropertyPage2003.clrDarkShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csPropertyPage2003.clrFrameBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+
+	m_csPropertyPage.clrHighlight.SetStandardValue(GetXtremeColor(COLOR_BTNHILIGHT));
+	m_csPropertyPage.clrShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csPropertyPage.clrDarkShadow.SetStandardValue(GetXtremeColor(COLOR_3DDKSHADOW));
+
+	m_csExcelSelected.clrRightInnerBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_csExcelSelected.clrLeftInnerBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_csExcelSelected.clrTopInnerBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csExcelSelected.clrLeftOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelSelected.clrRightOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelSelected.clrTopOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelNormal = m_csExcelSelected;
+	m_csExcelNormal.clrLeftOuterBorder.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	m_csExcelNormal.clrRightOuterBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+
+	m_clrButtonSelected.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrButtonNormal.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrButtonHighlighted.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrButtonPressed.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+
+	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceExcel)
+	{
+		m_clrButtonSelected.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	}
+
+	m_clrAutoHideFace = m_clrHeaderFace;
+}
+
+void CXTPTabPaintManager::CColorSet::GradientFill(CDC* pDC, CRect rc, COLORREF clrLight, COLORREF clrDark, XTPTabPosition position)
+{
+	if (clrLight == XTP_TABMANAGER_COLOR_SHADED)
+	{
+		WORD bits[] =
+		{
+			0x0055, 0x00AA, 0x0055, 0x00AA,
+			0x0055, 0x00AA, 0x0055, 0x00AA
+		};
+
+		CBitmap bitmap;
+		bitmap.CreateBitmap(8, 8, 1, 1, &bits);
+
+		CBrush brush;
+		brush.CreatePatternBrush(&bitmap);
+		CBrush* pOldBrush = pDC->SelectObject(&brush);
+
+		pDC->SetBkColor(GetXtremeColor(COLOR_3DFACE));
+		pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
+
+		pDC->PatBlt(rc.left, rc.top, rc.Width(), rc.Height(), PATCOPY);
+
+		pDC->SelectObject(pOldBrush);
+	}
+	else
+	{
+		BOOL bHoriz = IsHorizontalTabPosition(position);
+		if (!IsTopLeftTabPosition(position)) SwapColors(clrLight, clrDark);
+		if (m_pPaintManager->m_bInvertGradient) SwapColors(clrLight, clrDark);
+
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, !bHoriz);
+	}
+}
+
+
+void CXTPTabPaintManager::CColorSet::FillHeader(CDC* pDC, CRect rc, CXTPTabManager* pTabManager)
+{
+	COLORREF clrLight = m_clrHeaderFace.clrLight, clrDark = m_clrHeaderFace.clrDark;
+
+	if (clrLight == clrDark && clrLight == GetXtremeColor(COLOR_3DFACE))
+	{
+		if (pTabManager->DrawParentBackground(pDC, rc))
+			return;
+	}
+
+	GradientFill(pDC, rc, clrLight, clrDark, pTabManager->GetPosition());
+
+}
+
+COLORREF CXTPTabPaintManager::CColorSet::FillClient(CDC* pDC, CRect rc, CXTPTabManager* pTabManager)
+{
+	CXTPTabManagerItem* pItem = pTabManager->GetSelectedItem();
+
+	COLORREF clrClient = pItem ? GetItemColor(pItem) : m_clrButtonSelected;
+
+	pDC->FillSolidRect(rc, clrClient);
+
+	return clrClient;
+}
+
+
+void CXTPTabPaintManager::CColorSet::SetTextColor(CDC* pDC, CXTPTabManagerItem* pItem)
+{
+	pDC->SetTextColor(!pItem->IsEnabled() ? m_clrDisabledText: !pItem->GetTabManager()->IsActive() ? m_clrInActiveText :
+		pItem->IsSelected() ? m_clrSelectedText: pItem->IsHighlighted() ? m_clrHighlightText : m_clrNormalText);
+}
+
+COLORREF CXTPTabPaintManager::CColorSet::GetItemColor(CXTPTabManagerItem* pItem)
+{
+	if (m_pPaintManager->m_bOneNoteColors)
+	{
+		return pItem->GetColor();
+	}
+	return pItem->IsSelected() ? m_clrButtonSelected : m_clrButtonNormal;
+}
+
+
+COLORREF CXTPTabPaintManager::CColorSet::FillPropertyButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	COLORREF clr = GetItemColor(pItem);
+
+	pDC->FillSolidRect(rcItem, clr);
+
+	return clr;
+}
+
+void CXTPTabPaintManager::CColorSet::FillStateButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	if (!pItem->IsSelected())
+	{
+		if (pItem->GetTabManager()->IsHorizontalPosition())
+			pDC->Draw3dRect(rcItem.right, rcItem.top + 2, 2, rcItem.Height() - 4, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+		else
+			pDC->Draw3dRect(rcItem.left + 2, rcItem.bottom, rcItem.Width() - 4, 2, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+	}
+	else
+	{
+		if (m_pPaintManager->m_bOneNoteColors)
+		{
+			pDC->FillSolidRect(rcItem, GetItemColor(pItem));
+		}
+		else
+		{
+			GradientFill(pDC, rcItem, m_csStateButton.clrFace.clrLight, m_csStateButton.clrFace.clrDark, pItem->GetTabManager()->GetPosition());
+		}
+
+		pDC->Draw3dRect(rcItem, m_csStateButton.clrBorder.clrLight, m_csStateButton.clrBorder.clrDark);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CColorSetDefault
+
+void CXTPTabPaintManager::CColorSetDefault::RefreshMetrics()
+{
+	CColorSet::RefreshMetrics();
+
+	m_csStateButton.clrFace.SetStandardValue(XTP_TABMANAGER_COLOR_SHADED);
+	m_csStateButton.clrBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+
+	m_csExcelSelected.clrRightInnerBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_csExcelSelected.clrLeftInnerBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_csExcelSelected.clrTopInnerBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_csExcelSelected.clrLeftOuterBorder.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	m_csExcelSelected.clrTopOuterBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csExcelSelected.clrRightOuterBorder.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_csExcelNormal = m_csExcelSelected;
+	m_csExcelNormal.clrLeftOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelNormal.clrRightOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelNormal.clrTopOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+
+	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceExcel)
+	{
+		m_clrButtonSelected.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		m_clrButtonNormal.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+		m_clrFrameBorder.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	}
+
+
+}
+
+void CXTPTabPaintManager::CColorSetDefault::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	COLORREF clrFrameTopLeft = GetXtremeColor(COLOR_3DSHADOW), clrFrameBottomRight = GetXtremeColor(COLOR_BTNHIGHLIGHT);
+
+	if (pButton->IsEnabled())
+	{
+		if (pButton->IsPressed())
+		{
+			pDC->Draw3dRect(rc, clrFrameTopLeft, clrFrameBottomRight);
+			rc.OffsetRect(1, 1);
+		}
+		else if (pButton->IsHighlighted())
+			pDC->Draw3dRect(rc, clrFrameBottomRight, clrFrameTopLeft);
+	}
+	pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CColorSetVisualStudio
+
+void CXTPTabPaintManager::CColorSetVisualStudio::RefreshMetrics()
+{
+	CColorSet::RefreshMetrics();
+
+	if (m_pPaintManager->GetAppearance() != xtpTabAppearanceExcel && m_pPaintManager->GetAppearance() != xtpTabAppearanceStateButtons)
+		m_clrHeaderFace.SetStandardValue(GetXtremeColor(XPCOLOR_TAB_INACTIVE_BACK));
+
+	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceVisualStudio)
+	{
+		m_clrInActiveText.SetStandardValue(GetXtremeColor(XPCOLOR_TAB_INACTIVE_TEXT));
+		m_clrNormalText.SetStandardValue(GetXtremeColor(XPCOLOR_TAB_INACTIVE_TEXT));
+	}
+
+	m_clrAutoHideFace.SetStandardValue(XTPDrawHelpers()->IsLowResolution() ? GetXtremeColor(COLOR_3DFACE) : m_clrHeaderFace);
+}
+
+void CXTPTabPaintManager::CColorSetVisualStudio::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceExcel || m_pPaintManager->GetAppearance() == xtpTabAppearanceStateButtons)
+	{
+		CColorSetDefault::FillNavigateButton(pDC, pButton, rc);
+		return;
+	}
+
+	COLORREF clrFrameTopLeft = GetXtremeColor(COLOR_BTNTEXT), clrFrameBottomRight = GetXtremeColor(COLOR_3DFACE);
+
+	if (pButton->IsEnabled())
+	{
+		if (pButton->IsPressed())
+		{
+			pDC->Draw3dRect(rc, clrFrameTopLeft, clrFrameBottomRight);
+			rc.OffsetRect(1, 1);
+		}
+		else if (pButton->IsHighlighted())
+			pDC->Draw3dRect(rc, clrFrameBottomRight, clrFrameTopLeft);
+	}
+	pDC->SetTextColor(GetXtremeColor(XPCOLOR_TAB_INACTIVE_TEXT));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CColorSetOffice2003
+
+void CXTPTabPaintManager::CColorSetOffice2003::RefreshMetrics()
+{
+	CColorSet::RefreshMetrics();
+	m_clrHeaderFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE), XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd));
+
+	m_csStateButton.clrFace.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+	m_csStateButton.clrBorder.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED_BORDER));
+
+	m_clrButtonHighlighted.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+	m_clrButtonPressed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
+	m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+
+	m_clrAutoHideFace = m_clrHeaderFace;
+
+	m_bLunaTheme = FALSE;
+	if (!m_pPaintManager->IsLunaColorsDisabled())
+	{
+		XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+		switch (systemTheme)
+		{
+		case xtpSystemThemeBlue:
+		case xtpSystemThemeRoyale:
+		case xtpSystemThemeAero:
+			m_clrFrameBorder.SetStandardValue(RGB(59, 97, 156));
+			m_csPropertyPage2003.clrFrameBorder.SetStandardValue(RGB(59, 97, 156));
+			m_csPropertyPage.clrDarkShadow.SetStandardValue(RGB(0, 53, 154));
+			m_csPropertyPage2003.clrDarkShadow.SetStandardValue(RGB(0, 53, 154));
+			m_csPropertyPage.clrShadow.SetStandardValue(RGB(117, 166, 241));
+			m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(RGB(117, 166, 241));
+			m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(RGB(255, 255, 255));
+
+			m_csStateButton.clrFace.SetStandardValue(RGB(255, 192, 111));
+			m_csStateButton.clrBorder.SetStandardValue(RGB(0, 0, 128));
+
+			m_clrHeaderFace.SetStandardValue(RGB(196, 218, 250), RGB(252, 253, 254));
+
+			m_clrButtonNormal.SetStandardValue(RGB(162, 192, 246));
+			m_clrButtonSelected.SetStandardValue(RGB(255, 194, 115));
+			m_clrButtonHighlighted.SetStandardValue(RGB(255, 240, 201));
+
+			m_clrAutoHideFace.SetStandardValue(RGB(158, 190, 245), RGB(196, 218, 250));
+
+			m_clrNavigateButtonBorder.SetStandardValue(RGB(0, 0, 128));
+
+			m_bLunaTheme = TRUE;
+
+			break;
+
+		case xtpSystemThemeOlive:
+			m_clrFrameBorder.SetStandardValue(RGB(96, 128, 88));
+			m_csPropertyPage2003.clrFrameBorder.SetStandardValue(RGB(96, 128, 88));
+			m_csPropertyPage.clrDarkShadow.SetStandardValue(RGB(96, 119, 107));
+			m_csPropertyPage2003.clrDarkShadow.SetStandardValue(RGB(96, 119, 107));
+			m_csPropertyPage.clrShadow.SetStandardValue(RGB(176, 194, 140));
+			m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(RGB(176, 194, 140));
+			m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(RGB(255, 255, 255));
+
+			m_csStateButton.clrFace.SetStandardValue(RGB(255, 192, 111));
+			m_csStateButton.clrBorder.SetStandardValue(RGB(63, 93, 56));
+
+			m_clrHeaderFace.SetStandardValue(RGB(242, 241, 228), RGB(252, 254, 254));
+
+			m_clrButtonNormal.SetStandardValue(RGB(208, 222, 170));
+			m_clrButtonSelected.SetStandardValue(RGB(255, 194, 115));
+			m_clrButtonHighlighted.SetStandardValue(RGB(255, 240, 199));
+
+			m_clrAutoHideFace.SetStandardValue(RGB(217, 217, 167), RGB(242, 241, 228));
+
+			m_clrNavigateButtonBorder.SetStandardValue(RGB(63, 93, 56));
+
+			m_bLunaTheme = TRUE;
+			break;
+
+		case xtpSystemThemeSilver:
+			m_clrFrameBorder.SetStandardValue(RGB(124, 124, 148));
+			m_csPropertyPage2003.clrFrameBorder.SetStandardValue(RGB(124, 124, 148));
+			m_csPropertyPage.clrDarkShadow.SetStandardValue(RGB(118, 116, 146));
+			m_csPropertyPage2003.clrDarkShadow.SetStandardValue(RGB(118, 116, 146));
+			m_csPropertyPage.clrShadow.SetStandardValue(RGB(186, 185, 206));
+			m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(RGB(186, 185, 206));
+			m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(RGB(255, 255, 255));
+
+			m_csStateButton.clrFace.SetStandardValue(RGB(255, 192, 111));
+			m_csStateButton.clrBorder.SetStandardValue(RGB(75, 75, 111));
+
+			m_clrHeaderFace.SetStandardValue(RGB(243, 243, 247), RGB(252, 254, 254));
+
+			m_clrButtonNormal.SetStandardValue(RGB(217, 217, 230));
+			m_clrButtonSelected.SetStandardValue(RGB(255, 194, 115));
+			m_clrButtonHighlighted.SetStandardValue(RGB(255, 238, 194));
+
+			m_clrAutoHideFace.SetStandardValue(RGB(215, 215, 229), RGB(243, 243, 247));
+
+			m_clrNavigateButtonBorder.SetStandardValue(RGB(75, 75, 111));
+			m_bLunaTheme = TRUE;
+
+			break;
+
+		default:
+			m_clrButtonSelected.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+		}
+	}
+
+	if (m_bLunaTheme)
+	{
+		m_clrButtonPressed.SetStandardValue(RGB(254, 142, 75));
+	}
+
+	m_csExcelSelected.clrRightInnerBorder.SetStandardValue(m_clrFrameBorder);
+	m_csExcelSelected.clrLeftInnerBorder.SetStandardValue(m_clrFrameBorder);
+	m_csExcelSelected.clrTopInnerBorder.SetStandardValue(m_clrFrameBorder);
+	m_csExcelSelected.clrTopOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelSelected.clrRightOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelSelected.clrLeftOuterBorder.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+	m_csExcelNormal = m_csExcelSelected;
+
+	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceStateButtons)
+	{
+		m_clrAutoHideFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		m_clrHeaderFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	}
+
+}
+void CXTPTabPaintManager::CColorSetOffice2003::Rectangle(CDC* pDC, CRect rc, int nPen, int nBrush)
+{
+	pDC->FillSolidRect(rc, GetXtremeColor(nBrush));
+	pDC->Draw3dRect(rc, GetXtremeColor(nPen), GetXtremeColor(nPen));
+}
+
+
+void CXTPTabPaintManager::CColorSetOffice2003::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	int nColor = COLOR_BTNTEXT;
+
+	if (pButton->IsEnabled())
+	{
+		if ((pButton->IsHighlighted() && pButton->IsPressed()))
+		{
+			if (!m_bLunaTheme)
+			{
+				Rectangle(pDC, rc, XPCOLOR_HIGHLIGHT_PUSHED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED);
+				nColor = XPCOLOR_PUSHED_TEXT;
+			}
+			else
+			{
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(254, 142, 75), RGB(255, 207, 139), FALSE);
+				pDC->Draw3dRect(rc, m_clrNavigateButtonBorder, m_clrNavigateButtonBorder);
+			}
+		}
+		else if (pButton->IsPressed() || pButton->IsHighlighted())
+		{
+			if (!m_bLunaTheme)
+			{
+				Rectangle(pDC, rc, XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_HIGHLIGHT);
+				nColor = XPCOLOR_HIGHLIGHT_TEXT;
+			}
+			else
+			{
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 242, 200), RGB(255, 212, 151), FALSE);
+				pDC->Draw3dRect(rc, m_clrNavigateButtonBorder, m_clrNavigateButtonBorder);
+			}
+		}
+	}
+	pDC->SetTextColor(GetXtremeColor(nColor));
+
+}
+
+
+COLORREF CXTPTabPaintManager::CColorSetOffice2003::FillPropertyButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	COLORREF clrItem = GetItemColor(pItem);
+
+	if (pItem->IsPressed())
+	{
+		clrItem = m_clrButtonPressed;
+	}
+	else if (pItem->IsHighlighted())
+	{
+		clrItem = m_clrButtonHighlighted;
+	}
+
+	GradientFill(pDC, rcItem, XTPColorManager()->LightColor(clrItem, RGB(255, 255, 255), 300),
+		clrItem, pItem->GetTabManager()->GetPosition());
+
+	return clrItem;
+}
+
+
+void CXTPTabPaintManager::CColorSetOffice2007::RefreshMetrics()
+{
+	CColorSetOffice2003::RefreshMetrics();
+
+	if (XTPOffice2007Images()->IsValid())
+	{
+		m_clrHighlightText.SetStandardValue(0);
+
+		m_clrFrameBorder.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("TabManager"), _T("FrameBorder")));
+		m_csPropertyPage2003.clrFrameBorder.SetStandardValue(m_clrFrameBorder);
+		m_csPropertyPage.clrDarkShadow.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("TabManager"), _T("DarkShadow")));
+		m_csPropertyPage2003.clrDarkShadow.SetStandardValue(m_csPropertyPage.clrDarkShadow);
+
+		m_csPropertyPage.clrShadow.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("TabManager"), _T("LightShadow")));
+		m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(m_csPropertyPage.clrShadow);
+		m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(RGB(255, 255, 255));
+
+		m_clrHeaderFace.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Ribbon"), _T("RibbonFace")));
+
+		m_clrAutoHideFace.SetStandardValue(m_clrHeaderFace);
+
+		m_clrButtonNormal.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Window"), _T("ButtonFace")));
+		m_clrButtonSelected.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightChecked")));
+		m_clrButtonHighlighted.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightSelected")));
+		m_clrNavigateButtonBorder.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Window"), _T("WindowFrame")));
+
+		m_clrHighlightText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+		m_clrNormalText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+		m_clrSelectedText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("Ribbon"), _T("TabSelectedText")));
+
+	}
+	else
+	{
+		m_clrButtonPressed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
+		m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+		m_clrFrameBorder.SetStandardValue(RGB(59, 97, 156));
+		m_csPropertyPage2003.clrFrameBorder.SetStandardValue(m_clrFrameBorder);
+		m_csPropertyPage.clrDarkShadow.SetStandardValue(RGB(0, 53, 154));
+		m_csPropertyPage2003.clrDarkShadow.SetStandardValue(RGB(0, 53, 154));
+		m_csPropertyPage.clrShadow.SetStandardValue(RGB(117, 166, 241));
+		m_csPropertyPage2003.clrBorderLeftHighlight.SetStandardValue(RGB(117, 166, 241));
+		m_csPropertyPage2003.clrBorderTopHighlight.SetStandardValue(RGB(255, 255, 255));
+		m_csStateButton.clrFace.SetStandardValue(RGB(255, 192, 111));
+		m_csStateButton.clrBorder.SetStandardValue(RGB(0, 0, 128));
+		m_clrHeaderFace.SetStandardValue(RGB(196, 218, 250), RGB(252, 253, 254));
+		m_clrButtonNormal.SetStandardValue(RGB(162, 192, 246));
+		m_clrButtonSelected.SetStandardValue(RGB(255, 194, 115));
+		m_clrButtonHighlighted.SetStandardValue(RGB(255, 240, 201));
+		m_clrAutoHideFace.SetStandardValue(RGB(158, 190, 245), RGB(196, 218, 250));
+		m_clrNavigateButtonBorder.SetStandardValue(RGB(0, 0, 128));
+	}
+
+	m_bLunaTheme = TRUE;
+}
+
+void CXTPTabPaintManager::CColorSetOffice2007::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	if (!XTPOffice2007Images()->IsValid())
+	{
+		CColorSetDefault::FillNavigateButton(pDC, pButton, rc);
+		return;
+	}
+
+	if (pButton->GetItem() == NULL) pDC->SetTextColor(m_clrNormalText);
+
+	if (pButton->IsEnabled() && (pButton->IsPressed() || pButton->IsHighlighted()))
+	{
+		CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("TOOLBARBUTTONS22"));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		int nState = pButton->IsPressed() ? 1 : 0;
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 4), CRect(8, 8, 8, 8), COLORREF_NULL);
+
+		pDC->SetTextColor(0);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CColorSetWinXP
+
+void CXTPTabPaintManager::CColorSetWinXP::RefreshMetrics()
+{
+	CColorSetDefault::RefreshMetrics();
+
+	m_themeTabButton.OpenThemeData(0, L"TAB");
+
+	if (m_themeTabButton.IsAppThemed())
+	{
+		m_csPropertyPage.clrHighlight.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+		m_csPropertyPage.clrShadow.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+		m_csPropertyPage.clrDarkShadow.SetStandardValue(XTP_TABMANAGER_COLOR_NONE);
+		m_clrHighlightText = m_clrNormalText;
+
+
+		COLORREF clrClientFace = m_clrPaneFace;
+		if (SUCCEEDED(m_themeTabButton.GetThemeColor(TABP_PANE, 0, TMT_FILLCOLORHINT, &clrClientFace)))
+		{
+			m_clrPaneFace.SetStandardValue(clrClientFace);
+		}
+	}
+
+	m_themeToolbar.OpenThemeData(0, L"TOOLBAR");
+}
+
+BOOL CXTPTabPaintManager::CColorSetWinXP::IsAppThemed() const
+{
+	return m_themeTabButton.IsAppThemed();
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::DrawRotatedBitsBottom(int cx, int cy, UINT* pSrcBits, UINT* pDestBits)
+{
+	UINT* pSrc = &pSrcBits[cx * (cy - 1)];
+	for (int i = 0; i < cy; i++)
+	{
+		pSrcBits = pSrc;
+		for (int j = 0; j < cx; j++)
+		{
+			*pDestBits++ = *pSrcBits++;
+		}
+		pSrc -= cx;
+	}
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::DrawRotatedBitsRight(int cx, int cy, UINT* pSrcBits, UINT* pDestBits)
+{
+	UINT* pSrc = pSrcBits;
+	for (int i = 0; i < cy; i++)
+	{
+		pSrcBits = pSrc;
+		for (int j = 0; j < cx; j++)
+		{
+			*pDestBits++ = *pSrcBits;
+			pSrcBits += cy;
+		}
+		pSrc += 1;
+	}
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::DrawRotatedBitsLeft(int cx, int cy, UINT* pSrcBits, UINT* pDestBits)
+{
+	UINT* pSrc = pSrcBits;
+	pDestBits += cx * cy - 1;
+	for (int i = 0; i < cy; i++)
+	{
+		pSrcBits = pSrc;
+		for (int j = 0; j < cx; j++)
+		{
+			*pDestBits-- = *pSrcBits;
+			pSrcBits += cy;
+		}
+		pSrc += 1;
+	}
+}
+
+
+void CXTPTabPaintManager::CColorSetWinXP::DrawRotatedButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem, BOOL bSwap, LPFNDRAWROTATEDBITS pfnRotatedProc)
+{
+	const int cx = rcItem.Width();
+	const int cy = rcItem.Height();
+
+	BITMAPINFO BMI;
+	// Fill in the header info.
+	ZeroMemory (&BMI, sizeof(BITMAPINFO));
+	BMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	BMI.bmiHeader.biWidth = bSwap ? cy : cx;
+	BMI.bmiHeader.biHeight = bSwap ? cx : cy;
+	BMI.bmiHeader.biPlanes = 1;
+	BMI.bmiHeader.biBitCount = 32;
+	BMI.bmiHeader.biCompression = BI_RGB;   // No compression
+
+	UINT* pSrcBits = NULL;
+	HBITMAP hbmSrc = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l);
+	if (!pSrcBits)
+		return;
+
+	BMI.bmiHeader.biWidth = cx;
+	BMI.bmiHeader.biHeight = cy;
+	UINT* pDestBits = NULL;
+	HBITMAP hbmDest = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pDestBits, 0, 0l);
+	if (!pDestBits)
+		return;
+
+	CDC dc;
+	dc.CreateCompatibleDC(NULL);
+	HGDIOBJ hbmpOld = ::SelectObject(dc, hbmSrc);
+
+	CRect rcDraw(0, 0, bSwap ? cy: cx, bSwap ? cx : cy);
+
+	dc.FillSolidRect(rcDraw, GetXtremeColor(COLOR_3DFACE));
+
+	m_themeTabButton.DrawThemeBackground(dc.GetSafeHdc(), pItem->GetIndex() == 0 ? TABP_TOPTABITEMLEFTEDGE :
+				pItem->GetIndex() == pItem->GetTabManager()->GetItemCount() - 1 && !pItem->IsSelected() ? TABP_TOPTABITEMRIGHTEDGE : TABP_TOPTABITEM,
+		pItem->IsSelected() ? TIS_SELECTED: pItem->IsHighlighted() ? TIS_HOT : TIS_NORMAL, &rcDraw, 0);
+
+	(*pfnRotatedProc)(cx, cy, pSrcBits, pDestBits);
+
+	pDC->DrawState(rcItem.TopLeft(), rcItem.Size(), hbmDest, DST_BITMAP);
+
+	::SelectObject(dc, hbmpOld);
+
+	DeleteObject(hbmSrc);
+	DeleteObject(hbmDest);
+}
+
+
+COLORREF CXTPTabPaintManager::CColorSetWinXP::FillPropertyButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	if (!m_themeTabButton.IsAppThemed())
+		return CColorSetDefault::FillPropertyButton(pDC, rcItem, pItem);
+
+	if (pItem->IsSelected())
+	{
+		switch (pItem->GetTabManager()->GetPosition())
+		{
+			case xtpTabPositionTop:
+				rcItem.InflateRect(0, 0, 0, 2);
+				break;
+
+			case xtpTabPositionLeft:
+				rcItem.InflateRect(0, 0, 1, 0);
+				break;
+		}
+	}
+
+	switch (pItem->GetTabManager()->GetPosition())
+	{
+		case xtpTabPositionTop:
+			rcItem.InflateRect(1, 1, 1, 0);
+			m_themeTabButton.DrawThemeBackground(pDC->GetSafeHdc(),
+				pItem->GetIndex() == 0 ? TABP_TOPTABITEMLEFTEDGE :
+				pItem->GetIndex() == pItem->GetTabManager()->GetItemCount() - 1 && !pItem->IsSelected() ? TABP_TOPTABITEMRIGHTEDGE : TABP_TOPTABITEM,
+				pItem->IsSelected() ? TIS_SELECTED : pItem->IsHighlighted() ? TIS_HOT : TIS_NORMAL, &rcItem, 0);
+			break;
+
+		case xtpTabPositionBottom:
+			rcItem.InflateRect(1, 0, 1, 2);
+			DrawRotatedButton(pDC, rcItem, pItem, FALSE, DrawRotatedBitsBottom);
+			break;
+
+		case xtpTabPositionLeft:
+			rcItem.InflateRect(1, 1, 0, 1);
+			DrawRotatedButton(pDC, rcItem, pItem, TRUE, DrawRotatedBitsLeft);
+			break;
+
+		case xtpTabPositionRight:
+			rcItem.InflateRect(0, 1, 2, 1);
+			DrawRotatedButton(pDC, rcItem, pItem, TRUE, DrawRotatedBitsRight);
+			break;
+	}
+
+	return XTP_TABMANAGER_COLOR_NONE;
+}
+
+COLORREF CXTPTabPaintManager::CColorSetWinXP::FillClient(CDC* pDC, CRect rc, CXTPTabManager* pTabManager)
+{
+	if (!m_themeTabButton.IsAppThemed())
+		return CColorSetDefault::FillClient(pDC, rc, pTabManager);
+
+	switch (pTabManager->GetPosition())
+	{
+		case xtpTabPositionBottom:
+			rc.InflateRect(0, 0, 0, 1);
+			break;
+
+		case xtpTabPositionRight:
+			rc.InflateRect(0, 0, 1, 0);
+			break;
+	}
+
+	m_themeTabButton.DrawThemeBackground(pDC->GetSafeHdc(), TABP_PANE, 0, &rc, 0);
+
+	return 0;
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::SelectClipRgn(CDC* pDC, CRect rcClient, CXTPTabManager* pTabManager)
+{
+	if (!m_themeTabButton.IsAppThemed())
+	{
+		CColorSetDefault::SelectClipRgn(pDC, rcClient, pTabManager);
+		return;
+	}
+
+	CRect rc = m_pPaintManager->GetAppearanceSet()->GetClientRect(rcClient, pTabManager);
+
+	switch (pTabManager->GetPosition())
+	{
+	case xtpTabPositionBottom:
+		pDC->ExcludeClipRect(rc.left, rc.bottom - 2, rc.left + 1, rc.bottom - 1);
+		break;
+
+	case xtpTabPositionTop:
+	case xtpTabPositionLeft:
+		pDC->ExcludeClipRect(rc.left, rc.top, rc.left + 1, rc.top + 1);
+		break;
+
+	case xtpTabPositionRight:
+		pDC->ExcludeClipRect(rc.right - 2, rc.top, rc.right - 1, rc.top + 1);
+		break;
+	}
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	if (!m_themeToolbar.IsAppThemed())
+	{
+		CColorSetDefault::FillNavigateButton(pDC, pButton, rc);
+		return;
+	}
+
+	if (pButton->IsEnabled())
+	{
+		m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_BUTTON,
+			pButton->IsPressed() ? TS_PRESSED :
+			pButton->IsHighlighted() ? TS_HOT : TS_NORMAL, &rc, 0);
+	}
+
+	pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
+
+}
+
+void CXTPTabPaintManager::CColorSetWinXP::FillStateButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	if (!m_themeToolbar.IsAppThemed() || !pItem->IsSelected())
+	{
+		CColorSetDefault::FillStateButton(pDC, rcItem, pItem);
+		return;
+	}
+
+	m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_BUTTON,
+		pItem->IsHighlighted() ? TS_HOTCHECKED : TS_CHECKED, &rcItem, 0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// void CXTPTabPaintManager::CColorSetWhidbey
+
+CXTPTabPaintManager::CColorSetWhidbey::CColorSetWhidbey()
+{
+	m_bGradientButton = FALSE;
+}
+
+void CXTPTabPaintManager::CColorSetWhidbey::RefreshMetrics()
+{
+	CColorSet::RefreshMetrics();
+
+	m_clrButtonSelected.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	m_clrSelectedText.SetStandardValue(GetXtremeColor(COLOR_WINDOWTEXT));
+	m_bLunaTheme = FALSE;
+	m_bGradientButton = FALSE;
+
+	m_clrButtonHighlighted.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED));
+	m_clrButtonPressed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
+	m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+
+	if (!m_pPaintManager->IsLunaColorsDisabled())
+	{
+		CColorSetOffice2003::RefreshMetrics();
+	}
+	else
+	{
+		switch (XTPColorManager()->GetCurrentSystemTheme())
+		{
+		case xtpSystemThemeBlue:
+		case xtpSystemThemeOlive:
+			m_clrHeaderFace.SetStandardValue(RGB(228, 226, 213));
+			m_bGradientButton = TRUE;
+			break;
+
+		case xtpSystemThemeSilver:
+			m_clrButtonNormal.SetStandardValue(RGB(245, 245, 248));
+			m_clrHeaderFace.SetStandardValue(RGB(238, 238, 238));
+			m_bGradientButton = TRUE;
+			break;
+		}
+		m_csPropertyPage2003.clrFrameBorder.SetStandardValue(GetXtremeColor(XPCOLOR_STATICFRAME));
+		m_clrFrameBorder.SetStandardValue(GetXtremeColor(XPCOLOR_STATICFRAME));
+	}
+}
+
+COLORREF CXTPTabPaintManager::CColorSetWhidbey::FillPropertyButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem)
+{
+	COLORREF clrItem = GetItemColor(pItem);
+
+	if (pItem->IsHighlighted())
+	{
+		clrItem = m_clrButtonHighlighted;
+	}
+
+	if (m_bGradientButton)
+	{
+		GradientFill(pDC, rcItem, XTPColorManager()->LightColor(clrItem, RGB(255, 255, 255), 300),
+			clrItem, pItem->GetTabManager()->GetPosition());
+
+	}
+	else
+	{
+		pDC->FillSolidRect(rcItem, clrItem);
+	}
+
+	return clrItem;
+}

@@ -1,7 +1,7 @@
-// from server: 78% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-flags: /O2 /Ob1 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/MeshAlgAdjacency.cpp
 
 // Candidate translation unit (score above; library headers required).

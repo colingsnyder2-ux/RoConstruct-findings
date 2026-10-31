@@ -1,529 +1,611 @@
-// from server: 47% by colin
-// roc-cl: 50727
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/BinaryInput.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-g3d GLG3Dcpp/GApp.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file BinaryInput.cpp
+ @file GApp.cpp
+  
+ @maintainer Morgan McGuire, matrix@graphics3d.com
  
- @author Morgan McGuire, graphics3d.com
- 
- @created 2001-08-09
- @edited  2005-02-24
-
-
-  <PRE>
-    {    
-    BinaryOutput b("c:/tmp/test.b", BinaryOutput::LITTLE_ENDIAN);
-
-    float f = 3.1415926;
-    int i = 1027221;
-    std::string s = "Hello World!";
-
-    b.writeFloat32(f);
-    b.writeInt32(i);
-    b.writeString(s);
-    b.commit();
-    
-
-    BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
-
-    debugAssert(f == in.readFloat32());
-    int ii = in.readInt32();
-    debugAssert(i == ii);
-    debugAssert(s == in.readString());
-    }
-  </PRE>
+ @created 2003-11-03
+ @edited  2006-04-22
  */
 
 #include "G3D/platform.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/Array.h"
+
+#include "GLG3D/GApp.h"
+#include "G3D/GCamera.h"
 #include "G3D/fileutils.h"
-#ifdef G3D_WIN32
-  #include "../zlib/zlib.h"
-#else
-  #include <zlib.h>
-#endif
+#include "G3D/Log.h"
+#include "G3D/NetworkDevice.h"
+#include "GLG3D/ManualCameraController.h"
+#include "GLG3D/UserInput.h"
+#include "GLG3D/GWindow.h"
+#include "GLG3D/Shader.h"
+#include "GLG3D/Draw.h"
 
 namespace G3D {
 
-void BinaryInput::readBool8(std::vector<bool>& out, int n) {
-    out.resize(n);
-    // std::vector optimizes bool in a way that prevents fast reading
-    for (int i = 0; i < n ; ++i) {
-        out[i] = readBool8();
+/** Attempt to write license file */
+static void writeLicense() {
+    FILE* f = fopen("g3d-license.txt", "wt");
+    if (f != NULL) {
+        fprintf(f, "%s", license().c_str());
+        fclose(f);
     }
 }
 
 
-void BinaryInput::readBool8(Array<bool>& out, int n) {
-    out.resize(n);
-    readBool8(out.begin(), n);
-}
+GApp::GApp(const Settings& settings, GWindow* window) {
+    debugLog          = NULL;
+    debugFont         = NULL;
+    endProgram        = false;
+    _debugControllerWasActive = false;
+    m_moduleManager = GModuleManager::create();
 
-
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(std::vector<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(&out[0], n);\
-}\
-\
-\
-void BinaryInput::read##ucase(Array<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(out.begin(), n);\
-}
-
-
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
-
-#undef IMPLEMENT_READER
-
-// Data structures that are one byte per element can be 
-// directly copied, regardles of endian-ness.
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (sizeof(lcase) == 1) {\
-        readBytes(out, n);\
-    } else {\
-        for (int i = 0; i < n ; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    }\
-}
-
-IMPLEMENT_READER(Bool8,   bool)
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-
-#undef IMPLEMENT_READER
-
-
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (swapBytes) {\
-        for (int i = 0; i < n; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    } else {\
-        readBytes(out, sizeof(lcase) * n);\
-    }\
-}
-
-
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
-
-#undef IMPLEMENT_READER
-
-void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
-    // Load the next section of the file
-    debugAssertM(filename != "<memory>", "Read past end of file.");
-
-    int absPos = alreadyRead + pos;
-
-    if (bufferLength < minLength) {
-        // The current buffer isn't big enough to hold the chunk we want to read.
-        // This happens if there was little memory available during the initial constructor
-        // read but more memory has since been freed.
-        bufferLength = minLength;
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::realloc(buffer, bufferLength);
-        if (buffer == NULL) {
-            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
-        }
-    }
-
-    alreadyRead = startPosition;
-
-    FILE* file = fopen(filename.c_str(), "rb");
-    debugAssert(file);
-
-    int ret = fseek(file, alreadyRead, SEEK_SET);
-    debugAssert(ret == 0);
-
-    int toRead = iMin(bufferLength, length - alreadyRead);
-    ret = fread(buffer, 1, toRead, file);
-    debugAssert(ret == toRead);
-    fclose(file);
-    file = NULL;
-
-    pos = absPos - alreadyRead;
-    debugAssert(pos >= 0);
-}
-
-
-
-const bool BinaryInput::NO_COPY = false;
-    
-static bool needSwapBytes(G3DEndian fileEndian) {
-    return (fileEndian != System::machineEndian());
-}
-
-
-/** Helper used by the constructors for decompression */
-static uint32 readUInt32(const uint8* data, bool swapBytes) {
-    if (swapBytes) {
-        uint8 out[4];
-        out[0] = data[3];
-        out[1] = data[2];
-        out[2] = data[1];
-        out[3] = data[0];
-        return *((uint32*)out);
+    if (settings.dataDir == "<AUTO>") {
+        dataDir = demoFindData(false);
     } else {
-        return *((uint32*)data);
+        dataDir = settings.dataDir;
+    }
+
+
+    if (settings.writeLicenseFile && ! fileExists("g3d-license.txt")) {
+        writeLicense();
+    }
+
+    debugLog	 = new Log(settings.logFilename);
+    renderDevice = new RenderDevice();
+
+    if (window != NULL) {
+        _hasUserCreatedWindow = true;
+        renderDevice->init(window, debugLog);
+    } else {
+        _hasUserCreatedWindow = false;    
+        renderDevice->init(settings.window, debugLog);
+    }
+
+    debugAssertGLOk();
+
+    _window = renderDevice->window();
+    _window->makeCurrent();
+    debugAssertGLOk();
+
+    if (settings.useNetwork) {
+        networkDevice = new NetworkDevice();
+        networkDevice->init(debugLog);
+    } else {
+        networkDevice = NULL;
+    }
+
+
+    {
+        TextOutput t;
+
+        t.writeSymbols("System","{");
+        t.pushIndent();
+        t.writeNewline();
+        System::describeSystem(t);
+        if (renderDevice) {
+            renderDevice->describeSystem(t);
+        }
+
+        if (networkDevice) {
+            networkDevice->describeSystem(t);
+        }
+        t.writeNewline();
+        t.writeSymbol("}");
+        t.writeNewline();
+
+        std::string s;
+        t.commitString(s);
+        debugLog->printf("%s\n", s.c_str());
+    }
+
+    debugCamera  = GCamera();
+
+    debugAssertGLOk();
+    loadFont(settings.debugFontName);
+    debugAssertGLOk();
+
+    userInput = new UserInput();
+
+    debugController.init(renderDevice, userInput);
+    debugController.setMoveRate(10);
+    debugController.setPosition(Vector3(0, 0, 4));
+    debugController.lookAt(Vector3::zero());
+    debugController.setActive(true);
+    debugCamera.setPosition(debugController.getPosition());
+    debugCamera.lookAt(Vector3::zero());
+
+    autoResize                  = true;
+    _debugMode                  = false;
+    debugShowText               = true;
+    debugQuitOnEscape           = true;
+    debugTabSwitchCamera        = true;
+    debugShowRenderingStats     = true;
+    catchCommonExceptions       = true;
+
+    debugAssertGLOk();
+}
+
+
+void GApp::loadFont(const std::string& fontName) {
+    std::string filename = fontName;
+    if (! fileExists(filename)) {
+
+        if (fileExists(dataDir + filename)) {
+            filename = dataDir + filename;
+        } else if (fileExists(dataDir + "font/" + filename)) {
+            filename = dataDir + "font/" + filename;
+        }
+    }
+
+    if (fileExists(filename)) {
+        debugFont = GFont::fromFile(renderDevice, filename);
+    } else {
+        debugLog->printf(
+            "Warning: G3D::GApp could not load font \"%s\".\n"
+            "This may be because the G3D::GApp::Settings::dataDir was not\n"
+            "properly set in main().\n",
+            filename.c_str());
+
+        debugFont = NULL;
     }
 }
 
-BinaryInput::BinaryInput(
-    const uint8*        data,
-    int                 dataLen,
-    G3DEndian           dataEndian,
-    bool                compressed,
-    bool                copyMemory) {
 
-    debugAssert(! (compressed && !copyMemory));
-    beginEndBits = 0;
-    bitPos = 0;
-    alreadyRead = 0;
-    bufferLength = 0;
+bool GApp::debugMode() const {
+    return _debugMode;
+}
 
-    freeBuffer = copyMemory || compressed;
 
-    this->fileEndian = dataEndian;
-    this->filename = "<memory>";
-	pos = 0;
-    swapBytes = needSwapBytes(fileEndian);
+void GApp::setDebugMode(bool b) {
+    if (! b) {
+        _debugControllerWasActive = debugMode();
+    } else {
+        debugController.setActive(_debugControllerWasActive);
+    }
+    _debugMode = b;
+}
 
-    if (compressed) {
-        // Read the decompressed size from the first 4 bytes
-        length = G3D::readUInt32(data, swapBytes);
 
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::malloc(length);
+void GApp::debugPrintf(const char* fmt ...) {
+    if (debugMode() && debugShowText) {
 
-        uint32 L = length;
-        // Decompress with zlib
-        int result = uncompress(buffer, (unsigned long*)&L, data + 4, dataLen - 4);
-        length = L;
-        bufferLength = L;
-        debugAssert(result == Z_OK); (void)result;
+        va_list argList;
+        va_start(argList, fmt);
+        std::string s = G3D::vformat(fmt, argList);
+        va_end(argList);
+
+        debugText.append(s);
+    }    
+}
+
+
+GApp::~GApp() {
+    if (networkDevice) {
+        networkDevice->cleanup();
+        delete networkDevice;
+    }
+
+    debugFont = NULL;
+    delete userInput;
+    userInput = NULL;
+
+    renderDevice->cleanup();
+    delete renderDevice;
+    renderDevice = NULL;
+
+    if (_hasUserCreatedWindow) {
+        delete _window;
+        _window = NULL;
+    }
+
+    VARArea::cleanupAllVARAreas();
+
+    delete debugLog;
+    debugLog = NULL;
+}
+
+
+void GApp::run() {
+    if (catchCommonExceptions) {
+        try {
+            main();
+        } catch (const char* e) {
+            alwaysAssertM(false, e);
+        } catch (const GImage::Error& e) {
+            alwaysAssertM(false, e.reason + "\n" + e.filename);
+        } catch (const std::string& s) {
+            alwaysAssertM(false, s);
+        } catch (const TextInput::WrongTokenType& t) {
+            alwaysAssertM(false, t.message);
+        } catch (const TextInput::WrongSymbol& t) {
+            alwaysAssertM(false, t.message);
+        } catch (const VertexAndPixelShader::ArgumentError& e) {
+            alwaysAssertM(false, e.message);
+        } catch (const LightweightConduit::PacketSizeException& e) {
+            alwaysAssertM(false, e.message);
+        }
+    } else {
+        main();
+    }
+}
+
+
+void GApp::renderDebugInfo() {
+    if (debugMode() && ! debugFont.isNull()) {
+        // Capture these values before we render debug output
+        int majGL  = renderDevice->debugNumMajorOpenGLStateChanges();
+        int majAll = renderDevice->debugNumMajorStateChanges();
+        int minGL  = renderDevice->debugNumMinorOpenGLStateChanges();
+        int minAll = renderDevice->debugNumMinorStateChanges();
+        int pushCalls = renderDevice->debugNumPushStateCalls();
+
+        renderDevice->push2D();
+            Color3 color = Color3::white();
+            double size = 10;
+
+            double x = 5;
+            Vector2 pos(x, 5);
+
+            if (debugShowRenderingStats) {
+
+                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+                Draw::fastRect2D(Rect2D::xywh(2, 2, 796, size * 5), renderDevice, Color4(0, 0, 0, 0.3f));
+
+                Color3 statColor = Color3::yellow();
+
+                debugFont->draw2D(renderDevice->getCardDescription() + "   " + System::version(), 
+                    pos, size, color);
+                pos.y += size * 1.5f;
+                
+                std::string s = format(
+                    "% 4dfps % 4.1gM tris % 4.1gM tris/s   GL Calls: %d/%d Maj; %d/%d Min; %d push", 
+                    iRound(m_graphicsWatch.smoothFPS()),
+                    iRound(renderDevice->getTrianglesPerFrame() / 1e5) * .1f,
+                    iRound(renderDevice->getTrianglesPerFrame() / 1e5) * .1f,
+                    majGL, majAll, minGL, minAll, pushCalls);
+                debugFont->draw2D(s, pos, size, statColor);
+
+                pos.x = x;
+                pos.y += size * 1.5;
+
+                {
+                float g = m_graphicsWatch.smoothElapsedTime();
+                float n = m_networkWatch.smoothElapsedTime();
+                float s = m_simulationWatch.smoothElapsedTime();
+                float L = m_logicWatch.smoothElapsedTime();
+                float u = m_userInputWatch.smoothElapsedTime();
+                float w = m_waitWatch.smoothElapsedTime();
+
+                float total = g + n + s + L + u + w;
+
+                float norm = 100.0f / total;
+
+                // Normalize the numbers
+                g *= norm;
+                n *= norm;
+                s *= norm;
+                L *= norm;
+                u *= norm;
+                w *= norm;
+
+                std::string str = 
+                    format("Time: %3.0f%% Gfx, %3.0f%% Sim, %3.0f%% Lgc, %3.0f%% Net, %3.0f%% UI, %3.0f%% wait", 
+                        g, s, L, n, u, w);
+                debugFont->draw2D(str, pos, size, statColor);
+                }
+
+                pos.x = x;
+                pos.y += size * 3;
+            }
+
+            for (int i = 0; i < debugText.length(); ++i) {
+                debugFont->draw2D(debugText[i], pos, size, color, Color3::black());
+                pos.y += size * 1.5;
+            }
+
+
+        renderDevice->pop2D();
+    }
+}
+
+void GApp::addModule(const GModuleRef& module, GModuleManager::EventPriority priority) {
+    m_moduleManager->add(module, priority);
+}
+
+
+void GApp::removeModule(const GModuleRef& module) {
+    m_moduleManager->remove(module);
+}
+
+//////////////////////////////////////////////
+
+
+GApplet::GApplet(GApp* _app) : 
+    app(_app), 
+	lastWaitTime(System::time()),
+    m_desiredFrameRate(inf()),
+    m_simTimeRate(1.0), 
+    m_realTime(0), 
+    m_simTime(0),
+    m_moduleManager(GModuleManager::create()) {
+    
+    debugAssert(app != NULL);
+}
+
+
+bool GApplet::onEvent(const GEvent& event) {
+    processEvent(event); // TODO: Remove when deprecated
+
+    return GModuleManager::onEvent(event, app->m_moduleManager, m_moduleManager);
+}
+
+
+void GApplet::getPosedModel(
+    Array<PosedModelRef>& posedArray, 
+    Array<PosedModel2DRef>& posed2DArray) {
+
+    m_moduleManager->getPosedModel(posedArray, posed2DArray);
+    app->m_moduleManager->getPosedModel(posedArray, posed2DArray);
+
+}
+
+
+void GApplet::onGraphics(RenderDevice* rd) {
+    (void)rd;
+    doGraphics();
+}
+
+
+void GApplet::doGraphics() {
+    Array<PosedModelRef>        posedArray;
+    Array<PosedModel2DRef>      posed2DArray;
+    Array<PosedModelRef>        opaque, transparent;
+
+    // By default, render the installed modules
+    getPosedModel(posedArray, posed2DArray);
+
+    // 3D
+    if (posedArray.size() > 0) {
+        Vector3 lookVector = app->renderDevice->getCameraToWorldMatrix().lookVector();
+        PosedModel::sort(posedArray, lookVector, opaque, transparent);
+
+        for (int i = 0; i < opaque.size(); ++i) {
+            opaque[i]->render(app->renderDevice);
+        }
+
+        for (int i = 0; i < transparent.size(); ++i) {
+            transparent[i]->render(app->renderDevice);
+        }
+    }
+
+    // 2D
+    if (posed2DArray.size() > 0) {
+        app->renderDevice->push2D();
+            PosedModel2D::sort(posed2DArray);
+            for (int i = 0; i < posed2DArray.size(); ++i) {
+                posed2DArray[i]->render(app->renderDevice);
+            }
+        app->renderDevice->pop2D();
+    }
+}
+
+
+void GApplet::onNetwork() {
+    doNetwork();
+}
+
+    
+void GApplet::addModule(const GModuleRef& module, GModuleManager::EventPriority priority) {
+    m_moduleManager->add(module, priority);
+}
+
+
+void GApplet::removeModule(const GModuleRef& module) {
+    m_moduleManager->remove(module);
+}
+
+
+void GApplet::beginRun() {
+    endApplet = false;
+
+    onInit();
+
+    // Move the controller to the camera's location
+    app->debugController.setCoordinateFrame
+        (app->debugCamera.getCoordinateFrame());
+
+    now = System::getTick() - 0.001;
+}
+
+
+void GApplet::oneFrame() {
+    lastTime = now;
+    now = System::getTick();
+    RealTime timeStep = now - lastTime;
+
+    // User input
+    app->m_userInputWatch.tick();
+    doUserInput(); // TODO: remove
+    onUserInput(app->userInput);
+    app->m_moduleManager->onUserInput(app->userInput);
+    m_moduleManager->onUserInput(app->userInput);
+    app->m_userInputWatch.tock();
+
+    // Network
+    app->m_networkWatch.tick();
+    onNetwork();
+    app->m_moduleManager->onNetwork();
+    m_moduleManager->onNetwork();
+    app->m_networkWatch.tock();
+
+    // Simulation
+    app->m_simulationWatch.tick();
+		app->debugController.doSimulation(clamp(timeStep, 0.0, 0.1));
+		app->debugCamera.setCoordinateFrame
+			(app->debugController.getCoordinateFrame());
+
+		double rate = simTimeRate();    
+        RealTime rdt = timeStep;
+        SimTime  sdt = timeStep * rate;
+        SimTime  idt = desiredFrameDuration() * rate;
+
+		onSimulation(rdt, sdt, idt);
+        app->m_moduleManager->onSimulation(rdt, sdt, idt);
+        m_moduleManager->onSimulation(rdt, sdt, idt);
+
+		setRealTime(realTime() + rdt);
+		setSimTime(simTime() + sdt);
+		setIdealSimTime(idealSimTime() + idt);
+    app->m_simulationWatch.tock();
+
+    // Logic
+    app->m_logicWatch.tick();
+        onLogic();
+        app->m_moduleManager->onLogic();
+        m_moduleManager->onLogic();
+    app->m_logicWatch.tock();
+
+    // Wait 
+    // Note: we might end up spending all of our time inside of
+    // RenderDevice::beginFrame.  Waiting here isn't double waiting,
+    // though, because while we're sleeping the CPU the GPU is working
+    // to catch up.
+
+    app->m_waitWatch.tick();
+    {
+        RealTime now = System::time();
+        // Compute accumulated time
+        onWait(now - lastWaitTime, desiredFrameDuration());
+        lastWaitTime = System::time();
+    }
+    app->m_waitWatch.tock();
+
+    // Graphics
+    app->m_graphicsWatch.tick();
+        app->renderDevice->beginFrame();
+            app->renderDevice->pushState();
+                onGraphics(app->renderDevice);
+            app->renderDevice->popState();
+            app->renderDebugInfo();
+        app->renderDevice->endFrame();
+        app->debugText.clear();
+    app->m_graphicsWatch.tock();
+
+    if ((endApplet || app->endProgram) && app->window()->requiresMainLoop()) {
+        app->window()->popLoopBody();
+    }
+}
+
+
+void GApplet::onWait(RealTime t, RealTime desiredT) {
+    System::sleep(max(0.0, desiredT - t));
+}
+
+
+void GApplet::endRun() {
+    onCleanup();
+
+    Log::common()->section("Files Used");
+    for (int i = 0; i < _internal::currentFilesUsed.size(); ++i) {
+        Log::common()->println(_internal::currentFilesUsed[i]);
+    }
+    Log::common()->println("");
+
+    if (app->window()->requiresMainLoop() && app->endProgram) {
+        exit(0);
+    }
+}
+
+
+void GApplet::run() {
+
+    if (app->window()->requiresMainLoop()) {
+
+        app->window()->pushLoopBody(this);
 
     } else {
-	    length = dataLen;
-        bufferLength = length;
-        if (! copyMemory) {
- 			debugAssert(!freeBuffer);
-            buffer = const_cast<uint8*>(data);
-        } else {
-			debugAssert(freeBuffer);
-            buffer = (uint8*)System::malloc(length);
-            memcpy(buffer, data, dataLen);
-        }
+        beginRun();
+
+        // Main loop
+        do {
+            oneFrame();   
+        } while (! app->endProgram && ! endApplet);
+
+        endRun();
     }
 }
 
 
-BinaryInput::BinaryInput(
-    const std::string&  filename,
-    G3DEndian           fileEndian,
-    bool                compressed) {
+void GApplet::doUserInput() {
 
-    alreadyRead = 0;
-    freeBuffer = true;
-    this->fileEndian = fileEndian;
-    this->filename = filename;
-	buffer = NULL;
-    bufferLength = 0;
-	length = 0;
-	pos = 0;
-    beginEndBits = 0;
-    bitPos = 0;
+    app->userInput->beginEvents();
 
-    // Update global file tracker
-    _internal::currentFilesUsed.append(filename);
-    
-    swapBytes = needSwapBytes(fileEndian);
+    // Event handling
+    GEvent event;
+    while (app->window()->pollEvent(event)) {
 
-    // Figure out how big the file is and verify that it exists.
-    length = fileLength(filename);
-
-    // Read the file into memory
-    FILE* file = fopen(filename.c_str(), "rb");
-
-	if (! file || (length == -1)) {
-        throw format("File not found: \"%s\"", filename.c_str());
-		return;
-	}
-
-    if (! compressed && (length > INITIAL_BUFFER_LENGTH)) {
-        // Read only a subset of the file so we don't consume
-        // all available memory.
-        bufferLength = INITIAL_BUFFER_LENGTH;
-    } else {
-        // Either the length is fine or the file is compressed
-        // and requires us to read the whole thing for zlib.
-        bufferLength = length;
-    }
-
-	debugAssert(freeBuffer);
-    buffer = (uint8*)System::malloc(bufferLength);
-    if (buffer == NULL) {
-        if (compressed) {
-            throw "Not enough memory to load compressed file. (1)";
+        if (onEvent(event)) {
+            continue;
         }
 
-        // Try to allocate a small array; not much memory is available.
-        // Give up if we can't allocate even 1k.
-        while ((buffer == NULL) && (bufferLength > 1024)) {
-            bufferLength /= 2;
-            buffer = (uint8*)System::malloc(bufferLength);
-        }
-    }
-    debugAssert(buffer);
-    
-    fread(buffer, bufferLength, sizeof(int8), file);
-    fclose(file);
-    file = NULL;
+        switch(event.type) {
+        case SDL_QUIT:
+	        app->endProgram = true;
+            endApplet = true;
+	        break;
 
-    pos = 0;
+        case SDL_VIDEORESIZE:
+            if (app->autoResize) {
+                app->renderDevice->notifyResize
+                    (event.resize.w, event.resize.h);
+                Rect2D full = 
+                    Rect2D::xywh(0, 0, 
+                                 app->renderDevice->getWidth(), 
+                                 app->renderDevice->getHeight());
+                app->renderDevice->setViewport(full);
+            }
+            break;
 
-    if (compressed) {
-        if (bufferLength != length) {
-            throw "Not enough memory to load compressed file. (2)";
-        }
+	    case SDL_KEYDOWN:
+            switch (event.key.keysym.sym) {
+            case SDLK_ESCAPE:
+                if (app->debugMode() && app->debugQuitOnEscape) {
+                    app->endProgram = true;
+                }
+                break;
 
-        // Decompress
-        // Use the existing buffer as the source, allocate
-        // a new buffer to use as the destination.
+            case SDLK_TAB:
+                // Make sure it wasn't ALT-TAB that was pressed !
+                if (app->debugMode() && app->debugTabSwitchCamera && 
+                    ! (app->userInput->keyDown(SDLK_RALT) || 
+                       app->userInput->keyDown(SDLK_LALT))) {
 
-        int tempLength = length;
-        length = G3D::readUInt32(buffer, swapBytes);
+                    app->debugController.setActive
+                        (! app->debugController.active());
+                }
+                break;
 
-        uint8* tempBuffer = buffer;
-        buffer = (uint8*)System::malloc(length);
+            // Add other key handlers here
+            default:;
+            }
+            break;
 
-        debugAssert(buffer);
-        debugAssert(isValidHeapPointer(tempBuffer));
-        debugAssert(isValidHeapPointer(buffer));
+        // Add other event handlers here
 
-        unsigned long L = length;
-        int result = uncompress(buffer, &L, tempBuffer + 4, tempLength - 4);
-        length = L;
-        bufferLength = length;
-
-        debugAssert(result == Z_OK); (void)result;
-
-        System::free(tempBuffer);
-    }
-}
-
-
-BinaryInput::~BinaryInput() {
-
-    if (freeBuffer) {
-        System::free(buffer);
-    }
-    buffer = NULL;
-}
-
-
-void BinaryInput::readBytes(int n, void* bytes) {
-    prepareToRead(n);
-    debugAssert(isValidPointer(bytes));
-
-    memcpy(bytes, buffer + pos, n);
-    pos += n;
-}
-
-
-uint64 BinaryInput::readUInt64() {
-    prepareToRead(8);
-    uint8 out[8];
-
-    if (swapBytes) {
-        out[0] = buffer[pos + 7];
-        out[1] = buffer[pos + 6];
-        out[2] = buffer[pos + 5];
-        out[3] = buffer[pos + 4];
-        out[4] = buffer[pos + 3];
-        out[5] = buffer[pos + 2];
-        out[6] = buffer[pos + 1];
-        out[7] = buffer[pos + 0];
-    } else {
-        *(uint64*)out = *(uint64*)(buffer + pos);
-    }
-
-    pos += 8;
-    return *(uint64*)out;
-}
-
-
-std::string BinaryInput::readString(int n) {
-    prepareToRead(n);
-    debugAssertM((pos + n) <= length, "Read past end of file");
-    
-    char *s = (char*)System::malloc(n + 1);
-    assert(s != NULL);
-
-    memcpy(s, buffer + pos, n);
-    // There may not be a null, so make sure
-    // we add one.
-    s[n] = '\0';
-
-    std::string out = s;
-    System::free(s);
-    s = NULL;
-
-    pos += n;
-
-    return out;
-
-}
-
-
-std::string BinaryInput::readString() {
-    int n = 0;
-
-    if ((int)pos + (int)alreadyRead + n < (int)length - 1) {
-        prepareToRead(1);
-    }
-
-    if (((int)pos + (int)alreadyRead + (int)n < length - 1) && (buffer[pos + n] != '\0')) {
-        ++n;
-        while (((int)pos + (int)alreadyRead + n < (int)length - 1) && (buffer[pos + n] != '\0')) {
-            prepareToRead(1);
-            ++n;
-        }
-    }
-
-    // Consume NULL
-    ++n;
-
-    return readString(n);
-}
-
-
-std::string BinaryInput::readStringEven() {
-    std::string x = readString();
-    if (hasMore() && (G3D::isOdd(x.length() + 1))) {
-        skip(1);
-    }
-    return x;
-}
-
-
-std::string BinaryInput::readString32() {
-    int len = readUInt32();
-    return readString(len);
-}
-
-
-Vector4 BinaryInput::readVector4() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    double w = readFloat32();
-    return Vector4(x, y, z, w);
-}
-
-
-Vector3 BinaryInput::readVector3() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    return Vector3(x, y, z);
-}
-
-
-Vector2 BinaryInput::readVector2() {
-    double x = readFloat32();
-    double y = readFloat32();
-    return Vector2(x, y);
-}
-
-
-Color4 BinaryInput::readColor4() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    double a = readFloat32();
-    return Color4(r, g, b, a);
-}
-
-
-Color3 BinaryInput::readColor3() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    return Color3(r, g, b);
-}
-
-
-void BinaryInput::beginBits() {
-    debugAssert(beginEndBits == 0);
-    beginEndBits = 1;
-    bitPos = 0;
-
-    debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
-    bitString = readUInt8();
-}
-
-
-uint32 BinaryInput::readBits(int numBits) {
-    debugAssert(beginEndBits == 1);
-
-    uint32 out = 0;
-
-    const int total = numBits;
-    while (numBits > 0) {
-        if (bitPos > 7) {
-            // Consume a new byte for reading.  We do this at the beginning
-            // of the loop so that we don't try to read past the end of the file.
-            bitPos = 0;
-            bitString = readUInt8();
+        default:;
         }
 
-        // Slide the lowest bit of the bitString into
-        // the correct position.
-        out |= (bitString & 1) << (total - numBits);
-
-        // Shift over to the next bit
-        bitString = bitString >> 1;
-        ++bitPos;
-        --numBits;
+        app->userInput->processEvent(event);
     }
 
-    return out;
-}
-
-
-void BinaryInput::endBits() {
-    debugAssert(beginEndBits == 1);
-    if (bitPos == 0) {
-        // Put back the last byte we read
-        --pos;
-    }
-    beginEndBits = 0;
-    bitPos = 0;
+    app->userInput->endEvents();
 }
 
 }

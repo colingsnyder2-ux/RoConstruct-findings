@@ -1,25 +1,5 @@
-// from server: 93% by tester
-struct CXTPPropertyGridItem {
-    void f(int);
-};
-
-extern "C" int __stdcall sub_77DD98(int);
-
-struct Helper {
-    void g(int);
-};
-
-void CXTPPropertyGridItem::f(int a) {
-    if (*(int*)((char*)this + 0xb4) != 0) {
-        int (__thiscall *fn)(void*) = *(int (__thiscall **)(void*))((char*)(*(void**)this) + 0x84);
-        void* p = (void*)fn(this);
-        if (p != 0) {
-            if (*(int*)((char*)p + 0x20) != 0) {
-                if (*(void**)((char*)p + 0xa0) == this) {
-                    int r = sub_77DD98(a);
-                    ((Helper*)p)->g(r);
-                }
-            }
-        }
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_48c4e0bce00a99de.cpp

@@ -1,182 +1,854 @@
-// roc 2010-06 00894df0  unit: CXTPOffice2007Image  size: 628 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00894df0
-//
-// 00894df0  6aff                 push -1
-// 00894df2  68ffb99b00           push 0x9bb9ff
-// 00894df7  64a100000000         mov eax, dword ptr fs:[0]
-// 00894dfd  50                   push eax
-// 00894dfe  83ec18               sub esp, 0x18
-// 00894e01  53                   push ebx
-// 00894e02  55                   push ebp
-// 00894e03  56                   push esi
-// 00894e04  57                   push edi
-// 00894e05  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 00894e0a  33c4                 xor eax, esp
-// 00894e0c  50                   push eax
-// 00894e0d  8d44242c             lea eax, [esp + 0x2c]
-// 00894e11  64a300000000         mov dword ptr fs:[0], eax
-// 00894e17  8be9                 mov ebp, ecx
-// 00894e19  33ff                 xor edi, edi
-// 00894e1b  897c2428             mov dword ptr [esp + 0x28], edi
-// 00894e1f  c744243401000000     mov dword ptr [esp + 0x34], 1
-// 00894e27  397d08               cmp dword ptr [ebp + 8], edi
-// 00894e2a  7516                 jne 0x894e42
-// 00894e2c  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 00894e30  68fe08a000           push 0xa008fe
-// 00894e35  8bce                 mov ecx, esi
-// 00894e37  ff15e8ce9e00         call dword ptr [0x9ecee8]
-// 00894e3d  e9a2010000           jmp 0x894fe4
-// 00894e42  8d4c2440             lea ecx, [esp + 0x40]
-// 00894e46  ff157cc29e00         call dword ptr [0x9ec27c]
-// 00894e4c  8d4c2444             lea ecx, [esp + 0x44]
-// 00894e50  ff157cc29e00         call dword ptr [0x9ec27c]
-// 00894e56  8b4508               mov eax, dword ptr [ebp + 8]
-// 00894e59  8d4c2414             lea ecx, [esp + 0x14]
-// 00894e5d  89442424             mov dword ptr [esp + 0x24], eax
-// 00894e61  ff15a4ce9e00         call dword ptr [0x9ecea4]
-// 00894e67  8d4c2424             lea ecx, [esp + 0x24]
-// 00894e6b  51                   push ecx
-// 00894e6c  8d542418             lea edx, [esp + 0x18]
-// 00894e70  bb02000000           mov ebx, 2
-// 00894e75  52                   push edx
-// 00894e76  8bcd                 mov ecx, ebp
-// 00894e78  885c243c             mov byte ptr [esp + 0x3c], bl
-// 00894e7c  e86ff3ffff           call 0x8941f0
-// 00894e81  85c0                 test eax, eax
-// 00894e83  0f8440010000         je 0x894fc9
-// 00894e89  8d4c2414             lea ecx, [esp + 0x14]
-// 00894e8d  ff1544ca9e00         call dword ptr [0x9eca44]
-// 00894e93  6a00                 push 0
-// 00894e95  6a3b                 push 0x3b
-// 00894e97  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894e9b  ff1578c69e00         call dword ptr [0x9ec678]
-// 00894ea1  85c0                 test eax, eax
-// 00894ea3  0f8407010000         je 0x894fb0
-// 00894ea9  7e2e                 jle 0x894ed9
-// 00894eab  50                   push eax
-// 00894eac  8d44242c             lea eax, [esp + 0x2c]
-// 00894eb0  50                   push eax
-// 00894eb1  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894eb5  ff15a4bf9e00         call dword ptr [0x9ebfa4]
-// 00894ebb  50                   push eax
-// 00894ebc  8d4c2418             lea ecx, [esp + 0x18]
-// 00894ec0  c644243803           mov byte ptr [esp + 0x38], 3
-// 00894ec5  ff1580c59e00         call dword ptr [0x9ec580]
-// 00894ecb  8d4c2428             lea ecx, [esp + 0x28]
-// 00894ecf  885c2434             mov byte ptr [esp + 0x34], bl
-// 00894ed3  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00894ed9  8d4c2414             lea ecx, [esp + 0x14]
-// 00894edd  ff15eccd9e00         call dword ptr [0x9ecdec]
-// 00894ee3  84c0                 test al, al
-// 00894ee5  0f85c5000000         jne 0x894fb0
-// 00894eeb  8d4c2414             lea ecx, [esp + 0x14]
-// 00894eef  ff157cc29e00         call dword ptr [0x9ec27c]
-// 00894ef5  6a00                 push 0
-// 00894ef7  8d4c2418             lea ecx, [esp + 0x18]
-// 00894efb  ff1558c59e00         call dword ptr [0x9ec558]
-// 00894f01  3c5b                 cmp al, 0x5b
-// 00894f03  754d                 jne 0x894f52
-// 00894f05  85ff                 test edi, edi
-// 00894f07  0f85bc000000         jne 0x894fc9
-// 00894f0d  8d4c2414             lea ecx, [esp + 0x14]
-// 00894f11  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 00894f17  2bc3                 sub eax, ebx
-// 00894f19  50                   push eax
-// 00894f1a  6a01                 push 1
-// 00894f1c  8d4c2428             lea ecx, [esp + 0x28]
-// 00894f20  51                   push ecx
-// 00894f21  8d4c2420             lea ecx, [esp + 0x20]
-// 00894f25  ff153cc89e00         call dword ptr [0x9ec83c]
-// 00894f2b  8d4c2440             lea ecx, [esp + 0x40]
-// 00894f2f  c644243404           mov byte ptr [esp + 0x34], 4
-// 00894f34  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00894f3a  50                   push eax
-// 00894f3b  8d4c2424             lea ecx, [esp + 0x24]
-// 00894f3f  ff15b4ce9e00         call dword ptr [0x9eceb4]
-// 00894f45  85c0                 test eax, eax
-// 00894f47  7503                 jne 0x894f4c
-// 00894f49  8d7801               lea edi, [eax + 1]
-// 00894f4c  8d4c2420             lea ecx, [esp + 0x20]
-// 00894f50  eb54                 jmp 0x894fa6
-// 00894f52  85ff                 test edi, edi
-// 00894f54  745a                 je 0x894fb0
-// 00894f56  6a00                 push 0
-// 00894f58  6a3d                 push 0x3d
-// 00894f5a  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894f5e  ff1578c69e00         call dword ptr [0x9ec678]
-// 00894f64  8bf0                 mov esi, eax
-// 00894f66  85f6                 test esi, esi
-// 00894f68  7e46                 jle 0x894fb0
-// 00894f6a  56                   push esi
-// 00894f6b  8d542420             lea edx, [esp + 0x20]
-// 00894f6f  52                   push edx
-// 00894f70  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894f74  ff15a4bf9e00         call dword ptr [0x9ebfa4]
-// 00894f7a  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894f7e  c644243405           mov byte ptr [esp + 0x34], 5
-// 00894f83  ff1584cc9e00         call dword ptr [0x9ecc84]
-// 00894f89  8d4c2444             lea ecx, [esp + 0x44]
-// 00894f8d  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00894f93  50                   push eax
-// 00894f94  8d4c2420             lea ecx, [esp + 0x20]
-// 00894f98  ff15b4ce9e00         call dword ptr [0x9eceb4]
-// 00894f9e  85c0                 test eax, eax
-// 00894fa0  746e                 je 0x895010
-// 00894fa2  8d4c241c             lea ecx, [esp + 0x1c]
-// 00894fa6  885c2434             mov byte ptr [esp + 0x34], bl
-// 00894faa  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00894fb0  8d442424             lea eax, [esp + 0x24]
-// 00894fb4  50                   push eax
-// 00894fb5  8d4c2418             lea ecx, [esp + 0x18]
-// 00894fb9  51                   push ecx
-// 00894fba  8bcd                 mov ecx, ebp
-// 00894fbc  e82ff2ffff           call 0x8941f0
-// 00894fc1  85c0                 test eax, eax
-// 00894fc3  0f85c0feffff         jne 0x894e89
-// 00894fc9  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 00894fcd  68fe08a000           push 0xa008fe
-// 00894fd2  8bce                 mov ecx, esi
-// 00894fd4  ff15e8ce9e00         call dword ptr [0x9ecee8]
-// 00894fda  8d4c2414             lea ecx, [esp + 0x14]
-// 00894fde  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00894fe4  8d4c2440             lea ecx, [esp + 0x40]
-// 00894fe8  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00894fee  8d4c2444             lea ecx, [esp + 0x44]
-// 00894ff2  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00894ff8  8bc6                 mov eax, esi
-// 00894ffa  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00894ffe  64890d00000000       mov dword ptr fs:[0], ecx
-// 00895005  59                   pop ecx
-// 00895006  5f                   pop edi
-// 00895007  5e                   pop esi
-// 00895008  5d                   pop ebp
-// 00895009  5b                   pop ebx
-// 0089500a  83c424               add esp, 0x24
-// 0089500d  c20c00               ret 0xc
-// 00895010  46                   inc esi
-// 00895011  56                   push esi
-// 00895012  8d54241c             lea edx, [esp + 0x1c]
-// 00895016  52                   push edx
-// 00895017  8d4c241c             lea ecx, [esp + 0x1c]
-// 0089501b  ff1574c69e00         call dword ptr [0x9ec674]
-// 00895021  8d4c2418             lea ecx, [esp + 0x18]
-// 00895025  c644243406           mov byte ptr [esp + 0x34], 6
-// 0089502a  ff1544ca9e00         call dword ptr [0x9eca44]
-// 00895030  8d4c2418             lea ecx, [esp + 0x18]
-// 00895034  ff1584cc9e00         call dword ptr [0x9ecc84]
-// 0089503a  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 0089503e  8d442418             lea eax, [esp + 0x18]
-// 00895042  50                   push eax
-// 00895043  8bce                 mov ecx, esi
-// 00895045  ff15c4ce9e00         call dword ptr [0x9ecec4]
-// 0089504b  8d4c2418             lea ecx, [esp + 0x18]
-// 0089504f  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00895055  8d4c241c             lea ecx, [esp + 0x1c]
-// 00895059  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 0089505f  e976ffffff           jmp 0x894fda
-// copied from an identical function in another client (function ?GetImageValue@CXTPOffice2007Images@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V23@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Common\XTPOffice2007Image.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPOffice2007Image.cpp: implementation of the CXTPOffice2007Image class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPImageManager.h"
+#include "XTPColorManager.h"
+#include "XTPResourceManager.h"
+#include "XTPDrawHelpers.h"
+#include "XTPVC50Helpers.h"
+#include "XTPVC80Helpers.h"
+
+#include "XTPOffice2007Image.h"
+
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+#define TILE_VERTICAL     1
+#define TILE_HORIZONTAL   2
+#define TILE_ALL          3
+
+//---------------------------------------------------------------------------
+//    Should be a prime number:
+// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001, 32003, 48017, 64007
+#define XTP_OFFICE2007_IMAGES_HASH_TABLE_SIZE 199
+
+IMPLEMENT_DYNCREATE(CXTPOffice2007ImageList, CCmdTarget)
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPOffice2007Image::CXTPOffice2007Image()
+{
+	m_hBitmap = NULL;
+	m_bAlpha = FALSE;
+	m_bInvert = FALSE;
+
+	m_bImageOrientaionPreserved = FALSE;
+	m_pCS = 0;
+}
+
+CXTPOffice2007Image::~CXTPOffice2007Image()
+{
+	if (m_hBitmap != NULL)
+	{
+		DeleteObject(m_hBitmap);
+	}
+}
+
+HBITMAP CXTPOffice2007Image::GetBitmap() const
+{
+	return m_hBitmap;
+}
+
+void CXTPOffice2007Image::SetBitmap(HBITMAP hBitmap, BOOL bAlpha /*= FALSE*/)
+{
+	ASSERT(m_hBitmap == NULL);
+
+	m_hBitmap = hBitmap;
+	m_bAlpha = bAlpha;
+	m_bInvert = FALSE;
+}
+
+BOOL CXTPOffice2007Image::LoadFile(HMODULE hModule, LPCTSTR lpszBitmapFileName)
+{
+	m_bMultiply = FALSE;
+	m_bInvert = FALSE;
+
+	if (m_hBitmap)
+	{
+		DeleteObject(m_hBitmap);
+		m_hBitmap = NULL;
+	}
+
+	if (!hModule)
+		return FALSE;
+
+	m_bAlpha = FALSE;
+
+	ASSERT(m_hBitmap == NULL);
+
+	BOOL bAlpha = FALSE;
+
+	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromResource(hModule, lpszBitmapFileName, &bAlpha);
+
+	if (!hBmp)
+		return FALSE;
+
+	if (bAlpha)
+	{
+		m_hBitmap = hBmp;
+		m_bAlpha = TRUE;
+	}
+	else
+	{
+		m_hBitmap = hBmp;
+	}
+
+	return m_hBitmap != NULL;
+}
+
+void CXTPOffice2007Image::Premultiply()
+{
+	if (!m_bAlpha || !m_hBitmap || m_bMultiply)
+		return;
+
+	HBITMAP hBitmap = m_hBitmap;
+	m_hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(m_hBitmap);
+	DeleteObject(hBitmap);
+	m_bMultiply = TRUE;
+}
+
+void CXTPOffice2007Image::InvertBitmap()
+{
+	if (!m_bAlpha)
+		return;
+
+	HBITMAP hBitmap = m_hBitmap;
+	m_hBitmap = CXTPImageManagerIcon::InvertAlphaBitmap(m_hBitmap);
+	DeleteObject(hBitmap);
+
+	m_bInvert = !m_bInvert;
+}
+
+BOOL CXTPOffice2007Image::DrawImagePart(CDC* pDCDest, const CRect& rcDest, CDC* pDCSrc, const CRect& rcSrc) const
+{
+	if (rcDest.Width() <= 0 || rcDest.Height() <= 0 || rcSrc.Width() <= 0 || rcSrc.Height() <= 0)
+		return TRUE;
+
+	BOOL bResult = TRUE;
+
+	if (m_bAlpha)
+	{
+		bResult = XTPImageManager()->AlphaBlend(pDCDest->GetSafeHdc(), rcDest, pDCSrc->GetSafeHdc(), rcSrc);
+	}
+	else if ((rcSrc.Width() == rcDest.Width()) && (rcSrc.Height() == rcDest.Height()))
+	{
+		bResult = pDCDest->BitBlt(rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			pDCSrc, rcSrc.left, rcSrc.top, SRCCOPY);
+	}
+	else
+	{
+		bResult = pDCDest->StretchBlt(rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			pDCSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), SRCCOPY);
+	}
+
+	return bResult;
+}
+
+
+void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, const CRect& rcSizingMargins, COLORREF clrTransparent, DWORD dwFlags)
+{
+	if (this == NULL)
+		return;
+
+	if (m_hBitmap == NULL)
+		return;
+
+	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
+		return;
+
+	if ((dwFlags & XTP_DI_COMPOSITE) == 0)
+	{
+		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins, clrTransparent);
+		return;
+	}
+
+	if (m_bAlpha)
+	{
+		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins);
+		return;
+	}
+
+	CSize sz(rcDest.Width(), rcDest.Height());
+	CBitmap bmp;
+	LPDWORD lpBits;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
+
+	CXTPCompatibleDC dc(pDC, &bmp);
+
+	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
+
+	if (clrTransparent != COLORREF_NULL) dc.FillSolidRect(rcDestOrig, clrTransparent);
+	DrawImage(&dc, rcDestOrig, rcSrc, rcSizingMargins);
+
+	for (int i = 0; i < sz.cx * sz.cy; i++)
+	{
+		if (clrTransparent != COLORREF_NULL && lpBits[0] == clrTransparent)
+		{
+			lpBits[0] = 0;
+		}
+		else
+		{
+			lpBits[0] |= 0xFF000000;
+		}
+		lpBits++;
+	}
+
+	XTPImageManager()->AlphaBlend(*pDC, rcDest, dc, rcDestOrig);
+}
+
+void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, const CRect& rcSizingMargins, COLORREF clrTransparent)
+{
+	if (this == NULL)
+		return;
+
+	if (m_hBitmap == NULL)
+		return;
+
+	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
+		return;
+
+	if (clrTransparent == COLORREF_NULL || m_bAlpha)
+	{
+		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins);
+		return;
+	}
+
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, rcDest.Width(), rcDest.Height());
+
+	CXTPCompatibleDC dc(pDC, &bmp);
+	//dc.SetLayout(0);
+
+	CRect rcDestOrig(0, 0, rcDest.Width(), rcDest.Height());
+
+	dc.FillSolidRect(rcDestOrig, clrTransparent);
+	DrawImage(&dc, rcDestOrig, rcSrc, rcSizingMargins);
+
+	XTPImageManager()->TransparentBlt(*pDC, rcDest, dc, rcDestOrig, clrTransparent);
+
+}
+
+void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc)
+{
+	DrawImage(pDC, rcDest, rcSrc, CRect(0, 0, 0, 0));
+}
+
+void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, CRect rcSizingMargins)
+{
+	if (this == NULL)
+		return;
+
+	if (m_hBitmap == NULL)
+		return;
+
+	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
+		return;
+
+	ASSERT(m_pCS);
+	if (!m_pCS)
+		return;
+	CXTPLockGuard lock(*m_pCS);
+
+	if (rcDest.Width() == rcSrc.Width())
+	{
+		rcSizingMargins.left = 0;
+		rcSizingMargins.right = 0;
+	}
+
+	if (rcDest.Height() == rcSrc.Height())
+	{
+		rcSizingMargins.top = 0;
+		rcSizingMargins.bottom = 0;
+	}
+
+	pDC->SetStretchBltMode(COLORONCOLOR);
+
+	CRect rcDestSizingMargins = rcSizingMargins;
+
+	if (rcDest.left >= rcDest.right || rcDest.top >= rcDest.bottom)
+		return;
+
+	BOOL bRtl = CXTPDrawHelpers::IsContextRTL(pDC);
+
+	if (m_bAlpha && m_bImageOrientaionPreserved)
+	{
+		if ((bRtl && !m_bInvert) || (!bRtl && m_bInvert))
+		{
+			InvertBitmap();
+		}
+	}
+
+	CXTPCompatibleDC dcSrc(pDC, m_hBitmap);
+
+	if (bRtl && !m_bAlpha && !m_bImageOrientaionPreserved)
+	{
+		CXTPDrawHelpers::SetContextRTL(&dcSrc, FALSE);
+	}
+
+
+
+	if (rcSizingMargins.IsRectNull())
+	{
+		DrawImagePart(pDC, rcDest, &dcSrc, rcSrc);
+		return;
+	}
+
+	if ((rcDest.Height() <= rcSizingMargins.top + rcSizingMargins.bottom) || (rcSrc.Height() == rcSizingMargins.top + rcSizingMargins.bottom))
+	{
+		rcDestSizingMargins.top = MulDiv(rcDest.Height(), rcSizingMargins.top, (rcSizingMargins.top + rcSizingMargins.bottom));
+		rcDestSizingMargins.bottom = rcDest.Height() - rcDestSizingMargins.top;
+
+		if (rcDestSizingMargins.bottom > 0 && (rcDestSizingMargins.bottom % 2 != rcSizingMargins.bottom % 2))
+			rcDestSizingMargins.bottom++;
+	}
+
+	if ((rcDest.Width() <= rcSizingMargins.left + rcSizingMargins.right) || (rcSrc.Width() == rcSizingMargins.left + rcSizingMargins.right))
+	{
+		rcDestSizingMargins.left= rcDest.Width() * rcSizingMargins.left / (rcSizingMargins.left + rcSizingMargins.right);
+		rcDestSizingMargins.right = rcDest.Width() - rcDestSizingMargins.left;
+	}
+
+	DrawImagePart(pDC, CRect(rcDest.left, rcDest.top, rcDest.left + rcDestSizingMargins.left, rcDest.top + rcDestSizingMargins.top),
+		&dcSrc, CRect(rcSrc.left, rcSrc.top, rcSrc.left + rcSizingMargins.left, rcSrc.top + rcSizingMargins.top ));
+	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.top, rcDest.right - rcDestSizingMargins.right, rcDest.top + rcDestSizingMargins.top),
+		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.top, rcSrc.right - rcSizingMargins.right, rcSrc.top + rcSizingMargins.top ));
+	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right, rcDest.top, rcDest.right, rcDest.top + rcDestSizingMargins.top),
+		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.top , rcSrc.right, rcSrc.top + rcSizingMargins.top ));
+
+	DrawImagePart(pDC, CRect(rcDest.left, rcDest.top + rcDestSizingMargins.top, rcDest.left + rcDestSizingMargins.left, rcDest.bottom - rcDestSizingMargins.bottom),
+		&dcSrc, CRect(rcSrc.left, rcSrc.top + rcSizingMargins.top , rcSrc.left + rcSizingMargins.left, rcSrc.bottom - rcSizingMargins.bottom ));
+
+	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.top + rcDestSizingMargins.top, rcDest.right - rcDestSizingMargins.right, rcDest.bottom - rcDestSizingMargins.bottom),
+		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.top + rcSizingMargins.top , rcSrc.right - rcSizingMargins.right, rcSrc.bottom - rcSizingMargins.bottom ));
+
+	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right , rcDest.top + rcDestSizingMargins.top, rcDest.right, rcDest.bottom - rcDestSizingMargins.bottom),
+		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.top + rcSizingMargins.top , rcSrc.right, rcSrc.bottom - rcSizingMargins.bottom));
+
+	DrawImagePart(pDC, CRect(rcDest.left, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.left + rcDestSizingMargins.left, rcDest.bottom),
+		&dcSrc, CRect(rcSrc.left, rcSrc.bottom - rcSizingMargins.bottom , rcSrc.left + rcSizingMargins.left, rcSrc.bottom ));
+	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.right - rcDestSizingMargins.right, rcDest.bottom),
+		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.bottom - rcSizingMargins.bottom  , rcSrc.right - rcSizingMargins.right, rcSrc.bottom ));
+	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.right, rcDest.bottom),
+		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.bottom - rcSizingMargins.bottom , rcSrc.right, rcSrc.bottom));
+
+}
+
+CSize CXTPOffice2007Image::GetExtent() const
+{
+	if (!m_hBitmap)
+		return CSize(0, 0);
+
+	BITMAP bmpInfo;
+	GetObject(m_hBitmap, sizeof(BITMAP), &bmpInfo);
+
+	return CSize(bmpInfo.bmWidth, bmpInfo.bmHeight);
+}
+
+CRect CXTPOffice2007Image::GetSource(int nState, int nCount) const
+{
+	if (this == NULL)
+		return CRect(0, 0, 0, 0);
+
+	CSize szExtent = GetExtent();
+	CRect rcImage(0, 0, szExtent.cx, szExtent.cy / nCount);
+	rcImage.OffsetRect(0, nState * rcImage.Height());
+
+	return rcImage;
+}
+
+
+DWORD CXTPOffice2007Image::GetHeight() const
+{
+	return GetExtent().cy;
+}
+
+DWORD CXTPOffice2007Image::GetWidth() const
+{
+	return GetExtent().cx;
+}
+
+BOOL CXTPOffice2007Image::IsAlphaImage() const
+{
+	return m_bAlpha;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+
+CXTPOffice2007Images::CXTPOffice2007Images()
+{
+	m_mapImages.InitHashTable(XTP_OFFICE2007_IMAGES_HASH_TABLE_SIZE, FALSE);
+
+	m_bFreeOnRelease = FALSE;
+	m_hResource = 0;
+	m_lpTextFile = 0;
+	m_lpTextFileEnd = 0;
+
+	SetHandle(AfxGetInstanceHandle());
+}
+
+CXTPOffice2007Images* AFX_CDECL XTPOffice2007Images()
+{
+	static CXTPOffice2007Images images;
+	return &images;
+}
+
+
+
+CXTPOffice2007Images::~CXTPOffice2007Images()
+{
+	RemoveAll();
+
+	if (m_hResource && m_bFreeOnRelease)
+	{
+		FreeLibrary(m_hResource);
+	}
+}
+
+void CXTPOffice2007Images::RemoveAll()
+{
+	CString strImageFile;
+	CXTPOffice2007Image* pImage;
+
+	POSITION pos = m_mapImages.GetStartPosition();
+	while (pos != NULL)
+	{
+		m_mapImages.GetNextAssoc( pos, strImageFile, (void*&)pImage);
+		CMDTARGET_RELEASE(pImage);
+	}
+	m_mapImages.RemoveAll();
+}
+
+CString CXTPOffice2007Images::_ImageNameToResourceName(CString strImageFile)
+{
+	CString strImage = GetImageString(_T("Images"), strImageFile);
+
+	if (!strImage.IsEmpty())
+	{
+		strImageFile = strImage;
+	}
+
+	REPLACE_S(strImageFile, _T('.'), _T('_'));
+	REPLACE_S(strImageFile, _T('\\'), _T('_'));
+
+	return strImageFile;
+}
+
+CXTPOffice2007Image* CXTPOffice2007Images::LoadImage(CString strImageFile)
+{
+	strImageFile = _ImageNameToResourceName(strImageFile);
+
+	CXTPOffice2007Image* pImage = new CXTPOffice2007Image();
+
+	if (!pImage->LoadFile(m_hResource, strImageFile))
+	{
+		delete pImage;
+		return NULL;
+	}
+
+	return pImage;
+}
+
+CXTPOffice2007Image* CXTPOffice2007Images::LoadFile(LPCTSTR lpszImageFile)
+{
+	CXTPLockGuard lock(m_cs);
+
+	if (!m_hResource)
+		return NULL;
+
+	if (lpszImageFile == NULL)
+		return NULL;
+
+	CXTPOffice2007Image* pImage = 0;
+	if (m_mapImages.Lookup(lpszImageFile, (void*&)pImage))
+		return pImage;
+
+	pImage = LoadImage(lpszImageFile);
+	if (!pImage)
+		return NULL;
+
+	m_mapImages.SetAt(lpszImageFile, pImage);
+	pImage->m_pCS = &m_cs;
+
+	return pImage;
+}
+
+BOOL CXTPOffice2007Images::SetHandle(LPCTSTR lpszFile, LPCTSTR lpszIniFileName)
+{
+	HMODULE hModule = LoadLibrary(lpszFile);
+
+	if (hModule)
+	{
+		m_strHandle = lpszFile;
+		return SetHandle(hModule, lpszIniFileName, TRUE);
+	}
+
+	return SetHandle(AfxGetInstanceHandle(), lpszIniFileName);
+}
+
+BOOL CXTPOffice2007Images::IsValid() const
+{
+	return m_lpTextFile != NULL;
+}
+
+BOOL CALLBACK CXTPOffice2007Images::EnumResNameProc(HMODULE /*hModule*/,
+	LPCTSTR /*lpszType*/, LPTSTR lpszName, LONG_PTR lParam)
+{
+	CString* pIniFileName = (CString*)lParam;
+	*pIniFileName = lpszName;
+
+	return FALSE;
+}
+
+HRSRC CXTPOffice2007Images::FindResourceIniFile(HMODULE hResource)
+{
+	CString strIniFileName;
+	EnumResourceNames(hResource, _T("TEXTFILE"), &CXTPOffice2007Images::EnumResNameProc, (LONG_PTR)&strIniFileName);
+
+	if (strIniFileName.IsEmpty())
+		return 0;
+
+	return FindResource(m_hResource, strIniFileName, _T("TEXTFILE"));
+}
+
+BOOL CXTPOffice2007Images::SetHandle(HMODULE hResource, LPCTSTR lpszIniFileName, BOOL bFreeOnRelease)
+{
+	if (m_hResource && m_bFreeOnRelease)
+	{
+		FreeLibrary(m_hResource);
+	}
+	CString strIniFileName(lpszIniFileName);
+
+	if (strIniFileName.IsEmpty())
+		strIniFileName = _T("OFFICE2007BLUE_INI");
+
+	REPLACE_S(strIniFileName, _T('.'), _T('_'));
+
+	m_hResource = hResource;
+	m_bFreeOnRelease = bFreeOnRelease;
+
+	m_lpTextFile = m_lpTextFileEnd = NULL;
+	RemoveAll();
+
+	HRSRC hRsrc = FindResource(m_hResource, strIniFileName, _T("TEXTFILE"));
+
+	if (!hRsrc && lpszIniFileName == NULL)
+	{
+		hRsrc = FindResourceIniFile(hResource);
+	}
+
+	if (!hRsrc)
+		return FALSE;
+
+	HGLOBAL hResData = LoadResource(m_hResource, hRsrc);
+	if (!hResData)
+		return FALSE;
+
+	m_lpTextFile = (LPSTR)LockResource(hResData);
+	m_lpTextFileEnd = m_lpTextFile + SizeofResource(m_hResource, hRsrc);
+
+	return TRUE;
+}
+
+BOOL CXTPOffice2007Images::InitResourceHandle(LPCTSTR lpszTestImageFile, LPCTSTR lpResType)
+{
+	CString strResourceName = _ImageNameToResourceName(lpszTestImageFile);
+
+	HMODULE hResource = XTPResourceManager()->GetResourceHandle();
+	if (hResource == 0)
+		hResource = AfxGetInstanceHandle();
+
+	if (!::FindResource(hResource, strResourceName, lpResType))
+	{
+		hResource = AfxFindResourceHandle(strResourceName, lpResType);
+		if (!hResource)
+			return FALSE;
+	}
+
+	SetHandle(hResource);
+	return TRUE;
+}
+
+BOOL CXTPOffice2007Images::ReadString(CString& str, LPSTR& lpTextFile)
+{
+	ASSERT(lpTextFile);
+	if (!lpTextFile)
+		return FALSE;
+
+	LPSTR pNextLine = strchr(lpTextFile, '\r');
+
+	if (pNextLine == NULL || pNextLine > m_lpTextFileEnd)
+		return FALSE;
+
+	str = CONSTRUCT_S(lpTextFile, (int)(pNextLine - lpTextFile));
+	lpTextFile = pNextLine + 1;
+	if (lpTextFile[0] == '\n') lpTextFile = lpTextFile + 1;
+
+	return TRUE;
+}
+
+
+COLORREF CXTPOffice2007Images::GetImageColor(CString strSectionName, CString strKeyName)
+{
+	CString strValue = GetImageValue(strSectionName, strKeyName);
+	if (strValue.IsEmpty())
+		return COLORREF_NULL;
+
+	int r = 0, g = 0, b = 0;
+	SCANF_S(strValue, _T("%i %i %i"), &r, &g, &b);
+	COLORREF clrVal = RGB(r, g, b);
+	return clrVal;
+
+}
+
+CString CXTPOffice2007Images::GetImageString(CString strSectionName, CString strKeyName)
+{
+	return GetImageValue(strSectionName, strKeyName);
+}
+
+CString CXTPOffice2007Images::GetImageValue(CString strSectionName, CString strKeyName)
+{
+	if (m_lpTextFile == NULL)
+		return _T("");
+
+	strSectionName.MakeUpper();
+	strKeyName.MakeUpper();
+
+	LPSTR lpTextFile = m_lpTextFile;
+	CString str;
+
+	BOOL bSectionFound = FALSE;
+
+	while (ReadString(str, lpTextFile))
+	{
+		str.TrimLeft();
+
+		int nCommentIndex = str.Find(_T(';'));
+
+		if (nCommentIndex == 0)
+			continue;
+
+		if (nCommentIndex > 0)
+		{
+			str = str.Left(nCommentIndex);
+		}
+
+		if (str.IsEmpty())
+			continue;
+
+		str.MakeUpper();
+
+		if (str[0] == _T('['))
+		{
+			if (bSectionFound)
+			{
+				return _T("");
+			}
+
+			CString strSchemaPart = str.Mid(1, str.GetLength() - 2);
+			if (strSchemaPart == strSectionName)
+			{
+				bSectionFound = TRUE;
+			}
+		}
+		else if (bSectionFound)
+		{
+			int nPos = str.Find(_T('='));
+			if (nPos <= 0)
+				continue;
+
+			CString strProperty = str.Left(nPos);
+			strProperty.TrimRight();
+
+			if (strProperty != strKeyName)
+				continue;
+
+			CString strValue = str.Mid(nPos + 1);
+			strValue.TrimLeft();
+			strValue.TrimRight();
+
+			return strValue;
+		}
+	}
+
+	return _T("");
+}
+
+
+void CXTPOffice2007Images::RefreshSettings()
+{
+	CString str;
+
+	LPSTR lpTextFile = m_lpTextFile;
+
+	while (ReadString(str, lpTextFile))
+	{
+		str.TrimLeft();
+
+		int nCommentIndex = str.Find(_T(';'));
+
+		if (nCommentIndex == 0)
+			continue;
+
+		if (nCommentIndex > 0)
+		{
+			str = str.Left(nCommentIndex);
+		}
+
+		if (str.IsEmpty())
+			continue;
+
+		str.MakeUpper();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+CXTPOffice2007ImageList::CXTPOffice2007ImageList()
+{
+
+}
+
+CXTPOffice2007ImageList::~CXTPOffice2007ImageList()
+{
+	RemoveAll();
+}
+
+CXTPOffice2007Image* CXTPOffice2007ImageList::SetBitmap(HBITMAP hBitmap, UINT nID, BOOL bAlptha, BOOL bCopyBitmap)
+{
+	ASSERT(hBitmap);
+	if (!hBitmap)
+		return NULL;
+
+	HBITMAP hBmp2 = hBitmap;
+	if (bCopyBitmap)
+	{
+		// HBITMAP CXTPImageManagerIcon::CopyAlphaBitmap(HBITMAP hBitmap)
+		hBmp2 = (HBITMAP)::CopyImage(hBitmap, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		ASSERT(hBmp2);
+		if (!hBmp2)
+			return NULL;
+	}
+
+	BITMAP bmpinfo;
+	if (!::GetObject(hBmp2, sizeof(bmpinfo), &bmpinfo))
+	{
+		ASSERT(FALSE);
+		::DeleteObject(hBmp2);
+		return NULL;
+	}
+
+	CXTPOffice2007Image* pImage = new CXTPOffice2007Image();
+	if (!pImage)
+		return NULL;
+
+	pImage->SetBitmap(hBmp2, bAlptha);
+
+	SetBitmap(pImage, nID, FALSE);
+
+	return pImage;
+}
+
+BOOL CXTPOffice2007ImageList::SetBitmap(CXTPOffice2007Image* pImage, UINT nID, BOOL bCallAddRef)
+{
+	ASSERT(pImage);
+	if (!pImage)
+		return FALSE;
+
+	if (bCallAddRef)
+		CMDTARGET_ADDREF(pImage);
+
+	// free prev. image if such exists
+	CXTPOffice2007Image* pImage_old = GetBitmap(nID);
+	CMDTARGET_RELEASE(pImage_old);
+
+	m_mapID2Image.SetAt(nID, pImage);
+
+	pImage->m_pCS = &m_cs;
+
+	return TRUE;
+}
+
+CXTPOffice2007Image* CXTPOffice2007ImageList::GetBitmap(UINT nID)
+{
+	CXTPOffice2007Image* pImage = NULL;
+	if (!m_mapID2Image.Lookup(nID, pImage))
+		return NULL;
+
+	return pImage;
+}
+
+BOOL CXTPOffice2007ImageList::Remove(UINT nID)
+{
+	CString strImageFile;
+	CXTPOffice2007Image* pImage = NULL;
+
+	//-------------------------------------------------
+	if (!m_mapID2Image.Lookup(nID, pImage))
+		return FALSE;
+
+	m_mapID2Image.RemoveKey(nID);
+	CMDTARGET_RELEASE(pImage);
+
+	return TRUE;
+}
+
+void CXTPOffice2007ImageList::RemoveAll()
+{
+	UINT nID;
+	CXTPOffice2007Image* pImage;
+
+	POSITION pos = m_mapID2Image.GetStartPosition();
+	while (pos != NULL)
+	{
+		m_mapID2Image.GetNextAssoc( pos, nID, pImage);
+		CMDTARGET_RELEASE(pImage);
+	}
+	m_mapID2Image.RemoveAll();
+}
+
+BOOL CXTPOffice2007ImageList::LoadBitmap(LPCTSTR lpcszPath, UINT nID)
+{
+	BOOL bAlphaBitmap = FALSE;
+	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromFile(lpcszPath, &bAlphaBitmap);
+
+	CXTPOffice2007Image* pImage = NULL;
+	if (hBmp)
+	{
+		pImage = SetBitmap(hBmp, nID, bAlphaBitmap, FALSE);
+	}
+
+	return !!pImage;
+}
+
+/////////////////////////////////////////////////////////////////////////////

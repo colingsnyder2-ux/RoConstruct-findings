@@ -1,29 +1,5 @@
-// from server: 52% by colin
-struct CXTPPropertyGridItem {
-    char pad0[0xb4];
-    int m_field_b4;
-    char pad_b8[0x8];
-    int m_field_c0;
-    int GetSomething();
-};
-
-struct Helper {
-    int f(int);
-};
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" int __stdcall sub_0069ab30(int);
-
-int CXTPPropertyGridItem::GetSomething()
-{
-    if (m_field_c0 == 0) {
-        void* p = operator_new(0xa0);
-        int* obj = 0;
-        if (p != 0) {
-            int v = sub_0069ab30(m_field_b4);
-            obj = (int*)((Helper*)p)->f(v);
-        }
-        m_field_c0 = (int)obj;
-    }
-    return m_field_c0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_48c4e0bce00a99de.cpp

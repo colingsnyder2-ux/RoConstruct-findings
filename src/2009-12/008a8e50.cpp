@@ -1,243 +1,970 @@
-// roc 2009-12 008a8e50  unit: CXTPDockingPaneLayout  size: 753 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008a8e50
-//
-// 008a8e50  6aff                 push -1
-// 008a8e52  6827299600           push 0x962927
-// 008a8e57  64a100000000         mov eax, dword ptr fs:[0]
-// 008a8e5d  50                   push eax
-// 008a8e5e  81ec1c010000         sub esp, 0x11c
-// 008a8e64  a10052b600           mov eax, dword ptr [0xb65200]
-// 008a8e69  33c4                 xor eax, esp
-// 008a8e6b  89842418010000       mov dword ptr [esp + 0x118], eax
-// 008a8e72  53                   push ebx
-// 008a8e73  55                   push ebp
-// 008a8e74  56                   push esi
-// 008a8e75  57                   push edi
-// 008a8e76  a10052b600           mov eax, dword ptr [0xb65200]
-// 008a8e7b  33c4                 xor eax, esp
-// 008a8e7d  50                   push eax
-// 008a8e7e  8d842430010000       lea eax, [esp + 0x130]
-// 008a8e85  64a300000000         mov dword ptr fs:[0], eax
-// 008a8e8b  8bb42440010000       mov esi, dword ptr [esp + 0x140]
-// 008a8e92  8b06                 mov eax, dword ptr [esi]
-// 008a8e94  8b5074               mov edx, dword ptr [eax + 0x74]
-// 008a8e97  8be9                 mov ebp, ecx
-// 008a8e99  8bce                 mov ecx, esi
-// 008a8e9b  896c2414             mov dword ptr [esp + 0x14], ebp
-// 008a8e9f  ffd2                 call edx
-// 008a8ea1  8bcd                 mov ecx, ebp
-// 008a8ea3  e898faffff           call 0x8a8940
-// 008a8ea8  8b06                 mov eax, dword ptr [esi]
-// 008a8eaa  8b5070               mov edx, dword ptr [eax + 0x70]
-// 008a8ead  68d862a000           push 0xa062d8
-// 008a8eb2  8bce                 mov ecx, esi
-// 008a8eb4  ffd2                 call edx
-// 008a8eb6  8bf8                 mov edi, eax
-// 008a8eb8  897c2424             mov dword ptr [esp + 0x24], edi
-// 008a8ebc  8b4550               mov eax, dword ptr [ebp + 0x50]
-// 008a8ebf  8d4c2428             lea ecx, [esp + 0x28]
-// 008a8ec3  51                   push ecx
-// 008a8ec4  68d062a000           push 0xa062d0
-// 008a8ec9  57                   push edi
-// 008a8eca  c784244401000000000000 mov dword ptr [esp + 0x144], 0
-// 008a8ed5  89442434             mov dword ptr [esp + 0x34], eax
-// 008a8ed9  e8f27afaff           call 0x8509d0
-// 008a8ede  83c40c               add esp, 0xc
-// 008a8ee1  8bcf                 mov ecx, edi
-// 008a8ee3  e8688bfaff           call 0x851a50
-// 008a8ee8  8b7d2c               mov edi, dword ptr [ebp + 0x2c]
-// 008a8eeb  bb01000000           mov ebx, 1
-// 008a8ef0  85ff                 test edi, edi
-// 008a8ef2  746f                 je 0x8a8f63
-// 008a8ef4  8bc7                 mov eax, edi
-// 008a8ef6  8b6808               mov ebp, dword ptr [eax + 8]
-// 008a8ef9  8b3f                 mov edi, dword ptr [edi]
-// 008a8efb  895d54               mov dword ptr [ebp + 0x54], ebx
-// 008a8efe  8b5554               mov edx, dword ptr [ebp + 0x54]
-// 008a8f01  52                   push edx
-// 008a8f02  8d442430             lea eax, [esp + 0x30]
-// 008a8f06  68c862a000           push 0xa062c8
-// 008a8f0b  50                   push eax
-// 008a8f0c  43                   inc ebx
-// 008a8f0d  ff1520cb9800         call dword ptr [0x98cb20]
-// 008a8f13  8b16                 mov edx, dword ptr [esi]
-// 008a8f15  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a8f18  83c40c               add esp, 0xc
-// 008a8f1b  8d44242c             lea eax, [esp + 0x2c]
-// 008a8f1f  50                   push eax
-// 008a8f20  8bce                 mov ecx, esi
-// 008a8f22  ffd2                 call edx
-// 008a8f24  8944241c             mov dword ptr [esp + 0x1c], eax
-// 008a8f28  8b4d38               mov ecx, dword ptr [ebp + 0x38]
-// 008a8f2b  8d542418             lea edx, [esp + 0x18]
-// 008a8f2f  52                   push edx
-// 008a8f30  68d02c9a00           push 0x9a2cd0
-// 008a8f35  50                   push eax
-// 008a8f36  c684244401000001     mov byte ptr [esp + 0x144], 1
-// 008a8f3e  894c2424             mov dword ptr [esp + 0x24], ecx
-// 008a8f42  e8897afaff           call 0x8509d0
-// 008a8f47  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 008a8f4b  83c40c               add esp, 0xc
-// 008a8f4e  c684243801000000     mov byte ptr [esp + 0x138], 0
-// 008a8f56  85c9                 test ecx, ecx
-// 008a8f58  7405                 je 0x8a8f5f
-// 008a8f5a  e87daef4ff           call 0x7f3ddc
-// 008a8f5f  85ff                 test edi, edi
-// 008a8f61  7591                 jne 0x8a8ef4
-// 008a8f63  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008a8f67  8b4048               mov eax, dword ptr [eax + 0x48]
-// 008a8f6a  85c0                 test eax, eax
-// 008a8f6c  0f8480000000         je 0x8a8ff2
-// 008a8f72  eb04                 jmp 0x8a8f78
-// 008a8f74  8b442418             mov eax, dword ptr [esp + 0x18]
-// 008a8f78  8b7808               mov edi, dword ptr [eax + 8]
-// 008a8f7b  837f1800             cmp dword ptr [edi + 0x18], 0
-// 008a8f7f  8b08                 mov ecx, dword ptr [eax]
-// 008a8f81  894c2418             mov dword ptr [esp + 0x18], ecx
-// 008a8f85  7464                 je 0x8a8feb
-// 008a8f87  895f34               mov dword ptr [edi + 0x34], ebx
-// 008a8f8a  8b5734               mov edx, dword ptr [edi + 0x34]
-// 008a8f8d  52                   push edx
-// 008a8f8e  8d442430             lea eax, [esp + 0x30]
-// 008a8f92  68c862a000           push 0xa062c8
-// 008a8f97  50                   push eax
-// 008a8f98  43                   inc ebx
-// 008a8f99  ff1520cb9800         call dword ptr [0x98cb20]
-// 008a8f9f  8b16                 mov edx, dword ptr [esi]
-// 008a8fa1  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a8fa4  83c40c               add esp, 0xc
-// 008a8fa7  8d44242c             lea eax, [esp + 0x2c]
-// 008a8fab  50                   push eax
-// 008a8fac  8bce                 mov ecx, esi
-// 008a8fae  ffd2                 call edx
-// 008a8fb0  8be8                 mov ebp, eax
-// 008a8fb2  896c2420             mov dword ptr [esp + 0x20], ebp
-// 008a8fb6  8b4718               mov eax, dword ptr [edi + 0x18]
-// 008a8fb9  8d4c241c             lea ecx, [esp + 0x1c]
-// 008a8fbd  51                   push ecx
-// 008a8fbe  68d02c9a00           push 0x9a2cd0
-// 008a8fc3  55                   push ebp
-// 008a8fc4  c684244401000002     mov byte ptr [esp + 0x144], 2
-// 008a8fcc  89442428             mov dword ptr [esp + 0x28], eax
-// 008a8fd0  e8fb79faff           call 0x8509d0
-// 008a8fd5  83c40c               add esp, 0xc
-// 008a8fd8  c684243801000000     mov byte ptr [esp + 0x138], 0
-// 008a8fe0  85ed                 test ebp, ebp
-// 008a8fe2  7407                 je 0x8a8feb
-// 008a8fe4  8bcd                 mov ecx, ebp
-// 008a8fe6  e8f1adf4ff           call 0x7f3ddc
-// 008a8feb  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008a8ff0  7582                 jne 0x8a8f74
-// 008a8ff2  8b542414             mov edx, dword ptr [esp + 0x14]
-// 008a8ff6  8b7a2c               mov edi, dword ptr [edx + 0x2c]
-// 008a8ff9  85ff                 test edi, edi
-// 008a8ffb  7460                 je 0x8a905d
-// 008a8ffd  8d4900               lea ecx, [ecx]
-// 008a9000  8bc7                 mov eax, edi
-// 008a9002  8b6808               mov ebp, dword ptr [eax + 8]
-// 008a9005  8b4554               mov eax, dword ptr [ebp + 0x54]
-// 008a9008  8b3f                 mov edi, dword ptr [edi]
-// 008a900a  50                   push eax
-// 008a900b  8d4c2430             lea ecx, [esp + 0x30]
-// 008a900f  68c862a000           push 0xa062c8
-// 008a9014  51                   push ecx
-// 008a9015  ff1520cb9800         call dword ptr [0x98cb20]
-// 008a901b  8b16                 mov edx, dword ptr [esi]
-// 008a901d  8b5270               mov edx, dword ptr [edx + 0x70]
-// 008a9020  83c40c               add esp, 0xc
-// 008a9023  8d44242c             lea eax, [esp + 0x2c]
-// 008a9027  50                   push eax
-// 008a9028  8bce                 mov ecx, esi
-// 008a902a  ffd2                 call edx
-// 008a902c  8bd8                 mov ebx, eax
-// 008a902e  895c2420             mov dword ptr [esp + 0x20], ebx
-// 008a9032  8b4520               mov eax, dword ptr [ebp + 0x20]
-// 008a9035  8b5040               mov edx, dword ptr [eax + 0x40]
-// 008a9038  8d4d20               lea ecx, [ebp + 0x20]
-// 008a903b  53                   push ebx
-// 008a903c  c684243c01000003     mov byte ptr [esp + 0x13c], 3
-// 008a9044  ffd2                 call edx
-// 008a9046  c684243801000000     mov byte ptr [esp + 0x138], 0
-// 008a904e  85db                 test ebx, ebx
-// 008a9050  7407                 je 0x8a9059
-// 008a9052  8bcb                 mov ecx, ebx
-// 008a9054  e883adf4ff           call 0x7f3ddc
-// 008a9059  85ff                 test edi, edi
-// 008a905b  75a3                 jne 0x8a9000
-// 008a905d  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008a9061  8b6848               mov ebp, dword ptr [eax + 0x48]
-// 008a9064  85ed                 test ebp, ebp
-// 008a9066  746a                 je 0x8a90d2
-// 008a9068  eb06                 jmp 0x8a9070
-// 008a906a  8d9b00000000         lea ebx, [ebx]
-// 008a9070  8bc5                 mov eax, ebp
-// 008a9072  8b7808               mov edi, dword ptr [eax + 8]
-// 008a9075  837f1800             cmp dword ptr [edi + 0x18], 0
-// 008a9079  8b6d00               mov ebp, dword ptr [ebp]
-// 008a907c  7450                 je 0x8a90ce
-// 008a907e  8b4f34               mov ecx, dword ptr [edi + 0x34]
-// 008a9081  51                   push ecx
-// 008a9082  8d542430             lea edx, [esp + 0x30]
-// 008a9086  68c862a000           push 0xa062c8
-// 008a908b  52                   push edx
-// 008a908c  ff1520cb9800         call dword ptr [0x98cb20]
-// 008a9092  8b06                 mov eax, dword ptr [esi]
-// 008a9094  8b5070               mov edx, dword ptr [eax + 0x70]
-// 008a9097  83c40c               add esp, 0xc
-// 008a909a  8d4c242c             lea ecx, [esp + 0x2c]
-// 008a909e  51                   push ecx
-// 008a909f  8bce                 mov ecx, esi
-// 008a90a1  ffd2                 call edx
-// 008a90a3  8bd8                 mov ebx, eax
-// 008a90a5  895c2420             mov dword ptr [esp + 0x20], ebx
-// 008a90a9  8b07                 mov eax, dword ptr [edi]
-// 008a90ab  8b5040               mov edx, dword ptr [eax + 0x40]
-// 008a90ae  53                   push ebx
-// 008a90af  8bcf                 mov ecx, edi
-// 008a90b1  c684243c01000004     mov byte ptr [esp + 0x13c], 4
-// 008a90b9  ffd2                 call edx
-// 008a90bb  c684243801000000     mov byte ptr [esp + 0x138], 0
-// 008a90c3  85db                 test ebx, ebx
-// 008a90c5  7407                 je 0x8a90ce
-// 008a90c7  8bcb                 mov ecx, ebx
-// 008a90c9  e80eadf4ff           call 0x7f3ddc
-// 008a90ce  85ed                 test ebp, ebp
-// 008a90d0  759e                 jne 0x8a9070
-// 008a90d2  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 008a90d6  8b4720               mov eax, dword ptr [edi + 0x20]
-// 008a90d9  8b742424             mov esi, dword ptr [esp + 0x24]
-// 008a90dd  83c054               add eax, 0x54
-// 008a90e0  50                   push eax
-// 008a90e1  68a463a000           push 0xa063a4
-// 008a90e6  56                   push esi
-// 008a90e7  e8e478faff           call 0x8509d0
-// 008a90ec  8b4f24               mov ecx, dword ptr [edi + 0x24]
-// 008a90ef  83c134               add ecx, 0x34
-// 008a90f2  51                   push ecx
-// 008a90f3  689c63a000           push 0xa0639c
-// 008a90f8  56                   push esi
-// 008a90f9  e8d278faff           call 0x8509d0
-// 008a90fe  83c418               add esp, 0x18
-// 008a9101  c7842438010000ffffffff mov dword ptr [esp + 0x138], 0xffffffff
-// 008a910c  85f6                 test esi, esi
-// 008a910e  7407                 je 0x8a9117
-// 008a9110  8bce                 mov ecx, esi
-// 008a9112  e8c5acf4ff           call 0x7f3ddc
-// 008a9117  8b8c2430010000       mov ecx, dword ptr [esp + 0x130]
-// 008a911e  64890d00000000       mov dword ptr fs:[0], ecx
-// 008a9125  59                   pop ecx
-// 008a9126  5f                   pop edi
-// 008a9127  5e                   pop esi
-// 008a9128  5d                   pop ebp
-// 008a9129  5b                   pop ebx
-// 008a912a  8b8c2418010000       mov ecx, dword ptr [esp + 0x118]
-// 008a9131  33cc                 xor ecx, esp
-// 008a9133  e862c2f4ff           call 0x7f539a
-// 008a9138  81c428010000         add esp, 0x128
-// 008a913e  c20400               ret 4
-// copied from an identical function in another client (function ?_Save@CXTPDockingPaneLayout@@AAEXPAVCXTPPropExchange@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneLayout.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockingPaneLayout.cpp : implementation of the CXTPDockingPaneLayout class.
+//
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "TabManager/XTPTabManager.h"
+#include "Common/XTPPropExchange.h"
+
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPaneBase.h"
+#include "XTPDockingPaneSplitterContainer.h"
+#include "XTPDockingPaneTabbedContainer.h"
+#include "XTPDockingPane.h"
+#include "XTPDockingPaneMiniWnd.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneAutoHidePanel.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+AFX_STATIC_DATA const TCHAR _xtRootSection[] = _T("DockingPaneLayouts");
+AFX_STATIC_DATA const TCHAR _xtPaneSection[] = _T("Pane-%d");
+AFX_STATIC_DATA const TCHAR _xtPanes[] = _T("Panes");
+AFX_STATIC_DATA const TCHAR _xtSummary[] = _T("Summary");
+
+CXTPDockingPaneLayout::CXTPDockingPaneLayout(CXTPDockingPaneManager* pManager)
+	: m_pManager(pManager)
+{
+	m_bUserLayout = TRUE;
+
+	memset(m_wndPanels, 0, sizeof(m_wndPanels));
+	memset(m_wndMargins, 0, sizeof(m_wndMargins));
+
+	m_pClient = m_pManager->OnCreatePane(xtpPaneTypeClient, this);
+	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)m_pManager->OnCreatePane(xtpPaneTypeSplitterContainer, this);
+	m_pTopContainer->Init(m_pClient, TRUE, m_pManager->GetSite());
+
+}
+
+CXTPDockingPaneLayout::~CXTPDockingPaneLayout()
+{
+	Free();
+}
+
+BOOL CXTPDockingPaneLayout::IsValid() const
+{
+	return (m_pTopContainer != NULL) && (m_pClient != NULL)
+		&& (m_pClient->GetType() == xtpPaneTypeClient) && (m_pManager != NULL);
+}
+
+void CXTPDockingPaneLayout::Free()
+{
+	m_pTopContainer = 0;
+	m_pClient = 0;
+
+	while (!m_lstStack.IsEmpty())
+	{
+		CXTPDockingPaneBase* pPane = m_lstStack.RemoveTail();
+		pPane->DeletePane();
+	}
+
+	m_lstPanes.RemoveAll();
+
+	memset(m_wndPanels, 0, sizeof(m_wndPanels));
+
+	for (int i = 0; i < 4; i++)
+	{
+		SAFE_DELETE(m_wndMargins[i]);
+	}
+}
+
+BOOL CXTPDockingPaneLayout::_Load(CXTPPropExchange* pPX)
+{
+	if (!pPX->OnBeforeExchange())
+		return FALSE;
+
+	ASSERT(pPX->IsLoading());
+
+	Free();
+
+	CXTPPropExchangeSection secSummary(pPX->GetSection(_xtSummary));
+
+	int nCount = 0;
+	PX_Int(&secSummary, _xtPanes, nCount);
+
+	if (nCount < 2)
+		return FALSE;
+
+	secSummary->ExchangeSchema();
+
+
+	TCHAR szSection[256];
+	CXTPPaneIndexToPaneMap map;
+
+	for (int i = 1; i <= nCount; i++)
+	{
+		wsprintf(szSection, _xtPaneSection, i);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+
+		int nType = -1;
+		PX_Int(&secPane, _T("Type"), nType, -1);
+
+		CXTPDockingPaneBase* pPane = m_pManager->OnCreatePane((XTPDockingPaneType)nType, this);
+
+		if (!pPane)
+		{
+			return FALSE;
+		}
+		pPane->m_nIndex = i;
+		map.SetAt(i, pPane);
+	}
+
+	ASSERT(map.GetCount() == m_lstStack.GetCount());
+
+	POSITION pos = m_lstStack.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = m_lstStack.GetNext(pos);
+
+		wsprintf(szSection, _xtPaneSection, pPane->m_nIndex);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+		secPane->m_dwData = (DWORD_PTR)&map;
+
+		if (!pPane->DoPropExchange(&secPane))
+		{
+			return FALSE;
+		}
+	}
+
+	int nIndex = 0;
+	if (!PX_Int(&secSummary, _T("TopContainer"), nIndex))
+		return FALSE;
+
+	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)map[nIndex];
+	if (!m_pTopContainer)
+		return FALSE;
+
+	if (!PX_Int(&secSummary, _T("Client"), nIndex))
+		return FALSE;
+
+	m_pClient = (CXTPDockingPaneBase*)map[nIndex];
+	if (!m_pClient || m_pClient->GetType() != xtpPaneTypeClient)
+		return FALSE;
+
+	return TRUE;
+
+}
+
+// The main difference between the .Net versions and the normal versions of _Save is that in the .Net
+// versions all the save is done is done in the exact same order of the load.
+
+void CXTPDockingPaneLayout::_Save(CXTPPropExchange* pPX)
+{
+	ASSERT(!pPX->IsLoading());
+
+	pPX->EmptySection();
+
+	_FreeEmptyPanes();
+
+	CXTPPropExchangeSection secSummary(pPX->GetSection(_xtSummary));
+
+	int nCount = (int)m_lstStack.GetCount();
+	PX_Int(&secSummary, _xtPanes, nCount);
+
+	secSummary->ExchangeSchema();
+
+
+	TCHAR szSection[256];
+
+	// Assign an unique value to each pane
+	int nIndex = 1;  // important
+
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPane* pPane = m_lstPanes.GetNext(pos);
+		pPane->m_nIndex = nIndex++;
+
+		wsprintf(szSection, _xtPaneSection, pPane->m_nIndex);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+		int nType = pPane->m_type;
+		PX_Int(&secPane, _T("Type"), nType);
+	}
+
+	pos = m_lstStack.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = m_lstStack.GetNext(pos);
+		if (pPane->GetType() == xtpPaneTypeDockingPane) continue;
+		pPane->m_nIndex = nIndex++;
+
+		wsprintf(szSection, _xtPaneSection, pPane->m_nIndex);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+		int nType = pPane->m_type;
+		PX_Int(&secPane, _T("Type"), nType);
+	}
+
+	pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPane* pPane = m_lstPanes.GetNext(pos);
+		wsprintf(szSection, _xtPaneSection, pPane->m_nIndex);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+		pPane->DoPropExchange(&secPane);
+	}
+
+	// Save all panes
+	pos = m_lstStack.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = m_lstStack.GetNext(pos);
+		if (pPane->GetType() == xtpPaneTypeDockingPane) continue;
+		wsprintf(szSection, _xtPaneSection, pPane->m_nIndex);
+
+		CXTPPropExchangeSection secPane(pPX->GetSection(szSection));
+		pPane->DoPropExchange(&secPane);
+	}
+
+	PX_Int(&secSummary, _T("TopContainer"), m_pTopContainer->m_nIndex);
+	PX_Int(&secSummary, _T("Client"), m_pClient->m_nIndex);
+
+}
+
+
+BOOL CXTPDockingPaneLayout::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsLoading())
+		return _Load(pPX);
+
+	_Save(pPX);
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneLayout::Load(LPCTSTR strSection)
+{
+	CXTPPropExchangeSection pxRoot(TRUE, _xtRootSection);
+	CXTPPropExchangeSection pxSection(pxRoot->GetSection(strSection));
+
+	return DoPropExchange(&pxSection);
+}
+
+void CXTPDockingPaneLayout::Save(LPCTSTR strSection)
+{
+	CXTPPropExchangeSection pxRoot(FALSE, _xtRootSection);
+	CXTPPropExchangeSection pxSection(pxRoot->GetSection(strSection));
+
+	DoPropExchange(&pxSection);
+}
+
+void CXTPDockingPaneLayout::Serialize(CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(&px);
+}
+
+
+#ifndef _XTP_EXCLUDE_XML
+
+BOOL CXTPDockingPaneLayout::LoadFromNode(CXTPDOMNodePtr xmlNode, LPCTSTR strSection)
+{
+	if (xmlNode == 0)
+		return FALSE;
+
+	CXTPPropExchangeXMLNode px(TRUE, xmlNode, strSection);
+	return DoPropExchange(&px);
+}
+
+BOOL CXTPDockingPaneLayout::LoadFromFile(LPCTSTR strFileName, LPCTSTR strSection)
+{
+	CXTPPropExchangeXMLNode px(TRUE, 0, _xtRootSection);
+	if (!px.LoadFromFile(strFileName))
+		return FALSE;
+
+	CXTPPropExchangeSection pxSection(px.GetSection(strSection));
+	if (!pxSection->OnBeforeExchange())
+		return FALSE;
+
+	return DoPropExchange(&pxSection);
+}
+
+void CXTPDockingPaneLayout::SaveToNode (CXTPDOMNodePtr xmlNode, LPCTSTR strSection)
+{
+	if (xmlNode == 0)
+		return;
+
+	CXTPPropExchangeXMLNode px(FALSE, xmlNode, strSection);
+	DoPropExchange(&px);
+}
+
+void CXTPDockingPaneLayout::SaveToFile (LPCTSTR strFileName, LPCTSTR strSection)
+{
+	CXTPPropExchangeXMLNode px(FALSE, 0, _xtRootSection);
+
+	CXTPPropExchangeSection pxSection(px.GetSection(strSection));
+	DoPropExchange(&pxSection);
+
+	px.SaveToFile(strFileName);
+}
+
+#endif
+
+
+
+BOOL CXTPDockingPaneBase::DoPropExchange(CXTPPropExchange* pPX)
+{
+	PX_Long(pPX, _T("DockingCX"), m_szDocking.cx, 0);
+	PX_Long(pPX, _T("DockingCY"), m_szDocking.cy, 0);
+
+	return TRUE;
+}
+
+BOOL CXTPDockingPane::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPDockingPaneBase::DoPropExchange(pPX);
+
+	PX_String(pPX, _T("Title"), m_strTitle);
+	PX_Int(pPX, _T("ID"), m_nID, 0);
+
+	PX_Int(pPX, _T("IconID"), m_nIconID, -1);
+	PX_ULong(pPX, _T("Options"), m_dwOptions, 0);
+
+	int nIndex = 0;
+	CXTPPaneIndexToPaneMap* pMap = (CXTPPaneIndexToPaneMap*)pPX->m_dwData;
+
+	if (!pPX->IsLoading())
+	{
+		XTP_DOCKINGPANE_INFO* pInfo = m_pLayout->FindPane(this);
+		ASSERT(pInfo);
+		if (pInfo)
+		{
+
+			nIndex = pInfo->pDockingHolder ? pInfo->pDockingHolder->m_nIndex : 0;
+			PX_Int(pPX, _T("DockingHolder"), nIndex, 0);
+			nIndex = pInfo->pFloatingHolder ? pInfo->pFloatingHolder->m_nIndex : 0;
+			PX_Int(pPX, _T("FloatingHolder"), nIndex, 0);
+			nIndex = pInfo->pLastHolder ? pInfo->pLastHolder->m_nIndex : 0;
+			PX_Int(pPX, _T("LastHolder"), nIndex, 0);
+		}
+	}
+	else
+	{
+		XTP_DOCKINGPANE_INFO info (this);
+
+		PX_Int(pPX, _T("DockingHolder"), nIndex, 0);
+		if (nIndex) info.pDockingHolder = (CXTPDockingPaneBase*)(*pMap)[nIndex];
+		PX_Int(pPX, _T("FloatingHolder"), nIndex, 0);
+		if (nIndex) info.pFloatingHolder = (CXTPDockingPaneBase*)(*pMap)[nIndex];
+		PX_Int(pPX, _T("LastHolder"), nIndex, 0);
+		if (nIndex) info.pLastHolder = (CXTPDockingPaneBase*)(*pMap)[nIndex];
+		m_pLayout->m_lstPanes.AddTail(info);
+
+	}
+
+	PX_Long(pPX, _T("MinTrackX"), m_ptMinTrackSize.x, 0);
+	PX_Long(pPX, _T("MinTrackY"), m_ptMinTrackSize.y, 0);
+	PX_Long(pPX, _T("MaxTrackX"), m_ptMaxTrackSize.x, 32000);
+	PX_Long(pPX, _T("MaxTrackY"), m_ptMaxTrackSize.y, 32000);
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_97)
+	{
+		PX_DWord(pPX, _T("TabColor"), (DWORD&)m_clrItemTab, COLORREF_NULL);
+		PX_Int(pPX, _T("HelpId"), m_nIDHelp, 0);
+
+		DWORD dwData = (DWORD)m_dwData;
+		PX_DWord(pPX, _T("Tag"), dwData, 0);
+		if (pPX->IsLoading()) m_dwData = dwData;
+	}
+
+	return m_nID > 0;
+}
+
+BOOL CXTPDockingPaneSplitterContainer::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPDockingPaneBase::DoPropExchange(pPX);
+
+	PX_Bool(pPX, _T("Horiz"), m_bHoriz, FALSE);
+
+	int nCount = 0;
+
+	if (!pPX->IsLoading())
+	{
+		nCount = (int)m_lstPanes.GetCount();
+		PX_Int(pPX, _xtPanes, nCount);
+
+		int nIndex = 1;
+		TCHAR szPane[256];
+		POSITION pos = m_lstPanes.GetHeadPosition();
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
+			wsprintf(szPane, _xtPaneSection, nIndex++);
+
+			PX_Int(pPX, szPane, pPane->m_nIndex);
+		}
+	}
+	else
+	{
+		PX_Int(pPX, _xtPanes, nCount, 0);
+
+		int nIndex = 0;
+		TCHAR szPane[256];
+		CXTPPaneIndexToPaneMap* pMap = (CXTPPaneIndexToPaneMap*)pPX->m_dwData;
+
+		for (int i = 1; i <= nCount; i++)
+		{
+			wsprintf(szPane, _xtPaneSection, i);
+			PX_Int(pPX, szPane, nIndex, 0);
+			ASSERT(nIndex > 0);
+
+			CXTPDockingPaneBase* pPane = NULL;
+			ASSERT(pMap->Lookup(nIndex, pPane));
+
+			pPane = (CXTPDockingPaneBase*)((*pMap)[nIndex]);
+			if (!pPane) return FALSE;
+
+			_InsertPane(pPane);
+		}
+
+		ASSERT(nCount > 0);
+
+	}
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneAutoHidePanel::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPDockingPaneBase::DoPropExchange(pPX);
+
+	int direction = m_direction;
+	PX_Int(pPX, _T("Direction"), direction);
+
+	int nCount = 0;
+
+	if (!pPX->IsLoading())
+	{
+		nCount = (int)m_lstPanes.GetCount();
+		PX_Int(pPX, _xtPanes, nCount);
+
+		int nIndex = 1;
+		TCHAR szPane[256];
+		POSITION pos = m_lstPanes.GetHeadPosition();
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
+			wsprintf(szPane, _xtPaneSection, nIndex++);
+			PX_Int(pPX, szPane, pPane->m_nIndex);
+		}
+	}
+	else
+	{
+		m_direction = (XTPDockingPaneDirection)direction;
+
+		PX_Int(pPX, _xtPanes, nCount, 0);
+
+		int nIndex = 0;
+		TCHAR szPane[256];
+		CXTPPaneIndexToPaneMap* pMap = (CXTPPaneIndexToPaneMap*)pPX->m_dwData;
+
+		for (int i = 1; i <= nCount; i++)
+		{
+			wsprintf(szPane, _xtPaneSection, i);
+			PX_Int(pPX, szPane, nIndex, 0);
+			ASSERT(nIndex > 0);
+
+			CXTPDockingPaneBase* pPane = NULL;
+			ASSERT(pMap->Lookup(nIndex, pPane));
+
+			pPane = (CXTPDockingPaneBase*)((*pMap)[nIndex]);
+			if (!pPane) return FALSE;
+
+			_InsertPane(pPane);
+		}
+
+		m_pLayout->m_wndPanels[m_direction] = this;
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneTabbedContainer::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPDockingPaneBase::DoPropExchange(pPX);
+
+	int nCount, nSelected;
+
+	if (!pPX->IsLoading())
+	{
+		nCount = (int)m_lstPanes.GetCount();
+		PX_Int(pPX, _xtPanes, nCount);
+
+		nSelected = m_pSelectedPane ? m_pSelectedPane->m_nIndex : 0;
+		PX_Int(pPX, _T("Selected"), nSelected, 0);
+
+		POSITION pos = m_lstPanes.GetHeadPosition();
+		int nIndex = 1;
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
+
+			TCHAR szPane[256];
+			wsprintf(szPane, _xtPaneSection, nIndex++);
+
+			PX_Int(pPX, szPane, pPane->m_nIndex);
+		}
+
+	}
+	else
+	{
+		PX_Int(pPX, _xtPanes, nCount);
+		PX_Int(pPX, _T("Selected"), nSelected, 0);
+
+		TCHAR szPane[256];
+		CXTPDockingPane* pSelected = NULL;
+		int nIndex = 0;
+		CXTPPaneIndexToPaneMap* pMap = (CXTPPaneIndexToPaneMap*)pPX->m_dwData;
+
+		for (int i = 1; i <= nCount; i++)
+		{
+			wsprintf(szPane, _xtPaneSection, i);
+			PX_Int(pPX, szPane, nIndex, 0);
+			ASSERT(nIndex > 0);
+
+			CXTPDockingPaneBase* pPane = NULL;
+			ASSERT(pMap->Lookup(nIndex, pPane));
+
+			pPane = (CXTPDockingPaneBase*)((*pMap)[nIndex]);
+
+			if (!pPane || pPane->GetType() != xtpPaneTypeDockingPane) return FALSE;
+
+			_InsertPane((CXTPDockingPane*)pPane);
+
+			if (nIndex == nSelected) pSelected = (CXTPDockingPane*)pPane;
+		}
+
+		if (pSelected)
+		{
+			SelectPane(pSelected);
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPDockingPaneMiniWnd::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPDockingPaneBase::DoPropExchange(pPX);
+
+	PX_Long(pPX, _T("WindowRectTopPos"), m_rcWindow.top);
+	PX_Long(pPX, _T("WindowRectBottomPos"), m_rcWindow.bottom);
+	PX_Long(pPX, _T("WindowRectLeftPos"), m_rcWindow.left);
+	PX_Long(pPX, _T("WindowRectRightPos"), m_rcWindow.right);
+	PX_Bool(pPX, _T("Collapsed"), m_bCollapsed, FALSE);
+	PX_Int(pPX, _T("ExpandedHeight"), m_nExpandedHeight, 0);
+
+	if (!pPX->IsLoading())
+	{
+		int nTopContainer = m_pTopContainer ? m_pTopContainer->m_nIndex : 0;
+		PX_Int(pPX, _T("TopContaner"), nTopContainer);
+	}
+	else
+	{
+		int nTopContainer = 0;
+		PX_Int(pPX, _T("TopContaner"), nTopContainer);
+
+		if (nTopContainer == 0)
+			return FALSE;
+
+		CXTPPaneIndexToPaneMap* pMap = (CXTPPaneIndexToPaneMap*)pPX->m_dwData;
+
+		CXTPDockingPaneBase* pTop = (CXTPDockingPaneBase*)(*pMap)[nTopContainer];
+		if (!pTop || pTop->GetType() != xtpPaneTypeSplitterContainer)
+			return FALSE;
+
+		m_pTopContainer = (CXTPDockingPaneSplitterContainer*)pTop;
+		m_pTopContainer->m_pParentContainer = this;
+
+	}
+
+	return TRUE;
+}
+
+void CXTPDockingPaneLayout::Copy(const CXTPDockingPaneLayout* pLayout)
+{
+	Free();
+
+	CXTPPaneToPaneMap map;
+
+	// Clone them
+	POSITION pos = pLayout->m_lstStack.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = pLayout->m_lstStack.GetNext(pos);
+		if (pPane->m_pParentContainer == NULL) // hidden pane, top pane, miniwnd.
+		{
+			pPane->Clone(this, &map);
+		}
+	}
+
+	ASSERT(map.GetCount() == pLayout->m_lstStack.GetCount());
+	ASSERT(map.Lookup(pLayout->m_pClient, m_pClient));
+	ASSERT(map.Lookup(pLayout->m_pTopContainer, (CXTPDockingPaneBase*&)m_pTopContainer));
+
+	m_pClient = map[pLayout->m_pClient];
+	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)map[pLayout->m_pTopContainer];
+
+	for (int i = 0; i < 4; i++)
+		if (pLayout->m_wndPanels[i]) m_wndPanels[i] = (CXTPDockingPaneAutoHidePanel*)map[pLayout->m_wndPanels[i]];
+
+	// Map Holders
+	pos = pLayout->m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		XTP_DOCKINGPANE_INFO& info = pLayout->GetPaneList().GetNext(pos);
+		XTP_DOCKINGPANE_INFO infoCopy;
+		ASSERT(map.Lookup((CXTPDockingPaneBase*)info.pPane, (CXTPDockingPaneBase*&)infoCopy.pPane));
+
+		infoCopy.pPane = (CXTPDockingPane*)map[(CXTPDockingPaneBase*)info.pPane];
+
+		if (info.pDockingHolder) infoCopy.pDockingHolder = (CXTPDockingPaneBase*)map[info.pDockingHolder];
+		if (info.pLastHolder) infoCopy.pLastHolder = (CXTPDockingPaneBase*)map[info.pLastHolder];
+		if (info.pFloatingHolder) infoCopy.pFloatingHolder = (CXTPDockingPaneBase*)map[info.pFloatingHolder];
+
+		m_lstPanes.AddTail(infoCopy);
+	}
+}
+
+void CXTPDockingPaneLayout::_FreeEmptyPanes()
+{
+
+	WORD w;
+	CMapPtrToWord map;
+
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		XTP_DOCKINGPANE_INFO& info = m_lstPanes.GetNext(pos);
+		map.SetAt(info.pDockingHolder, TRUE);
+		map.SetAt(info.pFloatingHolder, TRUE);
+		map.SetAt(info.pPane->m_pParentContainer, TRUE);
+	}
+
+	BOOL bFound = TRUE;
+
+	while (bFound)
+	{
+		bFound = FALSE;
+
+		POSITION posRemove = pos = m_lstStack.GetHeadPosition();
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = m_lstStack.GetNext(pos);
+			CXTPDockingPaneBase* pParentContainer = pPane->m_pParentContainer;
+
+			switch (pPane->GetType())
+			{
+			case xtpPaneTypeTabbedContainer:
+				if (!map.Lookup(pPane, w))
+				{
+
+					SAFE_CALLPTR(pParentContainer, RemovePane(pPane));
+
+					m_lstStack.RemoveAt(posRemove);
+					pPane->DeletePane();
+					bFound = TRUE;
+				}
+				break;
+
+			case xtpPaneTypeSplitterContainer:
+				if (((CXTPDockingPaneSplitterContainer*)pPane)->m_lstPanes.GetCount() == 0)
+				{
+					SAFE_CALLPTR(pParentContainer, RemovePane(pPane));
+
+					m_lstStack.RemoveAt(posRemove);
+					pPane->DeletePane();
+					bFound = TRUE;
+				}
+				else if (pParentContainer && (pParentContainer->GetType() == xtpPaneTypeSplitterContainer)
+					&& (((CXTPDockingPaneSplitterContainer*)pPane)->m_lstPanes.GetCount() == 1)
+					&& (((CXTPDockingPaneSplitterContainer*)pParentContainer)->m_lstPanes.GetCount() == 1))
+				{
+					CXTPDockingPaneBase* pChildPane = ((CXTPDockingPaneSplitterContainer*)pPane)->m_lstPanes.RemoveHead();
+					((CXTPDockingPaneSplitterContainer*)pParentContainer)->m_lstPanes.RemoveHead();
+					((CXTPDockingPaneSplitterContainer*)pParentContainer)->m_lstPanes.AddHead(pChildPane);
+					pChildPane->m_pParentContainer = pParentContainer;
+
+					m_lstStack.RemoveAt(posRemove);
+					pPane->DeletePane();
+					bFound = TRUE;
+
+				}
+				break;
+
+			case xtpPaneTypeMiniWnd:
+				if (((CXTPDockingPaneMiniWnd*)pPane)->m_pTopContainer == NULL)
+				{
+					m_lstStack.RemoveAt(posRemove);
+					pPane->DeletePane();
+					bFound = TRUE;
+				}
+				break;
+			}
+			posRemove = pos;
+		}
+	}
+
+}
+
+
+XTP_DOCKINGPANE_INFO* CXTPDockingPaneLayout::FindPane(CXTPDockingPane* pPane)
+{
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		XTP_DOCKINGPANE_INFO& info = m_lstPanes.GetNext(pos);
+
+		if (info.pPane == pPane)
+			return &info;
+	}
+	return 0;
+}
+
+XTPDockingPaneDirection CXTPDockingPaneLayout::_GetPaneDirection(const CXTPDockingPaneBase* pPane) const
+{
+	if (pPane->GetType() == xtpPaneTypeMiniWnd)
+		return (XTPDockingPaneDirection)4;
+
+	if (!pPane->m_pParentContainer || pPane->GetType() == xtpPaneTypeClient)
+		return (XTPDockingPaneDirection)-1;
+
+	if (pPane->m_pParentContainer->GetType() == xtpPaneTypeAutoHidePanel)
+	{
+		return ((CXTPDockingPaneAutoHidePanel*)pPane->m_pParentContainer)->m_direction;
+	}
+
+	if (pPane->m_pParentContainer->GetType() == xtpPaneTypeSplitterContainer)
+	{
+		POSITION pos = pPane->m_pParentContainer->ContainPane(m_pClient);
+		if (pos)
+		{
+			CXTPDockingPaneSplitterContainer* pSplitter = (CXTPDockingPaneSplitterContainer*)pPane->m_pParentContainer;
+
+			if (pSplitter->_Before(pPane, pos))
+			{
+				return  pSplitter->IsHoriz() ? xtpPaneDockLeft : xtpPaneDockTop;
+
+			}
+			else
+			{
+				return  pSplitter->IsHoriz() ? xtpPaneDockRight : xtpPaneDockBottom;
+			}
+		}
+	}
+	return _GetPaneDirection(pPane->m_pParentContainer);
+}
+
+void CXTPDockingPaneLayout::_AddPanesTo(CXTPDockingPaneTabbedContainer* pContainer, CXTPDockingPaneBaseList& lst, DWORD dwIgnoredOptions)
+{
+	POSITION pos = lst.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPane* pPane = (CXTPDockingPane*)lst.GetNext(pos);
+
+		if ((((CXTPDockingPane*)pPane)->GetOptions() & dwIgnoredOptions) == 0)
+		{
+			SAFE_CALLPTR(pPane->m_pParentContainer, RemovePane(pPane));
+			pContainer->_InsertPane(pPane);
+		}
+	}
+}
+
+BOOL CXTPDockingPaneLayout::_FindTabbedPaneToHide(CXTPDockingPaneAutoHidePanel* pPanel, CXTPDockingPaneBase* pPane)
+{
+	CXTPDockingPaneBaseList lst;
+	pPane->FindPane(xtpPaneTypeDockingPane, &lst);
+
+	if (lst.IsEmpty())
+		return FALSE;
+
+	CXTPDockingPane* pPanePrimary = (CXTPDockingPane*)lst.GetHead();
+	XTP_DOCKINGPANE_INFO* pInfo = FindPane(pPanePrimary);
+	if (!pInfo || pInfo->pDockingHolder == NULL)
+		return FALSE;
+
+	POSITION pos = pPanel->m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)pPanel->m_lstPanes.GetNext(pos);
+		CXTPDockingPane* pContainerPane = (CXTPDockingPane*)pContainer->GetFirstPane();
+		if (pContainerPane)
+		{
+			XTP_DOCKINGPANE_INFO* pContanerPaneInfo = FindPane(pContainerPane);
+
+			if (pContanerPaneInfo && pContanerPaneInfo->pDockingHolder == pInfo->pDockingHolder)
+			{
+				_AddPanesTo(pContainer, lst, xtpPaneNoHideable);
+				return TRUE;
+			}
+		}
+	}
+
+
+
+	return FALSE;
+}
+
+void CXTPDockingPaneLayout::HidePane(CXTPDockingPaneBase* pPane)
+{
+	ASSERT(!m_bUserLayout);
+
+	XTPDockingPaneDirection direction = _GetPaneDirection(pPane);
+	if (direction < 0 || direction >= 4)
+		direction = xtpPaneDockLeft;
+
+	if (m_wndPanels[direction] == 0)
+	{
+		m_wndPanels[direction] = (CXTPDockingPaneAutoHidePanel*)m_pManager->
+			OnCreatePane(xtpPaneTypeAutoHidePanel, this);
+		m_wndPanels[direction]->m_direction = direction;
+	}
+
+	if (_FindTabbedPaneToHide(m_wndPanels[direction], pPane))
+		return;
+
+	if (pPane->GetType() == xtpPaneTypeDockingPane)
+	{
+		pPane->m_pParentContainer->RemovePane(pPane);
+
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)m_pManager->
+			OnCreatePane(xtpPaneTypeTabbedContainer, this);
+		pContainer->Init((CXTPDockingPane*)pPane, m_pManager->GetSite());
+
+		pPane = pContainer;
+
+	}
+	else if (pPane->GetType() == xtpPaneTypeTabbedContainer)
+	{
+		pPane = ((CXTPDockingPaneBase*)pPane)->Clone(this, 0, xtpPaneNoHideable);
+	}
+
+	m_wndPanels[direction]->_InsertPane(pPane);
+}
+
+void CXTPDockingPaneLayout::RepositionMargins(CRect& rect, const CRect& rcClientMargins)
+{
+	int i;
+
+	if (rcClientMargins.IsRectNull())
+	{
+		for (i = 0; i < 4; i++)
+		{
+			SAFE_DELETE(m_wndMargins[i]);
+		}
+		return;
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		if (m_wndMargins[i] == 0)
+		{
+			m_wndMargins[i] = new CXTPDockingPaneSplitterWnd();
+			m_wndMargins[i]->Create(m_pManager, i == xtpPaneDockTop || i == xtpPaneDockBottom);
+		}
+	}
+
+	CRect rcClient(rect);
+	rcClient.DeflateRect(rcClientMargins);
+
+	m_wndMargins[xtpPaneDockLeft]->MoveWindow(CRect(rect.left, rect.top, rcClient.left, rect.bottom));
+	m_wndMargins[xtpPaneDockRight]->MoveWindow(CRect(rcClient.right , rect.top, rect.right, rect.bottom));
+	m_wndMargins[xtpPaneDockTop]->MoveWindow(CRect(rcClient.left, rect.top, rcClient.right, rcClient.top));
+	m_wndMargins[xtpPaneDockBottom]->MoveWindow(CRect(rcClient.left, rcClient.bottom, rcClient.right, rect.bottom));
+
+	for (i = 0; i < 4; i++)
+	{
+		m_wndMargins[i]->Invalidate(FALSE);
+	}
+
+	rect = rcClient;
+}
+
+void CXTPDockingPaneLayout::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	for (int i = 0; i < 4; i++)
+	{
+		SAFE_CALLPTR(m_wndPanels[i], OnSizeParentEx(pParent, rect, lParam));
+	}
+
+	int nMargin = m_pManager->GetClientMargin();
+	CRect rcClientMargins(nMargin, nMargin, nMargin, nMargin);
+
+	if (lpLayout->hDWP != NULL)
+	{
+		RepositionMargins(rect, rcClientMargins);
+	}
+	else
+	{
+		rect.DeflateRect(rcClientMargins);
+	}
+
+	m_pClient->OnSizeParent(pParent, rect, lParam);
+	m_pTopContainer->OnSizeParent(pParent, rect, lParam);
+}
+
+
+void CXTPDockingPaneLayout::DestroyPane(CXTPDockingPane* pPane)
+{
+	if (pPane == NULL) return;
+
+	SAFE_CALLPTR(pPane->m_pParentContainer, RemovePane(pPane));
+
+	POSITION pos = m_lstPanes.GetHeadPosition();
+	while (pos)
+	{
+		if (m_lstPanes.GetAt(pos) == pPane)
+		{
+			m_lstPanes.RemoveAt(pos);
+			break;
+		}
+		m_lstPanes.GetNext(pos);
+	}
+
+	pos = m_lstStack.GetHeadPosition();
+	while (pos)
+	{
+		if (m_lstStack.GetAt(pos) == pPane)
+		{
+			m_lstStack.RemoveAt(pos);
+			break;
+		}
+		m_lstStack.GetNext(pos);
+	}
+	((CXTPDockingPane*)pPane)->InternalRelease();
+	_FreeEmptyPanes();
+
+}
+
+

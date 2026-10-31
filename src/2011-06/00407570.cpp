@@ -1,57 +1,38 @@
+// roc 2011-06 00407570  unit: VCApp::?$CComObject  size: 63 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00407570
+//
+// 00407570  8b442404             mov eax, dword ptr [esp + 4]
+// 00407574  56                   push esi
+// 00407575  57                   push edi
+// 00407576  85c0                 test eax, eax
+// 00407578  7405                 je 0x40757f
+// 0040757a  8d70f4               lea esi, [eax - 0xc]
+// 0040757d  eb02                 jmp 0x407581
+// 0040757f  33f6                 xor esi, esi
+// 00407581  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 00407585  397e10               cmp dword ptr [esi + 0x10], edi
+// 00407588  741e                 je 0x4075a8
+// 0040758a  85ff                 test edi, edi
+// 0040758c  7408                 je 0x407596
+// 0040758e  8b07                 mov eax, dword ptr [edi]
+// 00407590  8b4804               mov ecx, dword ptr [eax + 4]
+// 00407593  57                   push edi
+// 00407594  ffd1                 call ecx
+// 00407596  8b4610               mov eax, dword ptr [esi + 0x10]
+// 00407599  85c0                 test eax, eax
+// 0040759b  7408                 je 0x4075a5
+// 0040759d  8b10                 mov edx, dword ptr [eax]
+// 0040759f  50                   push eax
+// 004075a0  8b4208               mov eax, dword ptr [edx + 8]
+// 004075a3  ffd0                 call eax
+// 004075a5  897e10               mov dword ptr [esi + 0x10], edi
+// 004075a8  5f                   pop edi
+// 004075a9  33c0                 xor eax, eax
+// 004075ab  5e                   pop esi
+// 004075ac  c20800               ret 8
+// copied from an identical function in another client (function ?SetSite@?$IObjectWithSiteImpl@VCApp@@@ATL@@UAGJPAUIUnknown@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: atl-9.0-dll-rtm roc_espclaude_13551b6034a59a28.cpp
-
-// Candidate translation unit (score above; library headers required).
-#ifndef _CPPUNWIND
-#define _CPPUNWIND 1
-#endif
-#ifndef _AFXDLL
-#define _AFXDLL
-#endif
-#include <new>
-#include <afxwin.h>
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
-
-extern "C" const IID IID_IApp;
-extern "C" const CLSID CLSID_App;
-extern "C" const GUID LIBID_RobloxLib;
-
-MIDL_INTERFACE("00000000-0000-0000-0000-000000000001")
-IApp : public IDispatch
-{
-public:
-};
-
-template <class T, DWORD dwSupportedSafety>
-class IObjectSafetyRobloxImpl : public IObjectSafety
-{
-public:
-    IObjectSafetyRobloxImpl() : m_dwCurrentSafety(0) {}
-    STDMETHOD(GetInterfaceSafetyOptions)(REFIID riid, DWORD* pdwSupportedOptions, DWORD* pdwEnabledOptions);
-    STDMETHOD(SetInterfaceSafetyOptions)(REFIID riid, DWORD dwOptionSetMask, DWORD dwEnabledOptions);
-    DWORD m_dwCurrentSafety;
-};
-
-class ATL_NO_VTABLE CApp :
-    public CComObjectRootEx<CComSingleThreadModel>,
-    public CComCoClass<CApp, &CLSID_App>,
-    public ISupportErrorInfoImpl<&IID_IApp>,
-    public IObjectSafetyRobloxImpl<CApp, 1>,
-    public IObjectWithSiteImpl<CApp>,
-    public IDispatchImpl<IApp, &IID_IApp, &LIBID_RobloxLib, 1, 2>
-{
-public:
-    BEGIN_COM_MAP(CApp)
-        COM_INTERFACE_ENTRY(IApp)
-        COM_INTERFACE_ENTRY(IDispatch)
-        COM_INTERFACE_ENTRY(ISupportErrorInfo)
-        COM_INTERFACE_ENTRY(IObjectSafety)
-        COM_INTERFACE_ENTRY(IObjectWithSite)
-    END_COM_MAP()
-};
-
-template ATL::CComAggObject<CApp>::CComAggObject(void*);

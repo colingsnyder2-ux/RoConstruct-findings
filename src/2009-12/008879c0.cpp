@@ -1,152 +1,496 @@
-// roc 2009-12 008879c0  unit: XTPPaintThemes::CXTPNativeXPTheme  size: 411 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008879c0
-//
-// 008879c0  83ec28               sub esp, 0x28
-// 008879c3  53                   push ebx
-// 008879c4  55                   push ebp
-// 008879c5  56                   push esi
-// 008879c6  8bf1                 mov esi, ecx
-// 008879c8  57                   push edi
-// 008879c9  89742414             mov dword ptr [esp + 0x14], esi
-// 008879cd  e83ef2ffff           call 0x886c10
-// 008879d2  85c0                 test eax, eax
-// 008879d4  753b                 jne 0x887a11
-// 008879d6  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 008879da  8b542448             mov edx, dword ptr [esp + 0x48]
-// 008879de  83ec10               sub esp, 0x10
-// 008879e1  8bc4                 mov eax, esp
-// 008879e3  8908                 mov dword ptr [eax], ecx
-// 008879e5  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 008879e9  895004               mov dword ptr [eax + 4], edx
-// 008879ec  8b542460             mov edx, dword ptr [esp + 0x60]
-// 008879f0  894808               mov dword ptr [eax + 8], ecx
-// 008879f3  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 008879f7  89500c               mov dword ptr [eax + 0xc], edx
-// 008879fa  8b442450             mov eax, dword ptr [esp + 0x50]
-// 008879fe  50                   push eax
-// 008879ff  51                   push ecx
-// 00887a00  8bce                 mov ecx, esi
-// 00887a02  e8f95fffff           call 0x87da00
-// 00887a07  5f                   pop edi
-// 00887a08  5e                   pop esi
-// 00887a09  5d                   pop ebp
-// 00887a0a  5b                   pop ebx
-// 00887a0b  83c428               add esp, 0x28
-// 00887a0e  c21800               ret 0x18
-// 00887a11  8b742440             mov esi, dword ptr [esp + 0x40]
-// 00887a15  8b16                 mov edx, dword ptr [esi]
-// 00887a17  8b4278               mov eax, dword ptr [edx + 0x78]
-// 00887a1a  8bce                 mov ecx, esi
-// 00887a1c  ffd0                 call eax
-// 00887a1e  8b16                 mov edx, dword ptr [esi]
-// 00887a20  8bf8                 mov edi, eax
-// 00887a22  8b426c               mov eax, dword ptr [edx + 0x6c]
-// 00887a25  8bce                 mov ecx, esi
-// 00887a27  ffd0                 call eax
-// 00887a29  89442410             mov dword ptr [esp + 0x10], eax
-// 00887a2d  8b869c000000         mov eax, dword ptr [esi + 0x9c]
-// 00887a33  83f8ff               cmp eax, -1
-// 00887a36  750f                 jne 0x887a47
-// 00887a38  8b8e5c010000         mov ecx, dword ptr [esi + 0x15c]
-// 00887a3e  85c9                 test ecx, ecx
-// 00887a40  7405                 je 0x887a47
-// 00887a42  e869ebf6ff           call 0x7f65b0
-// 00887a47  8b8ea0000000         mov ecx, dword ptr [esi + 0xa0]
-// 00887a4d  89442440             mov dword ptr [esp + 0x40], eax
-// 00887a51  83f9ff               cmp ecx, -1
-// 00887a54  750f                 jne 0x887a65
-// 00887a56  8b865c010000         mov eax, dword ptr [esi + 0x15c]
-// 00887a5c  85c0                 test eax, eax
-// 00887a5e  7405                 je 0x887a65
-// 00887a60  8b6838               mov ebp, dword ptr [eax + 0x38]
-// 00887a63  eb02                 jmp 0x887a67
-// 00887a65  8be9                 mov ebp, ecx
-// 00887a67  8b16                 mov edx, dword ptr [esi]
-// 00887a69  8b82b4000000         mov eax, dword ptr [edx + 0xb4]
-// 00887a6f  8bce                 mov ecx, esi
-// 00887a71  ffd0                 call eax
-// 00887a73  837c244000           cmp dword ptr [esp + 0x40], 0
-// 00887a78  8bd8                 mov ebx, eax
-// 00887a7a  7507                 jne 0x887a83
-// 00887a7c  be04000000           mov esi, 4
-// 00887a81  eb2f                 jmp 0x887ab2
-// 00887a83  85ff                 test edi, edi
-// 00887a85  740e                 je 0x887a95
-// 00887a87  837c241000           cmp dword ptr [esp + 0x10], 0
-// 00887a8c  7407                 je 0x887a95
-// 00887a8e  be03000000           mov esi, 3
-// 00887a93  eb1d                 jmp 0x887ab2
-// 00887a95  85ed                 test ebp, ebp
-// 00887a97  7407                 je 0x887aa0
-// 00887a99  be05000000           mov esi, 5
-// 00887a9e  eb12                 jmp 0x887ab2
-// 00887aa0  85db                 test ebx, ebx
-// 00887aa2  7509                 jne 0x887aad
-// 00887aa4  8d7301               lea esi, [ebx + 1]
-// 00887aa7  395c2410             cmp dword ptr [esp + 0x10], ebx
-// 00887aab  7405                 je 0x887ab2
-// 00887aad  be02000000           mov esi, 2
-// 00887ab2  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 00887ab6  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 00887aba  8b6c243c             mov ebp, dword ptr [esp + 0x3c]
-// 00887abe  8b542448             mov edx, dword ptr [esp + 0x48]
-// 00887ac2  894c2418             mov dword ptr [esp + 0x18], ecx
-// 00887ac6  8b4c2450             mov ecx, dword ptr [esp + 0x50]
-// 00887aca  83c0f4               add eax, -0xc
-// 00887acd  8954241c             mov dword ptr [esp + 0x1c], edx
-// 00887ad1  89442420             mov dword ptr [esp + 0x20], eax
-// 00887ad5  894c2424             mov dword ptr [esp + 0x24], ecx
-// 00887ad9  85ed                 test ebp, ebp
-// 00887adb  7504                 jne 0x887ae1
-// 00887add  33c0                 xor eax, eax
-// 00887adf  eb03                 jmp 0x887ae4
-// 00887ae1  8b4504               mov eax, dword ptr [ebp + 4]
-// 00887ae4  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 00887ae8  6a00                 push 0
-// 00887aea  8d54241c             lea edx, [esp + 0x1c]
-// 00887aee  52                   push edx
-// 00887aef  56                   push esi
-// 00887af0  6a03                 push 3
-// 00887af2  81c76c040000         add edi, 0x46c
-// 00887af8  50                   push eax
-// 00887af9  8bcf                 mov ecx, edi
-// 00887afb  e8403dfeff           call 0x86b840
-// 00887b00  85db                 test ebx, ebx
-// 00887b02  7405                 je 0x887b09
-// 00887b04  be03000000           mov esi, 3
-// 00887b09  837c244003           cmp dword ptr [esp + 0x40], 3
-// 00887b0e  7505                 jne 0x887b15
-// 00887b10  be04000000           mov esi, 4
-// 00887b15  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 00887b19  8b542448             mov edx, dword ptr [esp + 0x48]
-// 00887b1d  8d48f4               lea ecx, [eax - 0xc]
-// 00887b20  89442430             mov dword ptr [esp + 0x30], eax
-// 00887b24  8b442450             mov eax, dword ptr [esp + 0x50]
-// 00887b28  894c2428             mov dword ptr [esp + 0x28], ecx
-// 00887b2c  8954242c             mov dword ptr [esp + 0x2c], edx
-// 00887b30  89442434             mov dword ptr [esp + 0x34], eax
-// 00887b34  85ed                 test ebp, ebp
-// 00887b36  7504                 jne 0x887b3c
-// 00887b38  33c0                 xor eax, eax
-// 00887b3a  eb03                 jmp 0x887b3f
-// 00887b3c  8b4504               mov eax, dword ptr [ebp + 4]
-// 00887b3f  6a00                 push 0
-// 00887b41  8d4c242c             lea ecx, [esp + 0x2c]
-// 00887b45  51                   push ecx
-// 00887b46  56                   push esi
-// 00887b47  6a04                 push 4
-// 00887b49  50                   push eax
-// 00887b4a  8bcf                 mov ecx, edi
-// 00887b4c  e8ef3cfeff           call 0x86b840
-// 00887b51  5f                   pop edi
-// 00887b52  5e                   pop esi
-// 00887b53  5d                   pop ebp
-// 00887b54  5b                   pop ebx
-// 00887b55  83c428               add esp, 0x28
-// 00887b58  c21800               ret 0x18
-// copied from an identical function in another client (function ?DrawSplitButtonFrame@CXTPNativeXPTheme@XTPPaintThemes@@MAEXPAVCDC@@PAVCXTPControl@@VCRect@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPNativeXPTheme.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPNativeXPTheme.cpp : implementation of the CXTPNativeXPTheme class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPPaintManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "Common/XTPColorManager.h"
+#include "XTPToolBar.h"
+#include "XTPPopupBar.h"
+#include "XTPControlComboBox.h"
+#include "XTPDockBar.h"
+#include "XTPControlEdit.h"
+
+#define COLOR_MENUHILIGHT       29
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#ifndef SPI_GETFLATMENU
+#define SPI_GETFLATMENU    0x1022
+#endif
+
+
+using namespace XTPPaintThemes;
+
+
+CXTPNativeXPTheme::CXTPNativeXPTheme()
+{
+	m_iconsInfo.bUseFadedIcons = TRUE;
+	m_iconsInfo.bIconsWithShadow = FALSE;
+
+	m_nPopupBarText = COLOR_MENUTEXT;
+	m_bFlatMenus = TRUE;
+
+	m_bThemedStatusBar = TRUE;
+	m_bThemedCheckBox = TRUE;
+}
+
+CXTPNativeXPTheme::~CXTPNativeXPTheme()
+{
+}
+
+void CXTPNativeXPTheme::RefreshMetrics()
+{
+	CXTPDefaultTheme::RefreshMetrics();
+
+	HWND hWnd = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : 0;
+	m_themeToolbar.OpenThemeData(hWnd, L"TOOLBAR");
+	m_themeRebar.OpenThemeData(hWnd, L"REBAR");
+	m_themeCombo.OpenThemeData(hWnd, L"COMBOBOX");
+	m_themeWindow.OpenThemeData(hWnd, L"WINDOW");
+	m_themeSpin.OpenThemeData(hWnd, L"SPIN");
+
+	m_bFlatMenus = TRUE;
+	if (!SystemParametersInfo(SPI_GETFLATMENU, 0, &m_bFlatMenus, 0))
+	{
+		m_bFlatMenus = FALSE;
+	}
+
+	if (!m_themeRebar.IsAppThemed() || FAILED(m_themeRebar.GetThemeColor(RP_BAND, 0, TMT_EDGESHADOWCOLOR, &m_clrEdgeShadowColor)))
+		m_clrEdgeShadowColor = GetXtremeColor(COLOR_3DSHADOW);
+
+	if (!m_themeRebar.IsAppThemed() || FAILED(m_themeRebar.GetThemeColor(RP_BAND, 0, TMT_EDGEHIGHLIGHTCOLOR, &m_clrEdgeHighLightColor)))
+		m_clrEdgeHighLightColor  = GetXtremeColor(COLOR_BTNHILIGHT);
+
+	COLORREF clr;
+	if (m_themeToolbar.IsAppThemed() && SUCCEEDED(m_themeToolbar.GetThemeColor(0, 0, TMT_TEXTCOLOR, &clr)))
+		m_arrColor[COLOR_BTNTEXT].SetStandardValue(clr);
+
+	if (!m_bFlatMenus && m_themeRebar.IsAppThemed())
+	{
+		m_bFlatMenus = m_themeRebar.GetThemeSysBool(TMT_FLATMENUS);
+	}
+
+	if (!m_bFlatMenus)
+	{
+		m_arrColor[COLOR_MENUHILIGHT].SetStandardValue(m_arrColor[COLOR_HIGHLIGHT]);
+	}
+}
+
+void CXTPNativeXPTheme::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
+{
+	CXTPCommandBar* pParent = pButton->GetParent();
+
+	if (!IsThemeEnabled() || !pParent)
+	{
+		CXTPDefaultTheme::DrawControlEntry(pDC, pButton);
+		return;
+	}
+
+	if (pButton->GetType() == xtpControlPopup && pParent->GetPosition() != xtpBarPopup && IsFlatToolBar(pParent) && pParent->GetType() == xtpBarTypeMenuBar)
+	{
+		if (pButton->GetSelected() || pButton->GetPopuped() || pButton->GetPressed())
+		{
+			pDC->FillSolidRect(pButton->GetRect(), GetXtremeColor(COLOR_HIGHLIGHT));
+		}
+	}
+	else
+	{
+		CXTPDefaultTheme::DrawControlEntry(pDC, pButton);
+	}
+}
+
+COLORREF CXTPNativeXPTheme::GetControlTextColor(CXTPControl* pButton)
+{
+	CXTPCommandBar* pParent = pButton->GetParent();
+
+	if (!IsThemeEnabled() || !pParent)
+		return CXTPDefaultTheme::GetControlTextColor(pButton);
+
+	if (pButton->GetType() == xtpControlPopup && pParent->GetPosition() != xtpBarPopup && IsFlatToolBar(pParent) && pParent->GetType() == xtpBarTypeMenuBar)
+	{
+		if (pButton->GetSelected() || pButton->GetPopuped() || pButton->GetPressed())
+		{
+			return GetXtremeColor(COLOR_HIGHLIGHTTEXT);
+		}
+	}
+	return CXTPDefaultTheme::GetControlTextColor(pButton);
+}
+
+void CXTPNativeXPTheme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled , BOOL bChecked , BOOL bPopuped, XTPBarType barType, XTPBarPosition barPosition /*= xtpBarPopup*/)
+{
+	if (!IsThemeEnabled())
+	{
+		CXTPDefaultTheme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled , bChecked , bPopuped, barType, barPosition);
+		return;
+	}
+
+	if (barType == xtpBarTypePopup && !bChecked)
+	{
+		if (bSelected || bPressed)
+		{
+			Rectangle(pDC, rc, COLOR_HIGHLIGHT, COLOR_MENUHILIGHT);
+		}
+		return;
+	}
+
+	if (bChecked == 2 && bEnabled)
+		bChecked = FALSE;
+
+	int nState = !bEnabled ? (bChecked ? TS_PRESSED : TS_DISABLED) :
+		bPopuped ? TS_PRESSED :
+		bChecked && !bPressed ? (bSelected ? TS_HOTCHECKED : TS_CHECKED) :
+		bSelected && bPressed || IsKeyboardSelected(bPressed) ? TS_PRESSED :
+		bSelected ? TS_HOT : TS_NORMAL;
+
+	m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_BUTTON, nState, &rc, 0);
+
+}
+void CXTPNativeXPTheme::FillCommandBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	if (!IsThemeEnabled())
+	{
+		CXTPDefaultTheme::FillCommandBarEntry(pDC, pBar);
+		return;
+	}
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	if (pBar->GetPosition() == xtpBarPopup)
+	{
+		if (m_bFlatMenus)
+		{
+			Rectangle(pDC, rc, COLOR_3DSHADOW, COLOR_MENU);
+		}
+		else
+		{
+			pDC->FillSolidRect(rc, GetXtremeColor(COLOR_MENU));
+			Draw3dRect(pDC, rc, COLOR_3DFACE, COLOR_3DDKSHADOW);
+			rc.DeflateRect(1, 1);
+			Draw3dRect(pDC, rc, COLOR_BTNHILIGHT, COLOR_3DSHADOW);
+		}
+	}
+	else if (pBar->GetPosition() == xtpBarFloating)
+	{
+		if (pBar->IsDialogBar())
+		{
+			CXTPDefaultTheme::FillCommandBarEntry(pDC, pBar);
+			return;
+		}
+
+		if (pBar->GetType() == xtpBarTypePopup)
+			pDC->FillSolidRect(rc, GetXtremeColor(COLOR_MENU));
+		else
+		{
+			pDC->FillSolidRect(rc, GetXtremeColor(pBar->GetType() == xtpBarTypePopup ? COLOR_MENU : COLOR_3DFACE));
+			m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, &rc, NULL);
+		}
+
+		m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMELEFT, CS_ACTIVE, CRect(rc.left, rc.top, rc.left + 3, rc.bottom), 0);
+		m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMERIGHT, CS_ACTIVE, CRect(rc.right - 3, rc.top, rc.right, rc.bottom), 0);
+		m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMEBOTTOM, CS_ACTIVE, CRect(rc.left, rc.bottom - 3, rc.right, rc.bottom), 0);
+	}
+	else
+	{
+		if (pBar->GetPosition() == xtpBarTop)
+			FillDockBarRect(pDC, pBar, pBar->GetParent());
+		else pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+
+		m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), RP_BAND, 0, &rc, NULL);
+
+		if (!IsFlatToolBar(pBar))
+		{
+			pDC->Draw3dRect(rc, m_clrEdgeHighLightColor, m_clrEdgeShadowColor);
+		}
+	}
+}
+
+void CXTPNativeXPTheme::FillDockBarRect(CDC* pDC, CWnd* pWnd, CWnd* pParent)
+{
+	if (IsThemeEnabled())
+	{
+		CRect rc, rcParent, rcClient, rcClipRect;
+		pWnd->GetClientRect(&rcClient);
+		rcClipRect = rcClient;
+
+		if (pParent)
+		{
+			pParent->GetWindowRect(rcClient);
+			pWnd->ScreenToClient(rcClient);
+		}
+
+		m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, &rcClient, &rcClipRect);
+	}
+	else
+		pDC->FillSolidRect(CXTPClientRect(pWnd), GetXtremeColor(COLOR_3DFACE));
+}
+
+void CXTPNativeXPTheme::FillDockBar(CDC* pDC, CXTPDockBar* pBar)
+{
+	if (pBar->GetPosition() == xtpBarTop)
+		FillDockBarRect(pDC, pBar, pBar);
+	else pDC->FillSolidRect(CXTPClientRect(pBar), GetXtremeColor(COLOR_3DFACE));
+
+}
+
+CSize CXTPNativeXPTheme::DrawDialogBarGripper(CDC* pDC, CXTPDialogBar* pBar, BOOL bDraw)
+{
+	if (!IsThemeEnabled())
+	{
+		return CXTPDefaultTheme::DrawDialogBarGripper(pDC, pBar, bDraw);
+	}
+
+	CSize sz(8, max(22, m_nTextHeight + 4));
+
+	if (pDC && bDraw)
+	{
+		CRect rc(2, 3, 8, sz.cy);
+		m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), RP_GRIPPER , 1, &rc, 0);
+	}
+
+	return sz;
+}
+
+BOOL CXTPNativeXPTheme::IsThemeEnabled() const
+{
+	return m_themeRebar.IsAppThemed() && m_themeToolbar.IsAppThemed();
+}
+
+
+CSize CXTPNativeXPTheme::DrawCommandBarSeparator(CDC* pDC, CXTPCommandBar* pBar, CXTPControl* pControl, BOOL bDraw)
+{
+	if (!IsThemeEnabled() || !bDraw || pBar->GetType() == xtpBarTypePopup || pBar->GetPosition() == xtpBarPopup)
+	{
+		return CXTPDefaultTheme::DrawCommandBarSeparator(pDC, pBar, pControl, bDraw);
+	}
+
+	CRect rc;
+	pBar->GetClientRect(&rc);
+	CRect rcControl = pControl->GetRect();
+	CRect rcRow = pControl->GetRowRect();
+
+	if (IsVerticalPosition(pBar->GetPosition()))
+	{
+		if (!pControl->GetWrap())
+			m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SEPARATORVERT, 0, CRect(rcRow.left, rcControl.top - 6, rcRow.right, rcControl.top), NULL);
+		else
+			m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SEPARATOR, 0, CRect(rcRow.right, rcRow.top + 4, rcRow.right + 5, rcRow.bottom), NULL);
+	}
+	else
+	{
+		if (!pControl->GetWrap())
+			m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SEPARATOR, 0, CRect(rcControl.left - 6, rcRow.top, rcControl.left, rcRow.bottom), NULL);
+		else
+			m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SEPARATORVERT, 0, CRect(rcRow.left + 4, rcRow.top - 5, rcRow.right, rcRow.top), NULL);
+	}
+	return 0;
+}
+
+CSize CXTPNativeXPTheme::DrawCommandBarGripper(CDC* pDC, CXTPCommandBar* pBar, BOOL bDraw)
+{
+	if (!IsThemeEnabled())
+	{
+		return CXTPDefaultTheme::DrawCommandBarGripper(pDC, pBar, bDraw);
+	}
+
+	if (pBar->IsDialogBar())
+		return DrawDialogBarGripper(pDC, (CXTPDialogBar*)pBar, bDraw);
+
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	if (pBar->GetPosition() == xtpBarFloating)
+	{
+		ASSERT(pDC);
+		if (!pDC)
+			return CSize(0, 0);
+		CXTPFontDC font(pDC, GetSmCaptionFont());
+		CSize sz = pDC->GetTextExtent(_T(" "), 1);
+
+		rc.SetRect(0, 0, rc.right, 3 + max(15, sz.cy));
+
+		if (pDC && bDraw)
+		{
+			m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLCAPTION, CS_ACTIVE, rc, 0);
+
+			pDC->SetBkMode(TRANSPARENT);
+			pDC->SetTextColor(m_clrFloatingGripperText);
+			pDC->DrawText(pBar->GetTitle(), CRect(5, 3, rc.right + 3 - 2 * rc.Size().cy, rc.bottom), DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+		}
+		return CSize(rc.Width(), max(15, sz.cy));
+	}
+	else if (pBar->GetPosition() == xtpBarRight || pBar->GetPosition() == xtpBarLeft)
+	{
+		if (pDC && bDraw)
+		{
+			rc.top += 2;
+			rc.bottom = rc.top + 6;
+			m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), RP_GRIPPERVERT , 1, &rc, 0);
+		}
+		return CSize(0, 8);
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+	{
+		if (pDC && bDraw)
+		{
+			rc.left += 2;
+			rc.right = rc.left + 6;
+			m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), RP_GRIPPER , 1, &rc, 0);
+		}
+		return CSize(8, 0);
+	}
+	return 0;
+
+}
+
+void CXTPNativeXPTheme::AdjustExcludeRect(CRect& rc, CXTPControl* pControl, BOOL bVertical)
+{
+	if (!IsThemeEnabled())
+	{
+		CXTPDefaultTheme::AdjustExcludeRect(rc, pControl, bVertical);
+		return;
+	}
+	CXTPCommandBar* pParent = pControl->GetParent();
+	ASSERT(pParent);
+	if (!pParent)
+		return;
+
+	if (pControl->GetType() == xtpControlComboBox) return;
+
+	if (pParent->GetType() != xtpBarTypePopup)
+	{
+		if (bVertical)
+			rc.DeflateRect(0, 0);
+		else
+			rc.DeflateRect(0, 0);
+	}
+	else
+		rc.InflateRect(-3, 3);
+
+}
+
+void CXTPNativeXPTheme::DrawSplitButtonFrame(CDC* pDC, CXTPControl* pButton, CRect rcButton)
+{
+	if (!IsThemeEnabled())
+	{
+		CXTPDefaultTheme::DrawSplitButtonFrame(pDC, pButton, rcButton);
+		return;
+	}
+
+	BOOL bPressed = pButton->GetPressed(), bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled(), bChecked = pButton->GetChecked(),
+		bPopuped = pButton->GetPopuped();
+
+	UINT nState = !bEnabled ? TS_DISABLED :
+		bPressed && bSelected ? TS_PRESSED :
+		bChecked ? TS_CHECKED :
+		bPopuped || bSelected ? TS_HOT : TS_NORMAL;
+
+	CRect rc(rcButton.left, rcButton.top, rcButton.right - 12, rcButton.bottom);
+	m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SPLITBUTTON, nState, &rc, 0);
+
+
+	nState = bPopuped ? TS_PRESSED : nState;
+	if (bEnabled == TRUE_SPLITCOMMAND) nState = TS_DISABLED;
+
+	CRect rcArrow(rcButton.right - 12, rcButton.top, rcButton.right, rcButton.bottom);
+	m_themeToolbar.DrawThemeBackground(pDC->GetSafeHdc(), TP_SPLITBUTTONDROPDOWN, nState, &rcArrow, 0);
+}
+
+void CXTPNativeXPTheme::DrawControlEditSpin(CDC* pDC, CXTPControlEdit* pControlEdit)
+{
+	if (!IsThemeEnabled())
+	{
+		CXTPDefaultTheme::DrawControlEditSpin(pDC, pControlEdit);
+		return;
+	}
+
+	BOOL bPressed = pControlEdit->GetPressed();
+	BOOL bEnabled = pControlEdit->GetEnabled();
+	BOOL bSelected = pControlEdit->GetSelected();
+
+	CRect rcSpin(pControlEdit->GetSpinButtonsRect());
+	CRect rcTop(rcSpin.left, rcSpin.top, rcSpin.right, rcSpin.CenterPoint().y);
+	CRect rcBottom(rcSpin.left, rcTop.bottom, rcSpin.right, rcSpin.bottom);
+
+	m_themeSpin.DrawBackground(pDC->GetSafeHdc(), SPNP_UP,
+		!bEnabled ? UPS_DISABLED : bSelected && bPressed == 3? UPS_PRESSED :
+		bSelected == 3 ? UPS_HOT : UPS_NORMAL, rcTop, 0);
+
+	m_themeSpin.DrawBackground(pDC->GetSafeHdc(), SPNP_DOWN,
+		!bEnabled ? DNS_DISABLED : bSelected && bPressed == 4? DNS_PRESSED :
+		bSelected == 4 ? DNS_HOT : DNS_NORMAL, rcBottom, 0);
+}
+
+void CXTPNativeXPTheme::DrawControlEditFrame(CDC* pDC, CRect rc, BOOL bEnabled, BOOL bSelected)
+{
+	if (!m_themeCombo.IsAppThemed())
+	{
+		CXTPDefaultTheme::DrawControlEditFrame(pDC, rc, bEnabled, bSelected);
+		return;
+	}
+
+	int nStateID = !bEnabled ? CBXS_DISABLED : CBXS_NORMAL;
+
+	COLORREF clrFrame = GetXtremeColor(COLOR_3DSHADOW);
+	m_themeCombo.GetThemeColor(CP_DROPDOWNBUTTON, nStateID, TMT_BORDERCOLOR, &clrFrame);
+
+	Draw3dRect(pDC, rc, clrFrame, clrFrame);
+}
+
+void CXTPNativeXPTheme::DrawControlComboBoxButton(CDC* pDC, CRect rcBtn, BOOL bEnabled, BOOL bSelected, BOOL bDropped)
+{
+	if (!m_themeCombo.IsAppThemed())
+	{
+		CXTPDefaultTheme::DrawControlComboBoxButton(pDC, rcBtn, bEnabled, bSelected, bDropped);
+		return;
+	}
+
+	int nStateID = !bEnabled ? CBXS_DISABLED :
+		bDropped ? CBXS_PRESSED: bSelected ? CBXS_HOT : CBXS_NORMAL;
+
+	rcBtn.DeflateRect(-2, 1, 1, 1);
+	m_themeCombo.DrawThemeBackground(pDC->GetSafeHdc(), CP_DROPDOWNBUTTON, nStateID, &rcBtn, 0);
+
+}
+
+CSize CXTPNativeXPTheme::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
+{
+	if ((controlType == xtpButtonExpandFloating || controlType == xtpButtonHideFloating)
+		&& m_themeToolbar.IsAppThemed())
+	{
+		return CXTPPaintManager::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+	}
+
+	return CXTPDefaultTheme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+}

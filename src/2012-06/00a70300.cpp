@@ -1,52 +1,243 @@
-// roc 2012-06 00a70300  unit: CXTPRibbonTab  size: 99 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a70300
-//
-// 00a70300  53                   push ebx
-// 00a70301  56                   push esi
-// 00a70302  57                   push edi
-// 00a70303  8bf9                 mov edi, ecx
-// 00a70305  33f6                 xor esi, esi
-// 00a70307  e8144a9fff           call 0x464d20
-// 00a7030c  85c0                 test eax, eax
-// 00a7030e  7e35                 jle 0xa70345
-// 00a70310  8b1d483bb200         mov ebx, dword ptr [0xb23b48]
-// 00a70316  85f6                 test esi, esi
-// 00a70318  7c44                 jl 0xa7035e
-// 00a7031a  3b7708               cmp esi, dword ptr [edi + 8]
-// 00a7031d  7d3f                 jge 0xa7035e
-// 00a7031f  8b4704               mov eax, dword ptr [edi + 4]
-// 00a70322  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00a70326  8b04b0               mov eax, dword ptr [eax + esi*4]
-// 00a70329  8b542410             mov edx, dword ptr [esp + 0x10]
-// 00a7032d  51                   push ecx
-// 00a7032e  83c010               add eax, 0x10
-// 00a70331  52                   push edx
-// 00a70332  50                   push eax
-// 00a70333  ffd3                 call ebx
-// 00a70335  85c0                 test eax, eax
-// 00a70337  7514                 jne 0xa7034d
-// 00a70339  8bcf                 mov ecx, edi
-// 00a7033b  46                   inc esi
-// 00a7033c  e8df499fff           call 0x464d20
-// 00a70341  3bf0                 cmp esi, eax
-// 00a70343  7cd1                 jl 0xa70316
-// 00a70345  5f                   pop edi
-// 00a70346  5e                   pop esi
-// 00a70347  33c0                 xor eax, eax
-// 00a70349  5b                   pop ebx
-// 00a7034a  c20800               ret 8
-// 00a7034d  3b7708               cmp esi, dword ptr [edi + 8]
-// 00a70350  7d0c                 jge 0xa7035e
-// 00a70352  8b4704               mov eax, dword ptr [edi + 4]
-// 00a70355  8b04b0               mov eax, dword ptr [eax + esi*4]
-// 00a70358  5f                   pop edi
-// 00a70359  5e                   pop esi
-// 00a7035a  5b                   pop ebx
-// 00a7035b  c20800               ret 8
-// 00a7035e  e85d20f1ff           call 0x9823c0
-// copied from an identical function in another client (function ?HitTest@CXTPRibbonTabContextHeaders@@QBEPAVCXTPRibbonTabContextHeader@@VCPoint@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Ribbon\XTPRibbonTab.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPPropExchange.h"
+
+
+#include "XTPRibbonTab.h"
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonGroups.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonControlTab.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+
+CXTPRibbonTabContextHeader::CXTPRibbonTabContextHeader(CXTPRibbonTab* pFirstTab)
+{
+	ASSERT(pFirstTab);
+	if (!pFirstTab)
+		return;
+	m_pLastTab = m_pFirstTab = pFirstTab;
+	m_color = pFirstTab->GetContextColor();
+	m_strCpation = pFirstTab->GetContextCaption();
+	m_rcRect.SetRectEmpty();
+	pFirstTab->m_pContextHeader = this;
+}
+
+CXTPRibbonTabContextHeaders::CXTPRibbonTabContextHeaders()
+{
+
+}
+
+CXTPRibbonTabContextHeaders::~CXTPRibbonTabContextHeaders()
+{
+	RemoveAll();
+}
+int CXTPRibbonTabContextHeaders::GetCount() const
+{
+	return (int)m_arrHeaders.GetSize();
+}
+
+CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::GetHeader(int nIndex) const
+{
+	return m_arrHeaders.GetAt(nIndex);
+}
+
+void CXTPRibbonTabContextHeaders::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		delete m_arrHeaders[i];
+	}
+	m_arrHeaders.RemoveAll();
+}
+
+CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::HitTest(CPoint pt) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (m_arrHeaders[i]->m_rcRect.PtInRect(pt))
+			return m_arrHeaders[i];
+	}
+	return NULL;
+}
+
+void CXTPRibbonTabContextHeaders::Add(CXTPRibbonTabContextHeader* pHeader)
+{
+	m_arrHeaders.Add(pHeader);
+}
+
+IMPLEMENT_SERIAL(CXTPRibbonTab, CXTPTabManagerItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPRibbonTab::CXTPRibbonTab()
+{
+	m_nId = 0;
+
+	m_pGroups = new CXTPRibbonGroups;
+	m_pGroups->m_pParentTab = this;
+
+	m_nContextColor = xtpRibbonTabContextColorNone;
+
+	m_pContextHeader = NULL;
+	m_pRibbonBar = NULL;
+	m_pParent = NULL;
+}
+
+CXTPRibbonTab::~CXTPRibbonTab()
+{
+	ASSERT(m_pGroups->GetCount() == 0);
+
+	CMDTARGET_RELEASE(m_pGroups);
+}
+
+void CXTPRibbonTab::Copy(CXTPRibbonTab* pRibbonTab)
+{
+	m_strCaption = pRibbonTab->m_strCaption;
+	m_nContextColor = pRibbonTab->m_nContextColor;
+	m_strContextCaption= pRibbonTab->m_strContextCaption;
+	m_nId = pRibbonTab->m_nId;
+	m_bVisible = pRibbonTab->m_bVisible;
+	m_strToolTip = pRibbonTab->m_strToolTip;
+
+	if (m_pTabManager && pRibbonTab->IsSelected())
+	{
+		Select();
+	}
+
+	m_pGroups->Copy(pRibbonTab->m_pGroups);
+}
+
+void CXTPRibbonTab::OnRemoved()
+{
+	m_pGroups->RemoveAll();
+}
+
+CXTPRibbonBar* CXTPRibbonTab::GetRibbonBar() const
+{
+	return m_pRibbonBar;
+}
+
+CXTPRibbonGroup* CXTPRibbonTab::AddGroup(LPCTSTR lpszCaption)
+{
+	return GetGroups()->Add(lpszCaption);
+}
+
+CXTPRibbonGroup* CXTPRibbonTab::AddGroup(int nID)
+{
+	CString strCaption;
+	if (!strCaption.LoadString(nID))
+	{
+	}
+
+	if (strCaption.Find('\n') != -1)
+	{
+		CString strPrompt = strCaption;
+		AfxExtractSubString(strCaption, strPrompt, 1);
+	}
+
+	return GetGroups()->Add(strCaption, nID);
+}
+
+void CXTPRibbonTab::SetVisible(BOOL bVisible)
+{
+	if (bVisible == IsVisible())
+		return;
+
+	CXTPTabManagerItem::SetVisible(bVisible);
+
+	if (!bVisible && IsSelected())
+	{
+		CXTPTabManagerItem* pItem = GetTabManager()->FindNextFocusable(-1, +1);
+		if (pItem)
+		{
+			pItem->Select();
+		}
+	}
+}
+
+CXTPRibbonGroup* CXTPRibbonTab::FindGroup(int nID) const
+{
+	for (int i = 0 ; i < m_pGroups->GetCount(); i++)
+	{
+		if (m_pGroups->GetAt(i)->GetID() == nID)
+			return m_pGroups->GetAt(i);
+	}
+	return NULL;
+}
+
+void CXTPRibbonTab::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsLoading())
+	{
+		CXTPRibbonControlTab* pControlTab = ((CXTPRibbonControlTab*)pPX->m_pOwner);
+		m_pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, pControlTab->GetParent());
+		m_pTabManager = pControlTab;
+		m_pParent = m_pRibbonBar;
+	}
+
+	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
+	PX_String(pPX, _T("ToolTip"), m_strToolTip, _T(""));
+	PX_Enum(pPX, _T("ContextColor"), m_nContextColor, xtpRibbonTabContextColorNone);
+	PX_String(pPX, _T("ContextCaption"), m_strContextCaption, _T(""));
+	PX_Int(pPX, _T("Id"), m_nId, 0);
+	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
+
+	if (pPX->IsStoring())
+	{
+		BOOL bSelected = IsSelected();
+		PX_Bool(pPX, _T("Selected"), bSelected, FALSE);
+	}
+	else
+	{
+		BOOL bSelected = FALSE;
+		PX_Bool(pPX, _T("Selected"), bSelected, 0);
+		if (bSelected)
+		{
+			Select();
+		}
+	}
+
+
+	CXTPPropExchangeSection secGroups(pPX->GetSection(_T("Groups")));
+	m_pGroups->DoPropExchange(&secGroups);
+}
+
+

@@ -1,25 +1,5 @@
-// from server: 44% by colin
-struct CXTPCommandBar {
-    int f(int a, int b, int c);
-};
-
-extern "C" int IsMenu(int a);
-
-int CXTPCommandBar::f(int a, int b, int c) {
-    if (this != 0) return 0;
-    int result = IsMenu(a);
-    if (result == 0) return 0;
-    if (b != 0) {
-        int* ptr = (int*)((char*)this + 0xf8);
-        int (*func1)(int) = (int (*)(int))0x67a660;
-        func1(*ptr);
-        int (*func2)(CXTPCommandBar*, int) = (int (*)(CXTPCommandBar*, int))0x6444e0;
-        func2(this, 0);
-        int (*func3)(CXTPCommandBar*) = (int (*)(CXTPCommandBar*))0x62ff50;
-        result = func3(this);
-        if (result != 0) {
-            *ptr |= 0xc;
-        }
-    }
-    return 1;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_2f00fc77ed03e102.cpp

@@ -1,9 +1,5 @@
 # Native integration with an agent (Codex, Claude)
 
-Default: manual work in this chat, using one persistent private checkout. Resume
-its recorded path across chats. A fresh prompt does not authorize a fresh install
-or an automatic Integrator session. Setup/update sections below are conditional.
-
 ## Current batch-first process
 
 Use the existing private contributor checkout. One writer and one build at a
@@ -66,66 +62,10 @@ batch process takes precedence over later single-method examples.
    local, queued, rejected and independently accepted counts separately; only
    accepted receipts grant native credit. Keep working on the next shared cause.
 
-## Prioritize the current integration backlog
-
-Start with the latest reports; old counts are snapshots, not today's progress.
-For failed swaps, group `swaps.json` failures and per-address comparisons by
-compile error, incompatible header, non-exact `_DLL` twin, or shared inline.
-For shared definitions, compare all providers and their compiler flags, code,
-relocations and class layouts. Test a symbol's compatible providers together;
-do not blanket-swap duplicates. For header rejects, fix one evidenced 2008 class
-layout in the adopted overlay and rebuild all affected units. Never guess a
-field name or type from a size difference. If the declaration is unavailable,
-record the binary sites and blocker and move to another batch.
-
-Before each build, save the prior module report and global accepted baseline.
-Check the actual compiler command and resolved headers, including symlinked
-vendor paths. Build in the existing private contributor checkout, wait for any
-other build there to finish, then check forced links, linked bytes/data, runtime
-fixtures, layer errors and lost addresses. Run `placed` after relevant builds
-finish; address twins remain ambiguous unless referenced data proves placement.
-Record exact commands, hashes, results and unresolved dependencies with each
-batch. A matching object whose dependency is unresolved is not an integration.
-
-Submit each completed, supported batch under the configured contributor (use
-`colin` when requested) and actual model. `native-finish` may submit a type
-proposal, which requires owner review; its local proof does not grant credit.
-Keep packet/job IDs and verify the server receipt. For distinct new local owned
-exacts, `native-finish` with `notify: true` uses the configured mining webhook,
-deduplicates against the specified `public_root`, and records delivery or pending
-state. Set `public_root` to the existing host checkout when it holds the global
-inventory; do not claim a notification was sent without its receipt. Server
-acceptance and its integration notification are separate events.
-
-Keep changes to RoConstruct commands, module recipes and this guide reviewable
-in source control. When the operator requests publishing, commit only the intended
-files, incorporate current `main` without overwriting other work, run relevant
-tests, and push to the requested repository's `main`. Publish evidence separately
-when supported; do not put private credentials, vendor copies or generated build
-outputs in the source commit.
-
 ## Command compatibility
 
-The `ogre-native-headers` module builds genuine Ogre 1.4.5 client-import
-header templates separately from the client subclass analogs. In a private
-worker, fetch the pinned source with `python -c "from roc import libs; libs.fetch('ogre-1.4.5')"`,
-then run `roc rebuild 2008-06 module ogre-native-headers`. The TexturePtr tests use
-the client's `rgmain.dll` through its real imports. To recheck the 62 current
-target bodies in a forced executable, run
-`python rebuild/2008-06/tests/verify_ogre_native_vectors.py` with the repository
-on `PYTHONPATH`. These are
-local matches, not independently accepted server credits. Multiple genuine
-template specializations can share identical target bytes; this does not prove
-which specialization the original client used.
-
-`roc.library_verify` provides an allowlisted validation gate for a future
-server-owned Ogre build: passing baseline and candidate, complete layer checks,
-no lost ownership, and forced linked code/data proofs for every gain. It does
-not expose a submission route or grant credit. The server must build and collect
-its own evidence in an isolated snapshot before calling it.
-
 This guide's manual loop uses `roc native-try targets / evidence / check / submit`.
-The optional continuous session uses `roc integrator` only when explicitly requested;
+The GUI's continuous session uses `roc integrator`. Keep these supported paths;
 `roc integrate work` and `roc integrate packet` do not exist. Earlier workflow
 instructions requiring those actions were incorrect. Their absence in Worker v12
 is not a reason to download that same package again or stop native-try work.
@@ -136,26 +76,6 @@ Before setup, inspect the installed CLI once:
 roc native-try --help
 roc integrate --help
 ```
-
-## Resume before setup
-
-A new chat, pasted copy of this guide, or reopened agent prompt is **not** an
-installation request. First reuse the recorded/current checkout and inspect it:
-
-```text
-roc native-try --help
-roc doctor
-roc rebuild 2008-06 doctor
-```
-
-Run only the command that repairs an actual missing or stale prerequisite named
-by those checks. Do not automatically run `roc install`, `client-fetch`,
-`analyze`, `vtables`, `pull`, `lib-fetch`, package download, or compiler setup
-when their verified outputs already exist. Keep the checkout path and checkpoint
-between chats; another AI must resume that path rather than bootstrap a fresh
-copy. A Worker manifest check can establish currency, but does not authorize a
-download/extract unless its hash/version differs or a required native command is
-missing.
 
 On Windows use `roc.cmd`; on Linux use `./roc.sh`. For explicit class claims,
 use `roc integrate next --count 4`. If the installed CLI lists `context`, retrieve
@@ -174,131 +94,65 @@ and server capabilities rather than assuming a package version supplies an actio
 Compiler smoke success establishes compiler readiness only; report native credit
 only after independent server acceptance.
 
-## Finish an authored module batch automatically
+## Match the current GUI Integrator
 
-Use `roc native-finish work/batch/finish.json` for each authored module batch
-in the existing private RbxgsApp checkout. It
-rebuilds all active layers, rejects compile errors or ownership losses, force-links
-the authored runtime fixture, checks gained instruction bytes in the executable
-and fresh object code/data, then optionally submits, notifies and publishes proofs.
-It reuses this checkout and takes a process lock; do not run another editor/build
-in its mutable output tree. Agent reasoning still supplies source fixes and tests.
+Choose one execution path for a mutable workspace. For the GUI, run `roc gui`,
+open **Workers → + New → Integrator**, select the actual model, contributor and
+server, then **Start Integrator**. Native sessions currently use 2008-06 only.
+The equivalent continuous CLI uses the same backend:
 
-Paths below are relative to the configuration file; preserve the before report
-and accepted server baseline before editing. Use the actual writer model.
-
-```json
-{
-  "module": "rbxgs-app",
-  "before": "report-before.json",
-  "baseline": "server-base.json",
-  "test_source": "runtime.cpp",
-  "prior_packet": "previous-packet.json",
-  "user": "colin",
-  "model": "YOUR_ACTUAL_MODEL",
-  "evidence": "Native declarations, target instructions and source provenance for this batch.",
-  "submit": true,
-  "notify": true
-}
+```text
+roc integrator --model YOUR_ACTUAL_MODEL --workers 4 --rounds 3 --output-budget 3072 --batch-files 1 --compile-workers auto --compile-batch 4 --context methods --generation auto --thinking disabled --cloud-concurrency auto --allow-cloud
 ```
 
-Omit `prior_packet` for a first proposal. Optional `server` overrides configuration;
-`public_root` points at the existing host checkout for global notification dedup.
-To publish review artifacts, add `publish_repo` for the existing Findings checkout
-and `publish_prefix` such as `2008-06/verification/native-batch-20261030`.
-Publication preserves its checkout and accepted defaults. Reruns recheck proofs,
-reuse content-addressed server proposals, deduplicate acknowledged webhooks and
-skip unchanged publications. Failure receipts and passing artifacts remain under
-`finished/` (or the configured `output`) for repair. Independent accepted recipe
-additions rebase automatically, with a saved backup and complete recheck. Conflicting
-anchors or generator changes stop for agent repair; `auto_rebase: false` disables it.
-Source proposals still require independent owner review and server acceptance;
-this command never approves a packet or grants native credit.
+Use remote prompts only within the operator's authorization. The GUI offers
+signed-in CLIs, API providers and local models. Selecting a model does not change
+the independent acceptance gates. The manual agent path below writes its own
+anchored edits through native-try; it follows the same evidence/acceptance goals
+but does not automatically acquire the GUI's scheduling or shared compiler jobs.
+Do not launch a second editor or continuous session in its mutable staging tree.
 
-## Manual agent execution (default)
-
-The agent in this chat performs the reasoning and writes anchored source edits.
-Use `roc native-try targets`, `evidence`, `check`, `preflight` and `submit`
-as documented below. Do not start `roc gui`, `roc integrator`, another AI
-provider process, or a background autonomous worker unless the operator explicitly
-requests that execution mode. Existing automatic sessions are separate: do not
-take over their staging trees or start another writer there.
-
-1. Resume the recorded private checkout and inspect pending jobs/saved proposals.
-2. Inspect target evidence, make one source-backed hypothesis, and compile it with
-   `native-try check`. Preserve local improvements and exact matches.
-3. Submit completed passing exact fixes immediately, retaining returned job IDs.
-   Upload useful near-exact drafts through the review route below when appropriate;
-   a returned draft packet ID proves upload, not a queued verification job.
-4. Reconcile changed baseline/anchors and revalidate saved edits before submission.
-5. Move on after unchanged failed hypotheses; record the blocker and next action.
-
-## Reasoning and efficient manual work
-
-Spend reasoning on evidence interpretation and source reconstruction. Keep routine
-operations mechanical, using supported commands and saved receipts.
-
-| Task | Reasoning |
+| Current GUI control | Behavior to preserve |
 | --- | --- |
-| Resume checkout, reuse tools, sync and inspect jobs | Low: follow recorded paths and actual command results |
-| Select targets | Medium: prioritize strong evidence, small remaining diffs and shared causes |
-| Recover types, fields, ABI and control flow | High: derive changes from binary and authentic source evidence |
-| Diagnose code/data mismatches or rejected proofs | High: identify the failing gate and form one testable hypothesis |
-| Compile, compare, save, upload and check receipts | Low: execute supported commands and record their results |
+| Concurrent AI workers / Cloud concurrency | File-job slots and simultaneous provider requests are separate limits. More slots do not bypass rate limits. |
+| Parallel local compilers | Independent compiler limit; `auto` caps at 8 slots subject to CPU capacity. |
+| Files per integration batch | Set 1 for immediate per-file submission (program default: 40). This does not promise acceptance. |
+| Methods per shared compile | Default 4 independent edits per file; split conflicting/failing combinations, recompile retained edits. |
+| Source context / AI output | Default `methods` / `auto`: one complete method, then anchored repairs. Manual native-try still consumes SEARCH/REPLACE blocks. |
+| Rounds / Output tokens | New native sessions start at 3 / 3072; configured presets or edits can override these values. |
+| Request / Token / Estimated spend caps | Session-wide limits. Editing a cap retains usage already spent; unknown pricing is not zero cost. CLI subscription dollar caps are unsupported. |
 
-Use deeper reasoning for shared layouts, ABI changes and ambiguous ownership;
-use lighter reasoning for an evidenced constant correction or routine command.
-These are effort guidelines, not instructions to switch models, launch another
-agent or change provider settings.
+GUI presets are shared with mining workers. **Balanced** preset does not select
+the CLI's native `--mode balanced` ranking policy. The current GUI form does not
+expose native selection/escalation/no-improvement controls; use supported CLI
+flags when the operator requests those settings.
 
-For each manual cycle:
+Keep the agent's progress loop aligned with the GUI:
 
-1. Resume the checkpoint's checkout, selected client, tool paths, drafts and pending
-   IDs. Inspect existing results before generating edits. Repair setup only when
-   a prerequisite check identifies a missing or stale input.
-2. Choose an evidence-rich target or shared cause. Similarity percentage alone
-   does not establish correctness or priority. Skip already integrated work.
-3. Before editing, record a short note: target address, observed mismatch,
-   evidence-backed hypothesis and expected compiler effect. Do not write lengthy
-   speculative analysis; obtain the missing declaration or binary evidence.
-4. Compile one focused change in the real unit. Preserve useful gains with their
-   source, baseline revision, hashes, score and diff; preserve existing exacts.
-   Test inseparable shared changes together, splitting failures for diagnosis.
-5. After three attempts without new evidence or improvement, record the blocker
-   and switch targets. Revisit when relevant inputs or evidence change; do not
-   repeat recorded failed approaches against unchanged inputs.
-6. Submit completed passing exact fixes promptly through the normal gates.
-   Share useful partial source through the review-draft route below. Retain the
-   returned job or packet ID and distinguish uploaded, queued and accepted states.
-7. Update the durable checkpoint after useful proofs, uploads, baseline changes
-   and stops: saved artifact paths, failed hypotheses, IDs and the next command.
-   Check pending jobs between batches; revalidate affected edits when inputs change.
+1. Sync the accepted baseline, inspect saved proposals before generating more
+   edits, and work from genuine declarations and target evidence.
+2. Test one hypothesis, preserve local gains, isolate failures, and stop spending
+   on an unchanged exhausted target. Broaden method context only when needed.
+3. Queue each completed passing fix immediately. Record each job ID, keep discovery moving,
+   and check pending jobs between batches. Local exact, queued and accepted are
+   separate states; only accepted receipts add verified native credits.
+4. On baseline advance, reconcile and recheck saved proofs before new generation.
+   The automatic backend can recover saved proposals without another AI request;
+   the manual path uses native-try revalidation and submit recovery described below.
+5. Rotate pending targets after a discovery pass. Revisit exhausted targets only
+   when relevant inputs change; respect provider/attempt budgets and stop/pause.
 
-Use existing deterministic commands for state, builds and transport while this
-chat agent supplies evidence-based C++ edits. A command wrapper, if used, must
-preserve the checkpoint and return failures for diagnosis; it must not silently
-start the GUI Integrator, another model session or an autonomous worker.
+The GUI snapshots mutable runtime/rebuild inputs under `local/integrators/<id>/`.
+**Restart offline / failed** reuses that same session's owned workspace, proofs
+and compiler cache. **+ New** creates a separate workspace; a new CLI invocation
+does not imply recovery of an earlier GUI session. Keep its printed path and job
+IDs when diagnosing failures.
 
-## Share near-exact drafts
-
-Contributors may upload useful near-exact source patches for review with
-`roc native-promote submit packet.json`. Use the current server baseline revision,
-`client: "2008-06"`, actual writer `model`, `targets` containing exact-mined
-addresses being reconstructed, `evidence` describing the local score/diff and
-remaining mismatch, `declarations: []`, and anchored `patches` in the existing
-promotion packet schema (see docs/INTEGRATION.md). The mined reference may be
-exact while the submitted native implementation is still partial.
-
-Save the returned packet ID and report `needs-owner-review`, zero native credits.
-This uploads draft source without changing the accepted baseline. Host review
-does not bypass exact code/data, linked ownership, runtime or ABI gates; a draft
-must satisfy those gates before integration. Do not blindly queue unchanged
-near-exacts for verification. Reject stale baseline packets and repair their
-anchors before retrying. Keep local source/proof files until confirmed uploaded.
-
-Automatic Integrator runs also send bounded partial-score observations to
-`/v1/integration/partials`, retaining failed uploads in `partial-reports.json`.
-Those observations contain hashes and metrics, not draft source or native credit.
+Use **Configure → Apply changes** for supported live settings. Pause/stop is
+checked before the next file or AI round; already-sent requests and submitted
+server batches can finish. Closing the browser tab leaves the dashboard running;
+exiting the dashboard stops its process trees. Verify final server job states
+when resuming instead of assuming interrupted local monitoring cancelled a batch.
 
 ## Missing native types or build units
 
@@ -316,8 +170,8 @@ Other contributors can submit packets from their own PCs; the owner does not
 need their local lane-map file. Send the packet ID when escalating. Do not claim
 the class is promoted until its server job is accepted.
 
-Paste this file into a Codex or Claude Code session opened in a RoConstruct checkout. The agent drives the manual
-native conversion workflow. You write the edits; the tools compile the real
+Paste this file into a Codex or Claude Code session opened in a RoConstruct checkout. It follows the native
+conversion workflow used by the automatic Integrator. You write the edits; the tools compile the real
 2008-06 file, check exact bytes and referenced data, minimize your edits, and submit verified batches.
 
 ## Continuous, terse operation
@@ -368,8 +222,7 @@ provider balance, and 404 means repair model ID/endpoint. Do not retry these as 
 Permanent provider errors stop generation and skip queued files. Do not duplicate
 CLI generations after uncertain HTTP results.
 
-Optional automatic mode only (skip this paragraph for manual execution):
-Integrator workers share a whole-source-file compile for independent method edits:
+Automatic integrator workers share a whole-source-file compile for independent method edits:
 `roc integrator --compile-batch 4 --compile-workers auto`. The default is four methods;
 1 disables shared compilation, up to 32 is supported. Conflicting edits and failing batches
 split for diagnosis, and recovered combinations are compiled again. Exact code/data,
@@ -433,8 +286,7 @@ from a saved local score, or replay an uncertain request with a new identity.
 
 Before setup or identity questions, fetch the public server's `/v1/status` using the agent's HTTP tool
 or one grouped HTTP request. Default server: `https://colinpc.tail2879d0.ts.net`; use an explicitly supplied server instead.
-On a first run with no selected client, ask: **"Which client do you want to run?"**
-On resume, keep the recorded client and continue without another selection prompt.
+Then make the first user-facing response a selectable question: **"Which client do you want to run?"**
 List every returned client, showing `integration_percent` as **X% integrated (integrated/functions)**.
 Use `native_supported` to label clients without a native rebuild **"integration unavailable; source mining available"**.
 A null percentage means **"integration unknown"**, never 0%. Do not show mined/matched percentages as integration.
@@ -465,11 +317,8 @@ manifest version/hash and installed package identity in the session checkpoint.
 If the Worker needs updating, first look for a cached ZIP matching the manifest's
 SHA-256 in the chosen workspace, immediate RoConstruct folders, `local/packages`,
 `local/findings/data` and the user's Downloads folder. Reuse verified media;
-download only when no matching archive exists. Reuse an existing idle checkout
-for the required version. Only a necessary code update justifies a persistent
-versioned folder. Reuse verified compilers/SDKs via ROC_CL and ROC_WINSDK,
-and media via ROC_DOWNLOAD_CACHE; record these paths in the checkpoint.
-A package update does not itself require reinstalling dependencies. Preserve the old checkout, local edits, saved proofs, claims and pending
+download only when no matching archive exists. Extract an update into a fresh
+private folder. Preserve the old checkout, local edits, saved proofs, claims and pending
 job IDs. Reconcile saved work with the current accepted baseline and revalidate
 it before submitting. Never overwrite a running agent's files or reset/stash
 someone else's changes to perform an update.
@@ -497,10 +346,8 @@ reports `native_workflow_version` below 12, download the current Worker package 
 - This guide: https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md
 
 Use the chat's current authorized workspace, never an assumed Desktop or owner-specific path.
-Run this bootstrap only after discovery proves no compatible idle private checkout
-exists, or a required update cannot reuse one. Never run it merely for a new chat.
-On Windows it uses a persistent versioned folder. If that folder already exists,
-resume/inspect it; do not generate another name:
+On Windows the following grouped PowerShell bootstrap downloads and verifies the archive, then extracts
+into a new folder without overwriting the user's existing checkout or edits:
 
 ```powershell
 $ErrorActionPreference = 'Stop'
@@ -527,10 +374,7 @@ foreach ($nativeBase in ($nativeSearch | Select-Object -Unique)) {
     }
     if ($nativeCached) { break }
 }
-$nativeFolder = Join-Path $nativeWorkspace ('RoConstruct-Native-' + $nativeManifest.sha256.Substring(0, 12))
-if (Test-Path -LiteralPath $nativeFolder) {
-    throw ('Existing Worker folder: resume/inspect this path; do not bootstrap again: ' + $nativeFolder)
-}
+$nativeFolder = Join-Path $nativeWorkspace ('RoConstruct-Native-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $nativeFolder -ErrorAction Stop | Out-Null
 $nativeArchive = Join-Path $nativeFolder 'worker.zip'
 if ($nativeCached) {
@@ -553,8 +397,7 @@ SHA-256, and extract only a needed update into a fresh authorized folder.
 Capture the printed absolute checkout path and use it as the explicit working directory for every later
 tool call. `Set-Location` and process environment changes do not persist across separate terminal calls.
 Set `ROC_NONINTERACTIVE=1` again in the grouped setup call if needed.
-Read the extracted `AGENTS.md` and `CLAUDE.md`, then run doctor and repair only
-reported missing prerequisites using the conditional setup below. Use an existing working server
+Read the extracted `AGENTS.md` and `CLAUDE.md`, then execute setup below. Use an existing working server
 configuration when supplied, otherwise use the manifest's `server` URL. Never copy another contributor's
 credentials. Ask only for missing contributor identity. Native integration is public; no invitation required.
 If downloads fail, retry and report the actual URL/error; never invent a successful install.
@@ -569,11 +412,7 @@ Make byte-exact mined 2008 functions come out of the real rbxgs C++ (native inte
 that is already 100% mined and whose method already exists in the rebuild but compiles differently. Credit comes
 only from the server's independent linked rebuild.
 
-A source/library tag does not certify authentic headers or original variable names.
-Generated mining proofs can contain reconstructed declarations. Native work must use
-the real classes and evidenced layouts, then pass the independent integration gates.
-
-## Setup (repair only missing prerequisites before mining)
+## Setup (execute before mining)
 
 Install missing dependencies yourself; downloads are authorized. Do not stop at a setup plan or ask the
 user to download dependencies manually. Reuse installed files. Group setup commands into one terminal
@@ -603,9 +442,7 @@ holding `work/server.db`. Server DB, manifests and compiled server outputs are n
 Keep one contributor checkout per concurrent agent. Preserve unsent edits when updating or syncing.
 
 Configure the contributor name and reachable group-server URL with `roc config --user NAME --server URL`
-if not already configured. Use the human-provided username consistently for every claim and submission;
-for Colin's authorized agent runs, configure `roc config --user colin`. Record that identity with each job.
-A source author or model name does not replace the submitting contributor's username. Use the supplied server URL, not the owner's `localhost`. No native invitation,
+if not already configured. Use the supplied server URL, not the owner's `localhost`. No native invitation,
 `ROC_NATIVE_TOKEN` or owner approval is required. Ask only for missing contributor identity.
 Leave `ROC_NATIVE_EVIDENCE_ROOT` unset on
 another PC; it is an optional same-machine testing override.
@@ -629,9 +466,7 @@ replace this checkout's modified tools.
 
 On Windows, use `.\roc.cmd` (Linux: `./roc.sh`). The following is the dependency
 order for missing/stale prerequisites, not a mandatory full setup on every run.
-Never execute this whole block merely because a new agent/chat opened. Run only
-the first unmet prerequisite and recheck before proceeding; keep baseline sync
-and validation before new trials:
+Run only needed steps; keep baseline sync and validation before new trials:
 
 ```text
 roc install --yes --client 2008-06
@@ -777,9 +612,6 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
      A partial batch archives only the submitted proposals; the remaining proposals stay saved.
 
    After submitting:
-   - Use the operator's requested contributor identity for every submission. When
-     the operator requests `colin`, run `roc config --user colin` in the private
-     worker and retain that identity across resumed sessions and batches.
    - Record the server job ID before starting the next fix. If no job was created, preserve
      the proposal and report the exact blocking gate, claim, baseline or transport error.
      A local exact without a submission is not a completed integration.
@@ -788,12 +620,6 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
    - Record JOB and continue discovery. Use `roc integrate status --id JOB` for a single status check;
      a rejection is a per-batch repair task, not a reason to end the session;
    - `roc integrate sync` after acceptance.
-   - Accepted jobs with new gains trigger the server's integration webhook under
-     the submitting username. Keep the accepted receipt and check notification
-     delivery when server reporting is available. If delivery cannot be confirmed,
-     record it as unconfirmed; never fabricate a success post or resubmit accepted
-     code merely to trigger a webhook. Local proofs and quarantined proposals do
-     not count as accepted integrations.
    - `roc integrate submit` refreshes the server baseline first. If another worker
      integrated the same recipe, it syncs and skips the stale claim instead of
      creating a guaranteed stale-replacement job. Claim fresh work; do not retry it.

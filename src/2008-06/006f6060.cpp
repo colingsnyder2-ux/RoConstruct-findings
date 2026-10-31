@@ -1,136 +1,732 @@
 // from server: 100% by auto
-// roc 2008-06 006f6060  unit: CXTPControlSelector  size: 414 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006f6060
-//
-// 006f6060  83ec2c               sub esp, 0x2c
-// 006f6063  53                   push ebx
-// 006f6064  55                   push ebp
-// 006f6065  56                   push esi
-// 006f6066  57                   push edi
-// 006f6067  8bf9                 mov edi, ecx
-// 006f6069  e8d251fbff           call 0x6ab240
-// 006f606e  83bf9c01000000       cmp dword ptr [edi + 0x19c], 0
-// 006f6075  8b8fc4000000         mov ecx, dword ptr [edi + 0xc4]
-// 006f607b  8b97c8000000         mov edx, dword ptr [edi + 0xc8]
-// 006f6081  89442414             mov dword ptr [esp + 0x14], eax
-// 006f6085  8b87c0000000         mov eax, dword ptr [edi + 0xc0]
-// 006f608b  8944242c             mov dword ptr [esp + 0x2c], eax
-// 006f608f  8b87cc000000         mov eax, dword ptr [edi + 0xcc]
-// 006f6095  894c2430             mov dword ptr [esp + 0x30], ecx
-// 006f6099  89542434             mov dword ptr [esp + 0x34], edx
-// 006f609d  89442438             mov dword ptr [esp + 0x38], eax
-// 006f60a1  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 006f60a9  0f8e45010000         jle 0x6f61f4
-// 006f60af  90                   nop 
-// 006f60b0  33db                 xor ebx, ebx
-// 006f60b2  399fa0010000         cmp dword ptr [edi + 0x1a0], ebx
-// 006f60b8  0f8e21010000         jle 0x6f61df
-// 006f60be  8bff                 mov edi, edi
-// 006f60c0  8bb78c010000         mov esi, dword ptr [edi + 0x18c]
-// 006f60c6  8baf90010000         mov ebp, dword ptr [edi + 0x190]
-// 006f60cc  8b542410             mov edx, dword ptr [esp + 0x10]
-// 006f60d0  42                   inc edx
-// 006f60d1  0fafd6               imul edx, esi
-// 006f60d4  0354242c             add edx, dword ptr [esp + 0x2c]
-// 006f60d8  8bc6                 mov eax, esi
-// 006f60da  0faf442410           imul eax, dword ptr [esp + 0x10]
-// 006f60df  0344242c             add eax, dword ptr [esp + 0x2c]
-// 006f60e3  8bcd                 mov ecx, ebp
-// 006f60e5  0fafcb               imul ecx, ebx
-// 006f60e8  034c2430             add ecx, dword ptr [esp + 0x30]
-// 006f60ec  8d7301               lea esi, [ebx + 1]
-// 006f60ef  89742418             mov dword ptr [esp + 0x18], esi
-// 006f60f3  0faff5               imul esi, ebp
-// 006f60f6  03742430             add esi, dword ptr [esp + 0x30]
-// 006f60fa  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 006f60fe  41                   inc ecx
-// 006f60ff  40                   inc eax
-// 006f6100  894c2420             mov dword ptr [esp + 0x20], ecx
-// 006f6104  4a                   dec edx
-// 006f6105  4e                   dec esi
-// 006f6106  6a2e                 push 0x2e
-// 006f6108  8bcd                 mov ecx, ebp
-// 006f610a  89442420             mov dword ptr [esp + 0x20], eax
-// 006f610e  89542428             mov dword ptr [esp + 0x28], edx
-// 006f6112  8974242c             mov dword ptr [esp + 0x2c], esi
-// 006f6116  e8557ffbff           call 0x6ae070
-// 006f611b  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 006f611f  3b8f84010000         cmp ecx, dword ptr [edi + 0x184]
-// 006f6125  8bf0                 mov esi, eax
-// 006f6127  7d39                 jge 0x6f6162
-// 006f6129  3b9f88010000         cmp ebx, dword ptr [edi + 0x188]
-// 006f612f  7d31                 jge 0x6f6162
-// 006f6131  e80a9cfeff           call 0x6dfd40
-// 006f6136  6a0d                 push 0xd
-// 006f6138  8bc8                 mov ecx, eax
-// 006f613a  e8e193feff           call 0x6df520
-// 006f613f  8b5c2440             mov ebx, dword ptr [esp + 0x40]
-// 006f6143  50                   push eax
-// 006f6144  8d542420             lea edx, [esp + 0x20]
-// 006f6148  52                   push edx
-// 006f6149  8bcb                 mov ecx, ebx
-// 006f614b  e80eb2faff           call 0x6a135e
-// 006f6150  e8eb9bfeff           call 0x6dfd40
-// 006f6155  6a0e                 push 0xe
-// 006f6157  8bc8                 mov ecx, eax
-// 006f6159  e8c293feff           call 0x6df520
-// 006f615e  8bf0                 mov esi, eax
-// 006f6160  eb1f                 jmp 0x6f6181
-// 006f6162  e8d99bfeff           call 0x6dfd40
-// 006f6167  6a05                 push 5
-// 006f6169  8bc8                 mov ecx, eax
-// 006f616b  e8b093feff           call 0x6df520
-// 006f6170  8b5c2440             mov ebx, dword ptr [esp + 0x40]
-// 006f6174  50                   push eax
-// 006f6175  8d442420             lea eax, [esp + 0x20]
-// 006f6179  50                   push eax
-// 006f617a  8bcb                 mov ecx, ebx
-// 006f617c  e8ddb1faff           call 0x6a135e
-// 006f6181  6a2b                 push 0x2b
-// 006f6183  8bcd                 mov ecx, ebp
-// 006f6185  e8e67efbff           call 0x6ae070
-// 006f618a  50                   push eax
-// 006f618b  6a2b                 push 0x2b
-// 006f618d  8bcd                 mov ecx, ebp
-// 006f618f  e8dc7efbff           call 0x6ae070
-// 006f6194  50                   push eax
-// 006f6195  8d4c2424             lea ecx, [esp + 0x24]
-// 006f6199  51                   push ecx
-// 006f619a  8bcb                 mov ecx, ebx
-// 006f619c  e8b7b1faff           call 0x6a1358
-// 006f61a1  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 006f61a5  8b17                 mov edx, dword ptr [edi]
-// 006f61a7  8b9248010000         mov edx, dword ptr [edx + 0x148]
-// 006f61ad  56                   push esi
-// 006f61ae  83ec10               sub esp, 0x10
-// 006f61b1  8bc4                 mov eax, esp
-// 006f61b3  8908                 mov dword ptr [eax], ecx
-// 006f61b5  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 006f61b9  894804               mov dword ptr [eax + 4], ecx
-// 006f61bc  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 006f61c0  894808               mov dword ptr [eax + 8], ecx
-// 006f61c3  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 006f61c7  89480c               mov dword ptr [eax + 0xc], ecx
-// 006f61ca  53                   push ebx
-// 006f61cb  8bcf                 mov ecx, edi
-// 006f61cd  ffd2                 call edx
-// 006f61cf  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 006f61d3  3b9fa0010000         cmp ebx, dword ptr [edi + 0x1a0]
-// 006f61d9  0f8ce1feffff         jl 0x6f60c0
-// 006f61df  8b442410             mov eax, dword ptr [esp + 0x10]
-// 006f61e3  40                   inc eax
-// 006f61e4  3b879c010000         cmp eax, dword ptr [edi + 0x19c]
-// 006f61ea  89442410             mov dword ptr [esp + 0x10], eax
-// 006f61ee  0f8cbcfeffff         jl 0x6f60b0
-// 006f61f4  5f                   pop edi
-// 006f61f5  5e                   pop esi
-// 006f61f6  5d                   pop ebp
-// 006f61f7  5b                   pop ebx
-// 006f61f8  83c42c               add esp, 0x2c
-// 006f61fb  c20400               ret 4
-// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPControlExt.cpp (function ?Draw@CXTPControlSelector@@MAEXPAVCDC@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlExt.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPControlExt.cpp : implementation file.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPIntel80Helpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPVC80Helpers.h"
+
+#include "XTPControlExt.h"
+#include "XTPMouseManager.h"
+#include "XTPControls.h"
+#include "XTPToolBar.h"
+#include "XTPPopupBar.h"
+#include "XTPControlPopup.h"
+#include "XTPCommandBars.h"
+#include "TabManager/XTPTabManager.h"
+#include "XTPTabClientWnd.h"
+#include "XTPPaintManager.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+UINT CXTPControlWindowList::m_nFistMDIChild = AFX_IDM_FIRST_MDICHILD;
+UINT CXTPControlWindowList::m_nItemCount = 9;
+BOOL CXTPControlWindowList::m_bShowRadioButtons = FALSE;
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlWindowList
+
+IMPLEMENT_XTP_CONTROL(CXTPControlWindowList, CXTPControlButton)
+
+
+CString CXTPControlWindowList::ConstructCaption(const CString& lpszTitle, int nIndex)
+{
+	CString strTemp;
+
+	// double up any '&' characters so they are not underlined
+	LPCTSTR lpszSrc = lpszTitle;
+	LPTSTR lpszDest = strTemp.GetBuffer(lpszTitle.GetLength() * 2);
+
+	while (*lpszSrc != 0)
+	{
+		if (*lpszSrc == '&')
+			*lpszDest++ = '&';
+
+		if (_istlead(*lpszSrc))
+			*lpszDest++ = *lpszSrc++;
+		*lpszDest++ = *lpszSrc++;
+	}
+
+	*lpszDest = 0;
+	strTemp.ReleaseBuffer();
+
+	CString strTitle;
+
+	if (nIndex == 0)
+		return strTemp;
+
+	if (nIndex < 10)
+	{
+		strTitle.Format(_T("&%i %s"), nIndex, (LPCTSTR)strTemp);
+	}
+	else if (nIndex == 10)
+	{
+		strTitle.Format(_T("1&0 %s"), (LPCTSTR)strTemp);
+	}
+	else
+	{
+		strTitle.Format(_T("%i %s"), nIndex, (LPCTSTR)strTemp);
+	}
+
+	return strTitle;
+}
+
+void CXTPControlWindowList::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	ASSERT(m_pControls->GetAt(m_nIndex) == this);
+
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetID() >= (int)m_nFistMDIChild)
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	CMDIFrameWnd* pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, m_pParent->GetSite());
+	HWND hWndClient = pFrame ? pFrame->m_hWndMDIClient : NULL;
+
+	if (m_pParent->IsCustomizeMode() || hWndClient == NULL)
+	{
+		m_dwHideFlags = 0;
+		return;
+	}
+
+	m_dwHideFlags |= xtpHideGeneric;
+
+	int nIndex = m_nIndex + 1;
+
+	TCHAR lpTitle[256];
+	HWND hWndActive = (HWND)::SendMessage(hWndClient, WM_MDIGETACTIVE, 0, 0);
+
+	if (hWndActive)
+	{
+		int nID = GetDlgCtrlID(hWndActive);
+
+		if (nID < 0x802F && nID >= 0x8000)
+			m_nFistMDIChild = 0x8000;
+
+		if (nID < 0x2F && nID >= 1)
+			m_nFistMDIChild = 1;
+	}
+
+	int nID = m_nFistMDIChild;
+
+	HWND hWndChild = ::GetDlgItem(hWndClient, nID);
+	while (hWndChild)
+	{
+		if (::IsWindowVisible(hWndChild))
+		{
+			::GetWindowText(hWndChild, lpTitle, 256);
+
+			CXTPControl* pControl = m_pControls->Add(m_bShowRadioButtons ? xtpControlRadioButton : xtpControlButton,
+				nID, _T(""), nIndex, TRUE);
+
+
+			pControl->SetCaption(ConstructCaption(lpTitle, nIndex - m_nIndex));
+			pControl->SetBeginGroup(nIndex == m_nIndex + 1);
+			pControl->SetChecked(hWndActive == hWndChild);
+			pControl->SetFlags(xtpFlagManualUpdate);
+			pControl->SetHelpId(AFX_IDS_MDICHILD);
+
+			if ((GetFlags() & xtpFlagWrapRow) && nIndex == m_nIndex + 1)
+				pControl->SetFlags(pControl->GetFlags() | xtpFlagWrapRow);
+
+			CString strPrompt;
+			VERIFY(strPrompt.LoadString(AFX_IDS_MDICHILD));
+			pControl->SetPrompt(strPrompt);
+
+			nIndex++;
+
+			if (nIndex - m_nIndex > (int)m_nItemCount)
+				break;
+		}
+
+		hWndChild = ::GetDlgItem(hWndClient, ++nID);
+	}
+}
+
+BOOL CXTPControlWindowList::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlToolbars
+
+void CXTPControlToolbars::CXTPControlToolbar::OnExecute()
+{
+	CXTPCommandBars* pCommandBars = GetParent()->GetCommandBars();
+	pCommandBars->ClosePopups();
+
+	if (pCommandBars) pCommandBars->ToggleVisible((int)GetTag());
+}
+
+IMPLEMENT_XTP_CONTROL(CXTPControlToolbars, CXTPControlButton)
+
+CXTPControlToolbars::CXTPControlToolbars()
+{
+}
+
+void CXTPControlToolbars::CreateToolbarMenu(CXTPCommandBar* pPopupBar, int nInsert, int nID, BOOL bAddCustomizeButton, BOOL bBeginGroup)
+{
+	CXTPCommandBars* pCommandBars = pPopupBar->GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	int nIndex = 0;
+
+	int nCount = pCommandBars->GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPToolBar* pBar = pCommandBars->GetAt(i);
+
+		if (pBar->IsContextMenuPresent() && pBar->IsCloseable())
+		{
+			CXTPControl* pButton = pPopupBar->GetControls()->Add(new CXTPControlToolbar(), nID, _T("CXTPControlToolbar"), nInsert, TRUE);
+			pButton->SetTag(nIndex);
+			pButton->SetBeginGroup(bBeginGroup);
+
+			pButton->SetCaption(CXTPControlWindowList::ConstructCaption(pBar->GetTitle(), 0));
+			pButton->SetFlags(xtpFlagManualUpdate);
+			pButton->SetChecked(pBar->IsVisible());
+			nInsert++;
+			bBeginGroup = FALSE;
+		}
+		nIndex++;
+	}
+
+	if (bAddCustomizeButton && pCommandBars->m_bCustomizeAvail)
+	{
+		CXTPControl* pControlCustomize = pPopupBar->GetControls()->Add(xtpControlButton, XTP_ID_CUSTOMIZE);
+		pControlCustomize->SetBeginGroup(TRUE);
+	}
+}
+
+
+void CXTPControlToolbars::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetParameter() == _T("CXTPControlToolbar"))
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	if (m_pParent->IsCustomizeMode())
+	{
+		m_dwHideFlags = 0;
+		return;
+	}
+
+	m_dwHideFlags |= xtpHideGeneric;
+
+	CreateToolbarMenu(m_pParent, m_nIndex + 1, GetID(), FALSE, GetBeginGroup());
+}
+
+BOOL CXTPControlToolbars::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlOleItems
+
+IMPLEMENT_XTP_CONTROL(CXTPControlOleItems, CXTPControlButton)
+
+
+void CXTPControlOleItems::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+
+	ASSERT(m_pControls->GetAt(m_nIndex) == this);
+
+	if (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetParameter() == _T("OLEMENUPOPUP"))
+		{
+			m_pControls->Remove(pControl);
+		}
+	}
+
+	if (m_pParent->IsCustomizeMode())
+	{
+		m_dwHideFlags = 0;
+		return;
+	}
+
+	m_dwHideFlags |= xtpHideGeneric;
+
+
+	CFrameWnd* pActiveFrame = m_pParent->GetFrameSite();
+	if (!pActiveFrame)
+		return;
+
+	CFrameWnd* pFrame = pActiveFrame->GetActiveFrame();
+
+	if (pFrame == NULL || pFrame->GetActiveView() == NULL)
+		return;
+
+	CView* pView = pFrame->GetActiveView();
+
+	CDocument* pDocument = pView->GetDocument();
+	if (pDocument == NULL || DYNAMIC_DOWNCAST(COleDocument, pDocument) == NULL)
+		return;
+
+		// check for single selection
+	COleClientItem* pItem = ((COleDocument*)pDocument)->GetPrimarySelectedItem(pView);
+	if (pItem == NULL || pItem->GetType() == OT_STATIC)
+	{
+		// no selection, or is 'static' item
+		return;
+	}
+	int nConvertID = 0;
+
+
+	CMenu mnuOlePopup;
+	mnuOlePopup.CreatePopupMenu();
+	// update the menu
+	AfxOleSetEditMenu(pItem, &mnuOlePopup, 0,
+		ID_OLE_VERB_FIRST, ID_OLE_VERB_LAST, nConvertID);
+
+	if (mnuOlePopup.GetMenuItemCount() != 1)
+		return;
+
+	CMenu* pMenu = mnuOlePopup.GetSubMenu(0);
+	if (pMenu == NULL)
+		return;
+
+	CXTPPopupBar* pBar = CXTPPopupBar::CreatePopupBar(m_pParent->GetCommandBars());
+	pBar->LoadMenu(pMenu);
+
+	CXTPControlPopup* pPopup = (CXTPControlPopup*)m_pControls->Add(xtpControlPopup, 0, _T("OLEMENUPOPUP"), m_nIndex + 1, TRUE);
+
+	pPopup->SetCommandBar(pBar);
+	pBar->InternalRelease();
+
+	CString strTitle;
+	mnuOlePopup.GetMenuString(0, strTitle, MF_BYPOSITION);
+	pPopup->SetCaption(strTitle);
+}
+
+BOOL CXTPControlOleItems::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlRecentFileList
+
+IMPLEMENT_XTP_CONTROL(CXTPControlRecentFileList, CXTPControlButton)
+
+
+CRecentFileList* CXTPControlRecentFileList::GetRecentFileList()
+{
+	USES_PROTECTED_ACCESS(CXTPControlRecentFileList, CWinApp, CRecentFileList*, m_pRecentFileList)
+
+	return PROTECTED_ACCESS(CWinApp, AfxGetApp(), m_pRecentFileList);
+
+}
+
+int CXTPControlRecentFileList::GetFirstMruID()
+{
+	return ID_FILE_MRU_FILE1;
+}
+
+void CXTPControlRecentFileList::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	CRecentFileList* pRecentFileList = GetRecentFileList();
+
+	if (!pRecentFileList)
+		return;
+
+	ASSERT(pRecentFileList->m_arrNames != NULL);
+	if (!pRecentFileList->m_arrNames)
+		return;
+
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetID() >= GetFirstMruID() && pControl->GetID() <= GetFirstMruID() + pRecentFileList->m_nSize)
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	if (m_pParent->IsCustomizeMode())
+	{
+		m_dwHideFlags = 0;
+		SetEnabled(TRUE);
+		return;
+	}
+
+	if (pRecentFileList->m_arrNames[0].IsEmpty())
+	{
+		m_dwHideFlags = 0;
+		SetEnabled(FALSE);
+
+		return;
+	}
+	m_dwHideFlags |= xtpHideGeneric;
+
+	TCHAR szCurDir[_MAX_PATH + 1];
+	GetCurrentDirectory(_MAX_PATH, szCurDir);
+	int nCurDir = lstrlen(szCurDir);
+
+	szCurDir[nCurDir] = '\\';
+	szCurDir[++nCurDir] = '\0';
+
+	CString strName;
+	CString strTemp;
+	for (int iMRU = 0; iMRU < pRecentFileList->m_nSize; iMRU++)
+	{
+		if (!pRecentFileList->GetDisplayName(strName, iMRU, szCurDir, nCurDir))
+			break;
+
+		CXTPControl* pControl = m_pControls->Add(xtpControlButton, iMRU + GetFirstMruID(), _T(""), m_nIndex + iMRU + 1 , TRUE);
+
+		pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strName, iMRU + 1));
+		pControl->SetFlags(xtpFlagManualUpdate);
+		pControl->SetBeginGroup(iMRU == 0 && m_nIndex != 0);
+
+		if ((GetFlags() & xtpFlagWrapRow) && iMRU == 0)
+			pControl->SetFlags(pControl->GetFlags() | xtpFlagWrapRow);
+
+	}
+}
+
+
+
+BOOL CXTPControlRecentFileList::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlSelector
+
+IMPLEMENT_XTP_CONTROL(CXTPControlSelector, CXTPControl)
+
+CXTPControlSelector::CXTPControlSelector()
+{
+	m_bLockUpdate = FALSE;
+
+	m_szItemsCount = CSize(5, 4);
+	m_szItemsMax = CSize(12, 12);
+	m_szItem = CSize(28, 28);
+
+}
+
+void CXTPControlSelector::OnDrawItem(CDC* /*pDC*/, CRect /*rcItem*/, COLORREF /*clrText*/)
+{
+
+}
+
+
+void CXTPControlSelector::Draw(CDC* pDC)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	CRect rcControl = GetRect();
+
+	for (int x = 0; x < m_szItemsVisible.cx; x++)
+	for (int y = 0; y < m_szItemsVisible.cy; y++)
+	{
+		CRect rcItem(rcControl.left + x * m_szItem.cx, rcControl.top + y * m_szItem.cy, rcControl.left + (x + 1)* m_szItem.cx, rcControl.top + (y + 1) * m_szItem.cy);
+		rcItem.DeflateRect(1, 1, 1, 1);
+
+		COLORREF clrText = pPaintManager->GetXtremeColor(XPCOLOR_TOOLBAR_TEXT);
+
+		if (x < m_szItemsActive.cx && y < m_szItemsActive.cy)
+		{
+			pDC->FillSolidRect(rcItem, GetXtremeColor(COLOR_HIGHLIGHT));
+			clrText = GetXtremeColor(COLOR_HIGHLIGHTTEXT);
+		}
+		else
+		{
+			pDC->FillSolidRect(rcItem, GetXtremeColor(COLOR_WINDOW));
+		}
+
+		pDC->Draw3dRect(rcItem, pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER), pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER));
+
+		OnDrawItem(pDC, rcItem, clrText);
+	}
+
+}
+
+CSize CXTPControlSelector::GetSize(CDC* /*pDC*/)
+{
+	return CSize (m_szItem.cx * m_szItemsVisible.cx, m_szItem.cy * m_szItemsVisible.cy);
+}
+
+void CXTPControlSelector::OnLButtonUp(CPoint /*point*/)
+{
+	if (m_szItemsActive != CSize(0))
+	{
+		m_szResult = m_szItemsActive;
+		OnExecute();
+	}
+}
+
+BOOL CXTPControlSelector::OnSetSelected(int bSelected)
+{
+	if (!bSelected)
+	{
+		CPoint point;
+		GetCursorPos(&point);
+		GetParent()->ScreenToClient(&point);
+
+		CRect rcControl = GetRect();
+		CSize szItemsVisible = m_szItemsVisible;
+
+		if (GetKeyState(VK_LBUTTON) < 0)
+		{
+			if (point.x >= rcControl.right)
+			{
+				szItemsVisible.cx = min(m_szItemsMax.cx, (point.x - rcControl.left) / m_szItem.cx + 1);
+			}
+			if (point.y >= rcControl.bottom)
+			{
+				szItemsVisible.cy = min(m_szItemsMax.cy, (point.y - rcControl.top) / m_szItem.cy + 1);
+			}
+		}
+
+		if (szItemsVisible != m_szItemsVisible)
+		{
+			m_szItemsVisible = szItemsVisible;
+			SetItemsActive(m_szItemsActive, TRUE);
+
+			m_bLockUpdate = TRUE;
+			GetParent()->OnRecalcLayout();
+			m_bLockUpdate = FALSE;
+			OnMouseMove(point);
+
+
+		}
+		else
+		{
+			SetItemsActive(0);
+		}
+	}
+
+	return CXTPControl::OnSetSelected(bSelected);
+}
+
+void CXTPControlSelector::OnCalcDynamicSize(DWORD dwMode)
+{
+	CXTPControl::OnCalcDynamicSize(dwMode);
+
+	if (!m_bLockUpdate)
+	{
+		m_szItemsActive = CSize(0);
+		m_szItemsVisible = m_szItemsCount;
+	}
+	SetItemsActive(m_szItemsActive, TRUE);
+}
+
+void CXTPControlSelector::SetItemsActive(CSize szActive, BOOL bNotify)
+{
+	if (szActive != m_szItemsActive || bNotify)
+	{
+		m_szItemsActive = szActive;
+		RedrawParent();
+
+		NotifySite(XTP_SLN_SELCHANGE);
+	}
+}
+
+void CXTPControlSelector::OnMouseMove(CPoint point)
+{
+	CSize szActive(0);
+
+	CRect rcControl = GetRect();
+
+	for (int x = 0; x < m_szItemsVisible.cx; x++)
+	{
+		if (point.x > rcControl.left + x * m_szItem.cx)
+			szActive.cx = x + 1;
+	}
+	for (int y = 0; y < m_szItemsVisible.cy; y++)
+	{
+		if (point.y > rcControl.top + y * m_szItem.cy)
+			szActive.cy = y + 1;
+	}
+
+	SetItemsActive(szActive);
+}
+
+
+void CXTPControlSelector::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	ASSERT_KINDOF(CXTPControlSelector, pControl);
+
+	CXTPControl::Copy(pControl, bRecursive);
+
+	m_szItemsCount = ((CXTPControlSelector*)pControl)->m_szItemsCount;
+	m_szItemsMax = ((CXTPControlSelector*)pControl)->m_szItemsMax;
+	m_szItem = ((CXTPControlSelector*)pControl)->m_szItem;
+
+}
+
+void CXTPControlSelector::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPControl::DoPropExchange(pPX);
+
+	PX_Size(pPX, _T("ItemsCount"), m_szItemsCount, CSize(0, 0));
+	PX_Size(pPX, _T("ItemsMax"), m_szItemsMax, CSize(0, 0));
+	PX_Size(pPX, _T("ItemSize"), m_szItem, CSize(0, 0));
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlWorkspaceActions
+
+IMPLEMENT_XTP_CONTROL(CXTPControlWorkspaceActions, CXTPControlButton)
+
+void CXTPControlWorkspaceActions::AddCommand(CXTPTabClientWnd* pClient, UINT nID, int& nIndex)
+{
+	if (pClient->IsWorkspaceCommandEnabled(nID))
+	{
+		m_pControls->Add(xtpControlButton, nID, _T(""), nIndex++, TRUE);
+	}
+}
+
+void CXTPControlWorkspaceActions::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	ASSERT(m_pControls->GetAt(m_nIndex) == this);
+
+	if (!m_pParent)
+		return;
+
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetID() >= XTP_ID_WORKSPACE_MOVEPREVIOUS && pControl->GetID() <= XTP_ID_WORKSPACE_NEWVERTICAL)
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	CMDIFrameWnd* pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, m_pParent->GetSite());
+	HWND hWndClient = pFrame ? pFrame->m_hWndMDIClient : NULL;
+
+	CXTPTabClientWnd* pClient = DYNAMIC_DOWNCAST(CXTPTabClientWnd, CWnd::FromHandlePermanent(hWndClient));
+
+	if (pClient == NULL)
+		return;
+
+	m_dwHideFlags |= xtpHideGeneric;
+
+	int nIndex = m_nIndex + 1;
+
+	AddCommand(pClient, XTP_ID_WORKSPACE_NEWHORIZONTAL, nIndex);
+	AddCommand(pClient, XTP_ID_WORKSPACE_NEWVERTICAL, nIndex);
+	AddCommand(pClient, XTP_ID_WORKSPACE_MOVEPREVIOUS, nIndex);
+	AddCommand(pClient, XTP_ID_WORKSPACE_MOVENEXT, nIndex);
+
+	if (nIndex != m_nIndex + 1)
+		m_pControls->GetAt(m_nIndex + 1)->SetBeginGroup(GetBeginGroup());
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+
+IMPLEMENT_XTP_CONTROL(CXTPControlLabel, CXTPControl)
+
+void CXTPControlLabel::OnClick(BOOL bKeyboard, CPoint pt)
+{
+	if (!bKeyboard && IsCustomizeMode() && IsCustomizeMovable())
+	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
+		CustomizeStartDrag(pt);
+		return;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlCheckBox
+
+
+IMPLEMENT_XTP_CONTROL(CXTPControlCheckBox, CXTPControlButton)
+
+CXTPControlCheckBox::CXTPControlCheckBox()
+{
+	m_controlType = xtpControlCheckBox;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlRadioButton
+
+
+IMPLEMENT_XTP_CONTROL(CXTPControlRadioButton, CXTPControlButton)
+
+CXTPControlRadioButton::CXTPControlRadioButton()
+{
+	m_controlType = xtpControlRadioButton;
+}

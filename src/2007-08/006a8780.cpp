@@ -1,25 +1,5 @@
-// from server: 69% by colin
-struct Result {
-    int value;
-    int count;
-};
-
-struct Inner {
-    char pad[0xfc];
-    int field_fc;
-};
-
-struct CXTPRibbonBarControlQuickAccessPopup {
-    char pad[0xfc];
-    int field_fc;
-    void method(Result* out, int arg2);
-};
-
-extern "C" Inner* __fastcall sub_643a40(int);
-
-void CXTPRibbonBarControlQuickAccessPopup::method(Result* out, int arg2) {
-    Inner* p = sub_643a40(this->field_fc);
-    int n = p->field_fc;
-    out->count = n;
-    out->value = n / 13;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_e769aa09a1b4e397.cpp

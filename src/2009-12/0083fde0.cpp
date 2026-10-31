@@ -1,41 +1,264 @@
-// roc 2009-12 0083fde0  unit: CXTPCustomizeSheet  size: 129 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0083fde0
-//
-// 0083fde0  6aff                 push -1
-// 0083fde2  68a4cc9500           push 0x95cca4
-// 0083fde7  64a100000000         mov eax, dword ptr fs:[0]
-// 0083fded  50                   push eax
-// 0083fdee  51                   push ecx
-// 0083fdef  56                   push esi
-// 0083fdf0  a10052b600           mov eax, dword ptr [0xb65200]
-// 0083fdf5  33c4                 xor eax, esp
-// 0083fdf7  50                   push eax
-// 0083fdf8  8d44240c             lea eax, [esp + 0xc]
-// 0083fdfc  64a300000000         mov dword ptr fs:[0], eax
-// 0083fe02  8bf1                 mov esi, ecx
-// 0083fe04  89742408             mov dword ptr [esp + 8], esi
-// 0083fe08  c706f4919f00         mov dword ptr [esi], 0x9f91f4
-// 0083fe0e  8d8e54010000         lea ecx, [esi + 0x154]
-// 0083fe14  c744241402000000     mov dword ptr [esp + 0x14], 2
-// 0083fe1c  e85fffffff           call 0x83fd80
-// 0083fe21  8d8ef4000000         lea ecx, [esi + 0xf4]
-// 0083fe27  c644241401           mov byte ptr [esp + 0x14], 1
-// 0083fe2c  e84fffffff           call 0x83fd80
-// 0083fe31  8d8e9c000000         lea ecx, [esi + 0x9c]
-// 0083fe37  c644241400           mov byte ptr [esp + 0x14], 0
-// 0083fe3c  e8216a0e00           call 0x926862
-// 0083fe41  8bce                 mov ecx, esi
-// 0083fe43  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 0083fe4b  e80c6a0e00           call 0x92685c
-// 0083fe50  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0083fe54  64890d00000000       mov dword ptr fs:[0], ecx
-// 0083fe5b  59                   pop ecx
-// 0083fe5c  5e                   pop esi
-// 0083fe5d  83c410               add esp, 0x10
-// 0083fe60  c3                   ret 
-// copied from an identical function in another client (function ??1CXTPCustomizeOptionsPage@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCustomizeOptionsPage.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPCustomizeOptionsPage.cpp : implementation of the CXTPCustomizeOptionsPage class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPCustomizeOptionsPage.h"
+#include "XTPCustomizeSheet.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPGroupLine
+
+CXTPGroupLine::CXTPGroupLine()
+{
+	m_themeButton.OpenThemeData(0, L"BUTTON");
+}
+
+BEGIN_MESSAGE_MAP(CXTPGroupLine, CStatic)
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+void CXTPGroupLine::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	COLORREF clrText = GetSysColor(COLOR_BTNTEXT);
+
+	if (m_themeButton.IsAppThemeReady() &&
+		FAILED(m_themeButton.GetThemeColor(BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR, &clrText)))
+	{
+		clrText = GetSysColor(COLOR_BTNTEXT);
+	}
+
+	BOOL bRightToLeft = GetExStyle() & WS_EX_RTLREADING;
+
+	CString strText;
+	GetWindowText(strText);
+
+	CXTPClientRect rc(this);
+
+	CXTPFontDC font(&dc, GetFont());
+	dc.SetBkMode(TRANSPARENT);
+	dc.SetTextColor(clrText);
+
+	dc.DrawText(strText, rc, DT_SINGLELINE | DT_VCENTER |
+		(bRightToLeft ? DT_RIGHT | DT_RTLREADING: DT_LEFT));
+
+	CRect rcLine(0, rc.top, 0, rc.bottom);
+	dc.DrawText(strText, rcLine, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT);
+
+	if (bRightToLeft)
+		rcLine.SetRect(rc.left, rc.top, rc.right -  + rcLine.Width() - 6, rc.bottom);
+	else
+		rcLine.SetRect(rc.left + rcLine.Width() + 6, rc.top, rc.right, rc.bottom);
+
+	COLORREF clrLine = GetSysColor(COLOR_3DSHADOW);
+	if (m_themeButton.IsAppThemeReady() &&
+		SUCCEEDED(m_themeButton.GetThemeColor(BP_GROUPBOX, GBS_NORMAL, TMT_BORDERCOLORHINT, &clrLine)))
+	{
+		dc.FillSolidRect(rcLine.left, rcLine.CenterPoint().y, rcLine.Width(), 1, clrLine);
+	}
+	else
+	{
+		dc.FillSolidRect(rcLine.left, rcLine.CenterPoint().y, rcLine.Width(), 1, GetSysColor(COLOR_3DSHADOW));
+		dc.FillSolidRect(rcLine.left, rcLine.CenterPoint().y + 1, rcLine.Width(), 1, GetSysColor(COLOR_3DHIGHLIGHT));
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeOptionsPage property page
+
+
+CXTPCustomizeOptionsPage::CXTPCustomizeOptionsPage(CXTPCustomizeSheet* pSheet) : CPropertyPage(CXTPCustomizeOptionsPage::IDD)
+{
+	CXTPCommandBars* pCommandBars = pSheet->GetCommandBars();
+	CXTPCommandBarsOptions* pOptions = pCommandBars->GetCommandBarsOptions();
+
+	m_bAlwaysShowFullMenus = pOptions->bAlwaysShowFullMenus;
+	m_bShowFullAfterDelay = pOptions->bShowFullAfterDelay;
+	m_bLargeIcons = pOptions->bLargeIcons;
+	m_bToolBarScreenTips = pOptions->bToolBarScreenTips;
+	m_bToolBarAccelTips = pOptions->bToolBarAccelTips;
+
+	m_nAnimationType = pOptions->animationType;
+
+	//{{AFX_DATA_INIT(CXTPCustomizeOptionsPage)
+	//}}AFX_DATA_INIT
+	m_pSheet = pSheet;
+
+	//RevertResourceContext();
+}
+
+CXTPCustomizeOptionsPage::~CXTPCustomizeOptionsPage()
+{
+}
+
+CXTPCommandBars* CXTPCustomizeOptionsPage::GetCommandBars() const
+{
+	ASSERT(m_pSheet && m_pSheet->GetCommandBars());
+	return m_pSheet ? m_pSheet->GetCommandBars() : NULL;
+}
+
+void CXTPCustomizeOptionsPage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+
+	DDX_Control(pDX, XTP_IDC_COMBO_ANIMATION, m_comboAnimationType);
+	DDX_CBIndex(pDX, XTP_IDC_COMBO_ANIMATION, m_nAnimationType);
+
+	//{{AFX_DATA_MAP(CXTPCustomizeOptionsPage)
+	DDX_Check(pDX, XTP_IDC_CHECK_FULL_MENUS, m_bAlwaysShowFullMenus);
+	DDX_Check(pDX, XTP_IDC_CHECK_AFTERDELAY, m_bShowFullAfterDelay);
+	DDX_Check(pDX, XTP_IDC_CHECK_LARGEICONS, m_bLargeIcons);
+	DDX_Check(pDX, XTP_IDC_CHECK_SCREENTTIPS, m_bToolBarScreenTips);
+	DDX_Check(pDX, XTP_IDC_CHECK_SHORTCUTS, m_bToolBarAccelTips);
+	//}}AFX_DATA_MAP
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPCustomizeOptionsPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CXTPCustomizeOptionsPage)
+	ON_BN_CLICKED(XTP_IDC_CHECK_FULL_MENUS, OnCheckFullMenus)
+	ON_BN_CLICKED(XTP_IDC_CHECK_AFTERDELAY, OnCheckAfterdelay)
+	ON_BN_CLICKED(XTP_IDC_CHECK_LARGEICONS, OnCheckLargeicons)
+	ON_BN_CLICKED(XTP_IDC_CHECK_SCREENTTIPS, OnCheckScreenttips)
+	ON_BN_CLICKED(XTP_IDC_CHECK_SHORTCUTS, OnCheckShortcuts)
+	ON_BN_CLICKED(XTP_IDC_BUTTON_RESETDATA, OnResetData)
+	ON_CBN_SELCHANGE(XTP_IDC_COMBO_ANIMATION, OnAnimationChanged)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeOptionsPage message handlers
+
+void CXTPCustomizeOptionsPage::AddComboString(UINT nIDResource)
+{
+	CString str;
+	XTPResourceManager()->LoadString(&str, nIDResource);
+
+	m_comboAnimationType.AddString(str);
+}
+
+
+BOOL CXTPCustomizeOptionsPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+	GetDlgItem(XTP_IDC_CHECK_AFTERDELAY)->EnableWindow(!m_bAlwaysShowFullMenus);
+	GetDlgItem(XTP_IDC_CHECK_SHORTCUTS)->EnableWindow(m_bToolBarScreenTips);
+
+	if (GetDlgItem(XTP_IDC_GROUP_PERSONALIZED))
+		m_wndPersonalizedGroup.SubclassDlgItem(XTP_IDC_GROUP_PERSONALIZED, this);
+
+	if (GetDlgItem(XTP_IDC_GROUP_OTHER))
+		m_wndOtherGroup.SubclassDlgItem(XTP_IDC_GROUP_OTHER, this);
+
+	// Add strings to animation combo box.
+	AddComboString(XTP_IDS_ANIMATION_SYSDEF);
+	AddComboString(XTP_IDS_ANIMATION_RANDOM);
+	AddComboString(XTP_IDS_ANIMATION_UNFOLD);
+	AddComboString(XTP_IDS_ANIMATION_SLIDE);
+	AddComboString(XTP_IDS_ANIMATION_FADE);
+	AddComboString(XTP_IDS_ANIMATION_NONE);
+
+	// Ensure combo selection is made.
+	UpdateData(FALSE);
+
+
+	return TRUE;
+}
+
+void CXTPCustomizeOptionsPage::OnCheckFullMenus()
+{
+	UpdateData();
+	GetDlgItem(XTP_IDC_CHECK_AFTERDELAY)->EnableWindow(!m_bAlwaysShowFullMenus);
+
+	GetCommandBars()->GetCommandBarsOptions()->bAlwaysShowFullMenus = m_bAlwaysShowFullMenus;
+}
+
+
+void CXTPCustomizeOptionsPage::OnAnimationChanged()
+{
+	UpdateData();
+	if (m_nAnimationType != CB_ERR)
+	{
+		GetCommandBars()->GetCommandBarsOptions()->animationType = (XTPAnimationType)m_nAnimationType;
+	}
+}
+
+void CXTPCustomizeOptionsPage::OnCheckAfterdelay()
+{
+	UpdateData();
+	GetCommandBars()->GetCommandBarsOptions()->bShowFullAfterDelay = m_bShowFullAfterDelay;
+}
+
+void CXTPCustomizeOptionsPage::OnCheckLargeicons()
+{
+	UpdateData();
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+	pCommandBars->GetCommandBarsOptions()->bLargeIcons = m_bLargeIcons;
+
+	pCommandBars->RedrawCommandBars();
+}
+
+void CXTPCustomizeOptionsPage::OnCheckScreenttips()
+{
+	UpdateData();
+	GetDlgItem(XTP_IDC_CHECK_SHORTCUTS)->EnableWindow(m_bToolBarScreenTips);
+	GetCommandBars()->GetCommandBarsOptions()->bToolBarScreenTips = m_bToolBarScreenTips;
+
+}
+
+void CXTPCustomizeOptionsPage::OnCheckShortcuts()
+{
+	UpdateData();
+	GetCommandBars()->GetCommandBarsOptions()->bToolBarAccelTips = m_bToolBarAccelTips;
+}
+
+void CXTPCustomizeOptionsPage::OnResetData()
+{
+	CString strPrompt;
+	VERIFY(XTPResourceManager()->LoadString(&strPrompt, XTP_IDS_CONFIRM_RESETDATA));
+
+	if (m_pSheet->MessageBox(strPrompt, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2) == IDYES)
+	{
+		GetCommandBars()->ResetUsageData();
+	}
+}

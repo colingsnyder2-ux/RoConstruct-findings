@@ -1,47 +1,148 @@
-// roc 2009-12 008703c0  unit: CXTPNewToolbarDlg  size: 109 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008703c0
-//
-// 008703c0  56                   push esi
-// 008703c1  57                   push edi
-// 008703c2  e8c9ffffff           call 0x870390
-// 008703c7  8bf0                 mov esi, eax
-// 008703c9  e8c2ffffff           call 0x870390
-// 008703ce  83780c00             cmp dword ptr [eax + 0xc], 0
-// 008703d2  8b3d20cd9800         mov edi, dword ptr [0x98cd20]
-// 008703d8  7544                 jne 0x87041e
-// 008703da  53                   push ebx
-// 008703db  8b1decb29800         mov ebx, dword ptr [0x98b2ec]
-// 008703e1  8b06                 mov eax, dword ptr [esi]
-// 008703e3  83e801               sub eax, 1
-// 008703e6  7412                 je 0x8703fa
-// 008703e8  83e801               sub eax, 1
-// 008703eb  7521                 jne 0x87040e
-// 008703ed  6802200100           push 0x12002
-// 008703f2  50                   push eax
-// 008703f3  68340da000           push 0xa00d34
-// 008703f8  eb0c                 jmp 0x870406
-// 008703fa  6802200100           push 0x12002
-// 008703ff  6a00                 push 0
-// 00870401  68280da000           push 0xa00d28
-// 00870406  ffd7                 call edi
-// 00870408  c70600000000         mov dword ptr [esi], 0
-// 0087040e  6a05                 push 5
-// 00870410  ffd3                 call ebx
-// 00870412  e879ffffff           call 0x870390
-// 00870417  83780c00             cmp dword ptr [eax + 0xc], 0
-// 0087041b  74c4                 je 0x8703e1
-// 0087041d  5b                   pop ebx
-// 0087041e  6a40                 push 0x40
-// 00870420  6a00                 push 0
-// 00870422  6a00                 push 0
-// 00870424  ffd7                 call edi
-// 00870426  5f                   pop edi
-// 00870427  33c0                 xor eax, eax
-// 00870429  5e                   pop esi
-// 0087042a  c20400               ret 4
-// copied from an identical function in another client (function ?SoundThreadProc@CXTPSoundManager@@CGKPAX@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPSoundManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPSoundManager.cpp : implementation of the CXTPSoundManager class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPSoundManager.h"
+
+#pragma warning (disable : 4201)
+	#include <mmsystem.h>
+#pragma warning (default : 4201)
+
+#pragma message("   Automatically linking with WinMM library")
+#pragma message("      (Windows Multimedia System)")
+#pragma comment(lib, "winmm.lib")
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+CXTPSoundManager::CXTPSoundManager()
+{
+	m_hThread = 0;
+	m_bSystemSounds = TRUE;
+	m_bTerminate = FALSE;
+	m_soundState = xtpSoundNone;
+}
+
+CXTPSoundManager* AFX_CDECL XTPSoundManager()
+{
+	static CXTPSoundManager s_managerInstance;
+	return &s_managerInstance;
+}
+
+CXTPSoundManager::~CXTPSoundManager()
+{
+	StopThread();
+}
+
+DWORD WINAPI CXTPSoundManager::SoundThreadProc(LPVOID)
+{
+	XTPSoundManagerState& soundState = XTPSoundManager()->m_soundState;
+
+	while (!XTPSoundManager()->m_bTerminate)
+	{
+		switch (soundState)
+		{
+		case xtpSoundMenuCommand:
+			::PlaySound (_T("MenuCommand"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
+			soundState = xtpSoundNone;
+			break;
+
+		case xtpSoundMenuPopup:
+			::PlaySound (_T("MenuPopup"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
+			soundState = xtpSoundNone;
+			break;
+		}
+
+		::Sleep (5);
+	}
+
+	::PlaySound(NULL, NULL, SND_PURGE);
+
+	return 0;
+}
+
+void CXTPSoundManager::StartThread()
+{
+	ASSERT (m_hThread == NULL);
+
+	m_soundState = xtpSoundNone;
+	m_bTerminate = FALSE;
+
+	DWORD dwThreadID;
+
+	m_hThread = ::CreateThread(NULL, 0, SoundThreadProc, NULL, CREATE_SUSPENDED, &dwThreadID);
+	if (m_hThread != NULL)
+	{
+		::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
+		::ResumeThread(m_hThread);
+	}
+
+}
+
+void CXTPSoundManager::StopThread()
+{
+	if (m_hThread)
+	{
+		m_bTerminate = TRUE;
+
+		DWORD dwCount = 0, dwExitCode = 0;
+
+		while (GetExitCodeThread(m_hThread, &dwExitCode) && dwExitCode == STILL_ACTIVE)
+		{
+			dwCount++;
+
+			if (dwCount > 10)
+			{
+				TerminateThread(m_hThread, 0);
+				break;
+			}
+
+			::WaitForSingleObject(m_hThread, 100);
+		}
+
+		::CloseHandle(m_hThread);
+		m_hThread = 0;
+	}
+}
+
+void CXTPSoundManager::PlaySystemSound(XTPSoundManagerState state)
+{
+	if (m_bSystemSounds)
+	{
+		if (m_hThread == 0)
+			StartThread();
+
+		m_soundState = state;
+	}
+}
+void CXTPSoundManager::EnableSystemSounds(BOOL bEnable)
+{
+	m_bSystemSounds = bEnable;
+}

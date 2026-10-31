@@ -1,503 +1,2089 @@
-// roc 2009-06 00726690  unit: CXTPPaintManager  size: 1820 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00726690
-//
-// 00726690  6aff                 push -1
-// 00726692  6865508700           push 0x875065
-// 00726697  64a100000000         mov eax, dword ptr fs:[0]
-// 0072669d  50                   push eax
-// 0072669e  83ec6c               sub esp, 0x6c
-// 007266a1  53                   push ebx
-// 007266a2  55                   push ebp
-// 007266a3  56                   push esi
-// 007266a4  57                   push edi
-// 007266a5  a1304fa200           mov eax, dword ptr [0xa24f30]
-// 007266aa  33c4                 xor eax, esp
-// 007266ac  50                   push eax
-// 007266ad  8d842480000000       lea eax, [esp + 0x80]
-// 007266b4  64a300000000         mov dword ptr fs:[0], eax
-// 007266ba  8bd9                 mov ebx, ecx
-// 007266bc  8bb42498000000       mov esi, dword ptr [esp + 0x98]
-// 007266c3  8b8ec0000000         mov ecx, dword ptr [esi + 0xc0]
-// 007266c9  8b8600010000         mov eax, dword ptr [esi + 0x100]
-// 007266cf  8b96c4000000         mov edx, dword ptr [esi + 0xc4]
-// 007266d5  33ed                 xor ebp, ebp
-// 007266d7  894c2460             mov dword ptr [esp + 0x60], ecx
-// 007266db  8b8ecc000000         mov ecx, dword ptr [esi + 0xcc]
-// 007266e1  8944242c             mov dword ptr [esp + 0x2c], eax
-// 007266e5  8b86c8000000         mov eax, dword ptr [esi + 0xc8]
-// 007266eb  89542464             mov dword ptr [esp + 0x64], edx
-// 007266ef  8b96fc000000         mov edx, dword ptr [esi + 0xfc]
-// 007266f5  894c246c             mov dword ptr [esp + 0x6c], ecx
-// 007266f9  8bce                 mov ecx, esi
-// 007266fb  896c2414             mov dword ptr [esp + 0x14], ebp
-// 007266ff  896c2450             mov dword ptr [esp + 0x50], ebp
-// 00726703  896c2454             mov dword ptr [esp + 0x54], ebp
-// 00726707  896c2458             mov dword ptr [esp + 0x58], ebp
-// 0072670b  896c245c             mov dword ptr [esp + 0x5c], ebp
-// 0072670f  896c2470             mov dword ptr [esp + 0x70], ebp
-// 00726713  896c2474             mov dword ptr [esp + 0x74], ebp
-// 00726717  896c2478             mov dword ptr [esp + 0x78], ebp
-// 0072671b  896c247c             mov dword ptr [esp + 0x7c], ebp
-// 0072671f  89442468             mov dword ptr [esp + 0x68], eax
-// 00726723  89542424             mov dword ptr [esp + 0x24], edx
-// 00726727  e8448fffff           call 0x71f670
-// 0072672c  8bf8                 mov edi, eax
-// 0072672e  8b06                 mov eax, dword ptr [esi]
-// 00726730  8b5058               mov edx, dword ptr [eax + 0x58]
-// 00726733  8d4c2420             lea ecx, [esp + 0x20]
-// 00726737  51                   push ecx
-// 00726738  8bce                 mov ecx, esi
-// 0072673a  897c2434             mov dword ptr [esp + 0x34], edi
-// 0072673e  ffd2                 call edx
-// 00726740  89ac2488000000       mov dword ptr [esp + 0x88], ebp
-// 00726747  3bfd                 cmp edi, ebp
-// 00726749  740c                 je 0x726757
-// 0072674b  89ac2498000000       mov dword ptr [esp + 0x98], ebp
-// 00726752  83ff01               cmp edi, 1
-// 00726755  740b                 je 0x726762
-// 00726757  c784249800000001000000 mov dword ptr [esp + 0x98], 1
-// 00726762  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 00726766  8b03                 mov eax, dword ptr [ebx]
-// 00726768  8b9010010000         mov edx, dword ptr [eax + 0x110]
-// 0072676e  57                   push edi
-// 0072676f  8d4c243c             lea ecx, [esp + 0x3c]
-// 00726773  51                   push ecx
-// 00726774  8bcb                 mov ecx, ebx
-// 00726776  ffd2                 call edx
-// 00726778  8b07                 mov eax, dword ptr [edi]
-// 0072677a  8b90a0010000         mov edx, dword ptr [eax + 0x1a0]
-// 00726780  8bcf                 mov ecx, edi
-// 00726782  ffd2                 call edx
-// 00726784  85c0                 test eax, eax
-// 00726786  7415                 je 0x72679d
-// 00726788  39af10020000         cmp dword ptr [edi + 0x210], ebp
-// 0072678e  740d                 je 0x72679d
-// 00726790  8b442438             mov eax, dword ptr [esp + 0x38]
-// 00726794  8d0c00               lea ecx, [eax + eax]
-// 00726797  894c241c             mov dword ptr [esp + 0x1c], ecx
-// 0072679b  eb08                 jmp 0x7267a5
-// 0072679d  8b542438             mov edx, dword ptr [esp + 0x38]
-// 007267a1  8954241c             mov dword ptr [esp + 0x1c], edx
-// 007267a5  8b06                 mov eax, dword ptr [esi]
-// 007267a7  8b506c               mov edx, dword ptr [eax + 0x6c]
-// 007267aa  8bce                 mov ecx, esi
-// 007267ac  ffd2                 call edx
-// 007267ae  89442428             mov dword ptr [esp + 0x28], eax
-// 007267b2  8b869c000000         mov eax, dword ptr [esi + 0x9c]
-// 007267b8  83f8ff               cmp eax, -1
-// 007267bb  750f                 jne 0x7267cc
-// 007267bd  8b8e5c010000         mov ecx, dword ptr [esi + 0x15c]
-// 007267c3  3bcd                 cmp ecx, ebp
-// 007267c5  7405                 je 0x7267cc
-// 007267c7  e8d496ffff           call 0x71fea0
-// 007267cc  89442418             mov dword ptr [esp + 0x18], eax
-// 007267d0  b804000000           mov eax, 4
-// 007267d5  39442424             cmp dword ptr [esp + 0x24], eax
-// 007267d9  750a                 jne 0x7267e5
-// 007267db  39442418             cmp dword ptr [esp + 0x18], eax
-// 007267df  7504                 jne 0x7267e5
-// 007267e1  896c2418             mov dword ptr [esp + 0x18], ebp
-// 007267e5  8b86fc000000         mov eax, dword ptr [esi + 0xfc]
-// 007267eb  83f808               cmp eax, 8
-// 007267ee  7524                 jne 0x726814
-// 007267f0  39ab90000000         cmp dword ptr [ebx + 0x90], ebp
-// 007267f6  7504                 jne 0x7267fc
-// 007267f8  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 007267fc  83f808               cmp eax, 8
-// 007267ff  7513                 jne 0x726814
-// 00726801  39ac2498000000       cmp dword ptr [esp + 0x98], ebp
-// 00726808  750a                 jne 0x726814
-// 0072680a  8b8310010000         mov eax, dword ptr [ebx + 0x110]
-// 00726810  8944243c             mov dword ptr [esp + 0x3c], eax
-// 00726814  39ac249c000000       cmp dword ptr [esp + 0x9c], ebp
-// 0072681b  8bac2494000000       mov ebp, dword ptr [esp + 0x94]
-// 00726822  0f84e9000000         je 0x726911
-// 00726828  8b8380000000         mov eax, dword ptr [ebx + 0x80]
-// 0072682e  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
-// 00726832  03442460             add eax, dword ptr [esp + 0x60]
-// 00726836  8b542468             mov edx, dword ptr [esp + 0x68]
-// 0072683a  0344241c             add eax, dword ptr [esp + 0x1c]
-// 0072683e  8b3da4ed8900         mov edi, dword ptr [0x89eda4]
-// 00726844  51                   push ecx
-// 00726845  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 00726849  52                   push edx
-// 0072684a  51                   push ecx
-// 0072684b  50                   push eax
-// 0072684c  8d542460             lea edx, [esp + 0x60]
-// 00726850  52                   push edx
-// 00726851  ffd7                 call edi
-// 00726853  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00726857  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 0072685b  8b442468             mov eax, dword ptr [esp + 0x68]
-// 0072685f  8d4c1108             lea ecx, [ecx + edx + 8]
-// 00726863  8b54246c             mov edx, dword ptr [esp + 0x6c]
-// 00726867  52                   push edx
-// 00726868  83c0ed               add eax, -0x13
-// 0072686b  50                   push eax
-// 0072686c  8b44246c             mov eax, dword ptr [esp + 0x6c]
-// 00726870  50                   push eax
-// 00726871  51                   push ecx
-// 00726872  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00726879  51                   push ecx
-// 0072687a  ffd7                 call edi
-// 0072687c  bf01000000           mov edi, 1
-// 00726881  397c2424             cmp dword ptr [esp + 0x24], edi
-// 00726885  7527                 jne 0x7268ae
-// 00726887  8d942494000000       lea edx, [esp + 0x94]
-// 0072688e  52                   push edx
-// 0072688f  8bce                 mov ecx, esi
-// 00726891  e8fa8bffff           call 0x71f490
-// 00726896  8bc8                 mov ecx, eax
-// 00726898  897c2414             mov dword ptr [esp + 0x14], edi
-// 0072689c  ff1554fb8900         call dword ptr [0x89fb54]
-// 007268a2  c684249800000001     mov byte ptr [esp + 0x98], 1
-// 007268aa  85c0                 test eax, eax
-// 007268ac  7508                 jne 0x7268b6
-// 007268ae  c684249800000000     mov byte ptr [esp + 0x98], 0
-// 007268b6  f644241401           test byte ptr [esp + 0x14], 1
-// 007268bb  7412                 je 0x7268cf
-// 007268bd  83642414fe           and dword ptr [esp + 0x14], 0xfffffffe
-// 007268c2  8d8c2494000000       lea ecx, [esp + 0x94]
-// 007268c9  ff1510fd8900         call dword ptr [0x89fd10]
-// 007268cf  80bc249800000000     cmp byte ptr [esp + 0x98], 0
-// 007268d7  7434                 je 0x72690d
-// 007268d9  8d842498000000       lea eax, [esp + 0x98]
-// 007268e0  50                   push eax
-// 007268e1  8bce                 mov ecx, esi
-// 007268e3  e8a88bffff           call 0x71f490
-// 007268e8  50                   push eax
-// 007268e9  8d4c2444             lea ecx, [esp + 0x44]
-// 007268ed  51                   push ecx
-// 007268ee  8bcd                 mov ecx, ebp
-// 007268f0  e80bbfd3ff           call 0x462800
-// 007268f5  baedffffff           mov edx, 0xffffffed
-// 007268fa  2b10                 sub edx, dword ptr [eax]
-// 007268fc  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00726903  01542458             add dword ptr [esp + 0x58], edx
-// 00726907  ff1510fd8900         call dword ptr [0x89fd10]
-// 0072690d  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 00726911  8b07                 mov eax, dword ptr [edi]
-// 00726913  8b90a8010000         mov edx, dword ptr [eax + 0x1a8]
-// 00726919  8bcf                 mov ecx, edi
-// 0072691b  ffd2                 call edx
-// 0072691d  8bf8                 mov edi, eax
-// 0072691f  85ff                 test edi, edi
-// 00726921  750d                 jne 0x726930
-// 00726923  8d442420             lea eax, [esp + 0x20]
-// 00726927  50                   push eax
-// 00726928  e8e3c0ffff           call 0x722a10
-// 0072692d  83c404               add esp, 4
-// 00726930  837c243005           cmp dword ptr [esp + 0x30], 5
-// 00726935  752a                 jne 0x726961
-// 00726937  8b16                 mov edx, dword ptr [esi]
-// 00726939  8b525c               mov edx, dword ptr [edx + 0x5c]
-// 0072693c  8d842494000000       lea eax, [esp + 0x94]
-// 00726943  50                   push eax
-// 00726944  8bce                 mov ecx, esi
-// 00726946  ffd2                 call edx
-// 00726948  834c241402           or dword ptr [esp + 0x14], 2
-// 0072694d  8bc8                 mov ecx, eax
-// 0072694f  ff155cfb8900         call dword ptr [0x89fb5c]
-// 00726955  c684249800000001     mov byte ptr [esp + 0x98], 1
-// 0072695d  84c0                 test al, al
-// 0072695f  7408                 je 0x726969
-// 00726961  c684249800000000     mov byte ptr [esp + 0x98], 0
-// 00726969  f644241402           test byte ptr [esp + 0x14], 2
-// 0072696e  7412                 je 0x726982
-// 00726970  83642414fd           and dword ptr [esp + 0x14], 0xfffffffd
-// 00726975  8d8c2494000000       lea ecx, [esp + 0x94]
-// 0072697c  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726982  80bc249800000000     cmp byte ptr [esp + 0x98], 0
-// 0072698a  0f84de020000         je 0x726c6e
-// 00726990  8d83f8000000         lea eax, [ebx + 0xf8]
-// 00726996  50                   push eax
-// 00726997  55                   push ebp
-// 00726998  8d4c2448             lea ecx, [esp + 0x48]
-// 0072699c  e8bf9e0400           call 0x770860
-// 007269a1  83bc249c00000000     cmp dword ptr [esp + 0x9c], 0
-// 007269a9  c684248800000001     mov byte ptr [esp + 0x88], 1
-// 007269b1  742a                 je 0x7269dd
-// 007269b3  8b5508               mov edx, dword ptr [ebp + 8]
-// 007269b6  8d4c2430             lea ecx, [esp + 0x30]
-// 007269ba  51                   push ecx
-// 007269bb  6a01                 push 1
-// 007269bd  68f8338b00           push 0x8b33f8
-// 007269c2  52                   push edx
-// 007269c3  ff1550e18900         call dword ptr [0x89e150]
-// 007269c9  8b442454             mov eax, dword ptr [esp + 0x54]
-// 007269cd  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 007269d1  8d44010a             lea eax, [ecx + eax + 0xa]
-// 007269d5  8944245c             mov dword ptr [esp + 0x5c], eax
-// 007269d9  8944247c             mov dword ptr [esp + 0x7c], eax
-// 007269dd  8b442418             mov eax, dword ptr [esp + 0x18]
-// 007269e1  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 007269e5  8b13                 mov edx, dword ptr [ebx]
-// 007269e7  8b9214010000         mov edx, dword ptr [edx + 0x114]
-// 007269ed  50                   push eax
-// 007269ee  8b8424a0000000       mov eax, dword ptr [esp + 0xa0]
-// 007269f5  f7df                 neg edi
-// 007269f7  51                   push ecx
-// 007269f8  1bff                 sbb edi, edi
-// 007269fa  50                   push eax
-// 007269fb  81e700f8ffff         and edi, 0xfffff800
-// 00726a01  81c700080000         add edi, 0x800
-// 00726a07  81cf00800000         or edi, 0x8000
-// 00726a0d  57                   push edi
-// 00726a0e  8d4c2460             lea ecx, [esp + 0x60]
-// 00726a12  51                   push ecx
-// 00726a13  8d442434             lea eax, [esp + 0x34]
-// 00726a17  50                   push eax
-// 00726a18  55                   push ebp
-// 00726a19  8bcb                 mov ecx, ebx
-// 00726a1b  ffd2                 call edx
-// 00726a1d  837c242401           cmp dword ptr [esp + 0x24], 1
-// 00726a22  7528                 jne 0x726a4c
-// 00726a24  8d842494000000       lea eax, [esp + 0x94]
-// 00726a2b  50                   push eax
-// 00726a2c  8bce                 mov ecx, esi
-// 00726a2e  e85d8affff           call 0x71f490
-// 00726a33  834c241404           or dword ptr [esp + 0x14], 4
-// 00726a38  8bc8                 mov ecx, eax
-// 00726a3a  ff1554fb8900         call dword ptr [0x89fb54]
-// 00726a40  c684249800000001     mov byte ptr [esp + 0x98], 1
-// 00726a48  85c0                 test eax, eax
-// 00726a4a  7508                 jne 0x726a54
-// 00726a4c  c684249800000000     mov byte ptr [esp + 0x98], 0
-// 00726a54  f644241404           test byte ptr [esp + 0x14], 4
-// 00726a59  740d                 je 0x726a68
-// 00726a5b  8d8c2494000000       lea ecx, [esp + 0x94]
-// 00726a62  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726a68  80bc249800000000     cmp byte ptr [esp + 0x98], 0
-// 00726a70  744e                 je 0x726ac0
-// 00726a72  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00726a79  51                   push ecx
-// 00726a7a  8bce                 mov ecx, esi
-// 00726a7c  e80f8affff           call 0x71f490
-// 00726a81  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00726a85  8b13                 mov edx, dword ptr [ebx]
-// 00726a87  8b9214010000         mov edx, dword ptr [edx + 0x114]
-// 00726a8d  51                   push ecx
-// 00726a8e  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00726a92  51                   push ecx
-// 00726a93  8b8c24a4000000       mov ecx, dword ptr [esp + 0xa4]
-// 00726a9a  51                   push ecx
-// 00726a9b  6a02                 push 2
-// 00726a9d  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00726aa4  51                   push ecx
-// 00726aa5  50                   push eax
-// 00726aa6  55                   push ebp
-// 00726aa7  8bcb                 mov ecx, ebx
-// 00726aa9  c68424a400000002     mov byte ptr [esp + 0xa4], 2
-// 00726ab1  ffd2                 call edx
-// 00726ab3  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00726aba  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726ac0  8d4c2440             lea ecx, [esp + 0x40]
-// 00726ac4  c684248800000000     mov byte ptr [esp + 0x88], 0
-// 00726acc  e80f9e0400           call 0x7708e0
-// 00726ad1  33ff                 xor edi, edi
-// 00726ad3  39bc249c000000       cmp dword ptr [esp + 0x9c], edi
-// 00726ada  0f8485000000         je 0x726b65
-// 00726ae0  8b442468             mov eax, dword ptr [esp + 0x68]
-// 00726ae4  8b542450             mov edx, dword ptr [esp + 0x50]
-// 00726ae8  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 00726aec  83c0f6               add eax, -0xa
-// 00726aef  89442448             mov dword ptr [esp + 0x48], eax
-// 00726af3  8b44246c             mov eax, dword ptr [esp + 0x6c]
-// 00726af7  83c1fe               add ecx, -2
-// 00726afa  89542440             mov dword ptr [esp + 0x40], edx
-// 00726afe  8b16                 mov edx, dword ptr [esi]
-// 00726b00  8b525c               mov edx, dword ptr [edx + 0x5c]
-// 00726b03  8944244c             mov dword ptr [esp + 0x4c], eax
-// 00726b07  8d84249c000000       lea eax, [esp + 0x9c]
-// 00726b0e  894c2444             mov dword ptr [esp + 0x44], ecx
-// 00726b12  50                   push eax
-// 00726b13  8bce                 mov ecx, esi
-// 00726b15  ffd2                 call edx
-// 00726b17  8bf0                 mov esi, eax
-// 00726b19  8b5d00               mov ebx, dword ptr [ebp]
-// 00726b1c  6810080000           push 0x810
-// 00726b21  8d442444             lea eax, [esp + 0x44]
-// 00726b25  50                   push eax
-// 00726b26  8bce                 mov ecx, esi
-// 00726b28  c684249000000003     mov byte ptr [esp + 0x90], 3
-// 00726b30  ff1554fb8900         call dword ptr [0x89fb54]
-// 00726b36  50                   push eax
-// 00726b37  8bce                 mov ecx, esi
-// 00726b39  ff15d0fc8900         call dword ptr [0x89fcd0]
-// 00726b3f  8b5370               mov edx, dword ptr [ebx + 0x70]
-// 00726b42  50                   push eax
-// 00726b43  8bcd                 mov ecx, ebp
-// 00726b45  ffd2                 call edx
-// 00726b47  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00726b4e  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726b54  8bb42490000000       mov esi, dword ptr [esp + 0x90]
-// 00726b5b  893e                 mov dword ptr [esi], edi
-// 00726b5d  897e04               mov dword ptr [esi + 4], edi
-// 00726b60  e922020000           jmp 0x726d87
-// 00726b65  8b06                 mov eax, dword ptr [esi]
-// 00726b67  8b505c               mov edx, dword ptr [eax + 0x5c]
-// 00726b6a  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00726b71  51                   push ecx
-// 00726b72  8bce                 mov ecx, esi
-// 00726b74  ffd2                 call edx
-// 00726b76  50                   push eax
-// 00726b77  8d442434             lea eax, [esp + 0x34]
-// 00726b7b  50                   push eax
-// 00726b7c  8bcd                 mov ecx, ebp
-// 00726b7e  e87dbcd3ff           call 0x462800
-// 00726b83  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00726b8a  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726b90  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00726b94  83c014               add eax, 0x14
-// 00726b97  99                   cdq 
-// 00726b98  2bc2                 sub eax, edx
-// 00726b9a  d1f8                 sar eax, 1
-// 00726b9c  68d4258f00           push 0x8f25d4
-// 00726ba1  8d8c24a0000000       lea ecx, [esp + 0xa0]
-// 00726ba8  897c2464             mov dword ptr [esp + 0x64], edi
-// 00726bac  897c2468             mov dword ptr [esp + 0x68], edi
-// 00726bb0  8944246c             mov dword ptr [esp + 0x6c], eax
-// 00726bb4  897c2470             mov dword ptr [esp + 0x70], edi
-// 00726bb8  ff1508fd8900         call dword ptr [0x89fd08]
-// 00726bbe  8b7d00               mov edi, dword ptr [ebp]
-// 00726bc1  6810040000           push 0x410
-// 00726bc6  8d4c2464             lea ecx, [esp + 0x64]
-// 00726bca  51                   push ecx
-// 00726bcb  8d8c24a4000000       lea ecx, [esp + 0xa4]
-// 00726bd2  c684249000000004     mov byte ptr [esp + 0x90], 4
-// 00726bda  ff1554fb8900         call dword ptr [0x89fb54]
-// 00726be0  50                   push eax
-// 00726be1  8d8c24a8000000       lea ecx, [esp + 0xa8]
-// 00726be8  ff15d0fc8900         call dword ptr [0x89fcd0]
-// 00726bee  8b5770               mov edx, dword ptr [edi + 0x70]
-// 00726bf1  50                   push eax
-// 00726bf2  8bcd                 mov ecx, ebp
-// 00726bf4  ffd2                 call edx
-// 00726bf6  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00726bfd  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726c03  8b8b80000000         mov ecx, dword ptr [ebx + 0x80]
-// 00726c09  8b54246c             mov edx, dword ptr [esp + 0x6c]
-// 00726c0d  2b542464             sub edx, dword ptr [esp + 0x64]
-// 00726c11  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 00726c15  2b542454             sub edx, dword ptr [esp + 0x54]
-// 00726c19  8bc1                 mov eax, ecx
-// 00726c1b  2b442470             sub eax, dword ptr [esp + 0x70]
-// 00726c1f  2b442450             sub eax, dword ptr [esp + 0x50]
-// 00726c23  03442478             add eax, dword ptr [esp + 0x78]
-// 00726c27  03442458             add eax, dword ptr [esp + 0x58]
-// 00726c2b  8d7c2820             lea edi, [eax + ebp + 0x20]
-// 00726c2f  8b44245c             mov eax, dword ptr [esp + 0x5c]
-// 00726c33  8d440213             lea eax, [edx + eax + 0x13]
-// 00726c37  8b54243c             mov edx, dword ptr [esp + 0x3c]
-// 00726c3b  3bd0                 cmp edx, eax
-// 00726c3d  8994249c000000       mov dword ptr [esp + 0x9c], edx
-// 00726c44  7f07                 jg 0x726c4d
-// 00726c46  8984249c000000       mov dword ptr [esp + 0x9c], eax
-// 00726c4d  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00726c51  99                   cdq 
-// 00726c52  2bc2                 sub eax, edx
-// 00726c54  d1f8                 sar eax, 1
-// 00726c56  03c1                 add eax, ecx
-// 00726c58  8d442820             lea eax, [eax + ebp + 0x20]
-// 00726c5c  3bf8                 cmp edi, eax
-// 00726c5e  7e02                 jle 0x726c62
-// 00726c60  8bc7                 mov eax, edi
-// 00726c62  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 00726c69  e905010000           jmp 0x726d73
-// 00726c6e  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00726c72  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00726c76  8b13                 mov edx, dword ptr [ebx]
-// 00726c78  8b9214010000         mov edx, dword ptr [edx + 0x114]
-// 00726c7e  50                   push eax
-// 00726c7f  8b8424a0000000       mov eax, dword ptr [esp + 0xa0]
-// 00726c86  f7df                 neg edi
-// 00726c88  51                   push ecx
-// 00726c89  1bff                 sbb edi, edi
-// 00726c8b  50                   push eax
-// 00726c8c  81e700f8ffff         and edi, 0xfffff800
-// 00726c92  81c700080000         add edi, 0x800
-// 00726c98  81cf00800000         or edi, 0x8000
-// 00726c9e  57                   push edi
-// 00726c9f  8d4c2460             lea ecx, [esp + 0x60]
-// 00726ca3  51                   push ecx
-// 00726ca4  8d442434             lea eax, [esp + 0x34]
-// 00726ca8  50                   push eax
-// 00726ca9  55                   push ebp
-// 00726caa  8bcb                 mov ecx, ebx
-// 00726cac  ffd2                 call edx
-// 00726cae  837c242401           cmp dword ptr [esp + 0x24], 1
-// 00726cb3  7528                 jne 0x726cdd
-// 00726cb5  8d842494000000       lea eax, [esp + 0x94]
-// 00726cbc  50                   push eax
-// 00726cbd  8bce                 mov ecx, esi
-// 00726cbf  e8cc87ffff           call 0x71f490
-// 00726cc4  834c241408           or dword ptr [esp + 0x14], 8
-// 00726cc9  8bc8                 mov ecx, eax
-// 00726ccb  ff1554fb8900         call dword ptr [0x89fb54]
-// 00726cd1  c684249800000001     mov byte ptr [esp + 0x98], 1
-// 00726cd9  85c0                 test eax, eax
-// 00726cdb  7508                 jne 0x726ce5
-// 00726cdd  c684249800000000     mov byte ptr [esp + 0x98], 0
-// 00726ce5  f644241408           test byte ptr [esp + 0x14], 8
-// 00726cea  740d                 je 0x726cf9
-// 00726cec  8d8c2494000000       lea ecx, [esp + 0x94]
-// 00726cf3  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726cf9  80bc249800000000     cmp byte ptr [esp + 0x98], 0
-// 00726d01  744e                 je 0x726d51
-// 00726d03  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00726d0a  51                   push ecx
-// 00726d0b  8bce                 mov ecx, esi
-// 00726d0d  e87e87ffff           call 0x71f490
-// 00726d12  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00726d16  8b13                 mov edx, dword ptr [ebx]
-// 00726d18  8b9214010000         mov edx, dword ptr [edx + 0x114]
-// 00726d1e  51                   push ecx
-// 00726d1f  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00726d23  51                   push ecx
-// 00726d24  8b8c24a4000000       mov ecx, dword ptr [esp + 0xa4]
-// 00726d2b  51                   push ecx
-// 00726d2c  6a02                 push 2
-// 00726d2e  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00726d35  51                   push ecx
-// 00726d36  50                   push eax
-// 00726d37  55                   push ebp
-// 00726d38  8bcb                 mov ecx, ebx
-// 00726d3a  c68424a400000005     mov byte ptr [esp + 0xa4], 5
-// 00726d42  ffd2                 call edx
-// 00726d44  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00726d4b  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726d51  8b8380000000         mov eax, dword ptr [ebx + 0x80]
-// 00726d57  2b442470             sub eax, dword ptr [esp + 0x70]
-// 00726d5b  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00726d5f  2b442450             sub eax, dword ptr [esp + 0x50]
-// 00726d63  03442478             add eax, dword ptr [esp + 0x78]
-// 00726d67  03442458             add eax, dword ptr [esp + 0x58]
-// 00726d6b  8d440820             lea eax, [eax + ecx + 0x20]
-// 00726d6f  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 00726d73  6a00                 push 0
-// 00726d75  51                   push ecx
-// 00726d76  50                   push eax
-// 00726d77  56                   push esi
-// 00726d78  8bb424a0000000       mov esi, dword ptr [esp + 0xa0]
-// 00726d7f  56                   push esi
-// 00726d80  8bcb                 mov ecx, ebx
-// 00726d82  e819c2ffff           call 0x722fa0
-// 00726d87  8d4c2420             lea ecx, [esp + 0x20]
-// 00726d8b  ff1510fd8900         call dword ptr [0x89fd10]
-// 00726d91  8bc6                 mov eax, esi
-// 00726d93  8b8c2480000000       mov ecx, dword ptr [esp + 0x80]
-// 00726d9a  64890d00000000       mov dword ptr fs:[0], ecx
-// 00726da1  59                   pop ecx
-// 00726da2  5f                   pop edi
-// 00726da3  5e                   pop esi
-// 00726da4  5d                   pop ebp
-// 00726da5  5b                   pop ebx
-// 00726da6  83c478               add esp, 0x78
-// 00726da9  c21000               ret 0x10
-// copied from an identical function in another client (function ?DrawControlPopupParent@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@H@Z)
-
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPPaintManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPaintManager.cpp : implementation of the CXTPPaintManager class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include <math.h>
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPResourceManager.h"
+
+#include "XTPPaintManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPControlGallery.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPopupBar.h"
+#include "XTPControlComboBox.h"
+#include "XTPControlEdit.h"
+#include "XTPControls.h"
+#include "XTPStatusBar.h"
+
+#ifdef _XTP_INCLUDE_RIBBON
+#include "XTPOffice2007Theme.h"
+#include "Ribbon/XTPRibbonTheme.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+using namespace XTPPaintThemes;
+
+CXTPPaintManager* CXTPPaintManager::s_pInstance = NULL;
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPaintManager::CXTPPaintManagerDestructor
+
+static class CXTPPaintManager::CPaintManagerDestructor
+{
+public:
+	~CPaintManagerDestructor()
+	{
+		CXTPPaintManager::Done();
+	}
+
+} __xtpPaintManagerDestructor;
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CXTPDockingPanePaintManager::CLogFont
+
+CXTPPaintManager::CLogFont::CLogFont()
+{
+	::ZeroMemory(this, sizeof(LOGFONT));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CXTPDockingPanePaintManager::CNonClientMetrics
+
+CXTPPaintManager::CNonClientMetrics::CNonClientMetrics()
+{
+	::ZeroMemory(this, sizeof(NONCLIENTMETRICS));
+	cbSize = sizeof(NONCLIENTMETRICS);
+	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
+		sizeof(NONCLIENTMETRICS), this, 0));
+}
+
+CXTPPaintManager::CXTPPaintManager()
+{
+	m_bFlatToolBar = FALSE;
+	m_bFlatMenuBar = FALSE;
+
+	m_nTextHeight = 0;
+	m_bUseOfficeFont = FALSE;
+	m_strOfficeFont = _T("Tahoma");
+	m_bUseStandardFont = TRUE;
+	m_bShowShadow = TRUE;
+	m_bEmbossedDisabledText = TRUE;
+	m_nShadowOptions = 0;
+	m_nStatusBarMinHeight = 20;
+
+	m_bThemedStatusBar = FALSE;
+	m_bThemedCheckBox = FALSE;
+
+	m_iconsInfo.bUseFadedIcons = FALSE;
+	m_iconsInfo.bIconsWithShadow = FALSE;
+	m_iconsInfo.bUseDisabledIcons = FALSE;
+	m_iconsInfo.bOfficeStyleDisabledIcons = FALSE;
+
+	m_nAnimationSteps = 10;
+	m_nAnimationTime = 100;
+	m_bThickCheckMark = FALSE;
+	m_bClearTypeTextQuality = FALSE;
+
+	m_systemTheme = xtpSystemThemeDefault;
+	m_bShowKeyboardCues = -1;
+
+	m_nSplitButtonDropDownWidth = 11;
+	m_nPopupBarTextPadding = 4;
+	m_nSplitButtonPopupWidth = 20;
+
+	m_bSelectImageInPopupBar = FALSE;
+	m_bEnableAnimation = FALSE;
+
+	m_bOffice2007Padding = FALSE;
+
+	m_bOffsetPopupLabelText = TRUE;
+
+	m_nEditHeight = 0;
+	m_bAutoResizeIcons = FALSE;
+
+	m_bWrapCaptionBelowText = TRUE;
+	m_bResourceCharSet = FALSE;
+
+	m_rcStatusButtonMargins.SetRect(0, 0, 0, 0);
+
+
+	XTPImageManager()->RefreshAll();
+
+	m_pGalleryPaintManager = new CXTPControlGalleryPaintManager(this);
+
+
+	m_pfnSetLayeredWindowAttributes = NULL;
+	//init layered function  (for Win98 compatible)
+	HMODULE hLib = GetModuleHandle(_T("USER32"));
+	if (hLib)
+	{
+		m_pfnSetLayeredWindowAttributes = (PVOID) ::GetProcAddress(hLib, "SetLayeredWindowAttributes");
+	}
+}
+
+XTPCurrentSystemTheme CXTPPaintManager::GetCurrentSystemTheme()
+{
+	if (m_systemTheme == xtpSystemThemeDefault)
+		return XTPColorManager()->IsLunaColorsDisabled() ? xtpSystemThemeUnknown :
+			XTPColorManager()->GetCurrentSystemTheme();
+
+	if (m_systemTheme == xtpSystemThemeAuto)
+		return XTPColorManager()->GetWinThemeWrapperTheme();
+
+	return m_systemTheme;
+}
+void CXTPPaintManager::SetLunaTheme(XTPCurrentSystemTheme systemTheme)
+{
+	m_systemTheme = systemTheme;
+	RefreshMetrics();
+
+}
+
+COLORREF CXTPPaintManager::GetXtremeColor(UINT nIndex)
+{
+	if (nIndex > XPCOLOR_LAST) return nIndex;
+	return m_arrColor[nIndex];
+}
+
+void CXTPPaintManager::SetColors(int cElements, CONST INT* lpaElements, CONST COLORREF* lpaRgbValues)
+{
+	for (int i = 0; i < cElements; i++)
+		m_arrColor[lpaElements[i]].SetStandardValue(lpaRgbValues[i]);
+}
+
+
+CXTPPaintManager::~CXTPPaintManager()
+{
+	delete m_pGalleryPaintManager;
+}
+
+XTP_COMMANDBARS_ICONSINFO* CXTPPaintManager::GetIconsInfo()
+{
+	return &m_iconsInfo;
+}
+
+void CXTPPaintManager::RefreshMetrics()
+{
+	UpdateFonts();
+
+	RefreshXtremeColors();
+
+	CXTPColorManager* pColorManager = XTPColorManager();
+
+	for (int i = 0; i <= XPCOLOR_LAST; i++)
+		m_arrColor[i].SetStandardValue(pColorManager->GetColor(i));
+
+	m_clrShadowFactor = 0;
+	m_clrStatusTextColor = GetXtremeColor(COLOR_BTNTEXT);
+
+	m_clrFloatingGripper.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrFloatingGripperText.SetStandardValue(GetXtremeColor(COLOR_3DHIGHLIGHT));
+
+	m_clrDisabledIcon.SetStandardValue(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DSHADOW));
+
+	m_themeStatusBar.CloseTheme();
+
+	if (m_bThemedStatusBar)
+	{
+		m_themeStatusBar.OpenThemeData(NULL, L"STATUS");
+
+		if (m_themeStatusBar.IsAppThemed())
+			m_themeStatusBar.GetThemeColor(SP_PANE, 0, TMT_TEXTCOLOR, &m_clrStatusTextColor);
+	}
+
+	m_themeButton.CloseTheme();
+	if (m_bThemedCheckBox)
+	{
+		m_themeButton.OpenTheme(NULL, L"BUTTON");
+	}
+
+	m_pGalleryPaintManager->RefreshMetrics();
+}
+
+int CXTPPaintManager::GetControlHeight() const
+{
+	return max(22, m_nTextHeight);
+}
+
+CXTPPaintManager* CXTPPaintManager::CreateTheme(XTPPaintTheme paintTheme)
+{
+	CXTPPaintManager* pInstance = NULL;
+
+	if (paintTheme == xtpThemeOfficeXP) pInstance = new CXTPOfficeTheme();
+	else if (paintTheme == xtpThemeOffice2003) pInstance = new CXTPOffice2003Theme();
+	else if (paintTheme == xtpThemeNativeWinXP) pInstance = new CXTPNativeXPTheme();
+	else if (paintTheme == xtpThemeWhidbey) pInstance = new CXTPWhidbeyTheme();
+#ifdef _XTP_INCLUDE_RIBBON
+	else if (paintTheme == xtpThemeOffice2007) pInstance = new CXTPOffice2007Theme();
+	else if (paintTheme == xtpThemeRibbon) pInstance = new CXTPRibbonTheme();
+#endif
+	else pInstance = new CXTPDefaultTheme();
+
+	ASSERT(pInstance);
+
+	pInstance->m_themeCurrent = paintTheme;
+
+	return pInstance;
+}
+
+void CXTPPaintManager::SetTheme(XTPPaintTheme paintTheme)
+{
+	SetCustomTheme(CreateTheme(paintTheme));
+	s_pInstance->m_themeCurrent = paintTheme;
+}
+
+void CXTPPaintManager::SetCustomTheme(CXTPPaintManager* pTheme)
+{
+	if (s_pInstance != NULL)
+		s_pInstance->InternalRelease();
+
+	s_pInstance = pTheme;
+
+	s_pInstance->m_themeCurrent = xtpThemeCustom;
+	s_pInstance->RefreshMetrics();
+}
+
+
+void CXTPPaintManager::Done()
+{
+	if (s_pInstance != NULL)
+		s_pInstance->InternalRelease();
+	s_pInstance = NULL;
+}
+
+
+
+void CXTPPaintManager::Triangle(CDC* pDC, CPoint pt0, CPoint pt1, CPoint pt2, COLORREF clr)
+{
+	CXTPPenDC pen (*pDC, clr);
+	CXTPBrushDC brush (*pDC, clr);
+
+	CPoint pts[3];
+	pts[0] = pt0;
+	pts[1] = pt1;
+	pts[2] = pt2;
+	pDC->Polygon(pts, 3);
+}
+
+void CXTPPaintManager::Rectangle(CDC* pDC, CRect rc, int nPen, int nBrush)
+{
+	if (nBrush != -1) pDC->FillSolidRect(rc, GetXtremeColor(nBrush));
+	if (nPen != nBrush && nPen != -1) pDC->Draw3dRect(rc, GetXtremeColor(nPen), GetXtremeColor(nPen));
+}
+
+void CXTPPaintManager::Draw3dRect(CDC* pDC, CRect rc, int nTopLeft, int nBottomRight)
+{
+	pDC->Draw3dRect(&rc, GetXtremeColor(nTopLeft), GetXtremeColor(nBottomRight));
+}
+
+void CXTPPaintManager::_DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr, BOOL bLayoutRTL /*= FALSE*/)
+{
+	CRect rcCheck(CPoint(rc.left + rc.Width()/2 - 10, rc.top + rc.Height()/2 - 10), CSize(20, 20));
+
+	CXTPPenDC pen(*pDC, clr);
+
+	if (bLayoutRTL)
+	{
+		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 7);
+		pDC->LineTo(rcCheck.left + 10, rcCheck.top + 11);
+		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 8);
+
+		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 8);
+		pDC->LineTo(rcCheck.left + 10, rcCheck.top + 12);
+		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 9);
+	}
+	else
+	{
+		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 9);
+		pDC->LineTo(rcCheck.left + 8, rcCheck.top + 11);
+		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 6);
+
+		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 10);
+		pDC->LineTo(rcCheck.left + 8, rcCheck.top + 12);
+		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 7);
+	}
+}
+
+AFX_INLINE COLORREF Mix(CDC* pDC, int x, int y, COLORREF clrBorder, COLORREF clrFace, double a)
+{
+	COLORREF clr = clrFace;
+
+	if (a < 0)
+		a = -a;
+	else
+	{
+		clr = pDC->GetPixel(x, y);
+	}
+	int r = int(GetRValue(clrBorder) + a * double(GetRValue(clr) -  GetRValue(clrBorder)));
+	int g = int(GetGValue(clrBorder) + a * double(GetGValue(clr) -  GetGValue(clrBorder)));
+	int b = int(GetBValue(clrBorder) + a * double(GetBValue(clr) -  GetBValue(clrBorder)));
+
+	return RGB(r, g, b);
+}
+
+void CXTPPaintManager::AlphaEllipse(CDC* pDC, CRect rc, COLORREF clrBorder, COLORREF clrFace)
+{
+	ASSERT(rc.Width() == rc.Height());
+	double x0 = double(rc.left + rc.right - 1) / 2;
+	double y0 = double(rc.top + rc.bottom - 1) / 2;
+	double radius = double(rc.right - rc.left - 1) / 2 - 0.25;
+
+	for (int x = rc.left; x < rc.right; x++)
+	for (int y = rc.top; y < rc.bottom; y++)
+	{
+		double distance = sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
+
+		if (distance >= radius - 1 && distance <= radius + 1)
+		{
+			pDC->SetPixel(x, y, Mix(pDC, x, y, clrBorder, clrFace, distance - radius));
+		}
+		else if (distance < radius - 1)
+		{
+			pDC->SetPixel(x, y, clrFace);
+		}
+	}
+}
+
+void CXTPPaintManager::DrawRadioMark(CDC* pDC, CRect rcCheck, COLORREF clr)
+{
+	CPoint pt(rcCheck.CenterPoint());
+	CRect rcRadio(pt.x - 3, pt.y - 3, pt.x + 3, pt.y + 3);
+
+	AlphaEllipse(pDC, rcRadio, clr, clr);
+}
+
+void CXTPPaintManager::DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr)
+{
+	BOOL bLayoutRTL = CXTPDrawHelpers::IsContextRTL(pDC);
+
+	_DrawCheckMark(pDC, rc, clr, bLayoutRTL);
+	if (m_bThickCheckMark)
+	{
+		rc.OffsetRect(0, 1);
+		_DrawCheckMark(pDC, rc, clr, bLayoutRTL);
+	}
+}
+
+void CXTPPaintManager::DrawComboExpandMark(CDC* pDC, CRect rc, COLORREF clr)
+{
+	CPoint pt(rc.CenterPoint());
+	int nWidth = max(2, rc.Width() / 2 - 4);
+
+	Triangle(pDC, CPoint(pt.x - nWidth, pt.y - nWidth/2), CPoint(pt.x + nWidth, pt.y - nWidth/2), CPoint (pt.x , pt.y - nWidth/2 + nWidth), clr);
+}
+
+void CXTPPaintManager::HorizontalLine(CDC* pDC, int x0, int y, int x1, COLORREF clrPen)
+{
+	pDC->FillSolidRect(x0, y, x1 - x0, 1, clrPen);
+}
+
+void CXTPPaintManager::VerticalLine(CDC* pDC, int x, int y0, int y1, COLORREF clrPen)
+{
+	pDC->FillSolidRect(x, y0, 1, y1 - y0, clrPen);
+}
+
+void CXTPPaintManager::Line(CDC* pDC, CPoint p0, CPoint p1)
+{
+	pDC->MoveTo(p0);
+	pDC->LineTo(p1);
+}
+void CXTPPaintManager::Line(CDC* pDC, int x0, int y0, int x1, int y1, int nPen)
+{
+	CXTPPenDC pen(*pDC, GetXtremeColor(nPen));
+	pDC->MoveTo(x0, y0);
+	pDC->LineTo(x1, y1);
+}
+void CXTPPaintManager::Pixel(CDC* pDC, int x, int y, int nPen)
+{
+	pDC->SetPixel(x, y, GetXtremeColor(nPen));
+}
+
+void CXTPPaintManager::StripMnemonics(CString& strClear)
+{
+	CXTPDrawHelpers::StripMnemonics(strClear);
+}
+
+
+void CXTPPaintManager::SplitString(const CString& str, CString& strFirstRow, CString& strSecondRow)
+{
+	strFirstRow = str;
+	strSecondRow.Empty();
+
+	int nIndex = str.Find(_T(' '));
+	if (nIndex < 1)
+		return;
+
+	int nCenter = str.GetLength() / 2;
+	for (int i = 0; i < nCenter - 1; i++)
+	{
+		ASSERT(nCenter - i >= 0 && nCenter + i + 1 < str.GetLength());
+
+		if (str[nCenter - i] == _T(' '))
+		{
+			strFirstRow = str.Left(nCenter - i);
+			strSecondRow = str.Mid(nCenter - i + 1);
+			return;
+		}
+
+		if (str[nCenter + i + 1] == _T(' '))
+		{
+			strFirstRow = str.Left(nCenter + i + 1);
+			strSecondRow = str.Mid(nCenter + i + 2);
+			return;
+		}
+	}
+
+}
+
+#define XTP_DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
+#define XTP_DTT_TEXTCOLOR       (1UL << 0)
+
+void DrawTextApi(CDC* pDC, const CString& str, LPRECT lpRect, UINT format, BOOL bComposited)
+{
+	if (!bComposited)
+	{
+		pDC->DrawText(str, lpRect, format);
+	}
+	else
+	{
+		CXTPWinThemeWrapper wrapper(FALSE);
+		wrapper.OpenTheme(0, L"GLOBALS");
+
+		if (!wrapper.IsAppThemed())
+		{
+			pDC->DrawText(str, lpRect, format);
+			return;
+		}
+
+		CRect rcBuffer(lpRect);
+
+		HDC hDC = 0;
+		HPAINTBUFFER pb = wrapper.BeginBufferedPaint(pDC->GetSafeHdc(), rcBuffer, XTP_BPBF_TOPDOWNDIB, 0, &hDC);
+
+		if (hDC != NULL)
+		{
+			::BitBlt(hDC, rcBuffer.left, rcBuffer.top, rcBuffer.Width(), rcBuffer.Height(), pDC->GetSafeHdc(), rcBuffer.left, rcBuffer.top, SRCCOPY);
+
+			XTP_UX_DTTOPTS op;
+			op.dwSize = sizeof(op);
+			op.dwFlags = XTP_DTT_COMPOSITED | XTP_DTT_TEXTCOLOR;
+			op.crText = pDC->GetTextColor();
+
+
+			CXTPFontDC font(CDC::FromHandle(hDC), pDC->GetCurrentFont());
+
+			wrapper.DrawThemeTextEx(hDC, 0, 0, XTP_CT2CW(str), -1,
+				format,  rcBuffer, &op);
+		}
+
+		wrapper.EndBufferedPaint(pb, TRUE);
+	}
+}
+
+
+void CXTPPaintManager::DrawControlText3(CDC* pDC, CXTPControl* pButton, const CString& str, const CString& strClear, CRect rcText, BOOL bVert, BOOL bCentered)
+{
+	BOOL bEmbossed = !pButton->GetEnabled() && m_bEmbossedDisabledText;
+	BOOL bShowKeyboardCues = pButton->GetParent()->IsKeyboardCuesVisible();
+
+	if (m_bShowKeyboardCues > -1)
+		bShowKeyboardCues = m_bShowKeyboardCues;
+
+	int nFormat = DT_SINGLELINE | (bCentered ? DT_CENTER : DT_LEFT);
+
+	if (!bVert)
+	{
+		if (bEmbossed)
+		{
+			COLORREF clrText = pDC->GetTextColor();
+			pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
+			pDC->DrawText(strClear, rcText + CPoint(1, 1), nFormat | DT_VCENTER | DT_NOPREFIX);
+			pDC->SetTextColor(clrText);
+		}
+
+		if (bShowKeyboardCues)
+			DrawTextApi(pDC, str, &rcText, nFormat | DT_VCENTER, pButton->HasDwmCompositedRect());
+		else
+			DrawTextApi(pDC, strClear, &rcText, nFormat | DT_VCENTER | DT_NOPREFIX, pButton->HasDwmCompositedRect());
+	}
+	else
+	{
+		if (bEmbossed)
+		{
+			COLORREF clrText = pDC->GetTextColor();
+			pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
+			pDC->DrawText(strClear, rcText + CPoint(1, 1), nFormat | DT_NOPREFIX | DT_NOCLIP);
+			pDC->SetTextColor(clrText);
+		}
+
+		pDC->DrawText(strClear, &rcText, nFormat | DT_NOPREFIX | DT_NOCLIP);
+	}
+}
+
+void CXTPPaintManager::DrawDropDownGlyph(CDC* pDC, CXTPControl* /*pControl*/, CPoint pt, BOOL bSelected, BOOL bPopuped, BOOL bEnabled, BOOL bVert)
+{
+	COLORREF clr = GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, bPopuped, xtpBarTypeNormal, xtpBarTop);
+
+	if (bVert)
+	{
+		Triangle(pDC, CPoint(pt.x + 2 , pt.y - 2), CPoint(pt.x + 2, pt.y + 2), CPoint (pt.x, pt.y), clr);
+	}
+	else
+	{
+		Triangle(pDC, CPoint(pt.x - 2 , pt.y - 1), CPoint(pt.x + 2, pt.y - 1), CPoint (pt.x, pt.y + 1), clr);
+	}
+}
+
+CSize CXTPPaintManager::DrawControlText2(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bVert, BOOL bTrangled)
+{
+	CString str = pButton->GetCaption();
+	CString strClear(str);
+	StripMnemonics(strClear);
+
+	CString strFirstRow, strSecondRow;
+	if (m_bWrapCaptionBelowText)
+		SplitString(str, strFirstRow, strSecondRow);
+	else strFirstRow = str;
+
+	CString strFirstRowClear(strFirstRow), strSecondRowClear(strSecondRow);
+	StripMnemonics(strFirstRowClear);
+	StripMnemonics(strSecondRowClear);
+
+
+	if (!bDraw)
+	{
+		CSize szFirstRow = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strFirstRowClear);
+		CSize szSecondRow = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strSecondRowClear);
+
+		if (bTrangled) szSecondRow.cx += 8;
+		CSize sz(max(szFirstRow.cx, szSecondRow.cx), 24);
+		return bVert ? CSize(sz.cy, sz.cx) : sz;
+	}
+
+	if (!bVert)
+	{
+		CRect rcFirstRowText(rcText.left, rcText.top, rcText.right, rcText.CenterPoint().y + 1);
+		CRect rcSecondRowText(rcText.left, rcText.CenterPoint().y, rcText.right, rcText.bottom);
+
+		DrawControlText3(pDC, pButton, strFirstRow, strFirstRowClear, rcFirstRowText, bVert, TRUE);
+
+		int nWidth = pDC->GetTextExtent(strSecondRowClear).cx + (bTrangled ? 9 : 0);
+		rcSecondRowText.left += (rcText.Width() - nWidth) /2;
+		DrawControlText3(pDC, pButton, strSecondRow, strSecondRowClear, rcSecondRowText, bVert, FALSE);
+
+		if (bTrangled)
+		{
+			CPoint pt = CPoint(strSecondRow.IsEmpty() ? rcText.CenterPoint().x - 1:
+				rcSecondRowText.left + nWidth - 4, rcSecondRowText.CenterPoint().y);
+			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
+		}
+	}
+	else
+	{
+		CRect rcSecondRowText(rcText.left + 1, rcText.top, rcText.CenterPoint().x + 1, rcText.bottom);
+		CRect rcFirstRowText(rcText.CenterPoint().x, rcText.top, rcText.right - 1, rcText.bottom);
+
+		CSize szText = pDC->GetTextExtent (strFirstRowClear);
+		rcFirstRowText.left = rcFirstRowText.right - (rcFirstRowText.Width() - szText.cy + 1) / 2;
+		rcFirstRowText.top = rcFirstRowText.top + (rcFirstRowText.Height() - szText.cx + 1) / 2;
+		DrawControlText3(pDC, pButton, strFirstRow, strFirstRowClear, rcFirstRowText, bVert, FALSE);
+
+		szText = pDC->GetTextExtent (strSecondRowClear);
+		szText.cx += (bTrangled ? 8 : 0);
+		CRect rcSecondRow(rcSecondRowText);
+		rcSecondRowText.left = rcSecondRowText.right - (rcSecondRowText.Width() - szText.cy + 1) / 2;
+		rcSecondRowText.top = rcSecondRowText.top + (rcSecondRowText.Height() - szText.cx + 1) / 2;
+		DrawControlText3(pDC, pButton, strSecondRow, strSecondRowClear, rcSecondRowText, bVert, FALSE);
+
+		if (bTrangled)
+		{
+			CPoint pt = CPoint(rcSecondRow.CenterPoint().x - 2, rcSecondRowText.top + szText.cx - 4);
+			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
+		}
+	}
+	return 0;
+}
+
+CSize CXTPPaintManager::DrawControlText(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bVert, BOOL bCentered, BOOL bTriangled)
+{
+	CString str = pButton->GetCaption();
+
+	CString strClear(str);
+	StripMnemonics(strClear);
+
+	if (!bDraw)
+	{
+		CSize sz = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strClear);
+		if (bTriangled) sz.cx += m_bOffice2007Padding ? 8 : 10;
+		return bVert ? CSize(sz.cy, sz.cx) : sz;
+	}
+
+	if (!bVert)
+	{
+		int nWidth = pDC->GetTextExtent(strClear).cx + (bTriangled ? 5 : 0);
+
+		if (bCentered)
+		{
+			rcText.left += (rcText.Width() - nWidth) /2;
+		}
+
+		DrawControlText3(pDC, pButton, str, strClear, rcText, bVert, FALSE);
+
+		if (bTriangled)
+		{
+			CPoint pt = CPoint(rcText.left + nWidth, rcText.CenterPoint().y);
+			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
+		}
+	}
+	else
+	{
+		CRect rc(rcText);
+		CSize szText = pDC->GetTextExtent (strClear);
+		szText.cx += (bTriangled ? 5 : 0);
+		rcText.left = rcText.right - (rcText.Width() - szText.cy + 1) / 2;
+		if (bCentered)
+		{
+			rcText.top = rcText.top + (rcText.Height() - szText.cx + 1) / 2;
+		}
+
+		DrawControlText3(pDC, pButton, str, strClear, rcText, bVert, FALSE);
+
+		if (bTriangled)
+		{
+			CPoint pt = CPoint(rc.CenterPoint().x, rcText.top + szText.cx - 1);
+			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
+		}
+	}
+	return 0;
+}
+
+void CXTPPaintManager::UseOfficeFont(bool bUseOfficeFont)
+{
+	m_bUseOfficeFont = bUseOfficeFont;
+	RefreshMetrics();
+}
+
+BOOL CXTPPaintManager::FontExists(LPCTSTR strFaceName)
+{
+	return CXTPDrawHelpers::FontExists(strFaceName);
+}
+
+void CXTPPaintManager::SetCommandBarsFontIndirect(LOGFONT* pLogFont, BOOL bUseStandardFont /*= FALSE*/)
+{
+	m_bUseStandardFont = bUseStandardFont;
+
+	if (!pLogFont)
+		return;
+
+	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	{
+		pLogFont->lfQuality = 5;
+	}
+
+	m_fontRegular.DeleteObject();
+	m_fontRegularBold.DeleteObject();
+	m_fontVert.DeleteObject();
+	m_fontVertBold.DeleteObject();
+	m_fontIconBold.DeleteObject();
+
+	// see if the Tahoma font was found.
+	BOOL bTahomaExists = FontExists(m_strOfficeFont);
+
+	// see if the system font is set to the Tahoma font, if so set the office font flag to true.
+	bool bTahomaLF = m_strOfficeFont.CompareNoCase(pLogFont->lfFaceName) == 0;
+	if (bTahomaLF)
+	{
+		m_bUseOfficeFont = true;
+	}
+
+	// set the office font if applicable.
+	//BOOL bUseSystemFont = (pLogFont->lfCharSet > SYMBOL_CHARSET);
+	if (bUseStandardFont)
+	{
+		if (m_bUseOfficeFont && bTahomaExists)
+			STRCPY_S(pLogFont->lfFaceName, LF_FACESIZE, m_strOfficeFont);
+	}
+
+	m_fontRegular.CreateFontIndirect (pLogFont);
+
+	int nWeight = pLogFont->lfWeight;
+
+	pLogFont->lfWeight = FW_BOLD;
+	m_fontRegularBold.CreateFontIndirect (pLogFont);
+
+
+	pLogFont->lfOrientation = 900;
+	pLogFont->lfEscapement = 2700;
+	pLogFont->lfWeight = nWeight;
+	STRCPY_S(pLogFont->lfFaceName, LF_FACESIZE, CXTPDrawHelpers::GetVerticalFontName(m_bUseOfficeFont));
+
+	m_fontVert.CreateFontIndirect (pLogFont);
+
+	pLogFont->lfWeight = FW_BOLD;
+	m_fontVertBold.CreateFontIndirect (pLogFont);
+
+	CWindowDC dc (NULL);
+	CXTPFontDC font(&dc, &m_fontRegular);
+	m_nTextHeight = dc.GetTextExtent(_T(" "), 1).cy + 6;
+}
+
+void CXTPPaintManager::UpdateFonts()
+{
+	CNonClientMetrics ncm;
+
+	BYTE lfCharSet = m_bResourceCharSet ? XTPResourceManager()->GetLanguageInfo()->nFontCharSet : ncm.lfMenuFont.lfCharSet;
+
+	if (m_bUseStandardFont)
+	{
+		CLogFont lf;
+
+		lf.lfHeight = ncm.lfMenuFont.lfHeight < 0 ? min(-11, ncm.lfMenuFont.lfHeight) : ncm.lfMenuFont.lfHeight;
+		lf.lfWeight = ncm.lfMenuFont.lfWeight;
+		lf.lfItalic = ncm.lfMenuFont.lfItalic;
+		lf.lfCharSet = lfCharSet;
+		lf.lfQuality = ncm.lfMenuFont.lfQuality;
+
+		STRCPY_S(lf.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
+
+		if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+		{
+			lf.lfQuality = 5;
+		}
+
+		SetCommandBarsFontIndirect(&lf, TRUE);
+	}
+
+	LOGFONT lfIcon;
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+
+	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	{
+		lfIcon.lfQuality = 5;
+		ncm.lfSmCaptionFont.lfQuality = 5;
+		ncm.lfStatusFont.lfQuality = 5;
+	}
+	lfIcon.lfCharSet = lfCharSet;
+	ncm.lfSmCaptionFont.lfCharSet = lfCharSet;
+	ncm.lfStatusFont.lfCharSet = lfCharSet;
+
+	m_fontSmCaption.SetStandardFont(&ncm.lfSmCaptionFont);
+
+	VERIFY(m_fontIcon.SetStandardFont(&lfIcon));
+
+	lfIcon.lfWeight = FW_BOLD;
+	VERIFY(m_fontIconBold.SetStandardFont(&lfIcon));
+
+	m_fontToolTip.SetStandardFont(&ncm.lfStatusFont);
+}
+
+void CXTPPaintManager::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
+{
+	DrawRectangle(pDC, pButton->GetRect(), pButton->GetSelected(), pButton->GetPressed(), pButton->GetEnabled(), pButton->GetChecked(),
+		pButton->GetPopuped(), pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
+}
+
+COLORREF CXTPPaintManager::GetControlTextColor(CXTPControl* pButton)
+{
+	BOOL bEnabled = pButton->GetType() == xtpControlSplitButtonPopup ? (pButton->GetStyle() != xtpButtonIconAndCaptionBelow ?
+		IsControlCommandEnabled(pButton->GetEnabled()) : IsControlDropDownEnabled(pButton->GetEnabled())) : pButton->GetEnabled();
+
+	BOOL bCheckBoxStyle = (pButton->GetType() == xtpControlCheckBox || pButton->GetType() == xtpControlRadioButton)
+		&& (pButton->GetParent()->GetType() != xtpBarTypePopup);
+
+	if (bCheckBoxStyle)
+		return GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
+
+	return GetRectangleTextColor(pButton->GetSelected(), pButton->GetPressed(), bEnabled, pButton->GetChecked(),
+		pButton->GetPopuped(), pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
+}
+
+int CXTPPaintManager::GetPopupBarGripperWidth(CXTPCommandBar* pBar)
+{
+	if (pBar->GetType() != xtpBarTypePopup)
+		return 0;
+
+	int nDoubleGripper = pBar->IsPopupBar() && ((CXTPPopupBar*)pBar)->IsDoubleGripper() ? 2 : 1;
+	CSize szImage(GetPopupBarImageSize(pBar));
+
+	return szImage.cx * nDoubleGripper + 1;
+}
+
+COLORREF CXTPPaintManager::GetControlEditBackColor(CXTPControl* pControl)
+{
+	return GetXtremeColor(pControl->GetEnabled() ? COLOR_WINDOW : COLOR_3DFACE);
+}
+
+CSize CXTPPaintManager::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit, BOOL bDraw)
+{
+	if (bDraw)
+	{
+		if (pControlEdit->GetParent()->GetType() == xtpBarTypePopup)
+		{
+			DrawControlPopupParent(pDC, pControlEdit, TRUE);
+		}
+		else
+		{
+			CRect rc = pControlEdit->GetRect();
+			CRect rcLabelText(rc);
+			rcLabelText.left += 2;
+			BOOL bEnabled = pControlEdit->GetEnabled();
+
+			if (pControlEdit->IsImageVisible())
+			{
+				CSize szIcon = pControlEdit->GetIconSize();
+
+				CXTPImageManagerIcon* pImage = pControlEdit->GetImage(szIcon.cx);
+				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
+
+				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
+				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
+
+				rcLabelText.left = rc.left + szIcon.cx + 6;
+			}
+
+			if (pControlEdit->IsCaptionVisible())
+			{
+				CXTPFontDC fontLabel(pDC, GetRegularFont());
+
+				pDC->SetTextColor(GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pControlEdit->GetParent()->GetType(), pControlEdit->GetParent()->GetPosition()));
+				DrawControlText(pDC, pControlEdit, rcLabelText, TRUE, FALSE, FALSE, FALSE);
+			}
+		}
+		return 0;
+	}
+
+	BOOL bPopupBar = pControlEdit->GetParent()->GetType() == xtpBarTypePopup;
+	CString strCaption(pControlEdit->GetCaption());
+
+	StripMnemonics(strCaption);
+
+	CXTPFontDC font(pDC, GetIconFont());
+	int nHeight = m_nEditHeight > 0 ? m_nEditHeight : pDC->GetTextExtent(_T(" "), 1).cy + 7;
+
+	font.SetFont(GetRegularFont());
+
+	BOOL bCaptionVisible = pControlEdit->IsCaptionVisible();
+
+	if (bCaptionVisible && m_nEditHeight == 0)
+		nHeight = max(nHeight, pDC->GetTextExtent(_T(" "), 1).cy + 7);
+
+	int nCaptionWidth = pDC->GetTextExtent(strCaption).cx + 5;
+
+	if (bPopupBar)
+	{
+		int nGripperWidth = GetPopupBarGripperWidth(pControlEdit->GetParent());
+		pControlEdit->SetLabelWidth(nCaptionWidth + nGripperWidth + m_nPopupBarTextPadding);
+
+		return CSize(pControlEdit->GetWidth() + nGripperWidth, nHeight);
+	}
+
+	BOOL bImageVisible = pControlEdit->IsImageVisible();
+
+	int nLabelWidth = (bImageVisible ? pControlEdit->GetIconSize().cx  + 4 : 0) +
+		(bCaptionVisible ? nCaptionWidth : 0);
+
+	if (bImageVisible)
+		nHeight = max(nHeight, pControlEdit->GetButtonSize().cy);
+
+	pControlEdit->SetLabelWidth(nLabelWidth);
+
+	return CSize(pControlEdit->GetWidth(), nHeight);
+}
+
+CSize CXTPPaintManager::DrawControlComboBox(CDC* pDC, CXTPControlComboBox* pControlCombo, BOOL bDraw)
+{
+	if (bDraw)
+	{
+		if (pControlCombo->GetParent()->GetType() == xtpBarTypePopup)
+		{
+			DrawControlPopupParent(pDC, pControlCombo, TRUE);
+		}
+		else
+		{
+			CRect rc = pControlCombo->GetRect();
+			CRect rcLabelText(rc);
+			rcLabelText.left += 2;
+			BOOL bEnabled = pControlCombo->GetEnabled();
+
+			if (pControlCombo->IsImageVisible())
+			{
+				CSize szIcon = pControlCombo->GetIconSize();
+
+				CXTPImageManagerIcon* pImage = pControlCombo->GetImage(szIcon.cx);
+				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
+
+				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
+				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
+
+				rcLabelText.left = rc.left + szIcon.cx + 6;
+			}
+
+			if (pControlCombo->IsCaptionVisible())
+			{
+				CXTPFontDC fontLabel(pDC, GetRegularFont());
+
+				pDC->SetTextColor(GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pControlCombo->GetParent()->GetType(), pControlCombo->GetParent()->GetPosition()));
+				DrawControlText(pDC, pControlCombo, rcLabelText, TRUE, FALSE, FALSE, FALSE);
+			}
+		}
+		return 0;
+	}
+
+	BOOL bPopupBar = pControlCombo->GetParent()->GetType() == xtpBarTypePopup;
+	CString strCaption(pControlCombo->GetCaption());
+
+	StripMnemonics(strCaption);
+
+	CXTPFontDC font(pDC, GetIconFont());
+	int nHeight = m_nEditHeight > 0 ? m_nEditHeight : max(20, pDC->GetTextExtent(_T(" "), 1).cy + 7);
+
+	pControlCombo->SetThumbWidth(max(15, MulDiv(nHeight, 9, 14) + 1));
+
+	font.SetFont(GetRegularFont());
+
+	BOOL bCaptionVisible = pControlCombo->IsCaptionVisible();
+
+	if (bCaptionVisible && m_nEditHeight == 0)
+		nHeight = max(nHeight, pDC->GetTextExtent(_T(" "), 1).cy + 7);
+
+	int nCaptionWidth = pDC->GetTextExtent(strCaption).cx + 5;
+
+	if (bPopupBar)
+	{
+		int nGripperWidth = GetPopupBarGripperWidth(pControlCombo->GetParent());
+		pControlCombo->SetLabelWidth(nCaptionWidth + nGripperWidth + m_nPopupBarTextPadding);
+
+		return CSize(pControlCombo->GetWidth() + nGripperWidth, nHeight);
+	}
+
+	BOOL bImageVisible = pControlCombo->IsImageVisible();
+
+	int nLabelWidth = (bImageVisible ? pControlCombo->GetIconSize().cx  + 4 : 0) +
+		(bCaptionVisible ? nCaptionWidth : 0);
+
+	if (bImageVisible)
+		nHeight = max(nHeight, pControlCombo->GetParent()->GetButtonSize().cy);
+
+	pControlCombo->SetLabelWidth(nLabelWidth);
+
+	return CSize(pControlCombo->GetWidth(), nHeight);
+}
+
+CSize CXTPPaintManager::DrawControl(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
+{
+	if (pButton->GetType() == xtpControlEdit)
+	{
+		return DrawControlEdit(pDC, (CXTPControlEdit*)pButton, bDraw);
+	}
+
+	if (pButton->GetType() == xtpControlComboBox)
+	{
+		return DrawControlComboBox(pDC, (CXTPControlComboBox*)pButton, bDraw);
+	}
+
+	return (pButton->GetParent()->GetType() == xtpBarTypePopup) ?
+		DrawControlPopupParent(pDC, pButton, bDraw): DrawControlToolBarParent(pDC, pButton, bDraw);
+}
+
+void CXTPPaintManager::FillDockBar(CDC* pDC, CXTPDockBar* pBar)
+{
+	pDC->FillSolidRect(CXTPClientRect((CWnd*)pBar), GetXtremeColor(COLOR_3DFACE));
+}
+
+void CXTPPaintManager::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
+{
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
+	{
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, CXTPClientRect((CWnd*)pBar), 0);
+	}
+	else
+	{
+		pDC->FillSolidRect(CXTPClientRect(pBar), GetXtremeColor(COLOR_3DFACE));
+	}
+}
+
+CFont* CXTPPaintManager::GetCommandBarFont(CXTPCommandBar* pBar, BOOL bBold)
+{
+	return (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight) ? (bBold ? &m_fontVertBold: &m_fontVert) : (bBold ? &m_fontRegularBold : &m_fontRegular);
+
+}
+
+CSize CXTPPaintManager::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
+{
+	if (controlType == xtpButtonExpandToolbar)
+	{
+		if (!bDraw)
+		{
+			CSize szBar = *(CSize*)lpParam;
+			if (!IsVerticalPosition(pBar->GetPosition()))
+				pButton->SetRect(CRect(szBar.cx - (11 + 2), 2, szBar.cx - 2, szBar.cy - 2));
+			else
+				pButton->SetRect(CRect(2, szBar.cy - (11 + 2), szBar.cx - 2, szBar.cy - 2));
+		}
+		else
+		{
+			DrawControlEntry(pDC, pButton);
+			COLORREF clrText = GetControlTextColor(pButton);
+
+			BOOL bHiddenExists = *(BOOL*)lpParam;
+			CRect rcButton = pButton->GetRect();
+			if (!IsVerticalPosition(pBar->GetPosition()))
+			{
+				CPoint pt = CPoint(rcButton.left + rcButton.Width()/2, rcButton.bottom - 6);
+				Triangle(pDC, CPoint(pt.x -2 , pt.y - 1), CPoint(pt.x + 2, pt.y - 1), CPoint (pt.x, pt.y + 1), clrText);
+				if (bHiddenExists)
+				{
+					CXTPPenDC pen(*pDC, clrText);
+					pDC->MoveTo(rcButton.left + 2, rcButton.top + 4); pDC->LineTo(rcButton.left + 4, rcButton.top + 6);     pDC->LineTo(rcButton.left + 1, rcButton.top + 9);
+					pDC->MoveTo(rcButton.left + 3, rcButton.top + 4); pDC->LineTo(rcButton.left + 5, rcButton.top + 6);     pDC->LineTo(rcButton.left + 2, rcButton.top + 9);
+
+					pDC->MoveTo(rcButton.left + 6, rcButton.top + 4); pDC->LineTo(rcButton.left + 8, rcButton.top + 6);     pDC->LineTo(rcButton.left + 5, rcButton.top + 9);
+					pDC->MoveTo(rcButton.left + 7, rcButton.top + 4); pDC->LineTo(rcButton.left + 9, rcButton.top + 6);     pDC->LineTo(rcButton.left + 6, rcButton.top + 9);
+				}
+			}
+			else
+			{
+				CPoint pt = CPoint(rcButton.left + 4, rcButton.top + 5);
+				Triangle(pDC, CPoint(pt.x +2 , pt.y - 2), CPoint(pt.x + 2, pt.y + 2), CPoint (pt.x, pt.y), clrText);
+
+				if (bHiddenExists)
+				{
+					CXTPPenDC pen(*pDC, clrText);
+					pDC->MoveTo(rcButton.right - 8, rcButton.top + 2); pDC->LineTo(rcButton.right - 6, rcButton.top + 4);   pDC->LineTo(rcButton.right - 3, rcButton.top + 1);
+					pDC->MoveTo(rcButton.right - 8, rcButton.top + 3); pDC->LineTo(rcButton.right - 6, rcButton.top + 5);   pDC->LineTo(rcButton.right - 3, rcButton.top + 2);
+
+					pDC->MoveTo(rcButton.right - 8, rcButton.top + 6); pDC->LineTo(rcButton.right - 6, rcButton.top + 8);   pDC->LineTo(rcButton.right - 3, rcButton.top + 5);
+					pDC->MoveTo(rcButton.right - 8, rcButton.top + 7); pDC->LineTo(rcButton.right - 6, rcButton.top + 9);   pDC->LineTo(rcButton.right - 3, rcButton.top + 6);
+				}
+
+			}
+		}
+	}
+	else if (controlType == xtpButtonExpandFloating)
+	{
+		DrawControlEntry(pDC, pButton);
+		CRect rcButton = pButton->GetRect();
+		COLORREF clrText = GetControlTextColor(pButton);
+
+		if (!pButton->GetSelected() && !pButton->GetPopuped())
+			clrText = m_clrFloatingGripperText;
+		CPoint pt = CPoint(rcButton.left + rcButton.Width()/2, rcButton.top + rcButton.Height()/2);
+		Triangle(pDC, CPoint(pt.x -3 , pt.y - 2), CPoint(pt.x + 3, pt.y - 2), CPoint (pt.x, pt.y + 1), clrText);
+	}
+	else if (controlType == xtpButtonHideFloating)
+	{
+		CFont font;
+		font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
+		CFont* pFont = pDC->SelectObject(&font);
+		DrawControlEntry(pDC, pButton);
+		if (!pButton->GetPressed() && !pButton->GetSelected())
+			pDC->SetTextColor(m_clrFloatingGripperText);
+		else
+			pDC->SetTextColor(GetControlTextColor(pButton));
+
+		pDC->DrawText(_T("r"), 1, pButton->GetRect(), DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+		pDC->SelectObject(pFont);
+	}
+	else if (controlType == xtpButtonExpandMenu)
+	{
+		if (bDraw)
+		{
+			DrawControlEntry(pDC, pButton);
+			CRect rcButton = pButton->GetRect();
+			int nCenter = rcButton.CenterPoint().x;
+			CXTPPenDC pen(pDC->GetSafeHdc(), 0);
+
+			pDC->MoveTo(nCenter - 2, rcButton.top + 2); pDC->LineTo(nCenter, rcButton.top + 4);     pDC->LineTo(nCenter + 3, rcButton.top + 1);
+			pDC->MoveTo(nCenter - 2, rcButton.top + 3); pDC->LineTo(nCenter, rcButton.top + 5);     pDC->LineTo(nCenter + 3, rcButton.top + 2);
+
+			pDC->MoveTo(nCenter - 2, rcButton.top + 6); pDC->LineTo(nCenter, rcButton.top + 8);     pDC->LineTo(nCenter + 3, rcButton.top + 5);
+			pDC->MoveTo(nCenter - 2, rcButton.top + 7); pDC->LineTo(nCenter, rcButton.top + 9);     pDC->LineTo(nCenter + 3, rcButton.top + 6);
+
+		}
+		return CSize(0, 12);
+	}
+	return 0;
+}
+
+CSize CXTPPaintManager::DrawControlText(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bTriangled, CSize szButton, BOOL bDrawImage)
+{
+	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
+
+	if (!bVert)
+	{
+		if (bDrawImage)
+		{
+			rcText.left += m_bOffice2007Padding ? szButton.cx : szButton.cx - 1;
+
+			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, FALSE, bTriangled);
+
+			return CSize((m_bOffice2007Padding ? 4 : 3) + sz.cx + szButton.cx, max(sz.cy + 6, szButton.cy));
+		}
+		else
+		{
+			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, TRUE, bTriangled);
+			return CSize(8 + sz.cx, max(sz.cy + 6, szButton.cy));
+		}
+	}
+	else
+	{
+		if (bDrawImage)
+		{
+			rcText.top += szButton.cy;
+
+			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, FALSE, bTriangled);
+
+			return CSize(max(sz.cx + 6, szButton.cx), 3 + sz.cy + szButton.cx);
+		}
+		else
+		{
+			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, TRUE, bTriangled);
+			return CSize(max(sz.cx + 6, szButton.cx), 8 + sz.cy);
+
+		}
+	}
+}
+
+CRect CXTPPaintManager::GetSplitButtonCommandRect(CXTPControl* pButton)
+{
+	CRect rc(pButton->GetRect());
+	CXTPCommandBar* pParent = pButton->GetParent();
+
+	if (pParent->GetType() != xtpBarTypePopup && pButton->GetStyle() == xtpButtonIconAndCaptionBelow)
+	{
+		int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+		BOOL bVert = pParent->GetPosition() == xtpBarLeft ||
+			pParent->GetPosition() == xtpBarRight;
+
+		return bVert ? CRect(rc.left + nSplitDropDownHeight, rc.top, rc.right, rc.bottom) :
+			CRect(rc.left, rc.top, rc.right, rc.bottom - nSplitDropDownHeight);
+	}
+
+	int nSize = pParent->GetType() == xtpBarTypePopup ? m_nSplitButtonPopupWidth : m_nSplitButtonDropDownWidth + 1;
+	return CRect(rc.left, rc.top, rc.right - nSize, rc.bottom);
+}
+
+CSize CXTPPaintManager::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (bDraw)
+	{
+		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
+		{
+			int nState = 0;
+			if (!bEnabled)
+				nState = 3;
+			else if (bSelected && bPressed)
+				nState = 2;
+			else if (bSelected)
+				nState = 1;
+
+			if (bChecked == 1)
+				nState += 4;
+
+			if (bChecked == 2)
+				nState += 8;
+
+			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState + 1, rc, 0);
+
+		}
+		else
+		{
+			pDC->DrawFrameControl(rc, DFC_BUTTON, DFCS_BUTTONCHECK |
+				(!bEnabled || bChecked == 2 ? DFCS_INACTIVE : 0) | (bChecked ? DFCS_CHECKED : 0) |
+				(bPressed ? DFCS_PUSHED : 0));
+		}
+	}
+
+	return CSize(13, 13);
+}
+
+CSize CXTPPaintManager::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (bDraw)
+	{
+		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
+		{
+			int nState = 0;
+			if (!bEnabled)
+				nState = 3;
+			else if (bSelected && bPressed)
+				nState = 2;
+			else if (bSelected)
+				nState = 1;
+
+			if (bChecked == 1)
+				nState += 4;
+
+			if (bChecked == 2)
+				nState += 8;
+
+			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState + 1, rc, 0);
+
+		}
+		else
+		{
+			pDC->DrawFrameControl(rc, DFC_BUTTON, DFCS_BUTTONRADIO |
+				(!bEnabled || bChecked == 2 ? DFCS_INACTIVE : 0) | (bChecked ? DFCS_CHECKED : 0) |
+				(bPressed ? DFCS_PUSHED : 0));
+		}
+	}
+
+	return CSize(13, 13);
+}
+
+CSize CXTPPaintManager::GetControlSize(CXTPControl* pControl, CSize sz, BOOL bVert)
+{
+	if (bVert)
+	{
+		if (pControl->GetWidth() > 0)
+			sz.cy = pControl->GetWidth();
+
+		if (pControl->GetHeight() > 0)
+			sz.cx = pControl->GetHeight();
+	}
+	else
+	{
+		if (pControl->GetWidth() > 0)
+			sz.cx = pControl->GetWidth();
+
+		if (pControl->GetHeight() > 0)
+			sz.cy = pControl->GetHeight();
+	}
+
+	return sz;
+}
+
+CSize CXTPPaintManager::GetPopupBarImageSize(CXTPCommandBar* pBar)
+{
+	CSize szIcon = pBar->GetIconSize();
+	CSize szImage(max(szIcon.cx + 4, m_nTextHeight + 4), max(szIcon.cy + 6, m_nTextHeight));
+	return szImage;
+}
+
+void CXTPPaintManager::DrawPopupBarText(CDC* pDC, const CString& strText, CRect& rcText, UINT nFlags, BOOL bDraw, BOOL bSelected, BOOL bEnabled)
+{
+	if (bDraw && !bEnabled && !bSelected && m_bEmbossedDisabledText)
+	{
+		COLORREF clrText = pDC->GetTextColor();
+		pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
+		pDC->DrawText(strText, rcText + CPoint(1, 1), DT_SINGLELINE | DT_VCENTER | nFlags);
+		pDC->SetTextColor(clrText);
+	}
+
+	pDC->DrawText(strText, &rcText, DT_SINGLELINE | DT_VCENTER | (!bDraw ? DT_CALCRECT : nFlags));
+}
+
+CSize CXTPPaintManager::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
+{
+	CXTPCommandBar* pParent = pButton->GetParent();
+
+	CRect rcText(0, 0, 0, 0), rcShortcut(0, 0, 0, 0);
+	CRect rcButton = pButton->GetRect();
+	XTPControlType controlType = pButton->GetType();
+	XTPButtonStyle buttonStyle = pButton->GetStyle();
+	CString strCaption = pButton->GetCaption();
+
+	BOOL bDrawImage = (buttonStyle == xtpButtonAutomatic && controlType != xtpControlPopup) ||
+		(buttonStyle != xtpButtonCaption);
+
+	CSize szImage(GetPopupBarImageSize(pParent));
+
+	BOOL bDoubleGripper = pParent->IsPopupBar() ? ((CXTPPopupBar*)pParent)->IsDoubleGripper() : FALSE;
+	int nGripperWidth = bDoubleGripper ? szImage.cx * 2 : szImage.cx;
+
+	BOOL bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled();
+	if (controlType == xtpControlSplitButtonPopup && bEnabled == TRUE_SPLITDROPDOWN)
+		bEnabled = FALSE;
+
+	if (pButton->GetType() == xtpControlLabel && !m_bOffsetPopupLabelText)
+		nGripperWidth = 0;
+	if (pButton->GetType() == xtpControlLabel && !bDrawImage)
+		szImage.cy = m_nTextHeight;
+
+	if (bDraw)
+	{
+		rcText.SetRect(rcButton.left + nGripperWidth + m_nPopupBarTextPadding, rcButton.top, rcButton.right, rcButton.bottom);
+		rcShortcut.SetRect(rcButton.left + nGripperWidth + 8, rcButton.top, rcButton.right - 19, rcButton.bottom);
+
+		if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
+			rcText.right -= pDC->GetTextExtent(pButton->GetShortcutText()).cx + 19;
+	}
+
+	BOOL bShowKeyboardCues = pParent->IsKeyboardCuesVisible();
+
+	if (!bShowKeyboardCues)
+		StripMnemonics(strCaption);
+
+	if (buttonStyle == xtpButtonCaptionAndDescription && !pButton->GetDescription().IsEmpty())
+	{
+		{
+			CXTPFontDC font(pDC, GetRegularBoldFont());
+			if (bDraw)
+			{
+				rcShortcut.bottom = rcText.bottom = rcText.top + pDC->GetTextExtent(_T(" "), 1).cy + 10;
+			}
+			DrawPopupBarText(pDC, strCaption, rcText, DT_END_ELLIPSIS | (!bShowKeyboardCues ? DT_NOPREFIX : 0), bDraw, bSelected, bEnabled);
+
+			if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
+				DrawPopupBarText(pDC, pButton->GetShortcutText(), rcShortcut, DT_RIGHT, bDraw, bSelected, bEnabled);
+		}
+
+		if (bDraw)
+		{
+			CRect rcDescription(rcText.left, rcText.bottom - 2, rcButton.right - 10, rcButton.bottom);
+			pDC->DrawText(pButton->GetDescription(),rcDescription, DT_WORDBREAK | DT_TOP | DT_NOPREFIX);
+		}
+		else
+		{
+			CSize szDescription = pDC->GetTextExtent(pButton->GetDescription());
+			CRect rcDescription(0, 0, (szDescription.cx + 20) / 2, 0);
+			pDC->DrawText(_T("1\n2"), rcDescription, DT_CALCRECT | DT_WORDBREAK);
+
+			int nWidth = nGripperWidth + m_nPopupBarTextPadding + rcText.Width() +  rcShortcut.Width() + 32;
+
+			return GetControlSize(pButton, CSize(max(nWidth, nGripperWidth + m_nPopupBarTextPadding + szDescription.cx / 2 + 32),
+				max(szImage.cy, rcDescription.Height() + rcText.Height() + 19)), FALSE);
+		}
+		return 0;
+	}
+
+	DrawPopupBarText(pDC, strCaption, rcText, DT_END_ELLIPSIS | (!bShowKeyboardCues ? DT_NOPREFIX : 0), bDraw, bSelected, bEnabled);
+
+	if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
+		DrawPopupBarText(pDC, pButton->GetShortcutText(), rcShortcut, DT_RIGHT, bDraw, bSelected, bEnabled);
+
+	return GetControlSize(pButton, CSize(nGripperWidth + m_nPopupBarTextPadding + rcText.Width() +  rcShortcut.Width() + 32, szImage.cy), FALSE);
+}
+
+CSize CXTPPaintManager::GetIconSize(CXTPControl* pButton)
+{
+	XTPButtonStyle buttonStyle = pButton->GetStyle();
+
+	CSize szIcon = buttonStyle == xtpButtonIconAndCaptionBelow
+		&& pButton->GetParent()->GetType() != xtpBarTypePopup ?
+		pButton->GetParent()->GetLargeIconSize(TRUE) : pButton->GetIconSize();
+
+	return szIcon;
+}
+
+int CXTPPaintManager::GetSplitDropDownHeight() const
+{
+	int nTextHeight = m_nEditHeight > 0 ? m_nTextHeight : max(22, m_nTextHeight + 3);
+	int nSplitDropDownHeight = (nTextHeight * 2 - 17);
+
+	return nSplitDropDownHeight;
+}
+
+CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
+{
+	CXTPFontDC font(pDC, GetCommandBarFont(pButton->GetParent(), pButton->IsItemDefault()));
+
+	CRect rcButton = bDraw ? pButton->GetRect() : CXTPEmptyRect();
+	XTPControlType controlType = pButton->GetType();
+	XTPButtonStyle buttonStyle = pButton->GetStyle();
+
+	CSize szIcon = GetIconSize(pButton);
+	CSize szButton = pButton->GetButtonSize();
+
+	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
+
+	BOOL bDrawImage = (buttonStyle == xtpButtonAutomatic && controlType != xtpControlPopup) ||
+		(buttonStyle == xtpButtonIcon) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow);
+
+	CXTPImageManagerIcon* pImage = (bDrawImage && pButton->GetIconId() != 0) ? pButton->GetImage(szIcon.cx) : NULL;
+	bDrawImage = bDrawImage && (pImage != NULL);
+
+	BOOL bDrawText = pButton->IsCaptionVisible();
+
+	BOOL bPressed = pButton->GetPressed(), bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled(), bChecked = pButton->GetChecked(),
+		bPopuped = pButton->GetPopuped();
+
+	if (controlType == xtpControlSplitButtonPopup && bEnabled == TRUE_SPLITDROPDOWN)
+		bEnabled = FALSE;
+
+	if (controlType == xtpControlCheckBox || controlType == xtpControlRadioButton)
+	{
+		CSize szCheckBox = controlType == xtpControlRadioButton ?
+			DrawControlRadioButtonMark(pDC, rcButton, FALSE, bSelected, bPressed, bChecked, bEnabled) :
+			DrawControlCheckBoxMark(pDC, rcButton, FALSE, bSelected, bPressed, bChecked, bEnabled);
+
+		if (bDraw)
+		{
+			pDC->SetTextColor(GetControlTextColor(pButton));
+			CRect rcCheck;
+			if (!bVert)
+			{
+				rcCheck = CRect(CPoint(rcButton.left + 3, (rcButton.bottom + rcButton.top - szCheckBox.cy)/2), szCheckBox);
+				rcButton.left += szCheckBox.cx + 5;
+			}
+			else
+			{
+				rcCheck = CRect(CPoint(rcButton.CenterPoint().x - szCheckBox.cx / 2, rcButton.top + 3), szCheckBox);
+				rcButton.top += szCheckBox.cy + 5;
+			}
+
+			if (controlType == xtpControlRadioButton)
+				DrawControlRadioButtonMark(pDC, rcCheck, TRUE, bSelected, bPressed, bChecked, bEnabled);
+			else
+				DrawControlCheckBoxMark(pDC, rcCheck, TRUE, bSelected, bPressed, bChecked, bEnabled);
+
+			DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, FALSE);
+
+			if (IsKeyboardSelected(bSelected))
+			{
+				pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
+				pDC->SetBkColor(GetXtremeColor(COLOR_BTNFACE));
+				pDC->DrawFocusRect(rcButton);
+			}
+
+			return GetControlSize(pButton, szCheckBox, bVert);
+		}
+		else
+		{
+			CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, FALSE);
+			if (bVert)
+				sz.cy += szCheckBox.cy + 5;
+			else
+				sz.cx += szCheckBox.cx + 5;
+			return GetControlSize(pButton, sz, bVert);
+		}
+	}
+
+	if (bDraw)
+	{
+		if (controlType != xtpControlSplitButtonPopup)
+		{
+			if (!pButton->IsTransparent())
+			{
+				DrawControlEntry(pDC, pButton);
+			}
+		}
+		else
+		{
+			DrawSplitButtonFrame(pDC, pButton, rcButton);
+		}
+		pDC->SetTextColor(GetControlTextColor(pButton));
+	}
+
+	if (buttonStyle == xtpButtonIconAndCaptionBelow)
+	{
+		BOOL bTriangled = pButton->GetCommandBar() != NULL;
+
+		int nTextHeight = GetControlHeight();
+		int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+		szButton = CSize(max(42, nTextHeight * 2 - 3),
+			m_nEditHeight > 0 ? m_nEditHeight * 3 : nSplitDropDownHeight + szIcon.cy + 7);
+		if (bVert) szButton = CSize(szButton.cy, szButton.cx);
+
+		if (bDraw)
+		{
+			if (bDrawImage)
+			{
+				CPoint pt = bVert ? CPoint(rcButton.left + 4 + nSplitDropDownHeight, rcButton.CenterPoint().y - szIcon.cy / 2) :
+					CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
+				DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
+			}
+
+			CRect rcText = rcButton;
+			if (bVert)
+				rcText.right = rcText.left + nSplitDropDownHeight;
+			else
+			{
+				rcText.bottom -= 1;
+				rcText.top = rcText.bottom - nSplitDropDownHeight;
+			}
+
+			DrawControlText2(pDC, pButton, rcText, TRUE, bVert, bTriangled);
+		}
+		else
+		{
+			CSize szText = DrawControlText2(pDC, pButton, CXTPEmptyRect(), FALSE, bVert, bTriangled);
+
+			if (bVert)
+			{
+				szButton.cy = max(szButton.cy, szText.cy + 6);
+			}
+			else
+			{
+				szButton.cx = max(szButton.cx, szText.cx + 5);
+			}
+		}
+		return GetControlSize(pButton, szButton, bVert);
+	}
+
+	if (pButton->GetParent()->IsTextBelowIcons() && bDrawImage)
+	{
+		CXTPFontDC fontHorizontal (pDC, pButton->IsItemDefault() ? &m_fontRegularBold : &m_fontRegular);
+		BOOL bTriangled = controlType == xtpControlPopup;
+
+		if (bDraw)
+		{
+			if (controlType == xtpControlSplitButtonPopup) rcButton.right -= m_nSplitButtonDropDownWidth;
+
+			CPoint pt = CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 4);
+			DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
+
+			CRect rcText = rcButton;
+			rcText.top += szButton.cy - 4;
+
+			DrawControlText(pDC, pButton, rcText, TRUE, FALSE, TRUE, bTriangled);
+		}
+		else
+		{
+			CSize szText = DrawControlText(pDC, pButton, CXTPEmptyRect(), FALSE, FALSE, TRUE, bTriangled);
+
+			szButton.cy += szText.cy;
+			szButton.cx = max(szButton.cx, szText.cx + 10);
+
+			if (pButton->GetType() == xtpControlSplitButtonPopup)
+				szButton.cx += 11;
+
+			szButton.cx = max(szButton.cx, szButton.cy);
+		}
+		return GetControlSize(pButton, szButton, bVert);
+	}
+
+	if (bDraw && pImage)
+	{
+		szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
+
+		CPoint pt = !bVert ? CPoint(rcButton.left + 3, rcButton.CenterPoint().y - szIcon.cy / 2) :
+			CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
+
+		if (controlType == xtpControlSplitButtonPopup) pt.x = rcButton.left + 3;
+		if (controlType == xtpControlPopup && bDrawImage && !bDrawText) pt.x = rcButton.left + 3;
+		if ((controlType == xtpControlButtonPopup || controlType == xtpControlButton) && bDrawImage && !bDrawText)
+		{
+			if (!bVert)
+				pt.x = rcButton.CenterPoint().x - szIcon.cx / 2;
+			else
+				pt.y = rcButton.CenterPoint().y - szIcon.cy / 2;
+		}
+
+		pImage->m_bDrawComposited = pButton->HasDwmCompositedRect();
+		DrawImage(pDC, pt, szIcon, pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
+		pImage->m_bDrawComposited = FALSE;
+	}
+
+
+	switch (controlType)
+	{
+	case xtpControlPopup:
+		{
+			if (!bDrawImage)
+			{
+				CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, bVert, TRUE, !bDraw || pButton->GetParent()->GetType() != xtpBarTypeMenuBar);
+				return GetControlSize(pButton, CSize(sz.cx + 6, sz.cy + 6), bVert);
+			}
+			else
+			{
+				if (!bDrawText)
+				{
+					CPoint pt = CPoint(rcButton.right - 7, rcButton.CenterPoint().y);
+					DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), FALSE);
+					return GetControlSize(pButton, CSize(szButton.cy + 7, szButton.cy), bVert);
+				}
+				return GetControlSize(pButton, DrawControlText(pDC, pButton, rcButton, bDraw, pButton->GetParent()->GetType() != xtpBarTypeMenuBar, szButton, bDrawImage), bVert);
+			}
+		}
+	case xtpControlSplitButtonPopup:
+		{
+			if (!bDrawImage) szButton = CSize(22, 22);
+
+			if (!bDrawText)
+				return GetControlSize(pButton, CSize(szButton.cx + m_nSplitButtonDropDownWidth, szButton.cy), bVert);
+
+			rcButton.right -= m_nSplitButtonDropDownWidth;
+
+			CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, bDrawImage);
+			return GetControlSize(pButton, CSize(sz.cx + m_nSplitButtonDropDownWidth, sz.cy), bVert);
+
+		}
+	case xtpControlButtonPopup:
+	case xtpControlButton:
+	case xtpControlLabel:
+	case xtpControlCheckBox:
+	case xtpControlGallery:
+		{
+			if (!bDrawText)
+				return GetControlSize(pButton, szButton, bVert);
+
+			if (!bDrawImage) szButton = CSize(22, szButton.cy);
+
+			return GetControlSize(pButton, DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, bDrawImage), bVert);
+		}
+	}
+	return 0;
+}
+
+CRect CXTPPaintManager::GetCommandBarBorders(CXTPCommandBar* /*pBar*/)
+{
+	return CRect(2, 2, 2, 2);
+}
+
+void CXTPPaintManager::GradientFill(CDC* pDC, LPRECT lpRect, COLORREF crFrom, COLORREF crTo, BOOL bHorz, LPCRECT lpRectClip)
+{
+	XTPDrawHelpers()->GradientFill(pDC, lpRect, crFrom, crTo, bHorz, lpRectClip);
+
+}
+
+void CXTPPaintManager::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
+{
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
+	{
+		CRect rcGripper(rcClient.right - 18, rcClient.top, rcClient.right, rcClient.bottom);
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), SP_GRIPPER, 0, &rcGripper, 0);
+	}
+	else
+	{
+		CXTPPenDC penBorder(*pDC, GetXtremeColor(COLOR_3DSHADOW));
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+
+			pDC->MoveTo(rcClient.Width() - 3 -i * 4, rcClient.Height() - 2);
+			pDC->LineTo(rcClient.Width() - 1, rcClient.Height() - 4 - i * 4);
+
+			pDC->MoveTo(rcClient.Width() - 4 -i * 4, rcClient.Height() - 2);
+			pDC->LineTo(rcClient.Width() - 1, rcClient.Height() - 4 - i * 4 - 1);
+		}
+
+		CXTPPenDC penBorderWhite(*pDC, GetXtremeColor(COLOR_BTNHIGHLIGHT));
+		for (i = 0; i < 3; i++)
+		{
+			pDC->MoveTo(rcClient.Width() - 5 -i * 4, rcClient.Height() - 2);
+			pDC->LineTo(rcClient.Width() - 1 , rcClient.Height() - 4 - i * 4 - 2);
+		}
+	}
+}
+
+void CXTPPaintManager::AnimateExpanding(CXTPCommandBar* pCommandBar, CDC* pDestDC, CDC* pSrcDC, BOOL bExpandDown)
+{
+	CXTPClientRect rc(pCommandBar);
+	int nWidth = rc.Width();
+	int nHeight = rc.Height();
+
+	int nSteps = m_nAnimationSteps;
+	int nAnimationTime = m_nAnimationTime;
+
+	CXTPControls* pControls = pCommandBar->GetControls();
+
+	for (int i = 0; i < nSteps; ++i)
+	{
+		double dPercent = double(i + 1) / nSteps;
+
+		int nTopDest = 0;
+		int nTopSrc = 0;
+		BOOL bPrevExpanded = FALSE;
+
+		if (bExpandDown)
+		{
+			for (int j = 0; j < pControls->GetCount(); ++j)
+			{
+				CXTPControl* pControl = pControls->GetAt(j);
+				if (!pControl->IsVisible())
+					continue;
+
+				BOOL bExpanded = pControl->GetExpanded();
+
+				if (bExpanded != bPrevExpanded)
+				{
+					int nTopSrcCurrent = pControl->GetRect().top;
+					int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
+
+					pDestDC->StretchBlt(0, nTopDest, nWidth, nHeightDstr, pSrcDC,
+						0, nTopSrc, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
+
+					nTopDest = nTopDest + nHeightDstr;
+					nTopSrc = nTopSrcCurrent;
+				}
+
+				bPrevExpanded = bExpanded;
+			}
+
+			int nTopSrcCurrent = nHeight;
+			int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
+
+			pDestDC->StretchBlt(0, nTopDest, nWidth, nHeightDstr, pSrcDC,
+				0, nTopSrc, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
+		}
+		else
+		{
+			for (int j = pControls->GetCount() - 1; j >= 0; j--)
+			{
+				CXTPControl* pControl = pControls->GetAt(j);
+				if (!pControl->IsVisible())
+					continue;
+
+				BOOL bExpanded = pControl->GetExpanded();
+
+				if (bExpanded != bPrevExpanded)
+				{
+					int nTopSrcCurrent = nHeight - pControl->GetRect().bottom;
+					int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
+
+					pDestDC->StretchBlt(0, nHeight - nTopDest - nHeightDstr, nWidth, nHeightDstr, pSrcDC,
+						0, nHeight - nTopSrcCurrent, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
+
+					nTopDest = nTopDest + nHeightDstr;
+					nTopSrc = nTopSrcCurrent;
+				}
+
+				bPrevExpanded = bExpanded;
+			}
+
+			int nTopSrcCurrent = nHeight;
+			int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
+
+			pDestDC->StretchBlt(0, nHeight - nTopDest - nHeightDstr, nWidth, nHeightDstr, pSrcDC,
+				0, nHeight - nTopSrcCurrent, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
+
+		}
+
+		Sleep(nAnimationTime / nSteps);
+	}
+
+
+}
+
+void CXTPPaintManager::AlphaBlendU(PBYTE pDest, PBYTE pSrcBack, int cx, int cy, PBYTE pSrc, BYTE byAlpha)
+{
+	const BYTE byDiff = (BYTE)(255 - byAlpha);
+
+	for (int i = 0; i < cx * cy; i++)
+	{
+		pDest[0] = (BYTE)((pSrcBack[0] * byDiff + pSrc[0] * byAlpha) >> 8);
+		pDest[1] = (BYTE)((pSrcBack[1] * byDiff + pSrc[1] * byAlpha) >> 8);
+		pDest[2] = (BYTE)((pSrcBack[2] * byDiff + pSrc[2] * byAlpha) >> 8);
+
+		pDest += 4;
+		pSrcBack += 4;
+		pSrc += 4;
+	}
+}
+
+
+void CXTPPaintManager::Animate(CDC* pDestDC, CDC* pSrcDC, CRect rc, XTPAnimationType animationType)
+{
+	int nSteps = m_nAnimationSteps;
+	int nAnimationTime = m_nAnimationTime;
+
+	switch (animationType)
+	{
+		case xtpAnimateSlide:
+			{
+				for (int i = 0; i < nSteps; ++i)
+				{
+					int nHeight = rc.Height() * (i + 1) / nSteps;
+
+					pDestDC->BitBlt(0, 0, rc.Width(), nHeight, pSrcDC,
+						0, rc.Height() - nHeight, SRCCOPY);
+
+					Sleep(nAnimationTime / nSteps);
+				}
+			}
+			break;
+
+		case xtpAnimateUnfold:
+			{
+
+				for (int i = 0; i < nSteps; ++i)
+				{
+					CRect rcDest(rc.right - rc.Width() * (i + 1) / nSteps, rc.bottom - rc.Height() * (i + 1) / nSteps, rc.right, rc.bottom);
+
+					pDestDC->BitBlt(0, 0, rcDest.Width(), rcDest.Height(), pSrcDC,
+						rcDest.left, rcDest.top, SRCCOPY);
+
+					Sleep(nAnimationTime / nSteps);
+				}
+			}
+			break;
+
+		case xtpAnimateFade:
+			{
+				const int cx = rc.Width();
+				const int cy = rc.Height();
+
+				BITMAPINFOHEADER BMI;
+				// Fill in the header info.
+				ZeroMemory (&BMI, sizeof(BMI));
+				BMI.biSize = sizeof(BITMAPINFOHEADER);
+				BMI.biWidth = cx;
+				BMI.biHeight = cy;
+				BMI.biPlanes = 1;
+				BMI.biBitCount = 32;
+				BMI.biCompression = BI_RGB;   // No compression
+
+				BYTE * pSrcBits = NULL;
+				HBITMAP hbmSrc = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l);
+
+				BYTE * pSrcBackBits = NULL;
+				HBITMAP hbmSrcBack = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBackBits, 0, 0l);
+
+				BYTE * pDestBits = NULL;
+				HBITMAP hbmDest = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pDestBits, 0, 0l);
+
+				// Copy our source and destination bitmaps onto our DIBSections,
+				// so we can get access to their bits using the BYTE *'s we passed into CreateDIBSection
+
+				CDC dc;
+				dc.CreateCompatibleDC(NULL);
+				HBITMAP hbmpOld = (HBITMAP) ::SelectObject(dc, hbmSrc);
+				::BitBlt(dc, 0, 0, cx, cy, pSrcDC->GetSafeHdc(), 0, 0, SRCCOPY);
+
+				::SelectObject(dc, hbmSrcBack);
+				::BitBlt(dc, 0, 0, cx, cy, pDestDC->GetSafeHdc (), 0, 0, SRCCOPY);
+
+				DWORD dwTimePer = nAnimationTime / nSteps;
+
+				::SelectObject(dc, hbmDest);
+				for (int i = 1; i < nSteps; ++i)
+				{
+					DWORD dwTime = GetTickCount ();
+					AlphaBlendU(pDestBits, pSrcBackBits, cx, cy, pSrcBits, (BYTE)(255 * i  / nSteps));
+					pDestDC->BitBlt(rc.left, rc.top, rc.Width(), rc.Height(), &dc, 0, 0, SRCCOPY);
+					dwTime = GetTickCount () - dwTime;
+					if (dwTime < dwTimePer)
+					{
+						Sleep(dwTimePer - dwTime);
+					}
+				}
+				::SelectObject(dc, hbmpOld);
+				DeleteObject(hbmSrc);
+				DeleteObject(hbmSrcBack);
+				DeleteObject(hbmDest);
+			}
+
+			break;
+	}
+
+}
+
+void CXTPPaintManager::UpdateRTLCaption(CString& /*strCaption*/)
+{
+}
+
+void CXTPPaintManager::DrawStatusBarButtonFace(CDC* pDC, CRect rcItem, CXTPStatusBarPane* pPane)
+{
+	if (pPane->IsHighlighted() || pPane->IsPressed() || pPane->IsChecked())
+	{
+		rcItem.DeflateRect(m_rcStatusButtonMargins);
+
+		DrawRectangle(pDC, rcItem, pPane->IsHighlighted(), pPane->IsPressed(), TRUE,
+			pPane->IsChecked(), FALSE, xtpBarTypeNormal, xtpBarBottom);
+	}
+}
+
+
+void CXTPPaintManager::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL bGripperPane)
+{
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
+	{
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), bGripperPane ? SP_GRIPPERPANE : SP_PANE, 0, rc, 0);
+	}
+	else
+	{
+		if (!pPane->IsButton())
+			Draw3dRect(pDC, rc, COLOR_3DSHADOW, COLOR_BTNHILIGHT);
+	}
+}
+
+void CXTPPaintManager::DrawStatusBarPaneEntry(CDC* pDC, CRect rcItem, CXTPStatusBarPane* pPane)
+{
+	BOOL bEnabled = !(pPane->GetStyle() & SBPS_DISABLED);
+	BOOL bDrawText = bEnabled || pPane->GetStatusBar()->GetDrawDisabledText();
+
+	if (pPane->GetBackgroundColor() != (COLORREF)-1)
+	{
+		CRect rcBackground(rcItem);
+
+		if (!(pPane->GetStyle() & SBPS_NOBORDERS))
+			rcBackground.DeflateRect(1, 1);
+
+		pDC->FillSolidRect(rcBackground, pPane->GetBackgroundColor());
+	}
+	if (pPane->IsButton())
+	{
+		DrawStatusBarButtonFace(pDC, rcItem, pPane);
+	}
+
+	CXTPFontDC font(pDC, pPane->GetTextFont());
+	rcItem.DeflateRect(pPane->GetMargins());
+	CString str = pPane->GetText();
+
+	CXTPImageManagerIcon* pIcon = pPane->GetImage();
+
+	if (pPane->GetTextAlignment() != DT_LEFT)
+	{
+		int nWidth = pDC->GetTextExtent(str).cx;
+		nWidth += pIcon ? pIcon->GetWidth() + (nWidth > 0 ? 2 : 0) : 0;
+
+		if (rcItem.Width() > nWidth)
+		{
+			if (pPane->GetTextAlignment() == DT_RIGHT)
+			{
+				rcItem.left = rcItem.right - nWidth;
+			}
+			if (pPane->GetTextAlignment() == DT_CENTER)
+			{
+				rcItem.left = (rcItem.left + rcItem.right - nWidth) / 2;
+			}
+		}
+	}
+
+	if (pIcon)
+	{
+		if (rcItem.right >= rcItem.left + pIcon->GetWidth())
+		{
+			pIcon->Draw(pDC, CPoint(rcItem.left, (rcItem.top + rcItem.bottom - pIcon->GetHeight()) / 2), bEnabled ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
+		}
+		rcItem.OffsetRect(pIcon->GetWidth() + 2, 0);
+	}
+
+	if (bDrawText)
+	{
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(!bEnabled ? GetXtremeColor(COLOR_GRAYTEXT): pPane->GetTextColor() != (COLORREF)-1 ? pPane->GetTextColor() : m_clrStatusTextColor);
+		pDC->DrawText(str, rcItem, DT_SINGLELINE | DT_VCENTER | DT_EXPANDTABS | DT_NOPREFIX);
+	}
+}
+
+
+CSize CXTPPaintManager::DrawCommandBarGripper(CDC* pDC, CXTPCommandBar* pBar, BOOL bDraw)
+{
+	if (pBar->GetPosition() == xtpBarFloating)
+	{
+		CRect rc;
+		pBar->GetClientRect(&rc);
+
+		ASSERT(pDC);
+		if (!pDC)
+			return CSize(0, 0);
+		CXTPFontDC font(pDC, GetSmCaptionFont());
+		CSize sz = pDC->GetTextExtent(_T(" "), 1);
+
+		rc.SetRect(3, 3, rc.right - 3, 3 + max(15, sz.cy));
+		if (pDC && bDraw)
+		{
+			pDC->SetBkMode(TRANSPARENT);
+			pDC->FillSolidRect(rc, m_clrFloatingGripper);
+			pDC->SetTextColor(m_clrFloatingGripperText);
+			pDC->DrawText(pBar->GetTitle(), CRect(5, 3, rc.right - 2* rc.Size().cy, rc.bottom), DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+		}
+		return rc.Size();
+
+	}
+	return 0;
+}
+
+void CXTPPaintManager::SetCommandBarRegion(CXTPCommandBar* /*pCommandBar*/)
+{
+}
+
+BOOL CXTPPaintManager::IsFlatToolBar(CXTPCommandBar* pCommandBar)
+{
+	return pCommandBar->GetType() == xtpBarTypeMenuBar ? m_bFlatMenuBar : m_bFlatToolBar;
+}
+
+void CXTPPaintManager::DrawPopupBarGripper(CDC* /*pDC*/, int /*xPos*/, int /*yPos*/, int /*cx*/, int /*cy*/, BOOL /*bExpanded = FALSE*/)
+{
+
+}
+void CXTPPaintManager::FillWorkspace(CDC* pDC, CRect rc, CRect /*rcExclude*/)
+{
+	pDC->FillSolidRect(rc, GetXtremeColor(COLOR_APPWORKSPACE));
+}
+
+void AFX_CDECL CXTPPaintManager::FillCompositeAlpha(CDC* pDC, CRect rc)
+{
+	CSize sz(rc.Width(), rc.Height());
+	CBitmap bmp;
+	LPDWORD lpBits;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
+
+	CXTPCompatibleDC dc(pDC, &bmp);
+
+	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
+
+	dc.BitBlt(0, 0, sz.cx, sz.cy, pDC, rc.left, rc.top, SRCCOPY);
+
+	for (int i = 0; i < sz.cx * sz.cy; i++)
+	{
+		lpBits[0] |= 0xFF000000;
+		lpBits++;
+	}
+
+	pDC->BitBlt(rc.left, rc.top, sz.cx, sz.cy, &dc, 0, 0, SRCCOPY);
+}
+
+void CXTPPaintManager::DrawKeyboardTip(CDC* pDC, CXTPCommandBarKeyboardTip* pWnd, BOOL bSetRegion)
+{
+	if (!bSetRegion)
+	{
+		CXTPClientRect rc(pWnd);
+		CXTPFontDC font(pDC, &m_fontToolTip);
+
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_INFOBK));
+		pDC->Draw3dRect(rc, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DSHADOW));
+
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(GetXtremeColor(pWnd->m_bEnabled ? COLOR_INFOTEXT : COLOR_GRAYTEXT));
+		pDC->DrawText(pWnd->m_strTip, rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+	}
+}
+
+CSize CXTPPaintManager::GetAutoIconSize(BOOL bLarge) const
+{
+	if (m_bAutoResizeIcons)
+	{
+		int nHeight = GetControlHeight() - 4;
+		if (bLarge) nHeight = nHeight * 2;
+
+		nHeight = max(2, nHeight / 8);
+
+		return CSize(nHeight * 8, nHeight * 8);
+	}
+
+	return bLarge ? CSize(32, 32) : CSize(16, 16);
+}
+
+

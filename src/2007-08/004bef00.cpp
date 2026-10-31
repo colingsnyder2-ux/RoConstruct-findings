@@ -1,19 +1,5 @@
-// from server: 85% by tester
-struct RakPeer {
-    int sub_4BCAD0(int, int, int);
-    int method(int a, int b);
-};
-
-int RakPeer::method(int a, int b) {
-    int idx = sub_4BCAD0(a, b, 0);
-    if (idx == -1)
-        goto fail;
-    {
-        char* base = *(char**)((char*)this + 0x22c);
-        if (base[idx * 0x840] == 0)
-            goto fail;
-    }
-    return 1;
-fail:
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs-raknet roc_espeon_aug2007_rakpeer_recovered_dc9e23195932f1c7.cpp

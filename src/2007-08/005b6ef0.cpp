@@ -1,18 +1,5 @@
-// from server: 90% by tajop
-struct SurfaceGetSet
-{
-    void* get;
-    void* set;
-    void setValue(void* instance, const void* value);
-};
-
-extern "C" void* __fastcall sub_573890(void*);
-
-void SurfaceGetSet::setValue(void* instance, const void* value)
-{
-    void* p = instance ? (char*)instance - 4 : 0;
-    char* base = (char*)sub_573890(p);
-    void* fn = *(void**)((char*)this + 8);
-    void* arg = *(void**)value;
-    ((void (__thiscall*)(char*, void*))fn)(base + 0x10, arg);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_surfaces_native_5f9ca5aa6faa5c5e.cpp

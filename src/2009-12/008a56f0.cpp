@@ -1,460 +1,987 @@
-// roc 2009-12 008a56f0  unit: VCXTPReportRow::?$CXTPHeapObjectT  size: 1589 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008a56f0
-//
-// 008a56f0  6aff                 push -1
-// 008a56f2  68d6259600           push 0x9625d6
-// 008a56f7  64a100000000         mov eax, dword ptr fs:[0]
-// 008a56fd  50                   push eax
-// 008a56fe  81ec14010000         sub esp, 0x114
-// 008a5704  53                   push ebx
-// 008a5705  55                   push ebp
-// 008a5706  56                   push esi
-// 008a5707  57                   push edi
-// 008a5708  a10052b600           mov eax, dword ptr [0xb65200]
-// 008a570d  33c4                 xor eax, esp
-// 008a570f  50                   push eax
-// 008a5710  8d842428010000       lea eax, [esp + 0x128]
-// 008a5717  64a300000000         mov dword ptr fs:[0], eax
-// 008a571d  8bf1                 mov esi, ecx
-// 008a571f  8b4624               mov eax, dword ptr [esi + 0x24]
-// 008a5722  85c0                 test eax, eax
-// 008a5724  0f84df050000         je 0x8a5d09
-// 008a572a  8b9810010000         mov ebx, dword ptr [eax + 0x110]
-// 008a5730  8b842450010000       mov eax, dword ptr [esp + 0x150]
-// 008a5737  8b8c2454010000       mov ecx, dword ptr [esp + 0x154]
-// 008a573e  8b942458010000       mov edx, dword ptr [esp + 0x158]
-// 008a5745  89842494000000       mov dword ptr [esp + 0x94], eax
-// 008a574c  8b84245c010000       mov eax, dword ptr [esp + 0x15c]
-// 008a5753  8d6e2c               lea ebp, [esi + 0x2c]
-// 008a5756  898c2498000000       mov dword ptr [esp + 0x98], ecx
-// 008a575d  8b8c243c010000       mov ecx, dword ptr [esp + 0x13c]
-// 008a5764  894d00               mov dword ptr [ebp], ecx
-// 008a5767  8b8c2448010000       mov ecx, dword ptr [esp + 0x148]
-// 008a576e  8994249c000000       mov dword ptr [esp + 0x9c], edx
-// 008a5775  8b942440010000       mov edx, dword ptr [esp + 0x140]
-// 008a577c  898424a0000000       mov dword ptr [esp + 0xa0], eax
-// 008a5783  8b842444010000       mov eax, dword ptr [esp + 0x144]
-// 008a578a  895504               mov dword ptr [ebp + 4], edx
-// 008a578d  894508               mov dword ptr [ebp + 8], eax
-// 008a5790  8b84244c010000       mov eax, dword ptr [esp + 0x14c]
-// 008a5797  894d0c               mov dword ptr [ebp + 0xc], ecx
-// 008a579a  294500               sub dword ptr [ebp], eax
-// 008a579d  294634               sub dword ptr [esi + 0x34], eax
-// 008a57a0  895c242c             mov dword ptr [esp + 0x2c], ebx
-// 008a57a4  85db                 test ebx, ebx
-// 008a57a6  7528                 jne 0x8a57d0
-// 008a57a8  8b5500               mov edx, dword ptr [ebp]
-// 008a57ab  8b4504               mov eax, dword ptr [ebp + 4]
-// 008a57ae  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 008a57b1  8994243c010000       mov dword ptr [esp + 0x13c], edx
-// 008a57b8  8b550c               mov edx, dword ptr [ebp + 0xc]
-// 008a57bb  89842440010000       mov dword ptr [esp + 0x140], eax
-// 008a57c2  898c2444010000       mov dword ptr [esp + 0x144], ecx
-// 008a57c9  89942448010000       mov dword ptr [esp + 0x148], edx
-// 008a57d0  8d4c2468             lea ecx, [esp + 0x68]
-// 008a57d4  e8874ef7ff           call 0x81a660
-// 008a57d9  c7442468dc429f00     mov dword ptr [esp + 0x68], 0x9f42dc
-// 008a57e1  8b842438010000       mov eax, dword ptr [esp + 0x138]
-// 008a57e8  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 008a57eb  c784243001000000000000 mov dword ptr [esp + 0x130], 0
-// 008a57f6  8984248c000000       mov dword ptr [esp + 0x8c], eax
-// 008a57fd  894c246c             mov dword ptr [esp + 0x6c], ecx
-// 008a5801  89742470             mov dword ptr [esp + 0x70], esi
-// 008a5805  e8b68cf7ff           call 0x81e4c0
-// 008a580a  8b4e70               mov ecx, dword ptr [esi + 0x70]
-// 008a580d  8b5624               mov edx, dword ptr [esi + 0x24]
-// 008a5810  8bba00010000         mov edi, dword ptr [edx + 0x100]
-// 008a5816  89442424             mov dword ptr [esp + 0x24], eax
-// 008a581a  c744245001000000     mov dword ptr [esp + 0x50], 1
-// 008a5822  83f901               cmp ecx, 1
-// 008a5825  7512                 jne 0x8a5839
-// 008a5827  8b8740020000         mov eax, dword ptr [edi + 0x240]
-// 008a582d  83e0fb               and eax, 0xfffffffb
-// 008a5830  f7d8                 neg eax
-// 008a5832  1bc0                 sbb eax, eax
-// 008a5834  40                   inc eax
-// 008a5835  89442450             mov dword ptr [esp + 0x50], eax
-// 008a5839  c744244c01000000     mov dword ptr [esp + 0x4c], 1
-// 008a5841  83f902               cmp ecx, 2
-// 008a5844  7512                 jne 0x8a5858
-// 008a5846  8b8744020000         mov eax, dword ptr [edi + 0x244]
-// 008a584c  83e0fb               and eax, 0xfffffffb
-// 008a584f  f7d8                 neg eax
-// 008a5851  1bc0                 sbb eax, eax
-// 008a5853  40                   inc eax
-// 008a5854  8944244c             mov dword ptr [esp + 0x4c], eax
-// 008a5858  52                   push edx
-// 008a5859  8d8c24a8000000       lea ecx, [esp + 0xa8]
-// 008a5860  e83b86fcff           call 0x86dea0
-// 008a5865  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 008a5868  8b89ec000000         mov ecx, dword ptr [ecx + 0xec]
-// 008a586e  8d9424a4000000       lea edx, [esp + 0xa4]
-// 008a5875  52                   push edx
-// 008a5876  c684243401000001     mov byte ptr [esp + 0x134], 1
-// 008a587e  e8dd7efcff           call 0x86d760
-// 008a5883  8b8424d4000000       mov eax, dword ptr [esp + 0xd4]
-// 008a588a  3bd8                 cmp ebx, eax
-// 008a588c  89442428             mov dword ptr [esp + 0x28], eax
-// 008a5890  7c06                 jl 0x8a5898
-// 008a5892  8944242c             mov dword ptr [esp + 0x2c], eax
-// 008a5896  8bd8                 mov ebx, eax
-// 008a5898  8b4624               mov eax, dword ptr [esi + 0x24]
-// 008a589b  8b17                 mov edx, dword ptr [edi]
-// 008a589d  50                   push eax
-// 008a589e  8b4270               mov eax, dword ptr [edx + 0x70]
-// 008a58a1  8bcf                 mov ecx, edi
-// 008a58a3  ffd0                 call eax
-// 008a58a5  8b8c2438010000       mov ecx, dword ptr [esp + 0x138]
-// 008a58ac  50                   push eax
-// 008a58ad  55                   push ebp
-// 008a58ae  e84bedf4ff           call 0x7f45fe
-// 008a58b3  8b5500               mov edx, dword ptr [ebp]
-// 008a58b6  8b4638               mov eax, dword ptr [esi + 0x38]
-// 008a58b9  2b4668               sub eax, dword ptr [esi + 0x68]
-// 008a58bc  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 008a58bf  89542414             mov dword ptr [esp + 0x14], edx
-// 008a58c3  8b5630               mov edx, dword ptr [esi + 0x30]
-// 008a58c6  89542418             mov dword ptr [esp + 0x18], edx
-// 008a58ca  894c241c             mov dword ptr [esp + 0x1c], ecx
-// 008a58ce  89442420             mov dword ptr [esp + 0x20], eax
-// 008a58d2  85db                 test ebx, ebx
-// 008a58d4  7407                 je 0x8a58dd
-// 008a58d6  8dac243c010000       lea ebp, [esp + 0x13c]
-// 008a58dd  837e2000             cmp dword ptr [esi + 0x20], 0
-// 008a58e1  8b4504               mov eax, dword ptr [ebp + 4]
-// 008a58e4  8b5508               mov edx, dword ptr [ebp + 8]
-// 008a58e7  8b4d00               mov ecx, dword ptr [ebp]
-// 008a58ea  89442458             mov dword ptr [esp + 0x58], eax
-// 008a58ee  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 008a58f1  8954245c             mov dword ptr [esp + 0x5c], edx
-// 008a58f5  8b542424             mov edx, dword ptr [esp + 0x24]
-// 008a58f9  89442460             mov dword ptr [esp + 0x60], eax
-// 008a58fd  8d0411               lea eax, [ecx + edx]
-// 008a5900  894c2454             mov dword ptr [esp + 0x54], ecx
-// 008a5904  8944245c             mov dword ptr [esp + 0x5c], eax
-// 008a5908  0f8428030000         je 0x8a5c36
-// 008a590e  8b84243c010000       mov eax, dword ptr [esp + 0x13c]
-// 008a5915  03c2                 add eax, edx
-// 008a5917  89442464             mov dword ptr [esp + 0x64], eax
-// 008a591b  8b442428             mov eax, dword ptr [esp + 0x28]
-// 008a591f  83c0ff               add eax, -1
-// 008a5922  89442448             mov dword ptr [esp + 0x48], eax
-// 008a5926  0f88d6020000         js 0x8a5c02
-// 008a592c  8bd3                 mov edx, ebx
-// 008a592e  2bd0                 sub edx, eax
-// 008a5930  4a                   dec edx
-// 008a5931  89542428             mov dword ptr [esp + 0x28], edx
-// 008a5935  eb04                 jmp 0x8a593b
-// 008a5937  8b5c242c             mov ebx, dword ptr [esp + 0x2c]
-// 008a593b  33c9                 xor ecx, ecx
-// 008a593d  3bc3                 cmp eax, ebx
-// 008a593f  0f9cc1               setl cl
-// 008a5942  894c2444             mov dword ptr [esp + 0x44], ecx
-// 008a5946  85c9                 test ecx, ecx
-// 008a5948  7408                 je 0x8a5952
-// 008a594a  8bda                 mov ebx, edx
-// 008a594c  895c2440             mov dword ptr [esp + 0x40], ebx
-// 008a5950  eb06                 jmp 0x8a5958
-// 008a5952  89442440             mov dword ptr [esp + 0x40], eax
-// 008a5956  8bd8                 mov ebx, eax
-// 008a5958  85db                 test ebx, ebx
-// 008a595a  0f8c88020000         jl 0x8a5be8
-// 008a5960  3b9c24d4000000       cmp ebx, dword ptr [esp + 0xd4]
-// 008a5967  0f8d7b020000         jge 0x8a5be8
-// 008a596d  8b8c24d0000000       mov ecx, dword ptr [esp + 0xd0]
-// 008a5974  8b2c99               mov ebp, dword ptr [ecx + ebx*4]
-// 008a5977  85ed                 test ebp, ebp
-// 008a5979  0f8469020000         je 0x8a5be8
-// 008a597f  8b16                 mov edx, dword ptr [esi]
-// 008a5981  8b82d0000000         mov eax, dword ptr [edx + 0xd0]
-// 008a5987  8bce                 mov ecx, esi
-// 008a5989  ffd0                 call eax
-// 008a598b  85c0                 test eax, eax
-// 008a598d  0f844d020000         je 0x8a5be0
-// 008a5993  8d8c24f8000000       lea ecx, [esp + 0xf8]
-// 008a599a  51                   push ecx
-// 008a599b  8bcd                 mov ecx, ebp
-// 008a599d  e82e21f8ff           call 0x827ad0
-// 008a59a2  8b00                 mov eax, dword ptr [eax]
-// 008a59a4  89442414             mov dword ptr [esp + 0x14], eax
-// 008a59a8  85db                 test ebx, ebx
-// 008a59aa  750c                 jne 0x8a59b8
-// 008a59ac  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 008a59b0  3bc8                 cmp ecx, eax
-// 008a59b2  7e04                 jle 0x8a59b8
-// 008a59b4  894c2414             mov dword ptr [esp + 0x14], ecx
-// 008a59b8  8d9424e8000000       lea edx, [esp + 0xe8]
-// 008a59bf  52                   push edx
-// 008a59c0  8bcd                 mov ecx, ebp
-// 008a59c2  e80921f8ff           call 0x827ad0
-// 008a59c7  8b4008               mov eax, dword ptr [eax + 8]
-// 008a59ca  8d4c2414             lea ecx, [esp + 0x14]
-// 008a59ce  51                   push ecx
-// 008a59cf  8d942498000000       lea edx, [esp + 0x98]
-// 008a59d6  89442420             mov dword ptr [esp + 0x20], eax
-// 008a59da  52                   push edx
-// 008a59db  8d842420010000       lea eax, [esp + 0x120]
-// 008a59e2  50                   push eax
-// 008a59e3  ff15dcca9800         call dword ptr [0x98cadc]
-// 008a59e9  85c0                 test eax, eax
-// 008a59eb  0f84ef010000         je 0x8a5be0
-// 008a59f1  837c244400           cmp dword ptr [esp + 0x44], 0
-// 008a59f6  744e                 je 0x8a5a46
-// 008a59f8  8b4624               mov eax, dword ptr [esi + 0x24]
-// 008a59fb  8b17                 mov edx, dword ptr [edi]
-// 008a59fd  50                   push eax
-// 008a59fe  8b4270               mov eax, dword ptr [edx + 0x70]
-// 008a5a01  8bcf                 mov ecx, edi
-// 008a5a03  ffd0                 call eax
-// 008a5a05  8b9c2438010000       mov ebx, dword ptr [esp + 0x138]
-// 008a5a0c  50                   push eax
-// 008a5a0d  8d4c2418             lea ecx, [esp + 0x18]
-// 008a5a11  51                   push ecx
-// 008a5a12  8bcb                 mov ecx, ebx
-// 008a5a14  e8e5ebf4ff           call 0x7f45fe
-// 008a5a19  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 008a5a1d  8b17                 mov edx, dword ptr [edi]
-// 008a5a1f  8b5274               mov edx, dword ptr [edx + 0x74]
-// 008a5a22  83ec10               sub esp, 0x10
-// 008a5a25  8bc4                 mov eax, esp
-// 008a5a27  8908                 mov dword ptr [eax], ecx
-// 008a5a29  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 008a5a2d  894804               mov dword ptr [eax + 4], ecx
-// 008a5a30  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 008a5a34  894808               mov dword ptr [eax + 8], ecx
-// 008a5a37  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 008a5a3b  56                   push esi
-// 008a5a3c  89480c               mov dword ptr [eax + 0xc], ecx
-// 008a5a3f  53                   push ebx
-// 008a5a40  8bcf                 mov ecx, edi
-// 008a5a42  ffd2                 call edx
-// 008a5a44  eb07                 jmp 0x8a5a4d
-// 008a5a46  8b9c2438010000       mov ebx, dword ptr [esp + 0x138]
-// 008a5a4d  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008a5a51  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008a5a55  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 008a5a59  894c2434             mov dword ptr [esp + 0x34], ecx
-// 008a5a5d  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 008a5a61  89442430             mov dword ptr [esp + 0x30], eax
-// 008a5a65  894c243c             mov dword ptr [esp + 0x3c], ecx
-// 008a5a69  48                   dec eax
-// 008a5a6a  8bcd                 mov ecx, ebp
-// 008a5a6c  89542438             mov dword ptr [esp + 0x38], edx
-// 008a5a70  89442430             mov dword ptr [esp + 0x30], eax
-// 008a5a74  e88720f8ff           call 0x827b00
-// 008a5a79  85c0                 test eax, eax
-// 008a5a7b  742d                 je 0x8a5aaa
-// 008a5a7d  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 008a5a81  8b17                 mov edx, dword ptr [edi]
-// 008a5a83  8b928c000000         mov edx, dword ptr [edx + 0x8c]
-// 008a5a89  83ec10               sub esp, 0x10
-// 008a5a8c  8bc4                 mov eax, esp
-// 008a5a8e  8908                 mov dword ptr [eax], ecx
-// 008a5a90  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 008a5a94  894804               mov dword ptr [eax + 4], ecx
-// 008a5a97  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 008a5a9b  894808               mov dword ptr [eax + 8], ecx
-// 008a5a9e  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 008a5aa2  89480c               mov dword ptr [eax + 0xc], ecx
-// 008a5aa5  53                   push ebx
-// 008a5aa6  8bcf                 mov ecx, edi
-// 008a5aa8  ffd2                 call edx
-// 008a5aaa  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 008a5aad  55                   push ebp
-// 008a5aae  e88d52f8ff           call 0x82ad40
-// 008a5ab3  8bd8                 mov ebx, eax
-// 008a5ab5  85db                 test ebx, ebx
-// 008a5ab7  745f                 je 0x8a5b18
-// 008a5ab9  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008a5abd  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 008a5ac1  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 008a5ac5  8944247c             mov dword ptr [esp + 0x7c], eax
-// 008a5ac9  8b442420             mov eax, dword ptr [esp + 0x20]
-// 008a5acd  898c2480000000       mov dword ptr [esp + 0x80], ecx
-// 008a5ad4  8bcd                 mov ecx, ebp
-// 008a5ad6  896c2474             mov dword ptr [esp + 0x74], ebp
-// 008a5ada  89942484000000       mov dword ptr [esp + 0x84], edx
-// 008a5ae1  89842488000000       mov dword ptr [esp + 0x88], eax
-// 008a5ae8  e8531ff8ff           call 0x827a40
-// 008a5aed  89842490000000       mov dword ptr [esp + 0x90], eax
-// 008a5af4  895c2478             mov dword ptr [esp + 0x78], ebx
-// 008a5af8  8b13                 mov edx, dword ptr [ebx]
-// 008a5afa  8b5258               mov edx, dword ptr [edx + 0x58]
-// 008a5afd  8d442468             lea eax, [esp + 0x68]
-// 008a5b01  50                   push eax
-// 008a5b02  8bcb                 mov ecx, ebx
-// 008a5b04  ffd2                 call edx
-// 008a5b06  8b8d90000000         mov ecx, dword ptr [ebp + 0x90]
-// 008a5b0c  3bc8                 cmp ecx, eax
-// 008a5b0e  7e02                 jle 0x8a5b12
-// 008a5b10  8bc1                 mov eax, ecx
-// 008a5b12  898590000000         mov dword ptr [ebp + 0x90], eax
-// 008a5b18  8b4670               mov eax, dword ptr [esi + 0x70]
-// 008a5b1b  83f801               cmp eax, 1
-// 008a5b1e  7509                 jne 0x8a5b29
-// 008a5b20  83bdb400000000       cmp dword ptr [ebp + 0xb4], 0
-// 008a5b27  eb0c                 jmp 0x8a5b35
-// 008a5b29  83f802               cmp eax, 2
-// 008a5b2c  753c                 jne 0x8a5b6a
-// 008a5b2e  83bdb800000000       cmp dword ptr [ebp + 0xb8], 0
-// 008a5b35  7433                 je 0x8a5b6a
-// 008a5b37  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 008a5b3b  8b17                 mov edx, dword ptr [edi]
-// 008a5b3d  8b5278               mov edx, dword ptr [edx + 0x78]
-// 008a5b40  83ec10               sub esp, 0x10
-// 008a5b43  8bc4                 mov eax, esp
-// 008a5b45  8908                 mov dword ptr [eax], ecx
-// 008a5b47  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 008a5b4b  894804               mov dword ptr [eax + 4], ecx
-// 008a5b4e  8b4c2448             mov ecx, dword ptr [esp + 0x48]
-// 008a5b52  894808               mov dword ptr [eax + 8], ecx
-// 008a5b55  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 008a5b59  89480c               mov dword ptr [eax + 0xc], ecx
-// 008a5b5c  8b842448010000       mov eax, dword ptr [esp + 0x148]
-// 008a5b63  6a01                 push 1
-// 008a5b65  50                   push eax
-// 008a5b66  8bcf                 mov ecx, edi
-// 008a5b68  ffd2                 call edx
-// 008a5b6a  837c244c00           cmp dword ptr [esp + 0x4c], 0
-// 008a5b6f  7441                 je 0x8a5bb2
-// 008a5b71  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008a5b75  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 008a5b79  8b542430             mov edx, dword ptr [esp + 0x30]
-// 008a5b7d  8b2f                 mov ebp, dword ptr [edi]
-// 008a5b7f  83ec10               sub esp, 0x10
-// 008a5b82  8bd9                 mov ebx, ecx
-// 008a5b84  89842424010000       mov dword ptr [esp + 0x124], eax
-// 008a5b8b  8bc4                 mov eax, esp
-// 008a5b8d  8910                 mov dword ptr [eax], edx
-// 008a5b8f  8b542448             mov edx, dword ptr [esp + 0x48]
-// 008a5b93  49                   dec ecx
-// 008a5b94  895804               mov dword ptr [eax + 4], ebx
-// 008a5b97  895008               mov dword ptr [eax + 8], edx
-// 008a5b9a  8b5578               mov edx, dword ptr [ebp + 0x78]
-// 008a5b9d  894c2444             mov dword ptr [esp + 0x44], ecx
-// 008a5ba1  89480c               mov dword ptr [eax + 0xc], ecx
-// 008a5ba4  8b8c2448010000       mov ecx, dword ptr [esp + 0x148]
-// 008a5bab  6a00                 push 0
-// 008a5bad  51                   push ecx
-// 008a5bae  8bcf                 mov ecx, edi
-// 008a5bb0  ffd2                 call edx
-// 008a5bb2  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 008a5bb6  48                   dec eax
-// 008a5bb7  c744244c01000000     mov dword ptr [esp + 0x4c], 1
-// 008a5bbf  39442440             cmp dword ptr [esp + 0x40], eax
-// 008a5bc3  751b                 jne 0x8a5be0
-// 008a5bc5  8b4624               mov eax, dword ptr [esi + 0x24]
-// 008a5bc8  8b8c2438010000       mov ecx, dword ptr [esp + 0x138]
-// 008a5bcf  8b17                 mov edx, dword ptr [edi]
-// 008a5bd1  8b527c               mov edx, dword ptr [edx + 0x7c]
-// 008a5bd4  56                   push esi
-// 008a5bd5  50                   push eax
-// 008a5bd6  8d442438             lea eax, [esp + 0x38]
-// 008a5bda  50                   push eax
-// 008a5bdb  51                   push ecx
-// 008a5bdc  8bcf                 mov ecx, edi
-// 008a5bde  ffd2                 call edx
-// 008a5be0  8b542428             mov edx, dword ptr [esp + 0x28]
-// 008a5be4  8b442448             mov eax, dword ptr [esp + 0x48]
-// 008a5be8  48                   dec eax
-// 008a5be9  42                   inc edx
-// 008a5bea  89442448             mov dword ptr [esp + 0x48], eax
-// 008a5bee  89542428             mov dword ptr [esp + 0x28], edx
-// 008a5bf2  85c0                 test eax, eax
-// 008a5bf4  0f8d3dfdffff         jge 0x8a5937
-// 008a5bfa  8b4c2454             mov ecx, dword ptr [esp + 0x54]
-// 008a5bfe  8b542424             mov edx, dword ptr [esp + 0x24]
-// 008a5c02  85d2                 test edx, edx
-// 008a5c04  7e30                 jle 0x8a5c36
-// 008a5c06  8b17                 mov edx, dword ptr [edi]
-// 008a5c08  8b9288000000         mov edx, dword ptr [edx + 0x88]
-// 008a5c0e  83ec10               sub esp, 0x10
-// 008a5c11  8bc4                 mov eax, esp
-// 008a5c13  8908                 mov dword ptr [eax], ecx
-// 008a5c15  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 008a5c19  894804               mov dword ptr [eax + 4], ecx
-// 008a5c1c  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
-// 008a5c20  894808               mov dword ptr [eax + 8], ecx
-// 008a5c23  8b4c2470             mov ecx, dword ptr [esp + 0x70]
-// 008a5c27  89480c               mov dword ptr [eax + 0xc], ecx
-// 008a5c2a  8b842448010000       mov eax, dword ptr [esp + 0x148]
-// 008a5c31  50                   push eax
-// 008a5c32  8bcf                 mov ecx, edi
-// 008a5c34  ffd2                 call edx
-// 008a5c36  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 008a5c39  e802d8f7ff           call 0x823440
-// 008a5c3e  8b5630               mov edx, dword ptr [esi + 0x30]
-// 008a5c41  8b6e38               mov ebp, dword ptr [esi + 0x38]
-// 008a5c44  8b5e34               mov ebx, dword ptr [esi + 0x34]
-// 008a5c47  89442444             mov dword ptr [esp + 0x44], eax
-// 008a5c4b  33c0                 xor eax, eax
-// 008a5c4d  3987b8020000         cmp dword ptr [edi + 0x2b8], eax
-// 008a5c53  89542424             mov dword ptr [esp + 0x24], edx
-// 008a5c57  0f95c0               setne al
-// 008a5c5a  33c9                 xor ecx, ecx
-// 008a5c5c  85c0                 test eax, eax
-// 008a5c5e  8b06                 mov eax, dword ptr [esi]
-// 008a5c60  8b5070               mov edx, dword ptr [eax + 0x70]
-// 008a5c63  0f95c1               setne cl
-// 008a5c66  2be9                 sub ebp, ecx
-// 008a5c68  8bce                 mov ecx, esi
-// 008a5c6a  ffd2                 call edx
-// 008a5c6c  85c0                 test eax, eax
-// 008a5c6e  743f                 je 0x8a5caf
-// 008a5c70  837c244400           cmp dword ptr [esp + 0x44], 0
-// 008a5c75  7438                 je 0x8a5caf
-// 008a5c77  8b4624               mov eax, dword ptr [esi + 0x24]
-// 008a5c7a  83b80402000000       cmp dword ptr [eax + 0x204], 0
-// 008a5c81  742c                 je 0x8a5caf
-// 008a5c83  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 008a5c87  8b17                 mov edx, dword ptr [edi]
-// 008a5c89  8b92a0000000         mov edx, dword ptr [edx + 0xa0]
-// 008a5c8f  83ec10               sub esp, 0x10
-// 008a5c92  8bc4                 mov eax, esp
-// 008a5c94  8908                 mov dword ptr [eax], ecx
-// 008a5c96  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 008a5c9a  894804               mov dword ptr [eax + 4], ecx
-// 008a5c9d  895808               mov dword ptr [eax + 8], ebx
-// 008a5ca0  89680c               mov dword ptr [eax + 0xc], ebp
-// 008a5ca3  8b842448010000       mov eax, dword ptr [esp + 0x148]
-// 008a5caa  50                   push eax
-// 008a5cab  8bcf                 mov ecx, edi
-// 008a5cad  ffd2                 call edx
-// 008a5caf  837c245000           cmp dword ptr [esp + 0x50], 0
-// 008a5cb4  742b                 je 0x8a5ce1
-// 008a5cb6  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 008a5cba  8b17                 mov edx, dword ptr [edi]
-// 008a5cbc  8b5278               mov edx, dword ptr [edx + 0x78]
-// 008a5cbf  83ec10               sub esp, 0x10
-// 008a5cc2  8bc4                 mov eax, esp
-// 008a5cc4  8908                 mov dword ptr [eax], ecx
-// 008a5cc6  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 008a5cca  894804               mov dword ptr [eax + 4], ecx
-// 008a5ccd  895808               mov dword ptr [eax + 8], ebx
-// 008a5cd0  89680c               mov dword ptr [eax + 0xc], ebp
-// 008a5cd3  8b842448010000       mov eax, dword ptr [esp + 0x148]
-// 008a5cda  6a00                 push 0
-// 008a5cdc  50                   push eax
-// 008a5cdd  8bcf                 mov ecx, edi
-// 008a5cdf  ffd2                 call edx
-// 008a5ce1  8d8c24a4000000       lea ecx, [esp + 0xa4]
-// 008a5ce8  c684243001000000     mov byte ptr [esp + 0x130], 0
-// 008a5cf0  e8db82fcff           call 0x86dfd0
-// 008a5cf5  8d4c2468             lea ecx, [esp + 0x68]
-// 008a5cf9  c7842430010000ffffffff mov dword ptr [esp + 0x130], 0xffffffff
-// 008a5d04  e89743f7ff           call 0x81a0a0
-// 008a5d09  8b8c2428010000       mov ecx, dword ptr [esp + 0x128]
-// 008a5d10  64890d00000000       mov dword ptr fs:[0], ecx
-// 008a5d17  59                   pop ecx
-// 008a5d18  5f                   pop edi
-// 008a5d19  5e                   pop esi
-// 008a5d1a  5d                   pop ebp
-// 008a5d1b  5b                   pop ebx
-// 008a5d1c  81c420010000         add esp, 0x120
-// 008a5d22  c22800               ret 0x28
-// copied from an identical function in another client (function ?DrawFixed@CXTPReportRow@@QAEXPAVCDC@@VCRect@@H1@Z)
-
 // roc-cl: 30729
 // roc-lang: cpp
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportRow.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportRow.cpp : implementation of the CXTPReportRow class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPReportRecord.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportRow.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportTip.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportHeader.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_DYNAMIC(CXTPReportRow, CCmdTarget)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportRow
+
+
+CXTPReportRow::CXTPReportRow()
+	: m_pParentRow(NULL), m_pRecord(NULL), m_pControl(NULL), m_pParentRows(NULL)
+{
+	m_nGroupLevel = m_nRowLevel = 0;
+
+
+	m_bVisible = FALSE;
+	m_pChilds = NULL;
+	m_bExpanded = TRUE;
+
+	m_rcRow.SetRectEmpty();
+	m_rcCollapse.SetRectEmpty();
+	m_nChildIndex = m_nIndex = -1;
+
+	m_nPreviewHeight = 0;
+	m_nRowType = xtpRowTypeBody;
+
+}
+
+void CXTPReportRow::InitRow(CXTPReportControl* pControl, CXTPReportRecord* pRecord)
+{
+	ASSERT(pRecord || IsGroupRow());
+
+	m_pControl = pControl;
+
+	if (pRecord)
+	{
+		m_pRecord = pRecord;
+		m_bExpanded = pRecord->m_bExpanded;
+		m_pRecord->InternalAddRef();
+	}
+}
+
+void CXTPReportRow::InitRow(CXTPReportRow* pRow)
+{
+	ASSERT(pRow->m_pRecord);
+	ASSERT(pRow->m_pParentRow == NULL);
+
+	m_pControl = pRow->m_pControl;
+	m_pRecord = pRow->m_pRecord;
+	if (m_pRecord) m_pRecord->InternalAddRef();
+	m_rcRow = pRow->m_rcRow;
+	m_nIndex = pRow->m_nIndex;
+	m_nPreviewHeight = pRow->m_nPreviewHeight;
+	m_nRowLevel = pRow->m_nRowLevel;
+	m_nGroupLevel = pRow->m_nGroupLevel;
+}
+
+
+CXTPReportRows* CXTPReportRow::GetChilds()
+{
+	if (!m_pChilds)
+	{
+		m_pChilds = new CXTPReportRows();
+	}
+	return m_pChilds;
+}
+
+
+
+CXTPReportRow::~CXTPReportRow()
+{
+	if (m_pChilds)
+	{
+		m_pChilds->InternalRelease();
+	}
+
+	if (m_pRecord)
+	{
+		m_pRecord->InternalRelease();
+	}
+}
+
+int CXTPReportRow::GetHeight(CDC* pDC, int nWidth)
+{
+	ASSERT(m_pControl);
+	if (!m_pControl)
+		return 0;
+	int nHeight = m_pControl->GetPaintManager()->GetRowHeight(pDC, this, nWidth);
+
+	if (!IsGroupRow() && !IsItemsVisible())
+		nHeight = 0;
+
+	if (pDC->IsPrinting())
+		return nHeight;
+
+	m_nPreviewHeight = 0;
+
+	if (IsPreviewVisible())
+	{
+		CXTPReportRecordItemPreview* pItem = GetRecord()->GetItemPreview();
+
+		m_nPreviewHeight = pItem->GetPreviewHeight(pDC, this, m_pControl->GetReportHeader()->GetWidth());
+
+		return nHeight + m_nPreviewHeight;
+	}
+
+	return nHeight;
+}
+
+
+BOOL CXTPReportRow::IsFocused() const
+{
+	switch(m_nRowType)
+	{
+		case xtpRowTypeBody:
+			return m_pControl->m_nFocusedRow == m_nIndex;
+		case xtpRowTypeHeader:
+			return m_pControl->m_nFocusedHeaderRow == m_nIndex;
+		case xtpRowTypeFooter:
+			return m_pControl->m_nFocusedFooterRow == m_nIndex;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTPReportRow::IsSelected() const
+{
+	return m_pControl->GetSelectedRows()->Contains(this);
+}
+
+void CXTPReportRow::SetSelected(BOOL bSelected)
+{
+	if (bSelected)
+	{
+		if (!m_pControl->IsMultipleSelection())
+			m_pControl->GetSelectedRows()->Clear();
+
+		m_pControl->GetSelectedRows()->Add(this);
+	}
+	else
+	{
+		m_pControl->GetSelectedRows()->Remove(this);
+	}
+
+	m_pControl->RedrawControl();
+}
+
+int CXTPReportRow::GetLastChildRow(CXTPReportRows* pChilds) const
+{
+	CXTPReportRow* pRow = pChilds->GetAt(pChilds->GetCount() - 1);
+	return pRow->HasChildren() && pRow->IsExpanded() ? GetLastChildRow(pRow->GetChilds()) : pRow->GetIndex();
+}
+
+void CXTPReportRow::SelectChilds()
+{
+	if (!(m_pControl->IsMultipleSelection() && HasChildren() && IsExpanded() && m_nIndex != -1))
+		return;
+
+	m_pControl->BeginUpdate();
+
+	int nIndexBegin = m_nIndex + 1;
+	int nIndexEnd = GetLastChildRow(GetChilds());
+
+	m_pControl->GetSelectedRows()->AddBlock(nIndexBegin, nIndexEnd);
+
+	m_pControl->EndUpdate();
+}
+
+BOOL CXTPReportRow::IsItemsVisible() const
+{
+	return TRUE;
+}
+
+
+BOOL CXTPReportRow::IsPreviewVisible() const
+{
+	return !IsGroupRow() && m_pRecord && m_pControl->IsPreviewMode() && m_pRecord->GetItemPreview() != NULL;
+}
+
+void CXTPReportRow::Draw(CDC* pDC, CRect rcRow, int nLeftOffset)
+{
+	ASSERT(m_pControl);
+	if (!m_pControl)
+		return;
+
+	BOOL bControlFocused = m_pControl->HasFocus();
+	int nFreezeCols = m_pControl->m_nFreezeColumnsCount;
+	CRect rcClipBox = m_pControl->GetReportRectangle();
+
+	m_rcRow = rcRow;
+	m_rcRow.left -= nLeftOffset;
+	m_rcRow.right -= nLeftOffset;
+
+	if (nFreezeCols == 0)
+	{
+		rcRow = m_rcRow;
+	}
+
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pDC = pDC;
+	drawArgs.pControl = m_pControl;
+	drawArgs.pRow = this;
+	int nIndentWidth = m_pControl->GetHeaderIndent();
+	CXTPReportPaintManager* pPaintManager = m_pControl->GetPaintManager();
+
+	CXTPReportColumns arrVisibleColumns(m_pControl);
+	m_pControl->GetColumns()->GetVisibleColumns(arrVisibleColumns);
+	int nVisColCount = arrVisibleColumns.GetCount();
+	nFreezeCols = min(nFreezeCols, nVisColCount);
+
+	// paint row background
+	pPaintManager->FillRow(pDC, this, m_rcRow);
+
+	CRect rcItem(m_rcRow.left, m_rcRow.top, m_rcRow.right, m_rcRow.bottom - m_nPreviewHeight);
+
+	CRect rcIndent(nFreezeCols ? rcRow : m_rcRow);
+	rcIndent.right = rcIndent.left + nIndentWidth;
+
+	if (m_pRecord) // if drawing record, not group
+	{
+		int xMinCol_0 = rcRow.left + nIndentWidth;
+		// paint record items
+		for (int nColumn = nVisColCount-1; nColumn >= 0; nColumn--)
+		{
+			BOOL bFreezeCol = nColumn < nFreezeCols;
+			int nColIdx = bFreezeCol ? nFreezeCols - 1 - nColumn : nColumn;
+
+			CXTPReportColumn* pColumn = arrVisibleColumns.GetAt(nColIdx);
+			ASSERT(pColumn && pColumn->IsVisible());
+
+			if (pColumn && IsItemsVisible())
+			{
+				rcItem.left = pColumn->GetRect().left;
+				if (nColIdx == 0)
+				{
+					rcItem.left = max(xMinCol_0, rcItem.left);
+				}
+				rcItem.right = pColumn->GetRect().right;
+
+				if (!CRect().IntersectRect(rcClipBox, rcItem))
+					continue;
+
+				if (bFreezeCol)
+				{
+					pDC->FillSolidRect(rcItem, pPaintManager->GetControlBackColor(GetControl()));
+					pPaintManager->FillRow(pDC, this, rcItem);
+				}
+
+				CRect rcGridItem(rcItem);
+				rcGridItem.left--;
+
+				// draw shade background if sorted by this row
+				if (pColumn->IsSorted())
+				{
+					pPaintManager->FillItemShade(pDC, rcItem);
+				}
+
+				CXTPReportRecordItem* pItem = m_pRecord->GetItem(pColumn);
+
+				if (pItem)
+				{
+					// draw item
+					drawArgs.pColumn = pColumn;
+					drawArgs.rcItem = rcItem;
+					drawArgs.nTextAlign = pColumn->GetAlignment();
+					drawArgs.pItem = pItem;
+					// draw item
+					int nItemTextWidth = pItem->Draw(&drawArgs);
+
+					pColumn->m_nMaxItemWidth = max(pColumn->m_nMaxItemWidth, nItemTextWidth);
+				}
+
+				pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
+
+				if (nColIdx == nFreezeCols - 1)
+					pPaintManager->DrawFreezeColsDivider(pDC, rcGridItem, GetControl(), this);
+			}
+		}
+
+		if (IsPreviewVisible())
+		{
+			CRect rcPreviewItem(m_rcRow);
+			rcPreviewItem.DeflateRect(nIndentWidth, rcPreviewItem.Height() - m_nPreviewHeight, 0, 0);
+
+			drawArgs.rcItem = rcPreviewItem;
+			drawArgs.nTextAlign = DT_LEFT;
+			drawArgs.pItem = m_pRecord->GetItemPreview();
+			drawArgs.pColumn = NULL;
+
+			drawArgs.pItem->Draw(&drawArgs);
+		}
+
+		if (nIndentWidth > 0)
+		{
+			// draw indent column
+			pPaintManager->FillIndent(pDC, rcIndent);
+		}
+	}
+
+	BOOL bGridVisible = pPaintManager->IsGridVisible(FALSE);
+
+	//CRect rcFocus(m_rcRow.left + nIndentWidth, m_rcRow.top, m_rcRow.right, m_rcRow.bottom - (bGridVisible ? 1 : 0));
+	CRect rcFocus(rcIndent.right, m_rcRow.top, m_rcRow.right, m_rcRow.bottom - (bGridVisible ? 1 : 0));
+
+	if (IsFocused() && bControlFocused && m_pControl->IsRowFocusVisible())
+		pPaintManager->DrawFocusedRow(pDC, rcFocus);
+
+
+	if (m_nIndex < m_pControl->GetRows()->GetCount() - 1 && nIndentWidth > 0)
+	{
+		CXTPReportRow* pNextRow = m_pControl->GetRows()->GetAt(m_nIndex + 1);
+		ASSERT(pNextRow);
+		if (pNextRow) rcFocus.left = rcIndent.left + min(nIndentWidth, pPaintManager->m_nTreeIndent * pNextRow->GetTreeDepth());
+	}
+	else
+	{
+		rcFocus.left = m_rcRow.left;
+	}
+
+	pPaintManager->DrawGrid(pDC, FALSE, rcFocus);
+
+}
+
+int CXTPReportRow::GetTreeDepth() const
+{
+	return m_nRowLevel;
+}
+
+INT_PTR CXTPReportRow::OnToolHitTest(CPoint point, TOOLINFO* pTI)
+{
+	CRect rcItem;
+	CXTPReportRecordItem* pItem = HitTest(point, &rcItem);
+
+	if (!pItem)
+		return -1;
+
+	INT_PTR nHit = (INT_PTR)pItem;
+	CString strTip = pItem->GetTooltip();
+
+	m_pControl->OnGetToolTipInfo(this, pItem, strTip);
+
+	if (strTip.IsEmpty() || strTip == _T(" "))
+		return -1;
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_pControl->m_hWnd, rcItem,
+		nHit, strTip);
+
+	return nHit;
+}
+
+BOOL CXTPReportRow::OnLButtonDown(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	return (BOOL)m_pControl->SendMessageToParent(this, pClickArgs->pItem, pClickArgs->pColumn, XTP_NM_REPORT_LBUTTONDOWN, &pClickArgs->ptClient);
+}
+
+void CXTPReportRow::OnClick(CPoint ptClicked)
+{
+	XTP_REPORTRECORDITEM_CLICKARGS clickArgs;
+	clickArgs.pControl = m_pControl;
+	clickArgs.pRow = this;
+	clickArgs.ptClient = ptClicked;
+	clickArgs.pColumn = NULL;
+
+	// find clicked item
+	clickArgs.pItem = HitTest(ptClicked, &clickArgs.rcItem, &clickArgs.pColumn);
+
+	if (HasChildren() && m_rcCollapse.PtInRect(ptClicked)
+		&& clickArgs.pColumn && clickArgs.pColumn->IsTreeColumn())
+	{
+		SetExpanded(!IsExpanded());
+		return;
+	}
+
+	// notify item if found
+	if (!clickArgs.pItem)
+		return;
+
+	clickArgs.pItem->OnClick(&clickArgs);
+}
+
+void CXTPReportRow::OnDblClick(CPoint ptClicked)
+{
+	XTP_REPORTRECORDITEM_CLICKARGS clickArgs;
+	clickArgs.pControl = m_pControl;
+	clickArgs.pRow = this;
+	clickArgs.ptClient = ptClicked;
+	clickArgs.pColumn = NULL;
+
+	// find clicked item
+	clickArgs.pItem = HitTest(ptClicked, &clickArgs.rcItem, &clickArgs.pColumn);
+
+	// notify item if found
+	if (clickArgs.pItem != NULL)
+	{
+		clickArgs.pItem->OnDblClick(&clickArgs);
+	}
+	else
+	{
+		// just notify parent
+		m_pControl->SendMessageToParent(this, NULL, clickArgs.pColumn, NM_DBLCLK, &ptClicked, -1);
+	}
+}
+
+CRect CXTPReportRow::GetItemRect(CXTPReportRecordItem* pItem)
+{
+	if (!IsItemsVisible() || !pItem || !m_pRecord)
+		return CRect(0, 0, 0, 0);
+
+	if (IsPreviewVisible() && pItem == GetRecord()->GetItemPreview())
+	{
+		return CRect(m_rcRow.left + m_pControl->GetHeaderIndent(),
+			m_rcRow.bottom - m_nPreviewHeight, m_rcRow.right, m_rcRow.bottom);
+	}
+
+	int x = m_rcRow.left + m_pControl->GetHeaderIndent();
+
+	CXTPReportColumns* pColumns = m_pControl->GetColumns();
+	int nColumnCount = pColumns->GetCount();
+
+	CRect rcItem(0, m_rcRow.top, 0, m_rcRow.bottom - m_nPreviewHeight);
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			rcItem.left = x;
+			x = rcItem.right = pColumn->GetRect().right;
+
+			if (m_pRecord->GetItem(pColumn) == pItem)
+			{
+				ShiftTreeIndent(rcItem, pColumn);
+				return rcItem;
+			}
+		}
+	}
+	return CRect(0, 0, 0, 0);
+}
+
+void CXTPReportRow::ShiftTreeIndent(CRect& rcItem, CXTPReportColumn* pColumn) const
+{
+	if (pColumn->IsTreeColumn())
+	{
+		int nTreeDepth = GetTreeDepth() - m_nGroupLevel;
+		if (nTreeDepth > 0)
+			nTreeDepth++;
+		rcItem.left += m_pControl->GetIndent(nTreeDepth);
+
+		CRect rcBitmap(rcItem);
+		int nIndent = m_pControl->GetPaintManager()->DrawCollapsedBitmap(NULL, this, rcBitmap).cx;
+
+		rcItem.left += nIndent + 1;
+	}
+}
+
+CXTPReportRecordItem* CXTPReportRow::HitTest(CPoint ptPoint, CRect* pRectItem, CXTPReportColumn** ppColumn) const
+{
+	if (!m_pRecord)
+		return NULL;
+
+	// find record item
+	int x = m_rcRow.left + m_pControl->GetHeaderIndent();
+
+	CXTPReportColumns* pColumns = m_pControl->GetColumns();
+	int nColumnCount = pColumns->GetCount();
+
+
+	// if hittes for Preview item
+	if (IsPreviewVisible())
+	{
+		CXTPReportRecordItemPreview* pPreviewItem = GetRecord()->GetItemPreview();
+		if (pPreviewItem)
+		{
+			CRect rcItem(x, m_rcRow.bottom - m_nPreviewHeight, m_rcRow.right, m_rcRow.bottom);
+			if (rcItem.PtInRect(ptPoint))
+			{
+				if (pRectItem)
+				{
+					*pRectItem = rcItem;
+				}
+				return pPreviewItem;
+			}
+		}
+	}
+
+	CRect rcItem(0, m_rcRow.top, 0, m_rcRow.bottom - m_nPreviewHeight);
+
+	if (!IsItemsVisible())
+		return NULL;
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			rcItem.left = x;
+			x = rcItem.right = pColumn->GetRect().right;
+
+			if (rcItem.PtInRect(ptPoint) && ppColumn)
+			{
+				*ppColumn = pColumn;
+			}
+			// make tooltip shift if tree view (see also Draw function)
+			ShiftTreeIndent(rcItem, pColumn);
+
+			// check point
+			if (rcItem.PtInRect(ptPoint))
+			{
+				if (pRectItem)
+				{
+					*pRectItem = rcItem;
+				}
+
+				return m_pRecord->GetItem(pColumn);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void CXTPReportRow::OnMouseMove(UINT nFlags, CPoint point)
+{
+
+	// find clicked item
+	CRect rcItem;
+	CXTPReportRecordItem* pItem = HitTest(point, &rcItem);
+
+	// notify item if found
+	if (pItem != NULL)
+	{
+		pItem->OnMouseMove(nFlags, point);
+	}
+
+}
+
+
+void CXTPReportRow::FillMetrics(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	m_pControl->m_nLockUpdateCount++;
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pDC = NULL;
+	drawArgs.pColumn = pColumn;
+	drawArgs.pControl = m_pControl;
+	drawArgs.pRow = this;
+	drawArgs.rcItem.SetRectEmpty();
+	drawArgs.pItem = pItem;
+	GetItemMetrics(&drawArgs, pMetrics);
+	m_pControl->m_nLockUpdateCount--;
+}
+
+void CXTPReportRow::ShowToolTip(CPoint ptTip, CXTPReportTip* pTipWnd)
+{
+	CRect rcItem(0, 0, 0, 0);
+	CXTPReportColumn* pColumn = NULL;
+	CXTPReportRecordItem* pItem = HitTest(ptTip, &rcItem, &pColumn);
+	// show tooltip
+	if (!pItem || pItem->IsPreviewItem() || !pColumn)
+	{
+		pTipWnd->m_pItem = NULL;
+		pTipWnd->m_nRowIndex = -1;
+		return;
+	}
+
+	if (!CXTPDrawHelpers::IsTopParentActive(m_pControl->GetSafeHwnd()) || m_pControl->GetActiveItem())
+	{
+		return;
+	}
+
+	if ((pItem != pTipWnd->m_pItem) || (m_nIndex != pTipWnd->m_nRowIndex))
+	{
+		pTipWnd->m_pItem = pItem;
+		pTipWnd->m_nRowIndex = m_nIndex;
+
+		CString strTip = pItem->GetTooltip();
+		m_pControl->OnGetToolTipInfo(this, pItem, strTip);
+
+		if (!strTip.IsEmpty() || strTip == _T(" ") || pColumn->GetAlignment() & DT_WORDBREAK)
+			return;
+
+		XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
+		pMetrics->strText = pItem->GetCaption(pColumn);
+		FillMetrics(pColumn, pItem, pMetrics);
+
+		CString strText(pMetrics->strText);
+
+		strText.TrimRight();
+
+		if (strText.IsEmpty())
+		{
+			pMetrics->InternalRelease();
+			return;
+		}
+
+		XTP_REPORTRECORDITEM_ARGS itemArgs;
+		itemArgs.pControl = m_pControl;
+		itemArgs.pRow = this;
+
+		pItem->GetCaptionRect(&itemArgs, rcItem);
+
+		m_pControl->ClientToScreen(&rcItem);
+
+		if (!pTipWnd->GetSafeHwnd())
+		{
+			pTipWnd->Create(m_pControl);
+		}
+
+
+		CWindowDC dc(m_pControl);
+		CXTPFontDC font(&dc, pMetrics->pFont);
+		CSize sz = dc.GetTextExtent(strText);
+
+		if (sz.cx > rcItem.Width() - 4)
+		{
+			rcItem.InflateRect(1, 1, 0, 0);
+
+			pTipWnd->SetFont(pMetrics->pFont);
+			pTipWnd->SetTooltipText(strText);
+			pTipWnd->SetHoverRect(rcItem);
+			pTipWnd->Activate(TRUE);
+
+			TRACKMOUSEEVENT tme =
+			{
+				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_pControl->GetSafeHwnd(), 0
+			};
+			_TrackMouseEvent (&tme);
+		}
+
+		pMetrics->InternalRelease();
+	}
+}
+
+BOOL CXTPReportRow::HasParent(CXTPReportRow* pRow)
+{
+	if (m_pParentRow == NULL)
+		return FALSE;
+	if (pRow == m_pParentRow)
+		return TRUE;
+	return m_pParentRow->HasParent(pRow);
+}
+
+void CXTPReportRow::SetExpanded(BOOL bExpanded)
+{
+	if (bExpanded != m_bExpanded && HasChildren())
+	{
+		if (bExpanded)
+		{
+			m_pControl->_DoExpand(this);
+		}
+		else
+		{
+			m_pControl->_DoCollapse(this);
+		}
+
+		if (m_pRecord)
+		{
+			m_pRecord->m_bExpanded = bExpanded;
+		}
+
+		m_bExpanded = bExpanded;
+
+		m_pControl->_RefreshIndexes();
+		m_pControl->SendMessageToParent(this, NULL, NULL, XTP_NM_REPORT_ROWEXPANDED, NULL);
+	}
+	else
+	{
+		m_bExpanded = bExpanded;
+	}
+
+}
+
+CXTPReportRow* CXTPReportRow::AddChild(CXTPReportRow* pRow)
+{
+	GetChilds()->Add(pRow);
+	pRow->m_pParentRow = this;
+
+	return pRow;
+}
+
+void CXTPReportRow::OnContextMenu(CPoint ptClick)
+{
+	CXTPReportColumn* pColumn = NULL;
+	CXTPReportRecordItem* pItem = HitTest(ptClick, NULL, &pColumn);
+
+	m_pControl->ClientToScreen(&ptClick);
+
+	// send process notification to the user and wait for the reaction
+	m_pControl->SendMessageToParent(this, pItem, pColumn, NM_RCLICK, &ptClick);
+}
+
+void CXTPReportRow::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	ASSERT(m_pRecord);
+	ASSERT(pDrawArgs->pRow == this);
+	ASSERT(pDrawArgs->pItem != NULL);
+	if (!m_pRecord || !pDrawArgs->pItem)
+		return;
+
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	pItemMetrics->pFont = &pPaintManager->m_fontText;
+	pItemMetrics->clrForeground = pPaintManager->m_clrWindowText;
+	pItemMetrics->clrBackground = XTP_REPORT_COLOR_DEFAULT;
+	pItemMetrics->nColumnAlignment = pDrawArgs->nTextAlign;
+	pItemMetrics->nItemIcon = XTP_REPORT_NOICON;
+
+	m_pRecord->GetItemMetrics(pDrawArgs, pItemMetrics);
+	pDrawArgs->pItem->GetItemMetrics(pDrawArgs, pItemMetrics);
+
+	m_pControl->GetItemMetrics(pDrawArgs, pItemMetrics);
+	pDrawArgs->nTextAlign = pItemMetrics->nColumnAlignment;
+
+	if (IsSelected() && (pDrawArgs->pDC && !pDrawArgs->pDC->IsPrinting()))
+	{
+		if (pDrawArgs->pColumn && IsFocused() && m_pControl->m_pFocusedColumn == pDrawArgs->pColumn)
+			return;
+
+		if (GetControl()->HasFocus())
+		{
+			pItemMetrics->clrForeground = pPaintManager->m_clrHighlightText;
+			pItemMetrics->clrBackground = pPaintManager->m_clrHighlight;
+		}
+		else if (!pPaintManager->m_bHideSelection)
+		{
+			pItemMetrics->clrForeground = pPaintManager->m_clrSelectedRowText;
+			pItemMetrics->clrBackground = pPaintManager->m_clrSelectedRow;
+		}
+	}
+}
+
+BOOL CXTPReportRow::HasChildren() const
+{
+	return m_pChilds && m_pChilds->GetCount() > 0;
+}
+
+int CXTPReportRow::GetIndex() const
+{
+	return m_nIndex;
+}
+
+BOOL CXTPReportRow::IsGroupRow() const
+{
+	return FALSE;
+}
+
+BOOL CXTPReportRow::IsExpanded() const
+{
+	return m_bExpanded;
+}
+
+BOOL CXTPReportRow::IsLastTreeRow() const
+{
+	if (!m_pParentRow)
+		return FALSE;
+
+	CXTPReportRows* pRows = m_pParentRow->GetChilds();
+
+	return pRows->GetCount() > 0 && pRows->GetAt(pRows->GetCount() - 1) == this;
+}
+
+void CXTPReportRow::EnsureVisible()
+{
+	m_pControl->EnsureVisible(this);
+
+}
+
+CXTPReportRow* CXTPReportRow::GetNextSiblingRow() const
+{
+	if (!m_pParentRows)
+		return 0;
+
+	if (m_nChildIndex == -1)
+		return 0;
+
+	ASSERT(m_pParentRows->GetAt(m_nChildIndex) == this);
+
+	if (m_nChildIndex < m_pParentRows->GetCount() - 1)
+		return m_pParentRows->GetAt(m_nChildIndex + 1);
+
+	return 0;
+}
+
+
+void CXTPReportRow::DrawFixed(CDC* pDC, CRect rcRow, int nLeftOffset, CRect rcArea)
+{
+	ASSERT(m_pControl);
+	if (!m_pControl)
+		return;
+
+//  BOOL bControlFocused = m_pControl->HasFocus();
+	int nFreezeCols = m_pControl->m_nFreezeColumnsCount;
+
+	CRect rcClipBox = rcArea ;
+
+	m_rcRow = rcRow;
+	m_rcRow.left -= nLeftOffset;
+	m_rcRow.right -= nLeftOffset;
+
+	if (nFreezeCols == 0)
+	{
+		rcRow = m_rcRow;
+	}
+
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pDC = pDC;
+	drawArgs.pControl = m_pControl;
+	drawArgs.pRow = this;
+	int nIndentWidth = m_pControl->GetHeaderIndent();
+
+	CXTPReportPaintManager* pPaintManager = m_pControl->GetPaintManager();
+
+	// whether to draw header's last horizontal grid depends on header divider style.
+	BOOL bDrawLastHeaderGrid = TRUE;
+	if (GetType() == xtpRowTypeHeader)
+	{
+		bDrawLastHeaderGrid = xtpReportFixedRowsDividerNone == (pPaintManager->GetHeaderRowsDividerStyle() & ~xtpReportFixedRowsDividerShade);
+	}
+
+	// whether to draw footer's first horizontal grid depends on footer divider style.
+	BOOL bDrawFirstFooterGrid = TRUE;
+	if (GetType() == xtpRowTypeFooter)
+	{
+		bDrawFirstFooterGrid = xtpReportFixedRowsDividerNone == (pPaintManager->GetFooterRowsDividerStyle() & ~xtpReportFixedRowsDividerShade);
+	}
+
+	CXTPReportColumns arrVisibleColumns(m_pControl);
+	m_pControl->GetColumns()->GetVisibleColumns(arrVisibleColumns);
+	int nVisColCount = arrVisibleColumns.GetCount();
+	nFreezeCols = min(nFreezeCols, nVisColCount);
+
+	// paint row background
+	pDC->FillSolidRect(m_rcRow, pPaintManager->GetControlBackColor(GetControl()));
+
+	CRect rcItem(m_rcRow.left, m_rcRow.top, m_rcRow.right, m_rcRow.bottom - m_nPreviewHeight);
+
+	CRect rcIndent(nFreezeCols ? rcRow : m_rcRow);
+	rcIndent.right = rcIndent.left + nIndentWidth;
+
+	if (m_pRecord) // if drawing record, not group
+	{
+		int xMinCol_0 = rcRow.left + nIndentWidth;
+		// paint record items
+		for (int nColumn = nVisColCount-1; nColumn >= 0; nColumn--)
+		{
+			BOOL bFreezeCol = nColumn < nFreezeCols;
+			int nColIdx = bFreezeCol ? nFreezeCols - 1 - nColumn : nColumn;
+
+			CXTPReportColumn* pColumn = arrVisibleColumns.GetAt(nColIdx);
+			ASSERT(pColumn && pColumn->IsVisible());
+
+			if (pColumn && IsItemsVisible())
+			{
+				rcItem.left = pColumn->GetRect().left;
+				if (nColIdx == 0)
+				{
+					rcItem.left = max(xMinCol_0, rcItem.left);
+				}
+				rcItem.right = pColumn->GetRect().right;
+
+				if (!CRect().IntersectRect(rcClipBox, rcItem))
+					continue;
+
+				if (bFreezeCol)
+				{
+					pDC->FillSolidRect(rcItem, pPaintManager->GetControlBackColor(GetControl()));
+					pPaintManager->FillRow(pDC, this, rcItem);
+				}
+
+				CRect rcGridItem(rcItem);
+				rcGridItem.left--;
+
+				// draw shade background if sorted by this row
+				if (pColumn->IsSorted())
+				{
+					pPaintManager->FillItemShade(pDC, rcItem);
+				}
+
+				CXTPReportRecordItem* pItem = m_pRecord->GetItem(pColumn);
+
+				if (pItem)
+				{
+					// draw item
+					drawArgs.pColumn = pColumn;
+					drawArgs.rcItem = rcItem;
+					drawArgs.nTextAlign = pColumn->GetAlignment();
+					drawArgs.pItem = pItem;
+					// draw item
+					int nItemTextWidth = pItem->Draw(&drawArgs);
+
+					pColumn->m_nMaxItemWidth = max(pColumn->m_nMaxItemWidth, nItemTextWidth);
+				}
+
+				// is vertical grid required
+				if (GetType() == xtpRowTypeHeader)
+				{
+					if (pColumn->GetDrawHeaderRowsVGrid())
+						pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
+				}
+				else
+					if (GetType() == xtpRowTypeFooter)
+					{
+						if (pColumn->GetDrawFooterRowsVGrid())
+							pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
+					}
+
+				if (bDrawFirstFooterGrid)
+				{
+					// horizontal grid above
+					CRect rcTop(rcGridItem);
+					rcTop.bottom = --rcGridItem.top;
+					pPaintManager->DrawGrid(pDC, FALSE, rcTop);
+				}
+				bDrawFirstFooterGrid = TRUE;
+
+				if (nColIdx == nFreezeCols - 1)
+					pPaintManager->DrawFreezeColsDivider(pDC, rcGridItem, GetControl(), this);
+			}
+		}
+
+		if (nIndentWidth > 0)
+		{
+			// draw indent column
+			pPaintManager->FillIndent(pDC, rcIndent);
+		}
+	}
+
+	// draw focus
+	BOOL bControlFocused = m_pControl->HasFocus();
+	BOOL bGridVisible = pPaintManager->IsGridVisible(FALSE);
+	CRect rcFocus(rcIndent.right, m_rcRow.top, m_rcRow.right, m_rcRow.bottom - (bGridVisible ? 1 : 0));
+
+	if (IsFocused() && bControlFocused && m_pControl->IsRowFocusVisible())
+		pPaintManager->DrawFocusedRow(pDC, rcFocus);
+
+	// last header grid line
+	if (bDrawLastHeaderGrid)
+	{
+		pPaintManager->DrawGrid(pDC, FALSE, rcFocus);
+	}
+}
+

@@ -1,143 +1,986 @@
-// roc 2010-06 0085bb10  unit: CXTRegistryManager  size: 462 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0085bb10
-//
-// 0085bb10  6aff                 push -1
-// 0085bb12  6837879b00           push 0x9b8737
-// 0085bb17  64a100000000         mov eax, dword ptr fs:[0]
-// 0085bb1d  50                   push eax
-// 0085bb1e  b81c100000           mov eax, 0x101c
-// 0085bb23  e828d0f4ff           call 0x7a8b50
-// 0085bb28  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 0085bb2d  33c4                 xor eax, esp
-// 0085bb2f  89842418100000       mov dword ptr [esp + 0x1018], eax
-// 0085bb36  53                   push ebx
-// 0085bb37  55                   push ebp
-// 0085bb38  56                   push esi
-// 0085bb39  57                   push edi
-// 0085bb3a  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 0085bb3f  33c4                 xor eax, esp
-// 0085bb41  50                   push eax
-// 0085bb42  8d842430100000       lea eax, [esp + 0x1030]
-// 0085bb49  64a300000000         mov dword ptr fs:[0], eax
-// 0085bb4f  8b842444100000       mov eax, dword ptr [esp + 0x1044]
-// 0085bb56  8bac244c100000       mov ebp, dword ptr [esp + 0x104c]
-// 0085bb5d  8bbc2440100000       mov edi, dword ptr [esp + 0x1040]
-// 0085bb64  8b9c2448100000       mov ebx, dword ptr [esp + 0x1048]
-// 0085bb6b  8bf1                 mov esi, ecx
-// 0085bb6d  b94c62c200           mov ecx, 0xc2624c
-// 0085bb72  89442420             mov dword ptr [esp + 0x20], eax
-// 0085bb76  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 0085bb7a  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 0085bb82  ff15eccd9e00         call dword ptr [0x9ecdec]
-// 0085bb88  84c0                 test al, al
-// 0085bb8a  0f84e3000000         je 0x85bc73
-// 0085bb90  8bce                 mov ecx, esi
-// 0085bb92  e829fdffff           call 0x85b8c0
-// 0085bb97  85c0                 test eax, eax
-// 0085bb99  7506                 jne 0x85bba1
-// 0085bb9b  55                   push ebp
-// 0085bb9c  e909010000           jmp 0x85bcaa
-// 0085bba1  8b16                 mov edx, dword ptr [esi]
-// 0085bba3  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0085bba7  8b5208               mov edx, dword ptr [edx + 8]
-// 0085bbaa  6819000200           push 0x20019
-// 0085bbaf  50                   push eax
-// 0085bbb0  8bce                 mov ecx, esi
-// 0085bbb2  ffd2                 call edx
-// 0085bbb4  8be8                 mov ebp, eax
-// 0085bbb6  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0085bbba  c784243810000000000000 mov dword ptr [esp + 0x1038], 0
-// 0085bbc5  85ed                 test ebp, ebp
-// 0085bbc7  7509                 jne 0x85bbd2
-// 0085bbc9  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0085bbcd  e9d7000000           jmp 0x85bca9
-// 0085bbd2  8d4c2418             lea ecx, [esp + 0x18]
-// 0085bbd6  ff15a4ce9e00         call dword ptr [0x9ecea4]
-// 0085bbdc  8d4c2424             lea ecx, [esp + 0x24]
-// 0085bbe0  51                   push ecx
-// 0085bbe1  6a00                 push 0
-// 0085bbe3  8d542430             lea edx, [esp + 0x30]
-// 0085bbe7  52                   push edx
-// 0085bbe8  6a00                 push 0
-// 0085bbea  53                   push ebx
-// 0085bbeb  55                   push ebp
-// 0085bbec  c684245010000001     mov byte ptr [esp + 0x1050], 1
-// 0085bbf4  ff1528a09e00         call dword ptr [0x9ea028]
-// 0085bbfa  894610               mov dword ptr [esi + 0x10], eax
-// 0085bbfd  85c0                 test eax, eax
-// 0085bbff  7423                 je 0x85bc24
-// 0085bc01  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0085bc05  50                   push eax
-// 0085bc06  8bcf                 mov ecx, edi
-// 0085bc08  ff15e8ce9e00         call dword ptr [0x9ecee8]
-// 0085bc0e  8d4c2418             lea ecx, [esp + 0x18]
-// 0085bc12  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 0085bc18  55                   push ebp
-// 0085bc19  ff1510a09e00         call dword ptr [0x9ea010]
-// 0085bc1f  e98e000000           jmp 0x85bcb2
-// 0085bc24  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0085bc28  8d4c2424             lea ecx, [esp + 0x24]
-// 0085bc2c  51                   push ecx
-// 0085bc2d  52                   push edx
-// 0085bc2e  8d4c2420             lea ecx, [esp + 0x20]
-// 0085bc32  ff15fcc39e00         call dword ptr [0x9ec3fc]
-// 0085bc38  50                   push eax
-// 0085bc39  8d442430             lea eax, [esp + 0x30]
-// 0085bc3d  50                   push eax
-// 0085bc3e  6a00                 push 0
-// 0085bc40  53                   push ebx
-// 0085bc41  55                   push ebp
-// 0085bc42  ff1528a09e00         call dword ptr [0x9ea028]
-// 0085bc48  6aff                 push -1
-// 0085bc4a  8d4c241c             lea ecx, [esp + 0x1c]
-// 0085bc4e  894610               mov dword ptr [esi + 0x10], eax
-// 0085bc51  ff1500c49e00         call dword ptr [0x9ec400]
-// 0085bc57  837e1000             cmp dword ptr [esi + 0x10], 0
-// 0085bc5b  7407                 je 0x85bc64
-// 0085bc5d  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0085bc61  51                   push ecx
-// 0085bc62  eba2                 jmp 0x85bc06
-// 0085bc64  8d542418             lea edx, [esp + 0x18]
-// 0085bc68  52                   push edx
-// 0085bc69  8bcf                 mov ecx, edi
-// 0085bc6b  ff15c4ce9e00         call dword ptr [0x9ecec4]
-// 0085bc71  eb9b                 jmp 0x85bc0e
-// 0085bc73  c644241700           mov byte ptr [esp + 0x17], 0
-// 0085bc78  85ed                 test ebp, ebp
-// 0085bc7a  7506                 jne 0x85bc82
-// 0085bc7c  8d442417             lea eax, [esp + 0x17]
-// 0085bc80  8be8                 mov ebp, eax
-// 0085bc82  b94c62c200           mov ecx, 0xc2624c
-// 0085bc87  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 0085bc8d  8b542420             mov edx, dword ptr [esp + 0x20]
-// 0085bc91  50                   push eax
-// 0085bc92  6800100000           push 0x1000
-// 0085bc97  8d4c2434             lea ecx, [esp + 0x34]
-// 0085bc9b  51                   push ecx
-// 0085bc9c  55                   push ebp
-// 0085bc9d  53                   push ebx
-// 0085bc9e  52                   push edx
-// 0085bc9f  ff155ca29e00         call dword ptr [0x9ea25c]
-// 0085bca5  8d44242c             lea eax, [esp + 0x2c]
-// 0085bca9  50                   push eax
-// 0085bcaa  8bcf                 mov ecx, edi
-// 0085bcac  ff15e8ce9e00         call dword ptr [0x9ecee8]
-// 0085bcb2  8bc7                 mov eax, edi
-// 0085bcb4  8b8c2430100000       mov ecx, dword ptr [esp + 0x1030]
-// 0085bcbb  64890d00000000       mov dword ptr fs:[0], ecx
-// 0085bcc2  59                   pop ecx
-// 0085bcc3  5f                   pop edi
-// 0085bcc4  5e                   pop esi
-// 0085bcc5  5d                   pop ebp
-// 0085bcc6  5b                   pop ebx
-// 0085bcc7  8b8c2418100000       mov ecx, dword ptr [esp + 0x1018]
-// 0085bcce  33cc                 xor ecx, esp
-// 0085bcd0  e8ffd7f4ff           call 0x7a94d4
-// 0085bcd5  81c428100000         add esp, 0x1028
-// 0085bcdb  c21000               ret 0x10
-// copied from an identical function in another client (function ?GetProfileStringA@CXTRegistryManager@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBD00@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTRegistryManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTRegistryManager.cpp : implementation file
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "XTRegistryManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CHKey - helper automatically closes open HKEY
+
+class CXTRegistryManager::CHKey
+{
+public:
+	CHKey(HKEY hKey = NULL) : m_hKey(hKey)
+	{
+	}
+
+	~CHKey()
+	{
+		if (m_hKey != NULL)
+		{
+			::RegCloseKey(m_hKey);
+		}
+	}
+
+	HKEY& operator=(HKEY hKey)
+	{
+		if (m_hKey != NULL)
+		{
+			::RegCloseKey(m_hKey);
+		}
+
+		m_hKey = hKey;
+		return m_hKey;
+	}
+
+	BOOL operator==(HKEY hKey)
+	{
+		return m_hKey == hKey;
+	}
+
+	operator HKEY() const
+	{
+		return m_hKey;
+	}
+
+	operator PHKEY()
+	{
+		return &m_hKey;
+	}
+
+private:
+	HKEY m_hKey;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTRegistryManager
+
+CString CXTRegistryManager::m_strINIFileName = _T("");
+
+CXTRegistryManager::CXTRegistryManager(HKEY hKeyBase/*= HKEY_CURRENT_USER*/)
+	: m_pszRegistryKey(NULL)
+	, m_pszProfileName(NULL)
+	, m_lResult(ERROR_SUCCESS)
+{
+	ASSERT(hKeyBase == HKEY_CURRENT_USER || hKeyBase == HKEY_LOCAL_MACHINE);
+	m_hKeyBase = hKeyBase;
+}
+
+CXTRegistryManager::~CXTRegistryManager()
+{
+
+}
+
+BOOL CXTRegistryManager::GetProfileInfo()
+{
+	if (m_pszRegistryKey == NULL || m_pszProfileName == NULL)
+	{
+		CWinApp* pWinApp = AfxGetApp();
+		if (pWinApp != NULL)
+		{
+			m_pszRegistryKey = pWinApp->m_pszRegistryKey;
+			m_pszProfileName = pWinApp->m_pszProfileName;
+		}
+
+		// If this fails, you need to call SetRegistryKey(...); in your
+		// applications CWinApp::InitInstance() override, or you have called
+		// this method before you call SetRegistryKey..  Calling SetRegistryKey
+		// will initialize m_pszProfileName and m_pszRegistryKey for CWinApp.
+
+		// NOTE: If you want to write to an INI file instead of the system
+		// registry, call CXTRegistryManager::SetINIFileName(...) prior to
+		// making this call.
+
+		if (m_pszRegistryKey == NULL || m_pszProfileName == NULL)
+		{
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+HKEY CXTRegistryManager::GetAppRegistryKey(REGSAM samDesired)
+{
+	if (!GetProfileInfo())
+		return 0;
+
+	HKEY hAppKey = NULL;
+	CHKey hSoftKey;
+	CHKey hCompanyKey;
+
+	m_lResult = ::RegOpenKeyEx(m_hKeyBase, _T("Software"), 0,
+		samDesired, hSoftKey);
+
+	if (m_lResult != ERROR_SUCCESS)
+		return NULL;
+
+	DWORD dw = 0;
+	m_lResult = ::RegCreateKeyEx(hSoftKey, m_pszRegistryKey, 0, REG_NONE,
+		REG_OPTION_NON_VOLATILE, samDesired, NULL, hCompanyKey, &dw);
+
+	if (m_lResult != ERROR_SUCCESS)
+		return NULL;
+
+	m_lResult = ::RegCreateKeyEx(hCompanyKey, m_pszProfileName, 0, REG_NONE,
+		REG_OPTION_NON_VOLATILE, samDesired, NULL, &hAppKey, &dw);
+
+	if (m_lResult != ERROR_SUCCESS)
+		return NULL;
+
+	return hAppKey;
+}
+
+HKEY CXTRegistryManager::GetSectionKey(LPCTSTR lpszSection, REGSAM samDesired)
+{
+	ASSERT(lpszSection != NULL);
+	if (!lpszSection)
+		return 0;
+
+	HKEY hSectionKey = NULL;
+	CHKey hAppKey(GetAppRegistryKey(samDesired));
+
+	if (hAppKey == NULL)
+		return NULL;
+
+	DWORD dw = 0;
+	m_lResult = ::RegCreateKeyEx(hAppKey, lpszSection, 0, REG_NONE,
+		REG_OPTION_NON_VOLATILE, samDesired, NULL, &hSectionKey, &dw);
+
+	if (m_lResult != ERROR_SUCCESS)
+		return NULL;
+
+	return hSectionKey;
+}
+
+BOOL CXTRegistryManager::WriteProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	if (!lpszSection)
+		return 0;
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL,
+			REG_DWORD, (LPBYTE)&nValue, sizeof(nValue));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		TCHAR szT[16];
+		wsprintf(szT, _T("%d"), nValue);
+		return ::WritePrivateProfileString(lpszSection, lpszEntry, szT,
+			m_strINIFileName);
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_BINARY,
+			pData, nBytes);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+	// convert to string and write out
+	LPTSTR lpsz = new TCHAR[nBytes * 2 + 1];
+	UINT i;
+	for (i = 0; i < nBytes; i++)
+	{
+		lpsz[i * 2] = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
+		lpsz[i * 2 + 1] = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
+	}
+	lpsz[i * 2] = 0;
+
+	ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+	BOOL bResult = WriteProfileString(lpszSection, lpszEntry, lpsz);
+	delete[] lpsz;
+	return bResult;
+}
+
+BOOL CXTRegistryManager::WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (!lpszSection)
+		return 0;
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		if (lpszEntry == NULL) //delete whole section
+		{
+			CHKey hAppKey(GetAppRegistryKey(FALSE));
+			if (hAppKey == NULL)
+				return FALSE;
+
+			m_lResult = ::RegDeleteKey(hAppKey, lpszSection);
+
+			if (m_lResult != ERROR_SUCCESS)
+				return FALSE;
+		}
+		else if (lpszValue == NULL)
+		{
+			CHKey hSecKey(GetSectionKey(lpszSection));
+			if (hSecKey == NULL)
+				return FALSE;
+
+			// necessary to cast away const below
+			m_lResult = ::RegDeleteValue(hSecKey, (LPTSTR)lpszEntry);
+
+			if (m_lResult != ERROR_SUCCESS)
+				return FALSE;
+		}
+		else
+		{
+			CHKey hSecKey(GetSectionKey(lpszSection));
+			if (hSecKey == NULL)
+				return FALSE;
+
+			m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_SZ,
+				(LPBYTE)lpszValue, (lstrlen(lpszValue)+1)*sizeof(TCHAR));
+
+			if (m_lResult != ERROR_SUCCESS)
+				return FALSE;
+		}
+
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+		ASSERT(m_strINIFileName.GetLength() < 4095); // can't read in bigger
+		return ::WritePrivateProfileString(lpszSection, lpszEntry, lpszValue,
+			m_strINIFileName);
+	}
+}
+
+UINT CXTRegistryManager::GetProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	if (!lpszSection || !lpszEntry)
+		return 0;
+
+	if (m_strINIFileName.IsEmpty()) // use registry
+	{
+		if (!GetProfileInfo())
+			return nDefault;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return nDefault;
+
+		DWORD dwValue;
+		DWORD dwType;
+		DWORD dwCount = sizeof(DWORD);
+
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)&dwValue, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return nDefault;
+
+		ASSERT(dwType == REG_DWORD);
+		ASSERT(dwCount == sizeof(dwValue));
+
+		return (UINT)dwValue;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+		return ::GetPrivateProfileInt(lpszSection, lpszEntry, nDefault,
+			m_strINIFileName);
+	}
+}
+
+BOOL CXTRegistryManager::GetProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, BYTE** ppData, UINT* pBytes)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	ASSERT(ppData != NULL);
+	ASSERT(pBytes != NULL);
+	if (!ppData || !pBytes)
+		return FALSE;
+
+	*ppData = NULL;
+	*pBytes = 0;
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		*pBytes = dwCount;
+		*ppData = new BYTE[*pBytes];
+		ASSERT(dwType == REG_BINARY);
+
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			*ppData, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+		{
+			SAFE_DELETE_AR(*ppData);
+			return FALSE;
+		}
+
+		ASSERT(dwType == REG_BINARY);
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+		ASSERT(str.GetLength()%2 == 0);
+		int nLen = str.GetLength();
+		*pBytes = nLen/2;
+		*ppData = new BYTE[*pBytes];
+		int i;
+		for (i = 0; i < nLen; i += 2)
+		{
+			(*ppData)[i/2] = (BYTE)
+				(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
+		}
+		return TRUE;
+	}
+}
+
+CString CXTRegistryManager::GetProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return lpszDefault;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return lpszDefault;
+
+		CString strValue;
+		DWORD dwType, dwCount;
+
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return lpszDefault;
+
+		ASSERT(dwType == REG_SZ);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
+		strValue.ReleaseBuffer();
+
+		if (m_lResult != ERROR_SUCCESS)
+			return lpszDefault;
+
+		ASSERT(dwType == REG_SZ);
+		return strValue;
+	}
+	else
+	{
+		TCHAR chNil = '\0';
+
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		if (lpszDefault == NULL)
+		{
+			lpszDefault = &chNil;    // don't pass in NULL
+		}
+
+		TCHAR szT[4096];
+		DWORD dw = ::GetPrivateProfileString(lpszSection, lpszEntry,
+			lpszDefault, szT, _countof(szT), m_strINIFileName);
+		ASSERT(dw < 4095);
+		return szT;
+	}
+}
+
+int CXTRegistryManager::EnumValues(LPCTSTR lpszSection, CMap<CString, LPCTSTR, DWORD, DWORD&>* mapItems,
+									CStringArray * arrayNames)
+{
+	ASSERT(lpszSection != NULL);
+
+	CHKey hKey(GetSectionKey(lpszSection, KEY_READ));
+
+	int index = 0;
+
+	TCHAR szValue[512];
+	DWORD dwLen = 512;
+	DWORD dwType;
+
+	while (ERROR_NO_MORE_ITEMS != ::RegEnumValue(hKey, index++, szValue, &dwLen,
+		NULL, &dwType, NULL, NULL))
+	{
+		if (mapItems) mapItems->SetAt(szValue, dwType);
+		if (arrayNames) arrayNames->Add(szValue);
+		dwLen = 512;
+	}
+
+	return --index;
+}
+
+int CXTRegistryManager::EnumKeys(LPCTSTR lpszSection, CStringArray & arrayKeys)
+{
+	ASSERT(lpszSection != NULL);
+
+	CHKey hKey(GetSectionKey(lpszSection, KEY_READ));
+
+	int index = 0;
+
+	TCHAR szValue[512];
+	DWORD dwLen = 512;
+
+	while (ERROR_NO_MORE_ITEMS != ::RegEnumKeyEx(hKey, index++, szValue, &dwLen,
+		NULL, NULL, NULL, NULL))
+	{
+		arrayKeys.Add(szValue);
+		dwLen = 512;
+	}
+
+	return --index;
+}
+
+LONG CXTRegistryManager::RecurseDeleteKey(HKEY hKey, LPCTSTR lpszKey)
+{
+	CHKey hSubKey;
+	LONG lRes = ::RegOpenKeyEx(hKey, lpszKey, 0, KEY_READ | KEY_WRITE, hSubKey);
+	if (lRes != ERROR_SUCCESS)
+		return lRes;
+
+	FILETIME time;
+	DWORD dwSize = 256;
+	TCHAR szBuffer[256];
+
+	while (::RegEnumKeyEx(hSubKey, 0, szBuffer, &dwSize, NULL, NULL, NULL,
+		&time) == ERROR_SUCCESS)
+	{
+		lRes = RecurseDeleteKey(hSubKey, szBuffer);
+		if (lRes != ERROR_SUCCESS)
+			return lRes;
+
+		dwSize = 256;
+	}
+
+	m_lResult = ::RegDeleteKey(hKey, lpszKey);
+	return m_lResult;
+}
+
+bool CXTRegistryManager::DeleteKey(LPCTSTR lpszSection, LPCTSTR lpszKey)
+{
+	CHKey hSectionKey(GetSectionKey(lpszSection));
+	if (hSectionKey == NULL)
+		return false;
+
+	return (RecurseDeleteKey(hSectionKey, lpszKey) == ERROR_SUCCESS);
+}
+
+bool CXTRegistryManager::DeleteValue(LPCTSTR lpszSection, LPCTSTR lpszValue)
+{
+	CHKey hSecKey(GetSectionKey(lpszSection, KEY_ALL_ACCESS));
+	if (hSecKey == NULL)
+		return false;
+
+	m_lResult = ::RegDeleteValue(hSecKey, (LPTSTR)lpszValue);
+	return (m_lResult == ERROR_SUCCESS);
+}
+
+BOOL CXTRegistryManager::WriteProfilePoint(LPCTSTR lpszSection, LPCTSTR lpszEntry, CPoint* pValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_BINARY,
+			(LPBYTE)pValue, sizeof(CPoint));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+	ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+	CString str;
+	str.Format(_T("%i,%i"), pValue->x, pValue->y);
+
+	BOOL bResult = WriteProfileString(lpszSection, lpszEntry, str);
+
+	return bResult;
+}
+
+BOOL CXTRegistryManager::GetProfilePoint(LPCTSTR lpszSection, LPCTSTR lpszEntry, CPoint* ptResult)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)ptResult, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+
+		SCANF_S(str, _T("%ld,%ld"), &ptResult->x, &ptResult->y);
+		return TRUE;
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileRect(LPCTSTR lpszSection, LPCTSTR lpszEntry, CRect* pValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_BINARY,
+			(LPBYTE)pValue, sizeof(CRect));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+	CString str;
+	str.Format(_T("%i,%i,%i,%i"), pValue->left, pValue->top, pValue->right, pValue->bottom);
+
+	BOOL bResult = WriteProfileString(lpszSection, lpszEntry, str);
+
+	return bResult;
+}
+
+BOOL CXTRegistryManager::GetProfileRect(LPCTSTR lpszSection, LPCTSTR lpszEntry, CRect* rcResult)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)rcResult, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+	else
+	{
+
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		// convert to string and write out
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+
+		SCANF_S(str, _T("%ld,%ld,%ld,%ld"), &rcResult->left, &rcResult->top, &rcResult->right, &rcResult->bottom);
+		return TRUE;
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileSize(LPCTSTR lpszSection, LPCTSTR lpszEntry, CSize* pValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_BINARY,
+			(LPBYTE)pValue, sizeof(CSize));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+	CString str;
+	str.Format(_T("%i,%i"), pValue->cx, pValue->cy);
+
+	BOOL bResult = WriteProfileString(lpszSection, lpszEntry, str);
+	return bResult;
+}
+
+BOOL CXTRegistryManager::GetProfileSize(LPCTSTR lpszSection, LPCTSTR lpszEntry, CSize* szResult)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)szResult, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		// convert to string and write out
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+
+		SCANF_S(str, _T("%i,%i"), &szResult->cx, &szResult->cy);
+		return TRUE;
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileDouble(LPCTSTR lpszSection, LPCTSTR lpszEntry, double* pValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_BINARY,
+			(LPBYTE)pValue, sizeof(*pValue));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+	LPBYTE pData = (LPBYTE) pValue;
+	UINT nBytes = sizeof(double);
+	LPTSTR lpsz = new TCHAR[nBytes * 2 + 1];
+	UINT i;
+	for (i = 0; i < nBytes; i++)
+	{
+		lpsz[i * 2] = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
+		lpsz[i * 2 + 1] = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
+	}
+	lpsz[i * 2] = 0;
+
+	ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+	BOOL bResult = WriteProfileString(lpszSection, lpszEntry, lpsz);
+	delete[] lpsz;
+	return bResult;
+
+}
+
+BOOL CXTRegistryManager::GetProfileDouble(LPCTSTR lpszSection, LPCTSTR lpszEntry, double* dResult)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)dResult, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_BINARY);
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+
+		ASSERT(str.GetLength()%2 == 0);
+		int nLen = str.GetLength();
+
+		LPBYTE pData = (LPBYTE) dResult;
+
+		int i;
+		for (i = 0; i < nLen; i += 2)
+		{
+			(pData)[i/2] = (BYTE)
+				(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
+		}
+
+		return TRUE;
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileDword(LPCTSTR lpszSection, LPCTSTR lpszEntry, DWORD* pValue)
+{
+	ASSERT(lpszSection != NULL);
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		m_lResult = ::RegSetValueEx(hSecKey, lpszEntry, NULL, REG_DWORD,
+			(LPBYTE)pValue, sizeof(*pValue));
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
+
+
+	BOOL bResult = WriteProfileInt(lpszSection, lpszEntry, int(*pValue));
+	return bResult;
+}
+
+BOOL CXTRegistryManager::GetProfileDword(LPCTSTR lpszSection, LPCTSTR lpszEntry, DWORD* dwResult)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+
+	if (m_strINIFileName.IsEmpty())
+	{
+		if (!GetProfileInfo())
+			return FALSE;
+
+		CHKey hSecKey(GetSectionKey(lpszSection, KEY_READ));
+		if (hSecKey == NULL)
+			return FALSE;
+
+		DWORD dwType, dwCount;
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			NULL, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_DWORD);
+		m_lResult = ::RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
+			(LPBYTE)dwResult, &dwCount);
+
+		if (m_lResult != ERROR_SUCCESS)
+			return FALSE;
+
+		ASSERT(dwType == REG_DWORD);
+		return TRUE;
+	}
+	else
+	{
+		ASSERT(m_strINIFileName.IsEmpty() == FALSE);
+
+		CString str = GetProfileString(lpszSection, lpszEntry, NULL);
+		if (str.IsEmpty())
+			return FALSE;
+
+		*dwResult = (DWORD)GetProfileInt(lpszSection, lpszEntry, 0);
+		return TRUE;
+	}
+}
+
+BOOL CXTRegistryManager::WriteProfileColor(LPCTSTR lpszSection, LPCTSTR lpszEntry, COLORREF* pValue)
+{
+	return WriteProfileDword(lpszSection, lpszEntry, pValue);
+}
+
+BOOL CXTRegistryManager::GetProfileColor(LPCTSTR lpszSection, LPCTSTR lpszEntry, COLORREF* rgbResult)
+{
+	return GetProfileDword(lpszSection, lpszEntry, rgbResult);
+}
+
+CString CXTRegistryManager::GetErrorMessage() const
+{
+	LPVOID lpMsgBuf = 0;
+
+	::FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		GetErrorCode(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+		(LPTSTR) &lpMsgBuf,
+		0,
+		NULL
+		);
+
+	CString csMessage((LPCTSTR)lpMsgBuf);
+
+	// Free the buffer.
+	::LocalFree( lpMsgBuf );
+
+	return csMessage;
+}

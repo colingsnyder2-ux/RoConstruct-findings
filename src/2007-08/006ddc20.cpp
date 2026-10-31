@@ -1,21 +1,5 @@
-// from server: 87% by TrollStein
-struct CXTPDockingPaneWindowSelect {
-    char pad[0x110];
-    void* field_110;
-    void method(int, int, int);
-int sub_6dcaf0(int, int);
-};
-
-
-extern "C" void __stdcall sub_63023e(void*);
-
-void CXTPDockingPaneWindowSelect::method(int a, int b, int c) {
-    int r = sub_6dcaf0(b, c);
-    if (r != 0) {
-        field_110 = (void*)r;
-        void** vtbl = *(void***)this;
-        void (__stdcall *fn)(void*, int) = (void (__stdcall *)(void*, int))vtbl[0x8c / 4];
-        fn(this, 1);
-    }
-    sub_63023e(this);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_30c6bb8123422869.cpp

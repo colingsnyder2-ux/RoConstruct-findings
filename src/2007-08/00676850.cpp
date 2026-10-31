@@ -1,32 +1,5 @@
-// from server: 66% by colin
-struct PAUXTP_COMMANDBARS_CATEGORYINFO_CArray
-{
-    char pad[0x140];
-    int* data;
-    int size;
-    int find(const char* name);
-};
-
-extern "C" int __stdcall sub_77DCB8(int a, const char* b);
-extern "C" void __cdecl sub_62FF20();
-
-int PAUXTP_COMMANDBARS_CATEGORYINFO_CArray::find(const char* name)
-{
-    int i = 0;
-    if (size > 0)
-    {
-        do
-        {
-            if (i < 0 || i >= size)
-                sub_62FF20();
-            if (sub_77DCB8(data[i], name) == 0)
-            {
-                if (i >= size)
-                    sub_62FF20();
-                return data[i];
-            }
-            ++i;
-        } while (i < size);
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_6755a5dd1d2a4eb3.cpp

@@ -1,21 +1,20 @@
-// from server: 65% by atomic.potato
-struct ConstraintSurfacePair
-{
-    int f(int a, int b, int c, int d);
-    int v0;
-    int v1;
-    int v2;
-    int v3;
-    int v4;
+// from server: 100% by Intel
+struct ConstraintSurfacePair {
+    int* vtable;
+    int field4;
+    int field8;
+    int fieldC;
+    int field10;
+
+    ConstraintSurfacePair* ctor(int a1, int a2, int a3, int a4);
 };
 
-int ConstraintSurfacePair::f(int a, int b, int c, int d)
-{
-    v1 = a;
-    v2 = c;
-    v0 = 0x00be0658;
-    v3 = *reinterpret_cast<int *>(b);
-    v4 = *reinterpret_cast<int *>(d);
-    v0 = 0x00be0688;
-    return 0;
+ConstraintSurfacePair* ConstraintSurfacePair::ctor(int a1, int a2, int a3, int a4) {
+    this->vtable = (int*)0xBE0658;
+    this->field4 = a1;
+    this->field8 = a3;
+    this->fieldC = *(int*)a2;
+    this->field10 = *(int*)a4;
+    this->vtable = (int*)0xBE0688;
+    return this;
 }

@@ -1,128 +1,1005 @@
-// roc 2009-12 008e1cf0  unit: CXTPPropertyGridItemColor::?8??OnInplaceButtonDown::CPropertyGridItemColorColorPopup  size: 384 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008e1cf0
-//
-// 008e1cf0  56                   push esi
-// 008e1cf1  8bf1                 mov esi, ecx
-// 008e1cf3  e8d8fbffff           call 0x8e18d0
-// 008e1cf8  84c0                 test al, al
-// 008e1cfa  7566                 jne 0x8e1d62
-// 008e1cfc  8b442408             mov eax, dword ptr [esp + 8]
-// 008e1d00  8b8e48010000         mov ecx, dword ptr [esi + 0x148]
-// 008e1d06  83c0f3               add eax, -0xd
-// 008e1d09  49                   dec ecx
-// 008e1d0a  83f81b               cmp eax, 0x1b
-// 008e1d0d  774c                 ja 0x8e1d5b
-// 008e1d0f  0fb680541e8e00       movzx eax, byte ptr [eax + 0x8e1e54]
-// 008e1d16  ff2485381e8e00       jmp dword ptr [eax*4 + 0x8e1e38]
-// 008e1d1d  8b4670               mov eax, dword ptr [esi + 0x70]
-// 008e1d20  83f8ff               cmp eax, -1
-// 008e1d23  741a                 je 0x8e1d3f
-// 008e1d25  85c0                 test eax, eax
-// 008e1d27  7512                 jne 0x8e1d3b
-// 008e1d29  f686a400000010       test byte ptr [esi + 0xa4], 0x10
-// 008e1d30  7509                 jne 0x8e1d3b
-// 008e1d32  c7467001000000       mov dword ptr [esi + 0x70], 1
-// 008e1d39  eb15                 jmp 0x8e1d50
-// 008e1d3b  3bc1                 cmp eax, ecx
-// 008e1d3d  7509                 jne 0x8e1d48
-// 008e1d3f  c7467000000000       mov dword ptr [esi + 0x70], 0
-// 008e1d46  eb08                 jmp 0x8e1d50
-// 008e1d48  8b4e6c               mov ecx, dword ptr [esi + 0x6c]
-// 008e1d4b  03c8                 add ecx, eax
-// 008e1d4d  894e70               mov dword ptr [esi + 0x70], ecx
-// 008e1d50  8b5670               mov edx, dword ptr [esi + 0x70]
-// 008e1d53  52                   push edx
-// 008e1d54  8bce                 mov ecx, esi
-// 008e1d56  e845ffffff           call 0x8e1ca0
-// 008e1d5b  8bce                 mov ecx, esi
-// 008e1d5d  e8ce20f1ff           call 0x7f3e30
-// 008e1d62  5e                   pop esi
-// 008e1d63  c20c00               ret 0xc
-// 008e1d66  8b4670               mov eax, dword ptr [esi + 0x70]
-// 008e1d69  83f8ff               cmp eax, -1
-// 008e1d6c  7404                 je 0x8e1d72
-// 008e1d6e  85c0                 test eax, eax
-// 008e1d70  7518                 jne 0x8e1d8a
-// 008e1d72  8bc1                 mov eax, ecx
-// 008e1d74  894e70               mov dword ptr [esi + 0x70], ecx
-// 008e1d77  50                   push eax
-// 008e1d78  8bce                 mov ecx, esi
-// 008e1d7a  e821ffffff           call 0x8e1ca0
-// 008e1d7f  8bce                 mov ecx, esi
-// 008e1d81  e8aa20f1ff           call 0x7f3e30
-// 008e1d86  5e                   pop esi
-// 008e1d87  c20c00               ret 0xc
-// 008e1d8a  3bc1                 cmp eax, ecx
-// 008e1d8c  7520                 jne 0x8e1dae
-// 008e1d8e  f686a400000004       test byte ptr [esi + 0xa4], 4
-// 008e1d95  7417                 je 0x8e1dae
-// 008e1d97  48                   dec eax
-// 008e1d98  50                   push eax
-// 008e1d99  8bce                 mov ecx, esi
-// 008e1d9b  894670               mov dword ptr [esi + 0x70], eax
-// 008e1d9e  e8fdfeffff           call 0x8e1ca0
-// 008e1da3  8bce                 mov ecx, esi
-// 008e1da5  e88620f1ff           call 0x7f3e30
-// 008e1daa  5e                   pop esi
-// 008e1dab  c20c00               ret 0xc
-// 008e1dae  2b466c               sub eax, dword ptr [esi + 0x6c]
-// 008e1db1  8bce                 mov ecx, esi
-// 008e1db3  50                   push eax
-// 008e1db4  894670               mov dword ptr [esi + 0x70], eax
-// 008e1db7  e8e4feffff           call 0x8e1ca0
-// 008e1dbc  8bce                 mov ecx, esi
-// 008e1dbe  e86d20f1ff           call 0x7f3e30
-// 008e1dc3  5e                   pop esi
-// 008e1dc4  c20c00               ret 0xc
-// 008e1dc7  8b4670               mov eax, dword ptr [esi + 0x70]
-// 008e1dca  83f8ff               cmp eax, -1
-// 008e1dcd  7408                 je 0x8e1dd7
-// 008e1dcf  40                   inc eax
-// 008e1dd0  3bc1                 cmp eax, ecx
-// 008e1dd2  894670               mov dword ptr [esi + 0x70], eax
-// 008e1dd5  7e07                 jle 0x8e1dde
-// 008e1dd7  c7467000000000       mov dword ptr [esi + 0x70], 0
-// 008e1dde  8b4e70               mov ecx, dword ptr [esi + 0x70]
-// 008e1de1  51                   push ecx
-// 008e1de2  8bce                 mov ecx, esi
-// 008e1de4  e8b7feffff           call 0x8e1ca0
-// 008e1de9  8bce                 mov ecx, esi
-// 008e1deb  e84020f1ff           call 0x7f3e30
-// 008e1df0  5e                   pop esi
-// 008e1df1  c20c00               ret 0xc
-// 008e1df4  8b4670               mov eax, dword ptr [esi + 0x70]
-// 008e1df7  83f8ff               cmp eax, -1
-// 008e1dfa  0f844dffffff         je 0x8e1d4d
-// 008e1e00  83c0ff               add eax, -1
-// 008e1e03  894670               mov dword ptr [esi + 0x70], eax
-// 008e1e06  0f8944ffffff         jns 0x8e1d50
-// 008e1e0c  e93cffffff           jmp 0x8e1d4d
-// 008e1e11  8b06                 mov eax, dword ptr [esi]
-// 008e1e13  8b9048010000         mov edx, dword ptr [eax + 0x148]
-// 008e1e19  6aff                 push -1
-// 008e1e1b  8bce                 mov ecx, esi
-// 008e1e1d  ffd2                 call edx
-// 008e1e1f  5e                   pop esi
-// 008e1e20  c20c00               ret 0xc
-// 008e1e23  8b4e70               mov ecx, dword ptr [esi + 0x70]
-// 008e1e26  8b06                 mov eax, dword ptr [esi]
-// 008e1e28  8b9048010000         mov edx, dword ptr [eax + 0x148]
-// 008e1e2e  51                   push ecx
-// 008e1e2f  8bce                 mov ecx, esi
-// 008e1e31  ffd2                 call edx
-// 008e1e33  5e                   pop esi
-// 008e1e34  c20c00               ret 0xc
-// 008e1e37  90                   nop 
-// 008e1e38  231e                 and ebx, dword ptr [esi]
-// 008e1e3a  8e00                 mov es, word ptr [eax]
-// 008e1e3c  111e                 adc dword ptr [esi], ebx
-// 008e1e3e  8e00                 mov es, word ptr [eax]
-// 008e1e40  f4                   hlt 
-// 008e1e41  1d8e00661d           sbb eax, 0x1d66008e
-// 008e1e46  8e00                 mov es, word ptr [eax]
-// copied from an identical function in another client (function ?OnKeyDown@CXTColorSelectorCtrl@@IAEXIII@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Controls\XTColorSelectorCtrl.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTColorSelectorCtrl.cpp : implementation file
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+#include "Common/Resource.h"
+
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTDefines.h"
+#include "XTGlobal.h"
+#include "XTColorDialog.h"
+#include "XTColorSelectorCtrl.h"
+#include "XTColorSelectorCtrlTheme.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+CUIntArray CXTColorSelectorCtrl::m_arUserDefColors;
+
+IMPLEMENT_THEME_HOST(CXTColorSelectorCtrl)
+IMPLEMENT_THEME_REFRESH(CXTColorSelectorCtrl, CWnd)
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorSelectorCtrl
+
+CXTColorSelectorCtrl::CXTColorSelectorCtrl()
+: CXTThemeManagerStyleHost(GetThemeFactoryClass())
+{
+	m_pColorDlg = NULL;
+	m_point = CPoint(0, 0);
+	m_nCols = 8;
+	m_nCurSel = -1;
+	m_sizeButton = CSize(18, 18);
+	m_dwPopup = NULL;
+	m_pParentWnd = NULL;
+	m_clrColor = CLR_DEFAULT;
+	m_clrDefault = CLR_DEFAULT;
+	m_nPressed = -1;
+	m_rcBorders = CRect(0, 0, 0, 0);
+
+	m_pExtendedColors = NULL;
+	m_nExtendedColors = 0;
+}
+
+
+
+CXTColorSelectorCtrl::~CXTColorSelectorCtrl()
+{
+
+	// Free memory allocated to create color cells.
+	while (!m_arCells.IsEmpty())
+	{
+		COLOR_CELL* pColorCell = m_arCells.RemoveHead();
+		SAFE_DELETE (pColorCell);
+	}
+}
+
+
+BEGIN_MESSAGE_MAP(CXTColorSelectorCtrl, CWnd)
+	//{{AFX_MSG_MAP(CXTColorSelectorCtrl)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_KEYDOWN()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEACTIVATE()
+	//}}AFX_MSG_MAP
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+END_MESSAGE_MAP()
+
+
+static XTP_PICK_BUTTON standardColors[] =
+{
+	{   RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK            },
+	{   RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY             },
+	{   RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_MAROON           },
+	{   RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_OLIVE            },
+	{   RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN            },
+	{   RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL             },
+	{   RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_NAVY             },
+	{   RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_PURPLE           },
+	{   RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE            },
+	{   RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_SILVER           },
+	{   RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED              },
+	{   RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW           },
+	{   RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_LIME             },
+	{   RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_AQUA             },
+	{   RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE             },
+	{   RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_FUCHSIA          },
+};
+
+static XTP_PICK_BUTTON extendedColors[] =
+{
+	{   RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK            },
+	{   RGB(0x99, 0x33, 0x00), XTP_IDS_CLR_BROWN            },
+	{   RGB(0x33, 0x33, 0x00), XTP_IDS_CLR_OLIVE_GREEN      },
+	{   RGB(0x00, 0x33, 0x00), XTP_IDS_CLR_DARK_GREEN       },
+	{   RGB(0x00, 0x33, 0x66), XTP_IDS_CLR_DARK_TEAL        },
+	{   RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE        },
+	{   RGB(0x33, 0x33, 0x99), XTP_IDS_CLR_INDIGO           },
+	{   RGB(0x33, 0x33, 0x33), XTP_IDS_CLR_GRAY80           },
+	{   RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED         },
+	{   RGB(0xFF, 0x66, 0x00), XTP_IDS_CLR_ORANGE           },
+	{   RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW      },
+	{   RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN            },
+	{   RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL             },
+	{   RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE             },
+	{   RGB(0x66, 0x66, 0x99), XTP_IDS_CLR_BLUEGRAY         },
+	{   RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50           },
+	{   RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED              },
+	{   RGB(0xFF, 0x99, 0x00), XTP_IDS_CLR_LIGHTORANGE      },
+	{   RGB(0x99, 0xCC, 0x00), XTP_IDS_CLR_LIME             },
+	{   RGB(0x33, 0x99, 0x66), XTP_IDS_CLR_SEA_GREEN        },
+	{   RGB(0x33, 0xCC, 0xCC), XTP_IDS_CLR_AQUA             },
+	{   RGB(0x33, 0x66, 0xFF), XTP_IDS_CLR_LIGHT_BLUE       },
+	{   RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET           },
+	{   RGB(0x99, 0x99, 0x99), XTP_IDS_CLR_GRAY40           },
+	{   RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK             },
+	{   RGB(0xFF, 0xCC, 0x00), XTP_IDS_CLR_GOLD             },
+	{   RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW           },
+	{   RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN     },
+	{   RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE        },
+	{   RGB(0x00, 0xCC, 0xFF), XTP_IDS_CLR_SKY_BLUE         },
+	{   RGB(0x99, 0x33, 0x66), XTP_IDS_CLR_PLUM             },
+	{   RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25           },
+	{   RGB(0xFF, 0x99, 0xCC), XTP_IDS_CLR_ROSE             },
+	{   RGB(0xFF, 0xCC, 0x99), XTP_IDS_CLR_TAN              },
+	{   RGB(0xFF, 0xFF, 0x99), XTP_IDS_CLR_LIGHT_YELLOW     },
+	{   RGB(0xCC, 0xFF, 0xCC), XTP_IDS_CLR_LIGHT_GREEN      },
+	{   RGB(0xCC, 0xFF, 0xFF), XTP_IDS_CLR_LIGHT_TURQUOISE  },
+	{   RGB(0x99, 0xCC, 0xFF), XTP_IDS_CLR_PALE_BLUE        },
+	{   RGB(0xCC, 0x99, 0xFF), XTP_IDS_CLR_LAVENDER         },
+	{   RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE            },
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorSelectorCtrl message handlers
+
+BOOL CXTColorSelectorCtrl::Create(CRect rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
+	COLORREF clrDefault/*= CLR_DEFAULT*/)
+{
+	m_pParentWnd = pParentWnd;
+	ASSERT(m_pParentWnd != NULL); // must be valid.
+	if (!m_pParentWnd)
+		return FALSE;
+
+	AddListener(m_pParentWnd->m_hWnd);
+
+	m_dwPopup = dwPopup;
+	m_clrColor = clrColor;
+	m_clrDefault = clrDefault;
+
+	m_rcWnd.CopyRect(rect);
+
+	m_rcWnd.right = m_rcWnd.left + m_sizeButton.cx * m_nCols + m_rcBorders.left + m_rcBorders.right;
+	m_rcWnd.top = m_rcWnd.bottom;
+	m_rcWnd.bottom = m_rcWnd.top + m_rcBorders.top + m_rcBorders.bottom;
+
+	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
+	{
+		m_rcWnd.bottom += 27;
+	}
+
+	if (m_pExtendedColors)
+	{
+		m_dwPopup |= CPS_XT_EXTENDED;
+		ASSERT(m_nExtendedColors > 0);
+	}
+
+	if (m_dwPopup & CPS_XT_EXTENDED)
+	{
+		int nColors = m_pExtendedColors == NULL ? _countof(extendedColors) : m_nExtendedColors;
+		m_rcWnd.bottom += ((nColors + m_nCols - 1) / m_nCols) * m_sizeButton.cy;
+	}
+	else
+	{
+		m_rcWnd.bottom += 22 + 2 * m_sizeButton.cy;
+	}
+
+	// register the wnd class.
+	CString wndClass = ::AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+
+	if ((m_dwPopup & CPS_XT_MORECOLORS) != 0)
+	{
+		m_rcWnd.bottom += 27;
+
+		if (m_arUserDefColors.GetSize() > 0)
+		{
+			m_rcWnd.bottom += 4 + m_sizeButton.cy;
+		}
+	}
+
+	// call the base class for creation.
+	if (!CWnd::CreateEx(NULL, wndClass, _T(""), WS_CHILD,
+		m_rcWnd, m_pParentWnd, 0, NULL))
+	{
+		TRACE0("Failed to create color popup window.\n");
+		return FALSE;
+	}
+
+	if (dwPopup & WS_POPUP)
+	{
+		SetFocus();
+
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+		ModifyStyle(WS_CHILD, WS_POPUP);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)m_pParentWnd->m_hWnd);
+
+		SetWindowPos(&CWnd::wndTop, m_rcWnd.left, m_rcWnd.top, m_rcWnd.Width(), m_rcWnd.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+	}
+	else
+	{
+		ShowWindow(SW_SHOWNA);
+	}
+
+	// Set the font and control ID.
+	SetFont(&XTAuxData().font);
+
+	return TRUE;
+}
+
+
+int CXTColorSelectorCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CWnd::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	int nIndex = -1;
+	bool bChecked = false;
+
+	// Create the ToolTip control.
+	m_tooltip.Create(this);
+	m_tooltip.Activate(TRUE);
+
+	int nLeft = m_rcBorders.left;
+	int nTop = m_rcBorders.top;
+	int nRight = lpCreateStruct->cx - m_rcBorders.right;
+	int nResID;
+	COLOR_CELL* pColorCell;
+	CString strText, strColorToolTip;
+
+	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
+	{
+		nResID = m_dwPopup & CPS_XT_NOFILL ? XTP_IDS_CLR_NOFILL : XTP_IDS_CLR_AUTOMATIC;
+
+		VERIFY(XTPResourceManager()->LoadString(&strText, nResID));
+		int nTipIndex = FIND_S(strText, _T('\n'), 0);
+		if (nTipIndex > 0)
+		{
+			strColorToolTip = strText.Mid(nTipIndex + 1);
+			strText.ReleaseBuffer(nTipIndex);
+		}
+		else
+		{
+			strColorToolTip = strText;
+		}
+
+		nIndex++;
+
+		// Create the automatic color button.
+		pColorCell = new COLOR_CELL;
+		STRCPY_S(pColorCell->szText, 256, strText);
+
+		pColorCell->nID = nResID;
+		pColorCell->rect = CRect(nLeft, nTop, nRight, nTop + 23);
+		pColorCell->nIndex = nIndex;
+		pColorCell->bChecked = false;
+		pColorCell->dwStyle = m_dwPopup;
+		pColorCell->clr = m_clrDefault;
+
+		m_arCells.AddTail(pColorCell);
+
+		m_tooltip.AddTool(this, strColorToolTip, pColorCell->rect, nResID);
+
+		if (!(m_dwPopup & CPS_XT_NOFILL))
+		{
+			if (m_clrColor == m_clrDefault)
+			{
+				bChecked = true;
+				pColorCell->bChecked = true;
+			}
+		}
+		else if (m_clrColor == m_clrDefault && m_clrDefault == COLORREF_NULL)
+		{
+			bChecked = true;
+			pColorCell->bChecked = true;
+		}
+
+		nTop += 27;
+	}
+
+	// Create the color pick buttons.
+	XTP_PICK_BUTTON* pickBtn = (m_dwPopup & CPS_XT_EXTENDED) ? (m_pExtendedColors ? m_pExtendedColors : extendedColors) : standardColors;
+	int nColors = (m_dwPopup & CPS_XT_EXTENDED) ? (m_pExtendedColors ? m_nExtendedColors : _countof(extendedColors)) : _countof(standardColors);
+
+	nTop += ((m_dwPopup & CPS_XT_EXTENDED) ? 0 : 22);
+
+	CRect rect(nLeft, nTop, nLeft + m_sizeButton.cx, nTop + m_sizeButton.cy);
+	int x;
+
+	for (x = 0; x < nColors; x++)
+	{
+		if (x > 0 && ((x % m_nCols) == 0))
+		{
+			nTop += m_sizeButton.cy;
+			rect = CRect(nLeft, nTop, nLeft + m_sizeButton.cy, nTop + m_sizeButton.cy);
+		}
+		nIndex++;
+
+		nResID = pickBtn[x].toolTipID;
+		COLORREF clrColor = pickBtn[x].clrButton;
+
+		pColorCell = new COLOR_CELL;
+		pColorCell->szText[0] = 0;
+		pColorCell->nID = nResID;
+		pColorCell->rect = rect;
+		pColorCell->nIndex = nIndex;
+		pColorCell->bChecked = false;
+		pColorCell->dwStyle = CPS_XT_PICKBOX;
+		pColorCell->clr = clrColor;
+
+		m_arCells.AddTail(pColorCell);
+
+		VERIFY(XTPResourceManager()->LoadString(&strColorToolTip, nResID));
+
+		m_tooltip.AddTool(this, strColorToolTip, pColorCell->rect, nResID);
+
+		if ((m_clrColor == clrColor) && !bChecked)
+		{
+			bChecked = true;
+			pColorCell->bChecked = true;
+			m_nCurSel = pColorCell->nIndex;
+		}
+
+		// offset to next column.
+		rect.OffsetRect(m_sizeButton.cx, 0);
+	}
+
+	nTop += m_sizeButton.cy;
+	rect = CRect(nLeft, nTop, nLeft + m_sizeButton.cy, nTop + m_sizeButton.cy);
+
+	if (m_dwPopup & CPS_XT_MORECOLORS)
+	{
+		// TSF NEU 18.01.02 - user defined colors
+		if (m_arUserDefColors.GetSize() > 0)
+		{
+			rect.OffsetRect(0, 4);
+
+			for (x = 0; x < min(m_arUserDefColors.GetSize(), m_nCols); x++)
+			{
+				nIndex++;
+
+				COLORREF clrColor = m_arUserDefColors.GetAt(x);
+
+				pColorCell = new COLOR_CELL;
+				pColorCell->szText[0] = 0;
+				pColorCell->nID = 0;
+				pColorCell->rect = rect;
+				pColorCell->nIndex = nIndex;
+				pColorCell->bChecked = false;
+				pColorCell->dwStyle = CPS_XT_PICKBOX;
+				pColorCell->clr = clrColor;
+
+				m_arCells.AddTail(pColorCell);
+				m_tooltip.AddTool(this, CXTColorDialog::RGBtoHex(clrColor), pColorCell->rect, 1);
+
+				if (m_clrColor == clrColor)
+				{
+					bChecked = TRUE;
+					pColorCell->bChecked = true;
+					if (!bChecked)
+						m_nCurSel = pColorCell->nIndex;
+				}
+				// offset to next column.
+				rect.OffsetRect(m_sizeButton.cx, 0);
+			}
+
+			nTop += rect.Height() + 4;
+		}
+
+		nTop += 4;
+
+		VERIFY(XTPResourceManager()->LoadString(&strText, XTP_IDS_CLR_MORE));
+
+		nIndex++;
+		pColorCell = new COLOR_CELL;
+		STRCPY_S(pColorCell->szText, 256, strText);
+
+		pColorCell->nID = XTP_IDS_CLR_MORE;
+		pColorCell->rect = CRect(nLeft, nTop, nRight, nTop + 23);
+		pColorCell->nIndex = nIndex;
+		pColorCell->bChecked = false;
+		pColorCell->dwStyle = CPS_XT_MORECOLORS;
+		pColorCell->clr = m_clrColor;
+
+		CString strMoreColorToolTip = strText;
+
+		m_arCells.AddTail(pColorCell);
+		m_tooltip.AddTool(this, strMoreColorToolTip, pColorCell->rect, 1);
+
+		if (m_clrColor != (COLORREF)-1)
+		{
+			if (bChecked == false)
+			{
+				bChecked = true;
+				pColorCell->bChecked = true;
+			}
+		}
+	}
+
+	m_nCurSel = -1;
+
+	return 0;
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// CXTColorSelectorCtrl Drawing
+
+BOOL CXTColorSelectorCtrl::IsColorStatic(CDC* pDC) const
+{
+	if ((GetStyle() & WS_CHILD) != 0)
+	{
+		CWnd* pWndParent = GetParent();
+		if (::IsWindow(pWndParent->GetSafeHwnd()))
+		{
+			HBRUSH hBrush = (HBRUSH)pWndParent->SendMessage(WM_CTLCOLORSTATIC,
+				(WPARAM)pDC->GetSafeHdc(), (LPARAM)m_hWnd);
+
+			return (hBrush != NULL);
+		}
+	}
+
+	return FALSE;
+}
+
+void CXTColorSelectorCtrl::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	CXTPClientRect rc(this);
+	CXTPBufferDC memDC(dc);
+
+	GetTheme()->FillBackground(&memDC, rc, this);
+
+	DrawColorSelector(&memDC);
+}
+
+void CXTColorSelectorCtrl::DrawColorSelector(CDC* pDC)
+{
+	pDC->SetBkMode(TRANSPARENT);
+	CFont* pOldFont = pDC->SelectObject(&XTAuxData().font);
+
+	if ((m_dwPopup & CPS_XT_EXTENDED) == 0)
+	{
+		CString strText;
+		VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_STD_COLORS));
+
+		int nTop = ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0) ? 27 : 0;
+		pDC->TextOut(6, nTop + 4, strText);
+	}
+
+	POSITION pos;
+	int nIndex = 0;
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
+	{
+		COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
+		ASSERT(pColorCell != NULL);
+
+		BOOL bHighlighted = (((nIndex == m_nCurSel) && (m_nPressed == -1)) || (nIndex == m_nPressed));
+		BOOL bPressed = ((nIndex == m_nPressed) && (nIndex == m_nCurSel));
+
+		GetTheme()->DrawColorCell(pColorCell, pDC, bHighlighted, bPressed);
+		nIndex++;
+	}
+
+	pDC->SelectObject(pOldFont);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CXTColorSelectorCtrl::COLOR_CELL* CXTColorSelectorCtrl::GetCellFromIndex(int iIndex)
+{
+	POSITION pos = m_arCells.FindIndex(iIndex);
+	if (pos != NULL)
+		return m_arCells.GetAt(pos);
+
+	return NULL;
+}
+
+
+int CXTColorSelectorCtrl::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return GetStyle() & WS_POPUP ? MA_NOACTIVATE : (int)Default();
+}
+
+void CXTColorSelectorCtrl::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (!IsColorDlgVisible())
+	{
+		if (m_point != point)
+		{
+			m_point = point;
+
+			POSITION pos;
+			for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
+			{
+				COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
+				ASSERT(pColorCell != NULL);
+				if (!pColorCell)
+					continue;
+
+				CRect rcItem = pColorCell->rect;
+				if (rcItem.PtInRect(point))
+				{
+					SelectColorCell(pColorCell);
+					TRACKMOUSEEVENT tme =
+					{
+						sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
+					};
+					_TrackMouseEvent(&tme);
+
+					return;
+				}
+			}
+
+			SelectColorCell(NULL);
+		}
+
+		CWnd::OnMouseMove(nFlags, point);
+	}
+}
+
+void CXTColorSelectorCtrl::OnMouseLeave()
+{
+	if (!IsColorDlgVisible())
+	{
+		m_nPressed = m_nCurSel = -1;
+		Invalidate(FALSE);
+	}
+}
+
+void CXTColorSelectorCtrl::SelectColorCell(COLOR_CELL* pColorCell)
+{
+
+	m_nCurSel = pColorCell == NULL ? -1 : (int)pColorCell->nIndex;
+	Invalidate(FALSE);
+}
+
+// Adds a window to send color picker notifications to.
+void CXTColorSelectorCtrl::AddListener(HWND hwndListener)
+{
+	m_listeners.Add(hwndListener);
+}
+
+void CXTColorSelectorCtrl::RemoveListener(HWND hwndListener)
+{
+	int i;
+	for (i = (int)m_listeners.GetSize() - 1; i >= 0 ; i--)
+	{
+		if (m_listeners[i] == hwndListener)
+			m_listeners.RemoveAt(i);
+	}
+}
+
+
+void CXTColorSelectorCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (!IsColorDlgVisible())
+	{
+		CWnd::OnLButtonDown(nFlags, point);
+
+		CRect rc;
+		GetClientRect(&rc);
+
+		if (rc.PtInRect(point))
+		{
+			m_nPressed = m_nCurSel;
+			Invalidate(FALSE);
+		}
+	}
+}
+
+void CXTColorSelectorCtrl::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (!IsColorDlgVisible())
+	{
+		CWnd::OnLButtonUp(nFlags, point);
+
+		if (m_nPressed == m_nCurSel && m_nCurSel != -1)
+		{
+			EndSelection(m_nCurSel);
+		}
+
+		m_nCurSel = m_nPressed = -1;
+		Invalidate(FALSE);
+	}
+}
+
+void CXTColorSelectorCtrl::SetCurSel(int nIndex)
+{
+	if (nIndex < 0) nIndex = ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0) ? 0 : (int)m_arCells.GetCount() - 1;
+	if (nIndex >= m_arCells.GetCount()) nIndex = (int)m_arCells.GetCount() - 1;
+
+	POSITION pos = m_arCells.FindIndex(nIndex);
+	if (pos == NULL)
+		return;
+
+	COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
+	SelectColorCell(pColorCell);
+}
+
+void CXTColorSelectorCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (IsColorDlgVisible())
+		return;
+
+	int nLastIndex = (int)m_arCells.GetCount() - 1;
+
+		//          0
+		//
+		//  1  1  2  3  4  5  6  7  8
+		//  2  9 10 11 12 13 14 15 16
+		//  3 17 18 19 20 21 22 23 24
+		//  4 25 26 27 28 29 30 31 32
+		//
+		//         33
+		//
+		//          0
+		//
+		//  1  1  2  3  4  5  6  7  8
+		//  2  9 10 11 12 13 14 15 16
+		//  3 17 18 19 20 21 22 23 24
+		//  4 25 26 27 28 29 30 31 32
+		//  5 33
+		//
+		//         34
+
+		switch (nChar)
+		{
+		case VK_DOWN:
+			{
+				// Check for no current cursor yet
+				if (m_nCurSel == -1)
+				{
+					m_nCurSel = 0 ;
+				}
+				// top button to first color cell
+				else if (m_nCurSel == 0 && ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0))
+				{
+					m_nCurSel = 1 ;
+				}
+				// bottom button to top bottom
+				else if (m_nCurSel == nLastIndex)
+				{
+					m_nCurSel = 0 ;
+				}
+				// a color square to the next color square below it
+				else
+				{
+					m_nCurSel += m_nCols;
+				}
+				SetCurSel(m_nCurSel);
+				break;
+			}
+
+		case VK_UP:
+			{
+				// Check for no current cursor yet
+				if (m_nCurSel == -1)
+				{
+					m_nCurSel = nLastIndex ;
+				}
+				// top button to last button
+				else if (m_nCurSel == 0)
+				{
+					m_nCurSel = nLastIndex ;
+				}
+				// bottom button to first color square in the last row
+				else if (m_nCurSel == nLastIndex)
+				{
+					m_nCurSel = (m_dwPopup & CPS_XT_MORECOLORS) ? m_nCurSel - 1 : m_nCurSel - m_nCols;
+				}
+				// a color square to another color square just above it
+				else
+				{
+					m_nCurSel -= m_nCols;
+				}
+
+				SetCurSel(m_nCurSel);
+				break;
+			}
+
+		case VK_RIGHT:
+			{
+				// Check for no current cursor yet
+				if (m_nCurSel == -1)
+				{
+					m_nCurSel = 0 ;
+				}
+				else
+				{
+					++m_nCurSel;
+					if (m_nCurSel > nLastIndex)
+					{
+						m_nCurSel = 0;
+					}
+				}
+				SetCurSel(m_nCurSel);
+				break;
+			}
+
+		case VK_LEFT:
+			{
+				// Check for no current cursor yet
+				if (m_nCurSel == -1)
+				{
+					m_nCurSel = nLastIndex ;
+				}
+				else
+				{
+					--m_nCurSel;
+					if (m_nCurSel < 0)
+					{
+						m_nCurSel = nLastIndex;
+					}
+				}
+				SetCurSel(m_nCurSel);
+				break;
+			}
+
+		case VK_ESCAPE:
+			{
+				EndSelection(-1);
+				return;
+			}
+		case VK_RETURN:
+		case VK_SPACE:
+			{
+				EndSelection(m_nCurSel);
+				return;
+			}
+		}
+
+		CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
+BOOL CXTColorSelectorCtrl::PreTranslateMessage(MSG* pMsg)
+{
+	if (m_tooltip.GetSafeHwnd()) m_tooltip.RelayEvent(pMsg);
+
+	return CWnd::PreTranslateMessage(pMsg);
+}
+
+int CXTColorSelectorCtrl::GetCurSel(COLOR_CELL* pColorCell)
+{
+	pColorCell = GetCellFromIndex(m_nCurSel);
+	ASSERT(pColorCell != NULL);
+	return m_nCurSel;
+}
+
+void CXTColorSelectorCtrl::EndSelection(int nCurSel)
+{
+	OnEndSelection(nCurSel, 0);
+}
+
+void CXTColorSelectorCtrl::OnSetFocus(CWnd* pOldWnd)
+{
+	if (IsColorDlgVisible())
+	{
+		m_pColorDlg->SetFocus();
+		pOldWnd = this;
+	}
+	CWnd::OnSetFocus(pOldWnd);
+}
+
+BOOL CXTColorSelectorCtrl::LookUpColor(const COLORREF crFind)
+{
+	// if the color was already added, return TRUE.
+	int i;
+	for (i = 0; i < m_arUserDefColors.GetSize(); ++i)
+	{
+		if (crFind == m_arUserDefColors.GetAt(i))
+			return TRUE;
+	}
+
+	// if the color is already displayed as a default selection return TRUE.
+	if (m_dwPopup & CPS_XT_EXTENDED)
+	{
+		for (i = 0; i < _countof(extendedColors); ++i)
+		{
+			if (crFind == extendedColors[i].clrButton)
+				return TRUE;
+		}
+	}
+	else
+	{
+		for (i = 0; i < _countof(standardColors); ++i)
+		{
+			if (crFind == standardColors[i].clrButton)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+void CXTColorSelectorCtrl::OnEndSelection(int nCurSel, LPARAM callerParam)
+{
+	int nMessage = 0;
+
+	// copy off the listeners
+	CArray<HWND, HWND> listeners;
+	listeners.Append(m_listeners);
+
+	// copy other relevant data
+	COLORREF clrColor = m_clrColor;
+	DWORD dwPopup = m_dwPopup;
+
+	if (nCurSel == (int)m_arCells.GetCount() - 1 && (m_dwPopup & CPS_XT_MORECOLORS))
+	{
+		// display dialog and send proper notifications
+		m_pColorDlg = new CXTColorDialog(clrColor, clrColor,
+			(dwPopup & (CPS_XT_SHOWHEXVALUE | CPS_XT_SHOW3DSELECTION)), GetParent());
+
+		if (m_pColorDlg->DoModal() == IDOK)
+		{
+			COLORREF clrDlgColor = m_pColorDlg->GetColor();
+
+			if (clrColor == clrDlgColor)
+			{
+				nMessage = CPN_XT_SELCHANGE;
+			}
+			else
+			{
+				nMessage = CPN_XT_SELENDOK;
+				clrColor = clrDlgColor;
+			}
+
+			// TSF NEU 18.01.02 - user defined colors
+
+			if (m_arUserDefColors.GetSize() >= m_nCols)
+				m_arUserDefColors.RemoveAt(0);
+
+			if (!LookUpColor(clrColor))
+				m_arUserDefColors.Add(clrColor);
+
+			// TSF NEU 18.01.02 - user defined colors
+		}
+		else
+		{
+			nMessage = CPN_XT_SELENDCANCEL;
+		}
+
+		SAFE_DELETE(m_pColorDlg);
+	}
+
+	else if (nCurSel == 0)
+	{
+		if (m_dwPopup & CPS_XT_NOFILL)
+		{
+			nMessage = CPN_XT_SELNOFILL;
+			clrColor = (ULONG)-1;
+		}
+		else if (m_clrColor == m_clrDefault)
+		{
+			nMessage = CPN_XT_SELCHANGE;
+		}
+		else
+		{
+			nMessage = CPN_XT_SELENDOK;
+			clrColor = m_clrDefault;
+		}
+	}
+
+	else if (nCurSel == -1)
+	{
+		nMessage = CPN_XT_SELENDCANCEL;
+	}
+
+	else
+	{
+		COLOR_CELL* pColorCell = GetCellFromIndex(nCurSel);
+		ASSERT(pColorCell != NULL);
+		if (!pColorCell)
+			return;
+
+		COLORREF clrCellColor = pColorCell->clr;
+
+		if (clrColor == clrCellColor)
+		{
+			nMessage = CPN_XT_SELCHANGE;
+		}
+		else
+		{
+			nMessage = CPN_XT_SELENDOK;
+			clrColor = clrCellColor;
+		}
+	}
+
+
+	// Pass this message to the registered listeners
+	int i;
+	for (i = 0; i < listeners.GetSize(); i++)
+	{
+		if (::IsWindow(listeners[i]))
+		{
+			::SendMessage(listeners[i], nMessage,
+				(WPARAM)clrColor, callerParam);
+		}
+	}
+}
+
+BOOL CXTColorSelectorCtrl::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+void CXTColorSelectorCtrl::SelectColor(COLORREF clr)
+{
+	POSITION pos;
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
+	{
+		COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
+		ASSERT(pColorCell != NULL);
+		if (!pColorCell)
+			continue;
+
+		if (pColorCell->dwStyle & CPS_XT_PICKBOX)
+			pColorCell->bChecked = clr == pColorCell->clr;
+	}
+
+	m_clrColor = clr;
+
+	Invalidate(FALSE);
+}
+
+
+LRESULT CXTColorSelectorCtrl::OnNcHitTest(CPoint point)
+{
+	// If we have a valid tooltip pointer, bring the tooltip control
+	// to the top of the Z-order.
+
+	if (m_tooltip.GetSafeHwnd() && !IsColorDlgVisible())
+	{
+		m_tooltip.SetWindowPos(&wndTop, 0, 0, 0, 0,
+			SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+	}
+
+	return (LRESULT)CWnd::OnNcHitTest(point);
+}
+
+bool CXTColorSelectorCtrl::IsColorDlgVisible()
+{
+	return (m_pColorDlg && ::IsWindow(m_pColorDlg->m_hWnd));
+}
+
+void CXTColorSelectorCtrl::SetUserColors(const CUIntArray& arUserDefColors)
+{
+	m_arUserDefColors.RemoveAll();
+	m_arUserDefColors.Copy(arUserDefColors);
+}
+
+CUIntArray& CXTColorSelectorCtrl::GetUserColors()
+{
+	return m_arUserDefColors;
+}

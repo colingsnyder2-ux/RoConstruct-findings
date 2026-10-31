@@ -1,99 +1,566 @@
-// roc 2009-12 0086ad00  unit: CXTPPropertyGridItemBool  size: 321 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0086ad00
-//
-// 0086ad00  6aff                 push -1
-// 0086ad02  6819ba9500           push 0x95ba19
-// 0086ad07  64a100000000         mov eax, dword ptr fs:[0]
-// 0086ad0d  50                   push eax
-// 0086ad0e  51                   push ecx
-// 0086ad0f  56                   push esi
-// 0086ad10  57                   push edi
-// 0086ad11  a10052b600           mov eax, dword ptr [0xb65200]
-// 0086ad16  33c4                 xor eax, esp
-// 0086ad18  50                   push eax
-// 0086ad19  8d442410             lea eax, [esp + 0x10]
-// 0086ad1d  64a300000000         mov dword ptr fs:[0], eax
-// 0086ad23  8bf1                 mov esi, ecx
-// 0086ad25  8d4c240c             lea ecx, [esp + 0xc]
-// 0086ad29  c7868c00000005000000 mov dword ptr [esi + 0x8c], 5
-// 0086ad33  ff1574de9800         call dword ptr [0x98de74]
-// 0086ad39  c744241800000000     mov dword ptr [esp + 0x18], 0
-// 0086ad41  e85a3b0000           call 0x86e8a0
-// 0086ad46  8b10                 mov edx, dword ptr [eax]
-// 0086ad48  8b5208               mov edx, dword ptr [edx + 8]
-// 0086ad4b  681f250000           push 0x251f
-// 0086ad50  8d4c2410             lea ecx, [esp + 0x10]
-// 0086ad54  51                   push ecx
-// 0086ad55  8bc8                 mov ecx, eax
-// 0086ad57  ffd2                 call edx
-// 0086ad59  85c0                 test eax, eax
-// 0086ad5b  7449                 je 0x86ada6
-// 0086ad5d  6a00                 push 0
-// 0086ad5f  6a0a                 push 0xa
-// 0086ad61  8d4c2414             lea ecx, [esp + 0x14]
-// 0086ad65  ff1580d69800         call dword ptr [0x98d680]
-// 0086ad6b  83f8ff               cmp eax, -1
-// 0086ad6e  7436                 je 0x86ada6
-// 0086ad70  6a0a                 push 0xa
-// 0086ad72  6a00                 push 0
-// 0086ad74  8d4c2414             lea ecx, [esp + 0x14]
-// 0086ad78  ff1580de9800         call dword ptr [0x98de80]
-// 0086ad7e  50                   push eax
-// 0086ad7f  8d8614010000         lea eax, [esi + 0x114]
-// 0086ad85  50                   push eax
-// 0086ad86  e893b60b00           call 0x92641e
-// 0086ad8b  6a0a                 push 0xa
-// 0086ad8d  6a01                 push 1
-// 0086ad8f  8d4c2414             lea ecx, [esp + 0x14]
-// 0086ad93  ff1580de9800         call dword ptr [0x98de80]
-// 0086ad99  50                   push eax
-// 0086ad9a  8d8e18010000         lea ecx, [esi + 0x118]
-// 0086ada0  51                   push ecx
-// 0086ada1  e878b60b00           call 0x92641e
-// 0086ada6  8b16                 mov edx, dword ptr [esi]
-// 0086ada8  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0086adac  8b92e4000000         mov edx, dword ptr [edx + 0xe4]
-// 0086adb2  50                   push eax
-// 0086adb3  8bce                 mov ecx, esi
-// 0086adb5  ffd2                 call edx
-// 0086adb7  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
-// 0086adbd  8b38                 mov edi, dword ptr [eax]
-// 0086adbf  6aff                 push -1
-// 0086adc1  6a00                 push 0
-// 0086adc3  8d8e14010000         lea ecx, [esi + 0x114]
-// 0086adc9  ff1580de9800         call dword ptr [0x98de80]
-// 0086adcf  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
-// 0086add5  8b5758               mov edx, dword ptr [edi + 0x58]
-// 0086add8  50                   push eax
-// 0086add9  ffd2                 call edx
-// 0086addb  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
-// 0086ade1  8b38                 mov edi, dword ptr [eax]
-// 0086ade3  6aff                 push -1
-// 0086ade5  6a00                 push 0
-// 0086ade7  8d8e18010000         lea ecx, [esi + 0x118]
-// 0086aded  ff1580de9800         call dword ptr [0x98de80]
-// 0086adf3  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
-// 0086adf9  8b5758               mov edx, dword ptr [edi + 0x58]
-// 0086adfc  50                   push eax
-// 0086adfd  ffd2                 call edx
-// 0086adff  8d86a4000000         lea eax, [esi + 0xa4]
-// 0086ae05  50                   push eax
-// 0086ae06  8d8ea8000000         lea ecx, [esi + 0xa8]
-// 0086ae0c  c7467c01000000       mov dword ptr [esi + 0x7c], 1
-// 0086ae13  ff1538d59800         call dword ptr [0x98d538]
-// 0086ae19  8d4c240c             lea ecx, [esp + 0xc]
-// 0086ae1d  c7861c01000000000000 mov dword ptr [esi + 0x11c], 0
-// 0086ae27  ff15c0de9800         call dword ptr [0x98dec0]
-// 0086ae2d  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 0086ae31  64890d00000000       mov dword ptr fs:[0], ecx
-// 0086ae38  59                   pop ecx
-// 0086ae39  5f                   pop edi
-// 0086ae3a  5e                   pop esi
-// 0086ae3b  83c410               add esp, 0x10
-// 0086ae3e  c20400               ret 4
-// copied from an identical function in another client (function ?_Init@CXTPPropertyGridItemBool@@AAEXH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\PropertyGrid\XTPPropertyGridItemBool.cpp
+
+// Candidate translation unit (score above; library headers required).
+// CXTPPropertyGridItemBool.cpp : implementation of the XTPPropertyGridItemBool class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPResourceManager.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridItemBool.h"
+#include "XTPPropertyGridPaintManager.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridView.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemBool
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemBool, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(LPCTSTR strCaption, BOOL bValue, BOOL* pBindBool)
+: CXTPPropertyGridItem(strCaption)
+, m_strTrueText(_T("True"))
+, m_strFalseText(_T("False"))
+{
+	m_pBindBool = pBindBool;
+	_Init(bValue);
+}
+
+CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(UINT nID, BOOL bValue, BOOL* pBindBool)
+: CXTPPropertyGridItem(nID)
+, m_strTrueText(_T("True"))
+, m_strFalseText(_T("False"))
+{
+	m_pBindBool = pBindBool;
+	_Init(bValue);
+}
+
+CXTPPropertyGridItemBool::~CXTPPropertyGridItemBool()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+
+void CXTPPropertyGridItemBool::_Init(BOOL bValue)
+{
+	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
+
+	CString strTrueFalse;
+	if (XTPResourceManager()->LoadString(&strTrueFalse, XTP_IDS_PROPERTYGRID_TRUEFALSE)
+		&& (strTrueFalse.Find(_T('\n')) != -1))
+	{
+		AfxExtractSubString(m_strTrueText, strTrueFalse, 0);
+		AfxExtractSubString(m_strFalseText, strTrueFalse, 1);
+	}
+	SetBool(bValue);
+
+	m_pConstraints->AddConstraint(m_strTrueText);
+	m_pConstraints->AddConstraint(m_strFalseText);
+
+	SetConstraintEdit(TRUE);
+	m_strDefaultValue = m_strValue;
+
+	m_bCheckBoxStyle = FALSE;
+}
+
+void CXTPPropertyGridItemBool::SetValue(CString strValue)
+{
+	SetBool(strValue.CompareNoCase(m_strTrueText) == 0);
+}
+
+void CXTPPropertyGridItemBool::SetBool(BOOL bValue)
+{
+	m_bValue = bValue;
+
+	if (m_pBindBool)
+	{
+		*m_pBindBool = bValue;
+	}
+
+	CXTPPropertyGridItem::SetValue(bValue ? m_strTrueText : m_strFalseText);
+}
+
+void CXTPPropertyGridItemBool::BindToBool(BOOL* pBindBool)
+{
+	m_pBindBool = pBindBool;
+	if (m_pBindBool)
+	{
+		*m_pBindBool = m_bValue;
+	}
+}
+
+void CXTPPropertyGridItemBool::OnBeforeInsert()
+{
+	if (m_pBindBool && *m_pBindBool != m_bValue)
+	{
+		SetBool(*m_pBindBool);
+	}
+}
+
+
+BOOL CXTPPropertyGridItemBool::SetValueText(CString& strValueText, LPCTSTR strNewText)
+{
+	// see if the value exists.
+	int iIndex = m_pConstraints->FindConstraint(strValueText);
+	if (iIndex != -1)
+	{
+		// if this is the current value change it as well.
+		if (GetValue() == strValueText)
+		{
+			CXTPPropertyGridItem::SetValue(strNewText);
+		}
+
+		// update the value.
+		strValueText = strNewText;
+		m_pConstraints->GetConstraintAt(iIndex)->m_strConstraint = strValueText;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItemBool::SetTrueFalseText(LPCTSTR strTrueText, LPCTSTR strFalseText)
+{
+	// update the "True" value text
+	if (!SetValueText(m_strTrueText, strTrueText))
+		return FALSE;
+
+	// update the "False" value text
+	if (!SetValueText(m_strFalseText, strFalseText))
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTPPropertyGridItemBool::SetCheckBoxStyle(BOOL bCheckBoxStyle /*= TRUE*/)
+{
+	m_bCheckBoxStyle = bCheckBoxStyle;
+	SetFlags(m_bCheckBoxStyle ? 0 : xtpGridItemHasComboButton | xtpGridItemHasEdit);
+}
+
+BOOL CXTPPropertyGridItemBool::IsCheckBoxStyle() const
+{
+	return m_bCheckBoxStyle;
+}
+
+CString CXTPPropertyGridItemBool::GetViewValue()
+{
+	return m_bCheckBoxStyle ? _T("") : CXTPPropertyGridItem::GetViewValue();
+}
+
+BOOL CXTPPropertyGridItemBool::OnKeyDown (UINT nChar)
+{
+	if (m_bCheckBoxStyle && !GetReadOnly() && (nChar == VK_SPACE))
+	{
+		CRect rc = GetValueRect();
+		OnLButtonDblClk(0, rc.CenterPoint());
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CXTPPropertyGridItemBool::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_bCheckBoxStyle && PtInValueRect(point) && !GetReadOnly())
+	{
+		OnSelect();
+		SelectNextConstraint();
+	}
+	else
+	{
+		CXTPPropertyGridItem::OnLButtonDblClk(nFlags, point);
+	}
+}
+
+BOOL CXTPPropertyGridItemBool::PtInCheckBoxRect(CPoint point)
+{
+	CRect rc = GetValueRect();
+	rc.right = rc.left + 15;
+
+	return rc.PtInRect(point);
+}
+
+BOOL CXTPPropertyGridItemBool::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (!CXTPPropertyGridItem::OnLButtonDown(nFlags, point))
+		return FALSE;
+
+	if (m_bCheckBoxStyle)
+	{
+		if (PtInCheckBoxRect(point) && !GetReadOnly())
+		{
+			OnLButtonDblClk(nFlags, point);
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPPropertyGridItemBool::OnDrawItemValue(CDC& dc, CRect rcValue)
+{
+	if (!m_bCheckBoxStyle)
+		return FALSE;
+
+	CRect rcSample(rcValue.left - 1, rcValue.CenterPoint().y - 6, rcValue.left - 1 + 13, rcValue.CenterPoint().y + 7);
+
+	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid->GetPaintManager();
+
+	if (pPaintManager->m_buttonsStyle == xtpGridButtonsThemed && pPaintManager->m_themeButton.IsAppThemed())
+	{
+		pPaintManager->m_themeButton.DrawThemeBackground(dc, BP_CHECKBOX,
+			GetReadOnly() ? (GetBool() ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED) :
+			(GetBool() ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL),
+			rcSample, 0);
+	}
+	else
+	{
+		dc.DrawFrameControl(rcSample, DFC_BUTTON, DFCS_BUTTONCHECK |
+			(GetReadOnly() ? DFCS_INACTIVE : 0) | (GetBool() ? DFCS_CHECKED : 0));
+	}
+
+	return TRUE;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemEnum
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemEnum, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(LPCTSTR strCaption, int nValue, int* pBindEnum)
+: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindEnum = pBindEnum;
+	_Init(nValue);
+
+}
+
+CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(UINT nID, int nValue, int* pBindEnum)
+: CXTPPropertyGridItem(nID)
+{
+	m_pBindEnum = pBindEnum;
+	_Init(nValue);
+}
+
+CXTPPropertyGridItemEnum::~CXTPPropertyGridItemEnum()
+{
+}
+
+void CXTPPropertyGridItemEnum::_Init(int nValue)
+{
+	SetEnum(nValue);
+	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
+
+	SetConstraintEdit(TRUE);
+	m_strDefaultValue = m_strValue;
+}
+
+void CXTPPropertyGridItemEnum::SetValue(CString strValue)
+{
+	int nIndex = m_pConstraints->FindConstraint(strValue);
+	ASSERT(nIndex >= 0);
+	if (nIndex >= 0)
+	{
+		SetEnum(m_pConstraints->GetConstraintAt(nIndex));
+	}
+}
+
+void CXTPPropertyGridItemEnum::SetEnum(int nValue)
+{
+	m_nValue = nValue;
+
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = nValue;
+	}
+
+	int nIndex = m_pConstraints->FindConstraint(nValue);
+	CXTPPropertyGridItem::SetValue(m_pConstraints->GetAt(nIndex));
+}
+
+void CXTPPropertyGridItemEnum::SetEnum(CXTPPropertyGridItemConstraint* pContraint)
+{
+	m_nValue = (int)pContraint->m_dwData;
+
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = m_nValue;
+	}
+
+	CXTPPropertyGridItem::SetValue(pContraint->m_strConstraint);
+}
+
+void CXTPPropertyGridItemEnum::BindToEnum(int* pBindEnum)
+{
+	m_pBindEnum = pBindEnum;
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = m_nValue;
+	}
+}
+
+void CXTPPropertyGridItemEnum::OnBeforeInsert()
+{
+	if (m_pBindEnum && *m_pBindEnum != m_nValue)
+	{
+		SetEnum(*m_pBindEnum);
+	}
+}
+
+void CXTPPropertyGridItemEnum::OnConstraintsChanged()
+{
+	if (m_strValue.IsEmpty())
+	{
+		int nIndex = m_pConstraints->FindConstraint(m_nValue);
+		if (nIndex != -1)
+			m_strDefaultValue = m_strValue = m_pConstraints->GetAt(nIndex);
+	}
+
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemFlags
+
+class CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag : public CXTPPropertyGridItemBool
+{
+public:
+
+	CXTPPropertyGridItemFlag(CString strCaption, DWORD dwFlag)
+		:  CXTPPropertyGridItemBool(strCaption), m_dwFlag(dwFlag)
+	{
+	}
+
+	void OnValueChanged(CString strValue);
+
+	virtual BOOL GetReadOnly() const
+	{
+		return m_pParent->GetReadOnly();
+	}
+
+	DWORD m_dwFlag;
+};
+
+void CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag::OnValueChanged(CString strValue)
+{
+	SetValue(strValue);
+
+	CXTPPropertyGridItemFlags* pParent = DYNAMIC_DOWNCAST(CXTPPropertyGridItemFlags, m_pParent);
+	ASSERT(pParent);
+	if (!pParent)
+		return;
+
+	if (GetBool())
+		pParent->m_nValue |= m_dwFlag;
+	else
+		pParent->m_nValue &= ~m_dwFlag;
+
+	pParent->OnValueChanged(pParent->GetFlagsString());
+
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemFlags, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(LPCTSTR strCaption, int nValue, int* pBindFlags)
+: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindFlags = pBindFlags;
+	_Init(nValue);
+
+}
+
+CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(UINT nID, int nValue, int* pBindFlags)
+: CXTPPropertyGridItem(nID)
+{
+	m_pBindFlags = pBindFlags;
+	_Init(nValue);
+}
+
+CXTPPropertyGridItemFlags::~CXTPPropertyGridItemFlags()
+{
+}
+
+void CXTPPropertyGridItemFlags::_Init(int nValue)
+{
+	SetFlags(nValue);
+	m_nFlags = xtpGridItemHasEdit;
+	m_strDefaultValue = m_strValue;
+}
+
+BOOL CXTPPropertyGridItemFlags::HasFlag(const CString& strValue, CString strFlag) const
+{
+	strFlag.MakeLower();
+	int nIndex = -1;
+
+	do
+	{
+		nIndex = FIND_S(strValue, strFlag, nIndex + 1);
+		if (nIndex == -1)
+			return FALSE;
+
+		TCHAR chLast = nIndex + strFlag.GetLength() == strValue.GetLength() ? _T(']') : strValue[strFlag.GetLength() + nIndex];
+		TCHAR chFirst = nIndex == 0 ? _T('[') : strValue[nIndex - 1];
+
+		if ((chLast == ',' || chLast == ';' || chLast == ']')
+			&& (chFirst == ',' || chFirst == ';' || chFirst == '['))
+		{
+			return TRUE;
+		}
+	}
+	while (nIndex != -1);
+
+	return FALSE;
+}
+
+void CXTPPropertyGridItemFlags::SetValue(CString strValue)
+{
+	int nValue = 0;
+	strValue.MakeLower();
+
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+	for (int i = 0; i < pConstraints->GetCount(); i++)
+	{
+		if (HasFlag(strValue, pConstraints->GetAt(i)))
+			nValue |= pConstraints->GetConstraintAt(i)->m_dwData;
+	}
+
+	SetFlags(nValue);
+}
+
+void CXTPPropertyGridItemFlags::SetFlags(int nValue)
+{
+	m_nValue = nValue;
+
+	if (m_pBindFlags)
+	{
+		*m_pBindFlags = nValue;
+	}
+
+	UpdateChilds();
+
+	CXTPPropertyGridItem::SetValue(GetFlagsString());
+}
+
+void CXTPPropertyGridItemFlags::BindToFlags(int* pBindFlags)
+{
+	m_pBindFlags = pBindFlags;
+	if (m_pBindFlags)
+	{
+		*m_pBindFlags = m_nValue;
+	}
+}
+
+CString CXTPPropertyGridItemFlags::GetFlagsString()
+{
+	CString str;
+
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+	int nValue = 0;
+
+	for (int i = 0; i < pConstraints->GetCount(); i++)
+	{
+		CXTPPropertyGridItemConstraint* pConstraint = pConstraints->GetConstraintAt(i);
+
+		if ((nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
+			continue;
+
+		if ((m_nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
+		{
+			str += (str.IsEmpty() ? _T("") : _T(";")) + pConstraint->m_strConstraint;
+			nValue |= pConstraint->m_dwData;
+		}
+	}
+
+	return  _T("[") + str + _T("]");
+}
+
+void CXTPPropertyGridItemFlags::UpdateChilds()
+{
+	CXTPPropertyGridItems* pItems = GetChilds();
+	for (int i = 0; i < pItems->GetCount(); i++)
+	{
+		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
+		pItem->SetBool((m_nValue & pItem->m_dwFlag) == pItem->m_dwFlag);
+		pItem->SetReadOnly(GetReadOnly());
+	}
+}
+
+
+void CXTPPropertyGridItemFlags::OnBeforeInsert()
+{
+	if (m_pBindFlags && *m_pBindFlags != m_nValue)
+	{
+		SetFlags(*m_pBindFlags);
+	}
+}
+
+void CXTPPropertyGridItemFlags::OnConstraintsChanged()
+{
+	GetChilds()->Clear();
+
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+
+	int i;
+
+	for (i = 0; i < pConstraints->GetCount(); i++)
+	{
+		AddChildItem(new CXTPPropertyGridItemFlag(pConstraints->GetAt(i), (int)pConstraints->GetConstraintAt(i)->m_dwData));
+	}
+	UpdateChilds();
+	m_strDefaultValue = m_strValue = GetFlagsString();
+
+	CXTPPropertyGridItems* pItems = GetChilds();
+	for (i = 0; i < pItems->GetCount(); i++)
+	{
+		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
+		pItem->SetDefaultValue(pItem->GetValue());
+	}
+
+}
+
+void CXTPPropertyGridItemFlags::SetReadOnly(BOOL bReadOnly)
+{
+	CXTPPropertyGridItem::SetReadOnly(bReadOnly);
+
+	UpdateChilds();
+}
+
+

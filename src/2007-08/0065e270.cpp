@@ -1,43 +1,5 @@
-// from server: 48% by colin
-extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
-
-struct VCXTPReportRow;
-
-struct CXTPInternalCollectionT {
-    int unknown0;
-    int unknown4;
-    int unknown8;
-    int unknownC;
-};
-
-struct Helper {
-    void* vtbl;
-    void* ptr;
-};
-
-extern "C" void __stdcall sub_6301e4(void*);
-extern "C" void __stdcall sub_65b620(void*, int, Helper*);
-
-struct VCXTPReportRow {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    int method(int, Helper*);
-};
-
-int VCXTPReportRow::method(int arg0, Helper* arg1) {
-    Helper local;
-    local.vtbl = (void*)0x7c8564;
-    local.ptr = (void*)arg0;
-    if (arg1 != 0 && arg0 != 0) {
-        InterlockedIncrement((long*)(arg0 + 4));
-    }
-    int saved = this->field8;
-    local.ptr = 0;
-    sub_65b620(this, saved, &local);
-    if (arg0 != 0) {
-        sub_6301e4((void*)arg0);
-    }
-    return saved;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_18df28f2fde24ee1.cpp

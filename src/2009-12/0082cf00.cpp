@@ -1,42 +1,349 @@
-// roc 2009-12 0082cf00  unit: PAVCXTPReportRecord::?$CArray  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0082cf00
-//
-// 0082cf00  6aff                 push -1
-// 0082cf02  6833bd9500           push 0x95bd33
-// 0082cf07  64a100000000         mov eax, dword ptr fs:[0]
-// 0082cf0d  50                   push eax
-// 0082cf0e  51                   push ecx
-// 0082cf0f  56                   push esi
-// 0082cf10  a10052b600           mov eax, dword ptr [0xb65200]
-// 0082cf15  33c4                 xor eax, esp
-// 0082cf17  50                   push eax
-// 0082cf18  8d44240c             lea eax, [esp + 0xc]
-// 0082cf1c  64a300000000         mov dword ptr fs:[0], eax
-// 0082cf22  8bf1                 mov esi, ecx
-// 0082cf24  89742408             mov dword ptr [esp + 8], esi
-// 0082cf28  c706cc619f00         mov dword ptr [esi], 0x9f61cc
-// 0082cf2e  c744241401000000     mov dword ptr [esp + 0x14], 1
-// 0082cf36  e815fcffff           call 0x82cb50
-// 0082cf3b  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 0082cf3e  85c9                 test ecx, ecx
-// 0082cf40  7405                 je 0x82cf47
-// 0082cf42  e8956efcff           call 0x7f3ddc
-// 0082cf47  8d4e20               lea ecx, [esi + 0x20]
-// 0082cf4a  c644241400           mov byte ptr [esp + 0x14], 0
-// 0082cf4f  e8ecfeffff           call 0x82ce40
-// 0082cf54  8bce                 mov ecx, esi
-// 0082cf56  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 0082cf5e  e87f74fcff           call 0x7f43e2
-// 0082cf63  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0082cf67  64890d00000000       mov dword ptr fs:[0], ecx
-// 0082cf6e  59                   pop ecx
-// 0082cf6f  5e                   pop esi
-// 0082cf70  83c410               add esp, 0x10
-// 0082cf73  c3                   ret 
-// copied from an identical function in another client (function ??1CXTPReportRecords@@UAE@XZ)
-
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\ReportControl\XTPReportRecords.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportRecords.cpp : implementation of the CXTPReportRecords class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPPropExchange.h"
+
+#include "XTPReportRecordItem.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecords.h"
+#include "XTPReportInplaceControls.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_DYNAMIC(CXTPReportRecords, CCmdTarget)
+
+CXTPReportRecords::CXTPReportRecords(BOOL bArray /*= FALSE*/)
+{
+	m_pOwnerRecord = NULL;
+
+	m_pVirtualRecord = NULL;
+	m_nVirtualRecordsCount = 0;
+	m_bArray = bArray;
+
+	m_bCaseSensitive = TRUE;
+
+
+}
+
+CXTPReportRecords::CXTPReportRecords(CXTPReportRecord* pOwnerRecord)
+{
+	m_pOwnerRecord = pOwnerRecord;
+
+	m_pVirtualRecord = NULL;
+	m_nVirtualRecordsCount = 0;
+	m_bArray = FALSE;
+
+	m_bCaseSensitive = TRUE;
+
+}
+
+void CXTPReportRecords::SetVirtualMode(CXTPReportRecord* pVirtualRecord, int nCount)
+{
+	// release old virtual record
+	if (m_pVirtualRecord)
+	{
+		m_pVirtualRecord->InternalRelease();
+	}
+
+	// reset virtual mode
+	if (!pVirtualRecord || nCount <= 0)
+	{
+		if (pVirtualRecord)
+		{
+			pVirtualRecord->InternalRelease();
+		}
+		m_pVirtualRecord = NULL;
+		m_nVirtualRecordsCount = 0;
+	}
+	else // set new virtual record
+	{
+		m_pVirtualRecord = pVirtualRecord;
+		m_nVirtualRecordsCount = nCount;
+		if (m_pVirtualRecord)
+		{
+			m_pVirtualRecord->m_pRecords = this;
+		}
+	}
+}
+
+CXTPReportRecords::~CXTPReportRecords()
+{
+	RemoveAll();
+
+	if (m_pVirtualRecord)
+	{
+		m_pVirtualRecord->InternalRelease();
+	}
+}
+
+void CXTPReportRecords::RemoveAll()
+{
+	if (!m_bArray)
+	{
+		// array cleanup
+		for (int nRecord = (int)m_arrRecords.GetSize() - 1; nRecord >= 0; nRecord--)
+		{
+			CXTPReportRecord* pRecord = m_arrRecords.GetAt(nRecord);
+			pRecord->InternalRelease();
+		}
+	}
+	m_arrRecords.RemoveAll();
+}
+
+void CXTPReportRecords::UpdateIndexes(int nStart /*= 0*/)
+{
+	for (int i = nStart; i < GetCount(); i++)
+		GetAt(i)->m_nIndex = i;
+}
+
+CXTPReportRecord* CXTPReportRecords::Add(CXTPReportRecord* pRecord)
+{
+	int nIndex = (int)m_arrRecords.Add(pRecord);
+
+	if (m_bArray)
+	{
+		ASSERT(pRecord->m_pRecords);
+	}
+	else
+	{
+		pRecord->m_nIndex = nIndex;
+		pRecord->m_pRecords = this;
+	}
+
+	return pRecord;
+}
+
+void CXTPReportRecords::RemoveAt(int nIndex)
+{
+	ASSERT(!m_bArray);
+
+	if (nIndex < (int)m_arrRecords.GetSize())
+	{
+		m_arrRecords[nIndex]->InternalRelease();
+		m_arrRecords.RemoveAt(nIndex);
+
+		UpdateIndexes(nIndex);
+	}
+}
+
+int CXTPReportRecords::RemoveRecord(CXTPReportRecord* pRecord)
+{
+	ASSERT(!m_bArray);
+
+	for (int i = 0; i < (int)m_arrRecords.GetSize(); i++)
+	{
+		CXTPReportRecord* pRec = m_arrRecords.GetAt(i);
+		if (pRec == pRecord)
+		{
+			pRecord->InternalRelease();
+			m_arrRecords.RemoveAt(i);
+
+			UpdateIndexes(i);
+
+			return i;
+		}
+	}
+
+	return - 1;
+}
+
+void CXTPReportRecords::InsertAt(int nIndex, CXTPReportRecord* pRecord)
+{
+	ASSERT(!m_bArray);
+
+	m_arrRecords.InsertAt(nIndex, pRecord);
+	pRecord->m_pRecords = this;
+	UpdateIndexes(nIndex);
+}
+
+int CXTPReportRecords::GetCount() const
+{
+	if (m_pVirtualRecord != NULL)
+		return m_nVirtualRecordsCount;
+
+	return (int)m_arrRecords.GetSize();
+}
+CXTPReportRecord* CXTPReportRecords::GetAt(int nIndex) const
+{
+	if (m_pVirtualRecord)
+	{
+		m_pVirtualRecord->m_nIndex = nIndex;
+		return m_pVirtualRecord;
+	}
+
+	return nIndex >= 0 && nIndex < GetCount() ? m_arrRecords.GetAt(nIndex) : NULL;
+}
+
+void CXTPReportRecords::DoPropExchange(CXTPPropExchange* pPX)
+{
+	pPX->ExchangeSchemaSafe();
+
+	_DoPropExchange(pPX);
+}
+
+void CXTPReportRecords::_DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPPropExchangeEnumeratorPtr pEnumRecords(pPX->GetEnumerator(_T("Record")));
+
+	if (pPX->IsStoring())
+	{
+		int nCount = (int)GetCount();
+		POSITION pos = pEnumRecords->GetPosition((DWORD)nCount);
+
+		for (int i = 0; i < nCount; i++)
+		{
+			CXTPReportRecord* pRecord = GetAt(i);
+			ASSERT(pRecord);
+
+			CXTPPropExchangeSection sec(pEnumRecords->GetNext(pos));
+			PX_Object(&sec, pRecord, RUNTIME_CLASS(CXTPReportRecord));
+		}
+	}
+	else
+	{
+		RemoveAll();
+
+		POSITION pos = pEnumRecords->GetPosition();
+
+		while (pos)
+		{
+			CXTPReportRecord* pRecord = NULL;
+
+			CXTPPropExchangeSection sec(pEnumRecords->GetNext(pos));
+			PX_Object(&sec, pRecord, RUNTIME_CLASS(CXTPReportRecord));
+
+			if (!pRecord)
+				AfxThrowArchiveException(CArchiveException::badClass);
+
+			Add(pRecord);
+		}
+	}
+}
+
+void CXTPReportRecords::Move(int nIndex, CXTPReportRecords* pRecords)
+{
+	ASSERT(pRecords->m_bArray == TRUE);
+
+	if (nIndex > GetCount())
+		nIndex = GetCount();
+
+	int nRecordsCount = (int)pRecords->GetCount(), i;
+
+	for (i = 0; i < nRecordsCount; i++)
+	{
+		CXTPReportRecord* pRecord = pRecords->GetAt(i);
+		int nRecordIndex = pRecord->GetIndex();
+
+		if (pRecord->m_pRecords != this)
+			continue;
+
+		ASSERT(pRecord && GetAt(nRecordIndex) == pRecord);
+
+		m_arrRecords.RemoveAt(nRecordIndex);
+
+		if (nRecordIndex < nIndex)
+		{
+			nIndex--;
+		}
+
+		for (int j = i + 1; j < nRecordsCount; j++)
+		{
+			pRecord = pRecords->GetAt(j);
+			if (pRecord->m_pRecords != this)
+				continue;
+
+			if (pRecord->GetIndex() > nRecordIndex)
+			{
+				pRecord->m_nIndex--;
+			}
+		}
+	}
+
+	for (i = 0; i < nRecordsCount; i++)
+	{
+		CXTPReportRecord* pRecord = pRecords->GetAt(i);
+		if (pRecord->m_pRecords != this)
+			continue;
+
+		m_arrRecords.InsertAt(nIndex, pRecord);
+		nIndex++;
+	}
+
+	UpdateIndexes();
+}
+
+int CXTPReportRecords::Compare(const CString& str1, const CString& str2) const
+{
+	if (!IsCaseSensitive())
+		return str1.CompareNoCase(str2);
+
+	return str1.Compare(str2);
+}
+
+void CXTPReportRecords::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
+{
+	int nSize = GetCount();
+	if (!m_bArray && nNewSize < nSize)
+	{
+		for (int i = (int)nNewSize; i < nSize; i++)
+		{
+			CXTPReportRecord* pRecord = GetAt(i);
+			if (pRecord)
+				pRecord->InternalRelease();
+		}
+	}
+	m_arrRecords.SetSize(nNewSize, nGrowBy);
+}
+
+void CXTPReportRecords::SetAt(INT_PTR nIndex, CXTPReportRecord* pRecord)
+{
+	ASSERT(pRecord);
+	ASSERT(nIndex >= 0 && nIndex < GetCount());
+
+	if (!pRecord || nIndex < 0 || nIndex >= GetCount())
+		return;
+
+	if (!m_bArray)
+	{
+		CXTPReportRecord* pRecord_prev = GetAt((int)nIndex);
+		if (pRecord_prev)
+			pRecord_prev->InternalRelease();
+
+		pRecord->m_nIndex = (int)nIndex;
+		pRecord->m_pRecords = this;
+	}
+
+	m_arrRecords.SetAt(nIndex, pRecord);
+}
+

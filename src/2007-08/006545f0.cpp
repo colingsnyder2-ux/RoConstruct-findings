@@ -1,21 +1,5 @@
-// from server: 84% by colin
-struct CInstanceRecord {
-    struct CNameItem {
-        void f(int, int, int);
-    };
-};
-
-extern "C" void* __stdcall LoadCursorA(void*, const char*);
-extern "C" int __stdcall SetCursor(void*);
-
-void CInstanceRecord::CNameItem::f(int a, int b, int c)
-{
-    int (__thiscall *fn)(void*, int, int);
-    fn = *(int (__thiscall **)(void*, int, int))(*(int*)this + 0x110);
-    int r = fn(this, b, c);
-    if (r < 0) {
-        return;
-    }
-    void* h = LoadCursorA(0, (const char*)0x7f89);
-    SetCursor(h);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_0243ccfb1725768c.cpp

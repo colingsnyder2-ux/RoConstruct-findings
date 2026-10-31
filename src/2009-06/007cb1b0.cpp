@@ -1,47 +1,147 @@
-// roc 2009-06 007cb1b0  unit: CXTPReportTip  size: 108 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 007cb1b0
-//
-// 007cb1b0  83ec10               sub esp, 0x10
-// 007cb1b3  56                   push esi
-// 007cb1b4  8bf1                 mov esi, ecx
-// 007cb1b6  837e2000             cmp dword ptr [esi + 0x20], 0
-// 007cb1ba  740c                 je 0x7cb1c8
-// 007cb1bc  b801000000           mov eax, 1
-// 007cb1c1  5e                   pop esi
-// 007cb1c2  83c410               add esp, 0x10
-// 007cb1c5  c20400               ret 4
-// 007cb1c8  8b442418             mov eax, dword ptr [esp + 0x18]
-// 007cb1cc  57                   push edi
-// 007cb1cd  894664               mov dword ptr [esi + 0x64], eax
-// 007cb1d0  e821dbf4ff           call 0x718cf6
-// 007cb1d5  68007f0000           push 0x7f00
-// 007cb1da  6a00                 push 0
-// 007cb1dc  ff15b0ed8900         call dword ptr [0x89edb0]
-// 007cb1e2  6a00                 push 0
-// 007cb1e4  6a00                 push 0
-// 007cb1e6  6a00                 push 0
-// 007cb1e8  8d4c2414             lea ecx, [esp + 0x14]
-// 007cb1ec  8bf8                 mov edi, eax
-// 007cb1ee  e83d52faff           call 0x770430
-// 007cb1f3  50                   push eax
-// 007cb1f4  6800000080           push 0x80000000
-// 007cb1f9  6a00                 push 0
-// 007cb1fb  6a00                 push 0
-// 007cb1fd  6a00                 push 0
-// 007cb1ff  57                   push edi
-// 007cb200  6a00                 push 0
-// 007cb202  e8f7e1f4ff           call 0x7193fe
-// 007cb207  50                   push eax
-// 007cb208  6880000000           push 0x80
-// 007cb20d  8bce                 mov ecx, esi
-// 007cb20f  e896d8f4ff           call 0x718aaa
-// 007cb214  5f                   pop edi
-// 007cb215  5e                   pop esi
-// 007cb216  83c410               add esp, 0x10
-// 007cb219  c20400               ret 4
-// library xtp-11.2.2/Source\ReportControl\XTPReportTip.cpp (function ?Create@CXTPReportTip@@UAEHPAVCWnd@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportTip.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportTip.cpp : implementation of the CXTPReportTip class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "XTPReportControl.h"
+#include "XTPReportDefines.h"
+#include "XTPReportTip.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportTip
+
+CXTPReportTip::CXTPReportTip()
+{
+	m_pParentWnd = NULL;
+	m_pItem = NULL;
+	m_nRowIndex = -1;
+}
+
+CXTPReportTip::~CXTPReportTip()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPReportTip, CWnd)
+	//{{AFX_MSG_MAP(CXTPReportTip)
+	ON_WM_MOUSEMOVE()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportTip message handlers
+
+LRESULT CXTPReportTip::OnNcHitTest(CPoint /*point*/)
+{
+	return (UINT)HTTRANSPARENT;
+}
+
+BOOL CXTPReportTip::Create(CWnd* pParentWnd)
+{
+	ASSERT_VALID(pParentWnd);
+
+	// Already created ?
+	if (m_hWnd)
+		return TRUE;
+
+	m_pParentWnd = pParentWnd;
+	return CWnd::CreateEx(WS_EX_TOOLWINDOW, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, WS_POPUP,
+		CXTPEmptyRect(), 0, NULL);
+}
+
+
+void CXTPReportTip::Activate(BOOL bActive)
+{
+	if (bActive)
+	{
+		CString strText = m_strTooltipText;
+		CWindowDC dc(this);
+		CXTPFontDC font(&dc, &m_fntToolTip);
+		CXTPWindowRect rc (this);
+		rc.right = rc.left + dc.GetTextExtent(strText).cx + 6;
+
+		if ((m_pParentWnd->GetExStyle() & WS_EX_RTLREADING) || (m_pParentWnd->GetExStyle() & WS_EX_LAYOUTRTL))
+		{
+			rc.OffsetRect(-rc.right + m_rcHover.right + 1, 0);
+		}
+
+		CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+		if (rc.right > rcWork.right)
+			rc.OffsetRect(rcWork.right - rc.right, 0);
+		if (rc.left < rcWork.left)
+			rc.OffsetRect(rcWork.left - rc.left, 0);
+		MoveWindow(rc);
+		Invalidate(FALSE);
+
+	}
+	SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, (bActive ? SWP_SHOWWINDOW : SWP_HIDEWINDOW | SWP_NOZORDER) | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE);
+
+}
+
+BOOL CXTPReportTip::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+void CXTPReportTip::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
+
+	COLORREF clrText = GetXtremeColor(COLOR_INFOTEXT);
+	dc.FillSolidRect(rc, GetXtremeColor(COLOR_INFOBK));
+	dc.Draw3dRect(rc, clrText, clrText);
+
+	dc.SetTextColor(clrText);
+	dc.SetBkMode(TRANSPARENT);
+
+	if ((m_pParentWnd->GetExStyle() & WS_EX_RTLREADING) || (m_pParentWnd->GetExStyle() & WS_EX_LAYOUTRTL))
+	{
+		dc.SetTextAlign(TA_RTLREADING);
+	}
+
+
+	CXTPFontDC font(&dc, &m_fntToolTip);
+	CRect rcText(rc);
+	rcText.left += 3;
+	rcText.top -= 2;
+
+	dc.DrawText(m_strTooltipText, rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+
+}

@@ -1,26 +1,113 @@
 // from server: 100% by auto
-// roc 2012-06 00653440  unit: seg_00650000  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00653440
-//
-// 00653440  56                   push esi
-// 00653441  8b742408             mov esi, dword ptr [esp + 8]
-// 00653445  8b4604               mov eax, dword ptr [esi + 4]
-// 00653448  57                   push edi
-// 00653449  33ff                 xor edi, edi
-// 0065344b  3bc7                 cmp eax, edi
-// 0065344d  7409                 je 0x653458
-// 0065344f  8b4028               mov eax, dword ptr [eax + 0x28]
-// 00653452  56                   push esi
-// 00653453  ffd0                 call eax
-// 00653455  83c404               add esp, 4
-// 00653458  897e14               mov dword ptr [esi + 0x14], edi
-// 0065345b  897e04               mov dword ptr [esi + 4], edi
-// 0065345e  5f                   pop edi
-// 0065345f  5e                   pop esi
-// 00653460  c3                   ret 
-// library jpeg-6b/jcomapi.c (function _jpeg_destroy)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcomapi.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcomapi.c
+ *
+ * Copyright (C) 1994-1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface routines that are used for both
+ * compression and decompression.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * Abort processing of a JPEG compression or decompression operation,
+ * but don't destroy the object itself.
+ *
+ * For this, we merely clean up all the nonpermanent memory pools.
+ * Note that temp files (virtual arrays) are not allowed to belong to
+ * the permanent pool, so we will be able to close all temp files here.
+ * Closing a data source or destination, if necessary, is the application's
+ * responsibility.
+ */
+
+GLOBAL(void)
+jpeg_abort (j_common_ptr cinfo)
+{
+  int pool;
+
+  /* Do nothing if called on a not-initialized or destroyed JPEG object. */
+  if (cinfo->mem == NULL)
+    return;
+
+  /* Releasing pools in reverse order might help avoid fragmentation
+   * with some (brain-damaged) malloc libraries.
+   */
+  for (pool = JPOOL_NUMPOOLS-1; pool > JPOOL_PERMANENT; pool--) {
+    (*cinfo->mem->free_pool) (cinfo, pool);
+  }
+
+  /* Reset overall state for possible reuse of object */
+  if (cinfo->is_decompressor) {
+    cinfo->global_state = DSTATE_START;
+    /* Try to keep application from accessing now-deleted marker list.
+     * A bit kludgy to do it here, but this is the most central place.
+     */
+    ((j_decompress_ptr) cinfo)->marker_list = NULL;
+  } else {
+    cinfo->global_state = CSTATE_START;
+  }
+}
+
+
+/*
+ * Destruction of a JPEG object.
+ *
+ * Everything gets deallocated except the master jpeg_compress_struct itself
+ * and the error manager struct.  Both of these are supplied by the application
+ * and must be freed, if necessary, by the application.  (Often they are on
+ * the stack and so don't need to be freed anyway.)
+ * Closing a data source or destination, if necessary, is the application's
+ * responsibility.
+ */
+
+GLOBAL(void)
+jpeg_destroy (j_common_ptr cinfo)
+{
+  /* We need only tell the memory manager to release everything. */
+  /* NB: mem pointer is NULL if memory mgr failed to initialize. */
+  if (cinfo->mem != NULL)
+    (*cinfo->mem->self_destruct) (cinfo);
+  cinfo->mem = NULL;		/* be safe if jpeg_destroy is called twice */
+  cinfo->global_state = 0;	/* mark it destroyed */
+}
+
+
+/*
+ * Convenience routines for allocating quantization and Huffman tables.
+ * (Would jutils.c be a more reasonable place to put these?)
+ */
+
+GLOBAL(JQUANT_TBL *)
+jpeg_alloc_quant_table (j_common_ptr cinfo)
+{
+  JQUANT_TBL *tbl;
+
+  tbl = (JQUANT_TBL *)
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JQUANT_TBL));
+  tbl->sent_table = FALSE;	/* make sure this is false in any new table */
+  return tbl;
+}
+
+
+GLOBAL(JHUFF_TBL *)
+jpeg_alloc_huff_table (j_common_ptr cinfo)
+{
+  JHUFF_TBL *tbl;
+
+  tbl = (JHUFF_TBL *)
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JHUFF_TBL));
+  tbl->sent_table = FALSE;	/* make sure this is false in any new table */
+  return tbl;
+}

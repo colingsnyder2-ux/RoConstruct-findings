@@ -1,41 +1,141 @@
-// roc 2009-12 008a3cf0  unit: CXTPReportGroupRow_Batch  size: 72 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008a3cf0
-//
-// 008a3cf0  8b442408             mov eax, dword ptr [esp + 8]
-// 008a3cf4  56                   push esi
-// 008a3cf5  8bf1                 mov esi, ecx
-// 008a3cf7  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 008a3cfb  50                   push eax
-// 008a3cfc  51                   push ecx
-// 008a3cfd  8d563c               lea edx, [esi + 0x3c]
-// 008a3d00  52                   push edx
-// 008a3d01  ff155cca9800         call dword ptr [0x98ca5c]
-// 008a3d07  85c0                 test eax, eax
-// 008a3d09  7518                 jne 0x8a3d23
-// 008a3d0b  57                   push edi
-// 008a3d0c  8b3e                 mov edi, dword ptr [esi]
-// 008a3d0e  8b4778               mov eax, dword ptr [edi + 0x78]
-// 008a3d11  8bce                 mov ecx, esi
-// 008a3d13  ffd0                 call eax
-// 008a3d15  8b577c               mov edx, dword ptr [edi + 0x7c]
-// 008a3d18  f7d8                 neg eax
-// 008a3d1a  1bc0                 sbb eax, eax
-// 008a3d1c  40                   inc eax
-// 008a3d1d  50                   push eax
-// 008a3d1e  8bce                 mov ecx, esi
-// 008a3d20  ffd2                 call edx
-// 008a3d22  5f                   pop edi
-// 008a3d23  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 008a3d27  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 008a3d2b  50                   push eax
-// 008a3d2c  51                   push ecx
-// 008a3d2d  8bce                 mov ecx, esi
-// 008a3d2f  e82c0f0000           call 0x8a4c60
-// 008a3d34  5e                   pop esi
-// 008a3d35  c20800               ret 8
-// copied from an identical function in another client (function ?OnDblClick@CXTPReportGroupRow@@UAEXVCPoint@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportGroupRow.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportGroupRow.cpp : implementation of the CXTPReportGroupRow class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportGroupRow.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportGroupItem
+
+
+CXTPReportGroupRow::CXTPReportGroupRow()
+{
+	m_bExpanded = TRUE;
+
+}
+
+void CXTPReportGroupRow::SetCaption(LPCTSTR lpszCaption)
+{
+	m_strGroupText = lpszCaption;
+}
+
+
+CString CXTPReportGroupRow::GetCaption()
+{
+	return m_strGroupText;
+}
+
+void CXTPReportGroupRow::Draw(CDC* pDC, CRect rcRow, int nLeftOffset)
+{
+	CXTPReportPaintManager* pPaintManager = m_pControl->GetPaintManager();
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	m_rcRow = rcRow;
+	if (GetControl()->m_nFreezeColumnsCount == 0)
+	{
+		m_rcRow.left -= nLeftOffset;
+		m_rcRow.right -= nLeftOffset;
+	}
+
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pDC = pDC;
+	drawArgs.nTextAlign = DT_LEFT;
+
+	drawArgs.pControl = m_pControl;
+	drawArgs.pRow = this;
+	drawArgs.pColumn = NULL;
+	drawArgs.pItem = NULL;
+	drawArgs.rcItem = m_rcRow;
+
+	XTP_REPORTRECORDITEM_METRICS* pDrawMetrics = new XTP_REPORTRECORDITEM_METRICS;
+	pDrawMetrics->strText = GetCaption();
+
+	pPaintManager->FillGroupRowMetrics(this, pDrawMetrics, pDC->IsPrinting());
+
+	ASSERT(m_pControl);
+	if (m_pControl)
+	{
+		m_pControl->GetItemMetrics(&drawArgs, pDrawMetrics);
+	}
+
+	pPaintManager->DrawGroupRow(pDC, this, m_rcRow, pDrawMetrics);
+
+	pDrawMetrics->InternalRelease();
+}
+
+void CXTPReportGroupRow::OnClick(CPoint ptClicked)
+{
+	// expand/collapse on single click at the collapse bitmap
+	if (m_rcCollapse.PtInRect(ptClicked))
+	{
+		SetExpanded(!IsExpanded());
+	}
+}
+
+void CXTPReportGroupRow::OnDblClick(CPoint ptClicked)
+{
+	// do not expand if double clicked on the collapse bitmap
+	if (!m_rcCollapse.PtInRect(ptClicked))
+	{
+		// otherwise expand on double click
+		SetExpanded(!IsExpanded());
+	}
+	// process parent
+	CXTPReportRow::OnDblClick(ptClicked);
+}
+
+INT_PTR CXTPReportGroupRow::OnToolHitTest(CPoint /*point*/, TOOLINFO* pTI)
+{
+	INT_PTR nHit = (INT_PTR)this;
+	CString strTip = GetTooltip();
+
+	if (strTip.IsEmpty())
+		return -1;
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_pControl->m_hWnd, m_rcRow,
+		nHit, strTip);
+
+	return nHit;
+
+}
+

@@ -1,24 +1,5 @@
-// from server: 63% by tester
-struct CRobloxTreeCtrl {
-    char pad[0x18];
-    int field_18;
-    int sub_667770(int, void*);
-    int sub_667a70(void*);
-};
-
-extern "C" void __cdecl sub_630b8c(void*, int, int);
-extern "C" void __cdecl sub_630a1e();
-
-int CRobloxTreeCtrl::sub_667a70(void* arg) {
-    char buf[0x3c];
-    int result;
-    sub_630b8c(buf, 0, 0x3c);
-    result = -1;
-    if (sub_667770(field_18, arg) == 0) {
-        sub_630a1e();
-        return -1;
-    }
-    result = *(int*)(buf + 0x34);
-    sub_630a1e();
-    return result;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_3c203d53a6c43627.cpp

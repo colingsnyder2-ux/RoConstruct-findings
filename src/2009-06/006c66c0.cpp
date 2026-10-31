@@ -1,266 +1,876 @@
-// roc 2009-06 006c66c0  unit: lua_exception  size: 744 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 006c66c0
-//
-// 006c66c0  81ec38040000         sub esp, 0x438
-// 006c66c6  53                   push ebx
-// 006c66c7  55                   push ebp
-// 006c66c8  56                   push esi
-// 006c66c9  57                   push edi
-// 006c66ca  8bbc244c040000       mov edi, dword ptr [esp + 0x44c]
-// 006c66d1  8d442434             lea eax, [esp + 0x34]
-// 006c66d5  50                   push eax
-// 006c66d6  bd01000000           mov ebp, 1
-// 006c66db  55                   push ebp
-// 006c66dc  57                   push edi
-// 006c66dd  e8de45ffff           call 0x6bacc0
-// 006c66e2  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 006c66e6  8d542448             lea edx, [esp + 0x48]
-// 006c66ea  8bd8                 mov ebx, eax
-// 006c66ec  52                   push edx
-// 006c66ed  8d3419               lea esi, [ecx + ebx]
-// 006c66f0  57                   push edi
-// 006c66f1  8974244c             mov dword ptr [esp + 0x4c], esi
-// 006c66f5  e8863fffff           call 0x6ba680
-// 006c66fa  83c414               add esp, 0x14
-// 006c66fd  3bde                 cmp ebx, esi
-// 006c66ff  0f8318020000         jae 0x6c691d
-// 006c6705  803b25               cmp byte ptr [ebx], 0x25
-// 006c6708  742c                 je 0x6c6736
-// 006c670a  8d842448020000       lea eax, [esp + 0x248]
-// 006c6711  3944243c             cmp dword ptr [esp + 0x3c], eax
-// 006c6715  720d                 jb 0x6c6724
-// 006c6717  8d4c243c             lea ecx, [esp + 0x3c]
-// 006c671b  51                   push ecx
-// 006c671c  e8ff3dffff           call 0x6ba520
-// 006c6721  83c404               add esp, 4
-// 006c6724  8a13                 mov dl, byte ptr [ebx]
-// 006c6726  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 006c672a  8810                 mov byte ptr [eax], dl
-// 006c672c  ff44243c             inc dword ptr [esp + 0x3c]
-// 006c6730  43                   inc ebx
-// 006c6731  e9dd010000           jmp 0x6c6913
-// 006c6736  43                   inc ebx
-// 006c6737  803b25               cmp byte ptr [ebx], 0x25
-// 006c673a  752c                 jne 0x6c6768
-// 006c673c  8d8c2448020000       lea ecx, [esp + 0x248]
-// 006c6743  394c243c             cmp dword ptr [esp + 0x3c], ecx
-// 006c6747  720d                 jb 0x6c6756
-// 006c6749  8d54243c             lea edx, [esp + 0x3c]
-// 006c674d  52                   push edx
-// 006c674e  e8cd3dffff           call 0x6ba520
-// 006c6753  83c404               add esp, 4
-// 006c6756  8a03                 mov al, byte ptr [ebx]
-// 006c6758  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 006c675c  8801                 mov byte ptr [ecx], al
-// 006c675e  ff44243c             inc dword ptr [esp + 0x3c]
-// 006c6762  43                   inc ebx
-// 006c6763  e9ab010000           jmp 0x6c6913
-// 006c6768  8d542414             lea edx, [esp + 0x14]
-// 006c676c  52                   push edx
-// 006c676d  57                   push edi
-// 006c676e  45                   inc ebp
-// 006c676f  e87cfeffff           call 0x6c65f0
-// 006c6774  8bd8                 mov ebx, eax
-// 006c6776  0fbe03               movsx eax, byte ptr [ebx]
-// 006c6779  83e845               sub eax, 0x45
-// 006c677c  83c408               add esp, 8
-// 006c677f  43                   inc ebx
-// 006c6780  83f833               cmp eax, 0x33
-// 006c6783  0f87b1010000         ja 0x6c693a
-// 006c6789  0fb68074696c00       movzx eax, byte ptr [eax + 0x6c6974]
-// 006c6790  ff248558696c00       jmp dword ptr [eax*4 + 0x6c6958]
-// 006c6797  55                   push ebp
-// 006c6798  57                   push edi
-// 006c6799  e8e245ffff           call 0x6bad80
-// 006c679e  e81d370500           call 0x719ec0
-// 006c67a3  50                   push eax
-// 006c67a4  8d4c2420             lea ecx, [esp + 0x20]
-// 006c67a8  51                   push ecx
-// 006c67a9  8d942458020000       lea edx, [esp + 0x258]
-// 006c67b0  52                   push edx
-// 006c67b1  ff1538e98900         call dword ptr [0x89e938]
-// 006c67b7  83c414               add esp, 0x14
-// 006c67ba  e92b010000           jmp 0x6c68ea
-// 006c67bf  8d442414             lea eax, [esp + 0x14]
-// 006c67c3  8d5001               lea edx, [eax + 1]
-// 006c67c6  8a08                 mov cl, byte ptr [eax]
-// 006c67c8  40                   inc eax
-// 006c67c9  84c9                 test cl, cl
-// 006c67cb  75f9                 jne 0x6c67c6
-// 006c67cd  2bc2                 sub eax, edx
-// 006c67cf  8a4c0413             mov cl, byte ptr [esp + eax + 0x13]
-// 006c67d3  ba6c000000           mov edx, 0x6c
-// 006c67d8  6689540413           mov word ptr [esp + eax + 0x13], dx
-// 006c67dd  55                   push ebp
-// 006c67de  57                   push edi
-// 006c67df  884c041c             mov byte ptr [esp + eax + 0x1c], cl
-// 006c67e3  c644041d00           mov byte ptr [esp + eax + 0x1d], 0
-// 006c67e8  e89345ffff           call 0x6bad80
-// 006c67ed  e8ce360500           call 0x719ec0
-// 006c67f2  50                   push eax
-// 006c67f3  8d442420             lea eax, [esp + 0x20]
-// 006c67f7  50                   push eax
-// 006c67f8  8d8c2458020000       lea ecx, [esp + 0x258]
-// 006c67ff  51                   push ecx
-// 006c6800  ff1538e98900         call dword ptr [0x89e938]
-// 006c6806  83c414               add esp, 0x14
-// 006c6809  e9dc000000           jmp 0x6c68ea
-// 006c680e  8d442414             lea eax, [esp + 0x14]
-// 006c6812  8d5001               lea edx, [eax + 1]
-// 006c6815  8a08                 mov cl, byte ptr [eax]
-// 006c6817  40                   inc eax
-// 006c6818  84c9                 test cl, cl
-// 006c681a  75f9                 jne 0x6c6815
-// 006c681c  2bc2                 sub eax, edx
-// 006c681e  8a4c0413             mov cl, byte ptr [esp + eax + 0x13]
-// 006c6822  ba6c000000           mov edx, 0x6c
-// 006c6827  6689540413           mov word ptr [esp + eax + 0x13], dx
-// 006c682c  55                   push ebp
-// 006c682d  57                   push edi
-// 006c682e  884c041c             mov byte ptr [esp + eax + 0x1c], cl
-// 006c6832  c644041d00           mov byte ptr [esp + eax + 0x1d], 0
-// 006c6837  e84445ffff           call 0x6bad80
-// 006c683c  d97c241a             fnstcw word ptr [esp + 0x1a]
-// 006c6840  0fb744241a           movzx eax, word ptr [esp + 0x1a]
-// 006c6845  0d000c0000           or eax, 0xc00
-// 006c684a  89442434             mov dword ptr [esp + 0x34], eax
-// 006c684e  d96c2434             fldcw word ptr [esp + 0x34]
-// 006c6852  df7c2434             fistp qword ptr [esp + 0x34]
-// 006c6856  8b442434             mov eax, dword ptr [esp + 0x34]
-// 006c685a  d96c241a             fldcw word ptr [esp + 0x1a]
-// 006c685e  e940ffffff           jmp 0x6c67a3
-// 006c6863  55                   push ebp
-// 006c6864  57                   push edi
-// 006c6865  e81645ffff           call 0x6bad80
-// 006c686a  dd1c24               fstp qword ptr [esp]
-// 006c686d  8d44241c             lea eax, [esp + 0x1c]
-// 006c6871  50                   push eax
-// 006c6872  8d8c2454020000       lea ecx, [esp + 0x254]
-// 006c6879  51                   push ecx
-// 006c687a  ff1538e98900         call dword ptr [0x89e938]
-// 006c6880  83c410               add esp, 0x10
-// 006c6883  eb65                 jmp 0x6c68ea
-// 006c6885  8bcd                 mov ecx, ebp
-// 006c6887  8d74243c             lea esi, [esp + 0x3c]
-// 006c688b  8bd7                 mov edx, edi
-// 006c688d  e8fefbffff           call 0x6c6490
-// 006c6892  e97c000000           jmp 0x6c6913
-// 006c6897  8d542428             lea edx, [esp + 0x28]
-// 006c689b  52                   push edx
-// 006c689c  55                   push ebp
-// 006c689d  57                   push edi
-// 006c689e  e81d44ffff           call 0x6bacc0
-// 006c68a3  8bf0                 mov esi, eax
-// 006c68a5  8d442420             lea eax, [esp + 0x20]
-// 006c68a9  6a2e                 push 0x2e
-// 006c68ab  50                   push eax
-// 006c68ac  ff1500e88900         call dword ptr [0x89e800]
-// 006c68b2  83c414               add esp, 0x14
-// 006c68b5  85c0                 test eax, eax
-// 006c68b7  751a                 jne 0x6c68d3
-// 006c68b9  837c242864           cmp dword ptr [esp + 0x28], 0x64
-// 006c68be  7213                 jb 0x6c68d3
-// 006c68c0  55                   push ebp
-// 006c68c1  57                   push edi
-// 006c68c2  e87926ffff           call 0x6b8f40
-// 006c68c7  8d4c2444             lea ecx, [esp + 0x44]
-// 006c68cb  51                   push ecx
-// 006c68cc  e82f3dffff           call 0x6ba600
-// 006c68d1  eb3d                 jmp 0x6c6910
-// 006c68d3  56                   push esi
-// 006c68d4  8d542418             lea edx, [esp + 0x18]
-// 006c68d8  52                   push edx
-// 006c68d9  8d842450020000       lea eax, [esp + 0x250]
-// 006c68e0  50                   push eax
-// 006c68e1  ff1538e98900         call dword ptr [0x89e938]
-// 006c68e7  83c40c               add esp, 0xc
-// 006c68ea  8d842448020000       lea eax, [esp + 0x248]
-// 006c68f1  8d5001               lea edx, [eax + 1]
-// 006c68f4  8a08                 mov cl, byte ptr [eax]
-// 006c68f6  40                   inc eax
-// 006c68f7  84c9                 test cl, cl
-// 006c68f9  75f9                 jne 0x6c68f4
-// 006c68fb  2bc2                 sub eax, edx
-// 006c68fd  50                   push eax
-// 006c68fe  8d8c244c020000       lea ecx, [esp + 0x24c]
-// 006c6905  51                   push ecx
-// 006c6906  8d542444             lea edx, [esp + 0x44]
-// 006c690a  52                   push edx
-// 006c690b  e8503cffff           call 0x6ba560
-// 006c6910  83c40c               add esp, 0xc
-// 006c6913  3b5c2438             cmp ebx, dword ptr [esp + 0x38]
-// 006c6917  0f82e8fdffff         jb 0x6c6705
-// 006c691d  8d4c243c             lea ecx, [esp + 0x3c]
-// 006c6921  51                   push ecx
-// 006c6922  e8993cffff           call 0x6ba5c0
-// 006c6927  83c404               add esp, 4
-// 006c692a  5f                   pop edi
-// 006c692b  5e                   pop esi
-// 006c692c  5d                   pop ebp
-// 006c692d  b801000000           mov eax, 1
-// 006c6932  5b                   pop ebx
-// 006c6933  81c438040000         add esp, 0x438
-// 006c6939  c3                   ret 
-// 006c693a  0fbe43ff             movsx eax, byte ptr [ebx - 1]
-// 006c693e  50                   push eax
-// 006c693f  683cbd8e00           push 0x8ebd3c
-// 006c6944  57                   push edi
-// 006c6945  e8f638ffff           call 0x6ba240
-// 006c694a  83c40c               add esp, 0xc
-// 006c694d  5f                   pop edi
-// 006c694e  5e                   pop esi
-// 006c694f  5d                   pop ebp
-// 006c6950  5b                   pop ebx
-// 006c6951  81c438040000         add esp, 0x438
-// 006c6957  c3                   ret 
-// 006c6958  63686c               arpl word ptr [eax + 0x6c], bp
-// 006c695b  000e                 add byte ptr [esi], cl
-// 006c695d  686c009767           push 0x6797006c
-// 006c6962  6c                   insb byte ptr es:[edi], dx
-// 006c6963  00bf676c0085         add byte ptr [edi - 0x7aff9399], bh
-// 006c6969  686c009768           push 0x6897006c
-// 006c696e  6c                   insb byte ptr es:[edi], dx
-// 006c696f  003a                 add byte ptr [edx], bh
-// 006c6971  696c000006000606     imul ebp, dword ptr [eax + eax], 0x6060006
-// 006c6979  06                   push es
-// 006c697a  06                   push es
-// 006c697b  06                   push es
-// 006c697c  06                   push es
-// 006c697d  06                   push es
-// 006c697e  06                   push es
-// 006c697f  06                   push es
-// 006c6980  06                   push es
-// 006c6981  06                   push es
-// 006c6982  06                   push es
-// 006c6983  06                   push es
-// 006c6984  06                   push es
-// 006c6985  06                   push es
-// 006c6986  06                   push es
-// 006c6987  0106                 add dword ptr [esi], eax
-// 006c6989  06                   push es
-// 006c698a  06                   push es
-// 006c698b  06                   push es
-// 006c698c  06                   push es
-// 006c698d  06                   push es
-// 006c698e  06                   push es
-// 006c698f  06                   push es
-// 006c6990  06                   push es
-// 006c6991  06                   push es
-// 006c6992  0203                 add al, byte ptr [ebx]
-// 006c6994  0000                 add byte ptr [eax], al
-// 006c6996  0006                 add byte ptr [esi], al
-// 006c6998  0306                 add eax, dword ptr [esi]
-// 006c699a  06                   push es
-// 006c699b  06                   push es
-// 006c699c  06                   push es
-// 006c699d  06                   push es
-// 006c699e  0106                 add dword ptr [esi], eax
-// 006c69a0  0406                 add al, 6
-// 006c69a2  0506010606           add eax, 0x6060106
-// copied from an identical function in another client (function _str_format)
-
 // from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lang: c
 // roc-lib: lua-5.1.4-dll lstrlib.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+** $Id: lstrlib.c,v 1.132.1.4 2008/07/11 17:27:21 roberto Exp $
+** Standard library for string operations and pattern-matching
+** See Copyright Notice in lua.h
+*/
+
+
+#include <ctype.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define lstrlib_c
+#define LUA_LIB
+
+#include "lua.h"
+
+#include "lauxlib.h"
+#include "lualib.h"
+
+
+/* macro to `unsign' a character */
+#define uchar(c)        ((unsigned char)(c))
+
+
+
+static int str_len (lua_State *L) {
+  size_t l;
+  luaL_checklstring(L, 1, &l);
+  lua_pushinteger(L, l);
+  return 1;
+}
+
+
+static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {
+  /* relative string position: negative means back from end */
+  if (pos < 0) pos += (ptrdiff_t)len + 1;
+  return (pos >= 0) ? pos : 0;
+}
+
+
+static int str_sub (lua_State *L) {
+  size_t l;
+  const char *s = luaL_checklstring(L, 1, &l);
+  ptrdiff_t start = posrelat(luaL_checkinteger(L, 2), l);
+  ptrdiff_t end = posrelat(luaL_optinteger(L, 3, -1), l);
+  if (start < 1) start = 1;
+  if (end > (ptrdiff_t)l) end = (ptrdiff_t)l;
+  if (start <= end)
+    lua_pushlstring(L, s+start-1, end-start+1);
+  else lua_pushliteral(L, "");
+  return 1;
+}
+
+
+static int str_reverse (lua_State *L) {
+  size_t l;
+  luaL_Buffer b;
+  const char *s = luaL_checklstring(L, 1, &l);
+  luaL_buffinit(L, &b);
+  while (l--) luaL_addchar(&b, s[l]);
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+static int str_lower (lua_State *L) {
+  size_t l;
+  size_t i;
+  luaL_Buffer b;
+  const char *s = luaL_checklstring(L, 1, &l);
+  luaL_buffinit(L, &b);
+  for (i=0; i<l; i++)
+    luaL_addchar(&b, tolower(uchar(s[i])));
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+static int str_upper (lua_State *L) {
+  size_t l;
+  size_t i;
+  luaL_Buffer b;
+  const char *s = luaL_checklstring(L, 1, &l);
+  luaL_buffinit(L, &b);
+  for (i=0; i<l; i++)
+    luaL_addchar(&b, toupper(uchar(s[i])));
+  luaL_pushresult(&b);
+  return 1;
+}
+
+static int str_rep (lua_State *L) {
+  size_t l;
+  luaL_Buffer b;
+  const char *s = luaL_checklstring(L, 1, &l);
+  int n = luaL_checkint(L, 2);
+  luaL_buffinit(L, &b);
+  while (n-- > 0)
+    luaL_addlstring(&b, s, l);
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+static int str_byte (lua_State *L) {
+  size_t l;
+  const char *s = luaL_checklstring(L, 1, &l);
+  ptrdiff_t posi = posrelat(luaL_optinteger(L, 2, 1), l);
+  ptrdiff_t pose = posrelat(luaL_optinteger(L, 3, posi), l);
+  int n, i;
+  if (posi <= 0) posi = 1;
+  if ((size_t)pose > l) pose = l;
+  if (posi > pose) return 0;  /* empty interval; return no values */
+  n = (int)(pose -  posi + 1);
+  if (posi + n <= pose)  /* overflow? */
+    luaL_error(L, "string slice too long");
+  luaL_checkstack(L, n, "string slice too long");
+  for (i=0; i<n; i++)
+    lua_pushinteger(L, uchar(s[posi+i-1]));
+  return n;
+}
+
+
+static int str_char (lua_State *L) {
+  int n = lua_gettop(L);  /* number of arguments */
+  int i;
+  luaL_Buffer b;
+  luaL_buffinit(L, &b);
+  for (i=1; i<=n; i++) {
+    int c = luaL_checkint(L, i);
+    luaL_argcheck(L, uchar(c) == c, i, "invalid value");
+    luaL_addchar(&b, uchar(c));
+  }
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+static int writer (lua_State *L, const void* b, size_t size, void* B) {
+  (void)L;
+  luaL_addlstring((luaL_Buffer*) B, (const char *)b, size);
+  return 0;
+}
+
+
+static int str_dump (lua_State *L) {
+  luaL_Buffer b;
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  lua_settop(L, 1);
+  luaL_buffinit(L,&b);
+  if (lua_dump(L, writer, &b) != 0)
+    luaL_error(L, "unable to dump given function");
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+
+/*
+** {======================================================
+** PATTERN MATCHING
+** =======================================================
+*/
+
+
+#define CAP_UNFINISHED	(-1)
+#define CAP_POSITION	(-2)
+
+typedef struct MatchState {
+  const char *src_init;  /* init of source string */
+  const char *src_end;  /* end (`\0') of source string */
+  lua_State *L;
+  int level;  /* total number of captures (finished or unfinished) */
+  struct {
+    const char *init;
+    ptrdiff_t len;
+  } capture[LUA_MAXCAPTURES];
+} MatchState;
+
+
+#define L_ESC		'%'
+#define SPECIALS	"^$*+?.([%-"
+
+
+static int check_capture (MatchState *ms, int l) {
+  l -= '1';
+  if (l < 0 || l >= ms->level || ms->capture[l].len == CAP_UNFINISHED)
+    return luaL_error(ms->L, "invalid capture index");
+  return l;
+}
+
+
+static int capture_to_close (MatchState *ms) {
+  int level = ms->level;
+  for (level--; level>=0; level--)
+    if (ms->capture[level].len == CAP_UNFINISHED) return level;
+  return luaL_error(ms->L, "invalid pattern capture");
+}
+
+
+static const char *classend (MatchState *ms, const char *p) {
+  switch (*p++) {
+    case L_ESC: {
+      if (*p == '\0')
+        luaL_error(ms->L, "malformed pattern (ends with " LUA_QL("%%") ")");
+      return p+1;
+    }
+    case '[': {
+      if (*p == '^') p++;
+      do {  /* look for a `]' */
+        if (*p == '\0')
+          luaL_error(ms->L, "malformed pattern (missing " LUA_QL("]") ")");
+        if (*(p++) == L_ESC && *p != '\0')
+          p++;  /* skip escapes (e.g. `%]') */
+      } while (*p != ']');
+      return p+1;
+    }
+    default: {
+      return p;
+    }
+  }
+}
+
+
+static int match_class (int c, int cl) {
+  int res;
+  switch (tolower(cl)) {
+    case 'a' : res = isalpha(c); break;
+    case 'c' : res = iscntrl(c); break;
+    case 'd' : res = isdigit(c); break;
+    case 'l' : res = islower(c); break;
+    case 'p' : res = ispunct(c); break;
+    case 's' : res = isspace(c); break;
+    case 'u' : res = isupper(c); break;
+    case 'w' : res = isalnum(c); break;
+    case 'x' : res = isxdigit(c); break;
+    case 'z' : res = (c == 0); break;
+    default: return (cl == c);
+  }
+  return (islower(cl) ? res : !res);
+}
+
+
+static int matchbracketclass (int c, const char *p, const char *ec) {
+  int sig = 1;
+  if (*(p+1) == '^') {
+    sig = 0;
+    p++;  /* skip the `^' */
+  }
+  while (++p < ec) {
+    if (*p == L_ESC) {
+      p++;
+      if (match_class(c, uchar(*p)))
+        return sig;
+    }
+    else if ((*(p+1) == '-') && (p+2 < ec)) {
+      p+=2;
+      if (uchar(*(p-2)) <= c && c <= uchar(*p))
+        return sig;
+    }
+    else if (uchar(*p) == c) return sig;
+  }
+  return !sig;
+}
+
+
+static int singlematch (int c, const char *p, const char *ep) {
+  switch (*p) {
+    case '.': return 1;  /* matches any char */
+    case L_ESC: return match_class(c, uchar(*(p+1)));
+    case '[': return matchbracketclass(c, p, ep-1);
+    default:  return (uchar(*p) == c);
+  }
+}
+
+
+static const char *match (MatchState *ms, const char *s, const char *p);
+
+
+static const char *matchbalance (MatchState *ms, const char *s,
+                                   const char *p) {
+  if (*p == 0 || *(p+1) == 0)
+    luaL_error(ms->L, "unbalanced pattern");
+  if (*s != *p) return NULL;
+  else {
+    int b = *p;
+    int e = *(p+1);
+    int cont = 1;
+    while (++s < ms->src_end) {
+      if (*s == e) {
+        if (--cont == 0) return s+1;
+      }
+      else if (*s == b) cont++;
+    }
+  }
+  return NULL;  /* string ends out of balance */
+}
+
+
+static const char *max_expand (MatchState *ms, const char *s,
+                                 const char *p, const char *ep) {
+  ptrdiff_t i = 0;  /* counts maximum expand for item */
+  while ((s+i)<ms->src_end && singlematch(uchar(*(s+i)), p, ep))
+    i++;
+  /* keeps trying to match with the maximum repetitions */
+  while (i>=0) {
+    const char *res = match(ms, (s+i), ep+1);
+    if (res) return res;
+    i--;  /* else didn't match; reduce 1 repetition to try again */
+  }
+  return NULL;
+}
+
+
+static const char *min_expand (MatchState *ms, const char *s,
+                                 const char *p, const char *ep) {
+  for (;;) {
+    const char *res = match(ms, s, ep+1);
+    if (res != NULL)
+      return res;
+    else if (s<ms->src_end && singlematch(uchar(*s), p, ep))
+      s++;  /* try with one more repetition */
+    else return NULL;
+  }
+}
+
+
+static const char *start_capture (MatchState *ms, const char *s,
+                                    const char *p, int what) {
+  const char *res;
+  int level = ms->level;
+  if (level >= LUA_MAXCAPTURES) luaL_error(ms->L, "too many captures");
+  ms->capture[level].init = s;
+  ms->capture[level].len = what;
+  ms->level = level+1;
+  if ((res=match(ms, s, p)) == NULL)  /* match failed? */
+    ms->level--;  /* undo capture */
+  return res;
+}
+
+
+static const char *end_capture (MatchState *ms, const char *s,
+                                  const char *p) {
+  int l = capture_to_close(ms);
+  const char *res;
+  ms->capture[l].len = s - ms->capture[l].init;  /* close capture */
+  if ((res = match(ms, s, p)) == NULL)  /* match failed? */
+    ms->capture[l].len = CAP_UNFINISHED;  /* undo capture */
+  return res;
+}
+
+
+static const char *match_capture (MatchState *ms, const char *s, int l) {
+  size_t len;
+  l = check_capture(ms, l);
+  len = ms->capture[l].len;
+  if ((size_t)(ms->src_end-s) >= len &&
+      memcmp(ms->capture[l].init, s, len) == 0)
+    return s+len;
+  else return NULL;
+}
+
+
+static const char *match (MatchState *ms, const char *s, const char *p) {
+  init: /* using goto's to optimize tail recursion */
+  switch (*p) {
+    case '(': {  /* start capture */
+      if (*(p+1) == ')')  /* position capture? */
+        return start_capture(ms, s, p+2, CAP_POSITION);
+      else
+        return start_capture(ms, s, p+1, CAP_UNFINISHED);
+    }
+    case ')': {  /* end capture */
+      return end_capture(ms, s, p+1);
+    }
+    case L_ESC: {
+      switch (*(p+1)) {
+        case 'b': {  /* balanced string? */
+          s = matchbalance(ms, s, p+2);
+          if (s == NULL) return NULL;
+          p+=4; goto init;  /* else return match(ms, s, p+4); */
+        }
+        case 'f': {  /* frontier? */
+          const char *ep; char previous;
+          p += 2;
+          if (*p != '[')
+            luaL_error(ms->L, "missing " LUA_QL("[") " after "
+                               LUA_QL("%%f") " in pattern");
+          ep = classend(ms, p);  /* points to what is next */
+          previous = (s == ms->src_init) ? '\0' : *(s-1);
+          if (matchbracketclass(uchar(previous), p, ep-1) ||
+             !matchbracketclass(uchar(*s), p, ep-1)) return NULL;
+          p=ep; goto init;  /* else return match(ms, s, ep); */
+        }
+        default: {
+          if (isdigit(uchar(*(p+1)))) {  /* capture results (%0-%9)? */
+            s = match_capture(ms, s, uchar(*(p+1)));
+            if (s == NULL) return NULL;
+            p+=2; goto init;  /* else return match(ms, s, p+2) */
+          }
+          goto dflt;  /* case default */
+        }
+      }
+    }
+    case '\0': {  /* end of pattern */
+      return s;  /* match succeeded */
+    }
+    case '$': {
+      if (*(p+1) == '\0')  /* is the `$' the last char in pattern? */
+        return (s == ms->src_end) ? s : NULL;  /* check end of string */
+      else goto dflt;
+    }
+    default: dflt: {  /* it is a pattern item */
+      const char *ep = classend(ms, p);  /* points to what is next */
+      int m = s<ms->src_end && singlematch(uchar(*s), p, ep);
+      switch (*ep) {
+        case '?': {  /* optional */
+          const char *res;
+          if (m && ((res=match(ms, s+1, ep+1)) != NULL))
+            return res;
+          p=ep+1; goto init;  /* else return match(ms, s, ep+1); */
+        }
+        case '*': {  /* 0 or more repetitions */
+          return max_expand(ms, s, p, ep);
+        }
+        case '+': {  /* 1 or more repetitions */
+          return (m ? max_expand(ms, s+1, p, ep) : NULL);
+        }
+        case '-': {  /* 0 or more repetitions (minimum) */
+          return min_expand(ms, s, p, ep);
+        }
+        default: {
+          if (!m) return NULL;
+          s++; p=ep; goto init;  /* else return match(ms, s+1, ep); */
+        }
+      }
+    }
+  }
+}
+
+
+
+static const char *lmemfind (const char *s1, size_t l1,
+                               const char *s2, size_t l2) {
+  if (l2 == 0) return s1;  /* empty strings are everywhere */
+  else if (l2 > l1) return NULL;  /* avoids a negative `l1' */
+  else {
+    const char *init;  /* to search for a `*s2' inside `s1' */
+    l2--;  /* 1st char will be checked by `memchr' */
+    l1 = l1-l2;  /* `s2' cannot be found after that */
+    while (l1 > 0 && (init = (const char *)memchr(s1, *s2, l1)) != NULL) {
+      init++;   /* 1st char is already checked */
+      if (memcmp(init, s2+1, l2) == 0)
+        return init-1;
+      else {  /* correct `l1' and `s1' to try again */
+        l1 -= init-s1;
+        s1 = init;
+      }
+    }
+    return NULL;  /* not found */
+  }
+}
+
+
+static void push_onecapture (MatchState *ms, int i, const char *s,
+                                                    const char *e) {
+  if (i >= ms->level) {
+    if (i == 0)  /* ms->level == 0, too */
+      lua_pushlstring(ms->L, s, e - s);  /* add whole match */
+    else
+      luaL_error(ms->L, "invalid capture index");
+  }
+  else {
+    ptrdiff_t l = ms->capture[i].len;
+    if (l == CAP_UNFINISHED) luaL_error(ms->L, "unfinished capture");
+    if (l == CAP_POSITION)
+      lua_pushinteger(ms->L, ms->capture[i].init - ms->src_init + 1);
+    else
+      lua_pushlstring(ms->L, ms->capture[i].init, l);
+  }
+}
+
+
+static int push_captures (MatchState *ms, const char *s, const char *e) {
+  int i;
+  int nlevels = (ms->level == 0 && s) ? 1 : ms->level;
+  luaL_checkstack(ms->L, nlevels, "too many captures");
+  for (i = 0; i < nlevels; i++)
+    push_onecapture(ms, i, s, e);
+  return nlevels;  /* number of strings pushed */
+}
+
+
+static int str_find_aux (lua_State *L, int find) {
+  size_t l1, l2;
+  const char *s = luaL_checklstring(L, 1, &l1);
+  const char *p = luaL_checklstring(L, 2, &l2);
+  ptrdiff_t init = posrelat(luaL_optinteger(L, 3, 1), l1) - 1;
+  if (init < 0) init = 0;
+  else if ((size_t)(init) > l1) init = (ptrdiff_t)l1;
+  if (find && (lua_toboolean(L, 4) ||  /* explicit request? */
+      strpbrk(p, SPECIALS) == NULL)) {  /* or no special characters? */
+    /* do a plain search */
+    const char *s2 = lmemfind(s+init, l1-init, p, l2);
+    if (s2) {
+      lua_pushinteger(L, s2-s+1);
+      lua_pushinteger(L, s2-s+l2);
+      return 2;
+    }
+  }
+  else {
+    MatchState ms;
+    int anchor = (*p == '^') ? (p++, 1) : 0;
+    const char *s1=s+init;
+    ms.L = L;
+    ms.src_init = s;
+    ms.src_end = s+l1;
+    do {
+      const char *res;
+      ms.level = 0;
+      if ((res=match(&ms, s1, p)) != NULL) {
+        if (find) {
+          lua_pushinteger(L, s1-s+1);  /* start */
+          lua_pushinteger(L, res-s);   /* end */
+          return push_captures(&ms, NULL, 0) + 2;
+        }
+        else
+          return push_captures(&ms, s1, res);
+      }
+    } while (s1++ < ms.src_end && !anchor);
+  }
+  lua_pushnil(L);  /* not found */
+  return 1;
+}
+
+
+static int str_find (lua_State *L) {
+  return str_find_aux(L, 1);
+}
+
+
+static int str_match (lua_State *L) {
+  return str_find_aux(L, 0);
+}
+
+
+static int gmatch_aux (lua_State *L) {
+  MatchState ms;
+  size_t ls;
+  const char *s = lua_tolstring(L, lua_upvalueindex(1), &ls);
+  const char *p = lua_tostring(L, lua_upvalueindex(2));
+  const char *src;
+  ms.L = L;
+  ms.src_init = s;
+  ms.src_end = s+ls;
+  for (src = s + (size_t)lua_tointeger(L, lua_upvalueindex(3));
+       src <= ms.src_end;
+       src++) {
+    const char *e;
+    ms.level = 0;
+    if ((e = match(&ms, src, p)) != NULL) {
+      lua_Integer newstart = e-s;
+      if (e == src) newstart++;  /* empty match? go at least one position */
+      lua_pushinteger(L, newstart);
+      lua_replace(L, lua_upvalueindex(3));
+      return push_captures(&ms, src, e);
+    }
+  }
+  return 0;  /* not found */
+}
+
+
+static int gmatch (lua_State *L) {
+  luaL_checkstring(L, 1);
+  luaL_checkstring(L, 2);
+  lua_settop(L, 2);
+  lua_pushinteger(L, 0);
+  lua_pushcclosure(L, gmatch_aux, 3);
+  return 1;
+}
+
+
+static int gfind_nodef (lua_State *L) {
+  return luaL_error(L, LUA_QL("string.gfind") " was renamed to "
+                       LUA_QL("string.gmatch"));
+}
+
+
+static void add_s (MatchState *ms, luaL_Buffer *b, const char *s,
+                                                   const char *e) {
+  size_t l, i;
+  const char *news = lua_tolstring(ms->L, 3, &l);
+  for (i = 0; i < l; i++) {
+    if (news[i] != L_ESC)
+      luaL_addchar(b, news[i]);
+    else {
+      i++;  /* skip ESC */
+      if (!isdigit(uchar(news[i])))
+        luaL_addchar(b, news[i]);
+      else if (news[i] == '0')
+          luaL_addlstring(b, s, e - s);
+      else {
+        push_onecapture(ms, news[i] - '1', s, e);
+        luaL_addvalue(b);  /* add capture to accumulated result */
+      }
+    }
+  }
+}
+
+
+static void add_value (MatchState *ms, luaL_Buffer *b, const char *s,
+                                                       const char *e) {
+  lua_State *L = ms->L;
+  switch (lua_type(L, 3)) {
+    case LUA_TNUMBER:
+    case LUA_TSTRING: {
+      add_s(ms, b, s, e);
+      return;
+    }
+    case LUA_TFUNCTION: {
+      int n;
+      lua_pushvalue(L, 3);
+      n = push_captures(ms, s, e);
+      lua_call(L, n, 1);
+      break;
+    }
+    case LUA_TTABLE: {
+      push_onecapture(ms, 0, s, e);
+      lua_gettable(L, 3);
+      break;
+    }
+  }
+  if (!lua_toboolean(L, -1)) {  /* nil or false? */
+    lua_pop(L, 1);
+    lua_pushlstring(L, s, e - s);  /* keep original text */
+  }
+  else if (!lua_isstring(L, -1))
+    luaL_error(L, "invalid replacement value (a %s)", luaL_typename(L, -1)); 
+  luaL_addvalue(b);  /* add result to accumulator */
+}
+
+
+static int str_gsub (lua_State *L) {
+  size_t srcl;
+  const char *src = luaL_checklstring(L, 1, &srcl);
+  const char *p = luaL_checkstring(L, 2);
+  int  tr = lua_type(L, 3);
+  int max_s = luaL_optint(L, 4, srcl+1);
+  int anchor = (*p == '^') ? (p++, 1) : 0;
+  int n = 0;
+  MatchState ms;
+  luaL_Buffer b;
+  luaL_argcheck(L, tr == LUA_TNUMBER || tr == LUA_TSTRING ||
+                   tr == LUA_TFUNCTION || tr == LUA_TTABLE, 3,
+                      "string/function/table expected");
+  luaL_buffinit(L, &b);
+  ms.L = L;
+  ms.src_init = src;
+  ms.src_end = src+srcl;
+  while (n < max_s) {
+    const char *e;
+    ms.level = 0;
+    e = match(&ms, src, p);
+    if (e) {
+      n++;
+      add_value(&ms, &b, src, e);
+    }
+    if (e && e>src) /* non empty match? */
+      src = e;  /* skip it */
+    else if (src < ms.src_end)
+      luaL_addchar(&b, *src++);
+    else break;
+    if (anchor) break;
+  }
+  luaL_addlstring(&b, src, ms.src_end-src);
+  luaL_pushresult(&b);
+  lua_pushinteger(L, n);  /* number of substitutions */
+  return 2;
+}
+
+/* }====================================================== */
+
+
+/* maximum size of each formatted item (> len(format('%99.99f', -1e308))) */
+#define MAX_ITEM	512
+/* valid flags in a format specification */
+#define FLAGS	"-+ #0"
+/*
+** maximum size of each format specification (such as '%-099.99d')
+** (+10 accounts for %99.99x plus margin of error)
+*/
+#define MAX_FORMAT	(sizeof(FLAGS) + sizeof(LUA_INTFRMLEN) + 10)
+
+
+static void addquoted (lua_State *L, luaL_Buffer *b, int arg) {
+  size_t l;
+  const char *s = luaL_checklstring(L, arg, &l);
+  luaL_addchar(b, '"');
+  while (l--) {
+    switch (*s) {
+      case '"': case '\\': case '\n': {
+        luaL_addchar(b, '\\');
+        luaL_addchar(b, *s);
+        break;
+      }
+      case '\r': {
+        luaL_addlstring(b, "\\r", 2);
+        break;
+      }
+      case '\0': {
+        luaL_addlstring(b, "\\000", 4);
+        break;
+      }
+      default: {
+        luaL_addchar(b, *s);
+        break;
+      }
+    }
+    s++;
+  }
+  luaL_addchar(b, '"');
+}
+
+static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
+  const char *p = strfrmt;
+  while (*p != '\0' && strchr(FLAGS, *p) != NULL) p++;  /* skip flags */
+  if ((size_t)(p - strfrmt) >= sizeof(FLAGS))
+    luaL_error(L, "invalid format (repeated flags)");
+  if (isdigit(uchar(*p))) p++;  /* skip width */
+  if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
+  if (*p == '.') {
+    p++;
+    if (isdigit(uchar(*p))) p++;  /* skip precision */
+    if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
+  }
+  if (isdigit(uchar(*p)))
+    luaL_error(L, "invalid format (width or precision too long)");
+  *(form++) = '%';
+  strncpy(form, strfrmt, p - strfrmt + 1);
+  form += p - strfrmt + 1;
+  *form = '\0';
+  return p;
+}
+
+
+static void addintlen (char *form) {
+  size_t l = strlen(form);
+  char spec = form[l - 1];
+  strcpy(form + l - 1, LUA_INTFRMLEN);
+  form[l + sizeof(LUA_INTFRMLEN) - 2] = spec;
+  form[l + sizeof(LUA_INTFRMLEN) - 1] = '\0';
+}
+
+
+static int str_format (lua_State *L) {
+  int arg = 1;
+  size_t sfl;
+  const char *strfrmt = luaL_checklstring(L, arg, &sfl);
+  const char *strfrmt_end = strfrmt+sfl;
+  luaL_Buffer b;
+  luaL_buffinit(L, &b);
+  while (strfrmt < strfrmt_end) {
+    if (*strfrmt != L_ESC)
+      luaL_addchar(&b, *strfrmt++);
+    else if (*++strfrmt == L_ESC)
+      luaL_addchar(&b, *strfrmt++);  /* %% */
+    else { /* format item */
+      char form[MAX_FORMAT];  /* to store the format (`%...') */
+      char buff[MAX_ITEM];  /* to store the formatted item */
+      arg++;
+      strfrmt = scanformat(L, strfrmt, form);
+      switch (*strfrmt++) {
+        case 'c': {
+          sprintf(buff, form, (int)luaL_checknumber(L, arg));
+          break;
+        }
+        case 'd':  case 'i': {
+          addintlen(form);
+          sprintf(buff, form, (LUA_INTFRM_T)luaL_checknumber(L, arg));
+          break;
+        }
+        case 'o':  case 'u':  case 'x':  case 'X': {
+          addintlen(form);
+          sprintf(buff, form, (unsigned LUA_INTFRM_T)luaL_checknumber(L, arg));
+          break;
+        }
+        case 'e':  case 'E': case 'f':
+        case 'g': case 'G': {
+          sprintf(buff, form, (double)luaL_checknumber(L, arg));
+          break;
+        }
+        case 'q': {
+          addquoted(L, &b, arg);
+          continue;  /* skip the 'addsize' at the end */
+        }
+        case 's': {
+          size_t l;
+          const char *s = luaL_checklstring(L, arg, &l);
+          if (!strchr(form, '.') && l >= 100) {
+            /* no precision and string is too long to be formatted;
+               keep original string */
+            lua_pushvalue(L, arg);
+            luaL_addvalue(&b);
+            continue;  /* skip the `addsize' at the end */
+          }
+          else {
+            sprintf(buff, form, s);
+            break;
+          }
+        }
+        default: {  /* also treat cases `pnLlh' */
+          return luaL_error(L, "invalid option " LUA_QL("%%%c") " to "
+                               LUA_QL("format"), *(strfrmt - 1));
+        }
+      }
+      luaL_addlstring(&b, buff, strlen(buff));
+    }
+  }
+  luaL_pushresult(&b);
+  return 1;
+}
+
+
+static const luaL_Reg strlib[] = {
+  {"byte", str_byte},
+  {"char", str_char},
+  {"dump", str_dump},
+  {"find", str_find},
+  {"format", str_format},
+  {"gfind", gfind_nodef},
+  {"gmatch", gmatch},
+  {"gsub", str_gsub},
+  {"len", str_len},
+  {"lower", str_lower},
+  {"match", str_match},
+  {"rep", str_rep},
+  {"reverse", str_reverse},
+  {"sub", str_sub},
+  {"upper", str_upper},
+  {NULL, NULL}
+};
+
+
+static void createmetatable (lua_State *L) {
+  lua_createtable(L, 0, 1);  /* create metatable for strings */
+  lua_pushliteral(L, "");  /* dummy string */
+  lua_pushvalue(L, -2);
+  lua_setmetatable(L, -2);  /* set string metatable */
+  lua_pop(L, 1);  /* pop dummy string */
+  lua_pushvalue(L, -2);  /* string library... */
+  lua_setfield(L, -2, "__index");  /* ...is the __index metamethod */
+  lua_pop(L, 1);  /* pop metatable */
+}
+
+
+/*
+** Open string library
+*/
+LUALIB_API int luaopen_string (lua_State *L) {
+  luaL_register(L, LUA_STRLIBNAME, strlib);
+#if defined(LUA_COMPAT_GFIND)
+  lua_getfield(L, -1, "gmatch");
+  lua_setfield(L, -2, "gfind");
+#endif
+  createmetatable(L);
+  return 1;
+}
+

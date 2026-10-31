@@ -1,28 +1,5 @@
-// from server: 97% by colin
-struct CRobloxControlColorSelector {
-    char pad[0xfc];
-    void* field_fc;
-    int sub_63a130();
-
-    int sub_63a140();
-};
-
-extern "C" int __fastcall sub_643980(void*);
-
-int CRobloxControlColorSelector::sub_63a140()
-{
-    if (field_fc != 0) {
-        void** vtbl = *(void***)field_fc;
-        int (__thiscall *fn)(void*) = (int (__thiscall *)(void*))vtbl[0x178 / 4];
-        if (fn(field_fc) != 0) {
-            if (!(sub_63a130() & 0x10)) {
-                return 1;
-            }
-        }
-    }
-    int result = sub_643980(field_fc);
-    if (result != 0 && *(int*)(result + 0x28) != 0) {
-        return 1;
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ee3ddb2069d93767.cpp

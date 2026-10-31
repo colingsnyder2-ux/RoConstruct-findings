@@ -1,15 +1,5 @@
-// from server: 93% by colin
-extern "C" void __stdcall sub_62FC68(unsigned int code);
-
-struct CXTPReportHyperlinkArray
-{
-    void* GetAt(int index);
-};
-
-void* CXTPReportHyperlinkArray::GetAt(int index)
-{
-    if (index >= 0 && index < ((int (__thiscall*)(CXTPReportHyperlinkArray*))((*(void***)this)[0x58 / 4]))(this))
-        return ((void* (__thiscall*)(CXTPReportHyperlinkArray*, int))((*(void***)this)[0x64 / 4]))(this, index);
-    sub_62FC68(0x8002000b);
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_be4400402719d20a.cpp

@@ -1,21 +1,5 @@
-// from server: 94% by colin
-struct CXTPRibbonBar {
-    void sub_650960(int);
-    int sub_6a7a40();
-    void func(int);
-};
-
-struct CXTPRibbonBarInner {
-    void sub_716a70();
-};
-
-void CXTPRibbonBar::func(int arg) {
-    int saved = (*(int (__thiscall **)(CXTPRibbonBar *))(*(int *)this + 0x160))(this);
-    sub_650960(arg);
-    if (sub_6a7a40() != 0) {
-        int cur = (*(int (__thiscall **)(CXTPRibbonBar *))(*(int *)this + 0x160))(this);
-        if (saved != cur) {
-            ((CXTPRibbonBarInner *)(*(int *)((char *)this + 0x27c)))->sub_716a70();
-        }
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_e769aa09a1b4e397.cpp

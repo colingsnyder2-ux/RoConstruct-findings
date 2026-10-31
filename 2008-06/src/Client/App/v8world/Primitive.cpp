@@ -35,7 +35,7 @@ namespace RBX
 		anchored(false),
 		flag0xaa(false),
 		canCollide(true),
-		canSleep(true),
+		canSleep(false),
 		JointK(this, &Primitive::computeJointK),
 		controller(NullController::getStaticNullController())
 	{
@@ -347,28 +347,18 @@ namespace RBX
 
 	void Primitive::setCanCollide(bool value)
 	{
-		bool oldDrag = !dragging && canCollide;
-
-		if (canCollide != value)
+		if (value != canCollide)
 		{
 			canCollide = value;
 			if (world)
-			{
-				bool newDrag = !dragging && value;
-				if (oldDrag != newDrag)
-					world->onPrimitiveCanCollideChanged(this);
-			}
+				world->onPrimitiveCanCollideChanged(this);
 		}
 	}
 
 	void Primitive::setCanSleep(bool _canSleep)
 	{
 		if (_canSleep != canSleep)
-		{
 			canSleep = _canSleep;
-			if (world)
-				world->onPrimitiveCanSleepChanged(this);
-		}
 	}
 
 	void Primitive::setFriction(float _friction)

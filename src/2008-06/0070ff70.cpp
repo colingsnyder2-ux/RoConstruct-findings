@@ -1,215 +1,516 @@
 // from server: 100% by auto
-// roc 2008-06 0070ff70  unit: CXTPStatusBar  size: 717 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0070ff70
-//
-// 0070ff70  56                   push esi
-// 0070ff71  8bf1                 mov esi, ecx
-// 0070ff73  e89819fdff           call 0x6e1910
-// 0070ff78  e8c3fdfcff           call 0x6dfd40
-// 0070ff7d  6a0f                 push 0xf
-// 0070ff7f  8bc8                 mov ecx, eax
-// 0070ff81  e89af5fcff           call 0x6df520
-// 0070ff86  894604               mov dword ptr [esi + 4], eax
-// 0070ff89  e8b2fdfcff           call 0x6dfd40
-// 0070ff8e  6a10                 push 0x10
-// 0070ff90  8bc8                 mov ecx, eax
-// 0070ff92  e889f5fcff           call 0x6df520
-// 0070ff97  894608               mov dword ptr [esi + 8], eax
-// 0070ff9a  e8a1fdfcff           call 0x6dfd40
-// 0070ff9f  6a15                 push 0x15
-// 0070ffa1  8bc8                 mov ecx, eax
-// 0070ffa3  e878f5fcff           call 0x6df520
-// 0070ffa8  89460c               mov dword ptr [esi + 0xc], eax
-// 0070ffab  e890fdfcff           call 0x6dfd40
-// 0070ffb0  6a14                 push 0x14
-// 0070ffb2  8bc8                 mov ecx, eax
-// 0070ffb4  e867f5fcff           call 0x6df520
-// 0070ffb9  894610               mov dword ptr [esi + 0x10], eax
-// 0070ffbc  e87ffdfcff           call 0x6dfd40
-// 0070ffc1  6a16                 push 0x16
-// 0070ffc3  8bc8                 mov ecx, eax
-// 0070ffc5  e856f5fcff           call 0x6df520
-// 0070ffca  894614               mov dword ptr [esi + 0x14], eax
-// 0070ffcd  e86efdfcff           call 0x6dfd40
-// 0070ffd2  6a12                 push 0x12
-// 0070ffd4  8bc8                 mov ecx, eax
-// 0070ffd6  e845f5fcff           call 0x6df520
-// 0070ffdb  894618               mov dword ptr [esi + 0x18], eax
-// 0070ffde  e85dfdfcff           call 0x6dfd40
-// 0070ffe3  6a11                 push 0x11
-// 0070ffe5  8bc8                 mov ecx, eax
-// 0070ffe7  e834f5fcff           call 0x6df520
-// 0070ffec  89461c               mov dword ptr [esi + 0x1c], eax
-// 0070ffef  e84cfdfcff           call 0x6dfd40
-// 0070fff4  6a0d                 push 0xd
-// 0070fff6  8bc8                 mov ecx, eax
-// 0070fff8  e823f5fcff           call 0x6df520
-// 0070fffd  894620               mov dword ptr [esi + 0x20], eax
-// 00710000  e83bfdfcff           call 0x6dfd40
-// 00710005  6a0e                 push 0xe
-// 00710007  8bc8                 mov ecx, eax
-// 00710009  e812f5fcff           call 0x6df520
-// 0071000e  894624               mov dword ptr [esi + 0x24], eax
-// 00710011  e82afdfcff           call 0x6dfd40
-// 00710016  6a04                 push 4
-// 00710018  8bc8                 mov ecx, eax
-// 0071001a  e801f5fcff           call 0x6df520
-// 0071001f  894628               mov dword ptr [esi + 0x28], eax
-// 00710022  e819fdfcff           call 0x6dfd40
-// 00710027  6a07                 push 7
-// 00710029  8bc8                 mov ecx, eax
-// 0071002b  e8f0f4fcff           call 0x6df520
-// 00710030  89462c               mov dword ptr [esi + 0x2c], eax
-// 00710033  e808fdfcff           call 0x6dfd40
-// 00710038  6a05                 push 5
-// 0071003a  8bc8                 mov ecx, eax
-// 0071003c  e8dff4fcff           call 0x6df520
-// 00710041  894630               mov dword ptr [esi + 0x30], eax
-// 00710044  e8f7fcfcff           call 0x6dfd40
-// 00710049  6a06                 push 6
-// 0071004b  8bc8                 mov ecx, eax
-// 0071004d  e8cef4fcff           call 0x6df520
-// 00710052  894634               mov dword ptr [esi + 0x34], eax
-// 00710055  e8e6fcfcff           call 0x6dfd40
-// 0071005a  6a08                 push 8
-// 0071005c  8bc8                 mov ecx, eax
-// 0071005e  e8bdf4fcff           call 0x6df520
-// 00710063  894638               mov dword ptr [esi + 0x38], eax
-// 00710066  e8d5fcfcff           call 0x6dfd40
-// 0071006b  6a02                 push 2
-// 0071006d  8bc8                 mov ecx, eax
-// 0071006f  e8acf4fcff           call 0x6df520
-// 00710074  89463c               mov dword ptr [esi + 0x3c], eax
-// 00710077  e8c4fcfcff           call 0x6dfd40
-// 0071007c  6a03                 push 3
-// 0071007e  8bc8                 mov ecx, eax
-// 00710080  e89bf4fcff           call 0x6df520
-// 00710085  894640               mov dword ptr [esi + 0x40], eax
-// 00710088  e8b3fcfcff           call 0x6dfd40
-// 0071008d  6a1b                 push 0x1b
-// 0071008f  8bc8                 mov ecx, eax
-// 00710091  e88af4fcff           call 0x6df520
-// 00710096  894644               mov dword ptr [esi + 0x44], eax
-// 00710099  e8a2fcfcff           call 0x6dfd40
-// 0071009e  6a1c                 push 0x1c
-// 007100a0  8bc8                 mov ecx, eax
-// 007100a2  e879f4fcff           call 0x6df520
-// 007100a7  894648               mov dword ptr [esi + 0x48], eax
-// 007100aa  e891fcfcff           call 0x6dfd40
-// 007100af  6a09                 push 9
-// 007100b1  8bc8                 mov ecx, eax
-// 007100b3  e868f4fcff           call 0x6df520
-// 007100b8  89464c               mov dword ptr [esi + 0x4c], eax
-// 007100bb  e880fcfcff           call 0x6dfd40
-// 007100c0  6a13                 push 0x13
-// 007100c2  8bc8                 mov ecx, eax
-// 007100c4  e857f4fcff           call 0x6df520
-// 007100c9  894650               mov dword ptr [esi + 0x50], eax
-// 007100cc  e86ffcfcff           call 0x6dfd40
-// 007100d1  6a1e                 push 0x1e
-// 007100d3  8bc8                 mov ecx, eax
-// 007100d5  e846f4fcff           call 0x6df520
-// 007100da  894654               mov dword ptr [esi + 0x54], eax
-// 007100dd  e85efcfcff           call 0x6dfd40
-// 007100e2  6a1f                 push 0x1f
-// 007100e4  8bc8                 mov ecx, eax
-// 007100e6  e835f4fcff           call 0x6df520
-// 007100eb  894658               mov dword ptr [esi + 0x58], eax
-// 007100ee  e84dfcfcff           call 0x6dfd40
-// 007100f3  6a20                 push 0x20
-// 007100f5  8bc8                 mov ecx, eax
-// 007100f7  e824f4fcff           call 0x6df520
-// 007100fc  89465c               mov dword ptr [esi + 0x5c], eax
-// 007100ff  e83cfcfcff           call 0x6dfd40
-// 00710104  6a21                 push 0x21
-// 00710106  8bc8                 mov ecx, eax
-// 00710108  e813f4fcff           call 0x6df520
-// 0071010d  894660               mov dword ptr [esi + 0x60], eax
-// 00710110  e82bfcfcff           call 0x6dfd40
-// 00710115  6a22                 push 0x22
-// 00710117  8bc8                 mov ecx, eax
-// 00710119  e802f4fcff           call 0x6df520
-// 0071011e  894664               mov dword ptr [esi + 0x64], eax
-// 00710121  e81afcfcff           call 0x6dfd40
-// 00710126  6a23                 push 0x23
-// 00710128  8bc8                 mov ecx, eax
-// 0071012a  e8f1f3fcff           call 0x6df520
-// 0071012f  894668               mov dword ptr [esi + 0x68], eax
-// 00710132  e809fcfcff           call 0x6dfd40
-// 00710137  6a24                 push 0x24
-// 00710139  8bc8                 mov ecx, eax
-// 0071013b  e8e0f3fcff           call 0x6df520
-// 00710140  89466c               mov dword ptr [esi + 0x6c], eax
-// 00710143  e8f8fbfcff           call 0x6dfd40
-// 00710148  6a25                 push 0x25
-// 0071014a  8bc8                 mov ecx, eax
-// 0071014c  e8cff3fcff           call 0x6df520
-// 00710151  894670               mov dword ptr [esi + 0x70], eax
-// 00710154  e8e7fbfcff           call 0x6dfd40
-// 00710159  6a26                 push 0x26
-// 0071015b  8bc8                 mov ecx, eax
-// 0071015d  e8bef3fcff           call 0x6df520
-// 00710162  894674               mov dword ptr [esi + 0x74], eax
-// 00710165  e8d6fbfcff           call 0x6dfd40
-// 0071016a  6a27                 push 0x27
-// 0071016c  8bc8                 mov ecx, eax
-// 0071016e  e8adf3fcff           call 0x6df520
-// 00710173  894678               mov dword ptr [esi + 0x78], eax
-// 00710176  e8c5fbfcff           call 0x6dfd40
-// 0071017b  6a28                 push 0x28
-// 0071017d  8bc8                 mov ecx, eax
-// 0071017f  e89cf3fcff           call 0x6df520
-// 00710184  89467c               mov dword ptr [esi + 0x7c], eax
-// 00710187  e8b4fbfcff           call 0x6dfd40
-// 0071018c  6a29                 push 0x29
-// 0071018e  8bc8                 mov ecx, eax
-// 00710190  e88bf3fcff           call 0x6df520
-// 00710195  898680000000         mov dword ptr [esi + 0x80], eax
-// 0071019b  e8a0fbfcff           call 0x6dfd40
-// 007101a0  6a2a                 push 0x2a
-// 007101a2  8bc8                 mov ecx, eax
-// 007101a4  e877f3fcff           call 0x6df520
-// 007101a9  898684000000         mov dword ptr [esi + 0x84], eax
-// 007101af  e88cfbfcff           call 0x6dfd40
-// 007101b4  6a2b                 push 0x2b
-// 007101b6  8bc8                 mov ecx, eax
-// 007101b8  e863f3fcff           call 0x6df520
-// 007101bd  898688000000         mov dword ptr [esi + 0x88], eax
-// 007101c3  e878fbfcff           call 0x6dfd40
-// 007101c8  6a2c                 push 0x2c
-// 007101ca  8bc8                 mov ecx, eax
-// 007101cc  e84ff3fcff           call 0x6df520
-// 007101d1  89868c000000         mov dword ptr [esi + 0x8c], eax
-// 007101d7  e864fbfcff           call 0x6dfd40
-// 007101dc  6a2d                 push 0x2d
-// 007101de  8bc8                 mov ecx, eax
-// 007101e0  e83bf3fcff           call 0x6df520
-// 007101e5  898690000000         mov dword ptr [esi + 0x90], eax
-// 007101eb  e850fbfcff           call 0x6dfd40
-// 007101f0  6a2e                 push 0x2e
-// 007101f2  8bc8                 mov ecx, eax
-// 007101f4  e827f3fcff           call 0x6df520
-// 007101f9  898694000000         mov dword ptr [esi + 0x94], eax
-// 007101ff  e83cfbfcff           call 0x6dfd40
-// 00710204  6a2f                 push 0x2f
-// 00710206  8bc8                 mov ecx, eax
-// 00710208  e813f3fcff           call 0x6df520
-// 0071020d  898698000000         mov dword ptr [esi + 0x98], eax
-// 00710213  e828fbfcff           call 0x6dfd40
-// 00710218  6a30                 push 0x30
-// 0071021a  8bc8                 mov ecx, eax
-// 0071021c  e8fff2fcff           call 0x6df520
-// 00710221  89869c000000         mov dword ptr [esi + 0x9c], eax
-// 00710227  e814fbfcff           call 0x6dfd40
-// 0071022c  6a31                 push 0x31
-// 0071022e  8bc8                 mov ecx, eax
-// 00710230  e8ebf2fcff           call 0x6df520
-// 00710235  8986a0000000         mov dword ptr [esi + 0xa0], eax
-// 0071023b  5e                   pop esi
-// 0071023c  c3                   ret 
-// library xtp-11.2.2/Source\Controls\XTGlobal.cpp (function ?UpdateSysColors@CXTAuxData@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTGlobal.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTGlobal.cpp : implementation of the CXTAuxData struct.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/Resource.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPVersion.h"
+#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "XTGlobal.h"
+#include "XTThemeManager.h"
+
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+//=============================================================================
+// CXTNonClientMetrics
+//=============================================================================
+
+CXTNonClientMetrics::CXTNonClientMetrics()
+{
+	::ZeroMemory(this, sizeof(NONCLIENTMETRICS));
+	cbSize = sizeof(NONCLIENTMETRICS);
+
+	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
+		sizeof(NONCLIENTMETRICS), this, 0));
+}
+
+//=============================================================================
+// CXTFontManager
+//=============================================================================
+
+CXTLogFont::CXTLogFont()
+: dwType(0)
+{
+	::ZeroMemory(this, sizeof(CXTLogFont));
+}
+
+CXTLogFont::CXTLogFont(LOGFONT& logfont)
+: dwType(0)
+{
+	MEMCPY_S((void*)&*this, (const void*)&logfont, (DWORD)sizeof(LOGFONT));
+}
+
+void CXTLogFont::operator=(LOGFONT& logfont)
+{
+	MEMCPY_S((void*)&*this, (const void*)&logfont, (DWORD)sizeof(LOGFONT));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTAuxDataTheme
+
+CXTAuxDataTheme::operator BOOL()
+{
+	return XTThemeManager()->GetTheme() == xtThemeDefault ? FALSE : TRUE;
+}
+
+BOOL CXTAuxDataTheme::operator=(BOOL bXPMode)
+{
+	XTThemeManager()->SetTheme(bXPMode ? xtThemeOfficeXP : xtThemeDefault);
+	return bXPMode;
+}
+
+//=============================================================================
+// CXTAuxData
+//=============================================================================
+
+CXTAuxData::CXTAuxData()
+{
+	iComCtlVersion = -1;
+	hcurDragCopy = NULL;
+	hcurDragMove = NULL;
+	hcurDragNone = NULL;
+	hcurHand = NULL;
+	hcurHSplitBar = NULL;
+	hcurVSplitBar = NULL;
+	hcurMove = NULL;
+	bUseOfficeFont = FALSE;
+	bUseSolidShadows = FALSE;
+	bMenuShadows = TRUE;
+
+	bWin95 = XTOSVersionInfo()->IsWin95();
+	bWin98 = XTOSVersionInfo()->IsWin98();
+	bWinNT = XTOSVersionInfo()->IsWinNT4();
+	bWin2K = XTOSVersionInfo()->IsWin2K();
+	bWinXP = XTOSVersionInfo()->IsWinXP();
+
+	// Internet Explorer 4.0 or higher.
+	GetComCtlVersion();
+	VERIFY(IsComCtlValid());
+
+	UpdateSysColors();
+	UpdateSysMetrics();
+
+	// Load cursors and fonts.
+	LoadSysCursors();
+	LoadSysFonts();
+}
+
+CXTAuxData::~CXTAuxData()
+{
+	FreeSysFonts();
+}
+
+// If LoadCursors() returns FALSE and your application is linking to the
+// static version of the library you most likely need to include the following
+// line in your .rc2 file: #include "XTResourcePro.rc".  This name will vary
+// depending on the library you are linking to.
+
+BOOL CXTAuxData::LoadSysCursors()
+{
+	hcurDragNone = XTPResourceManager()->LoadCursor(XT_IDC_DRAGNONE);
+
+	if (hcurDragNone == NULL)
+		return FALSE;
+
+	hcurDragCopy = XTPResourceManager()->LoadCursor(XT_IDC_DRAGCOPY);
+
+	if (hcurDragCopy == NULL)
+		return FALSE;
+
+	hcurDragMove = XTPResourceManager()->LoadCursor(XT_IDC_DRAGMOVE);
+
+	if (hcurDragMove == NULL)
+		return FALSE;
+
+	hcurHand = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
+
+	if (hcurHand == NULL)
+		hcurHand = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
+
+	if (hcurHand == NULL)
+		return FALSE;
+
+	hcurHSplitBar = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
+
+	if (hcurHSplitBar == NULL)
+		return FALSE;
+
+	hcurVSplitBar = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
+
+	if (hcurVSplitBar == NULL)
+		return FALSE;
+
+	hcurMove = AfxGetApp()->LoadStandardCursor(IDC_SIZEALL);
+
+	if (hcurMove == NULL)
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTAuxData::UpdateSysColors()
+{
+	RefreshXtremeColors();
+
+	// Initialize standard color for windows components.
+	clr3DFace = GetXtremeColor(COLOR_3DFACE);
+	clr3DShadow = GetXtremeColor(COLOR_3DSHADOW);
+	clr3DDkShadow = GetXtremeColor(COLOR_3DDKSHADOW);
+	clr3DHilight = GetXtremeColor(COLOR_3DHILIGHT);
+	clr3DLight = GetXtremeColor(COLOR_3DLIGHT);
+	clrBtnText = GetXtremeColor(COLOR_BTNTEXT);
+	clrGrayText = GetXtremeColor(COLOR_GRAYTEXT);
+	clrHighlight = GetXtremeColor(COLOR_HIGHLIGHT);
+	clrHighlightText = GetXtremeColor(COLOR_HIGHLIGHTTEXT);
+	clrMenu = GetXtremeColor(COLOR_MENU);
+	clrMenuText = GetXtremeColor(COLOR_MENUTEXT);
+	clrWindow = GetXtremeColor(COLOR_WINDOW);
+	clrWindowFrame = GetXtremeColor(COLOR_WINDOWFRAME);
+	clrWindowText = GetXtremeColor(COLOR_WINDOWTEXT);
+	clrActiveCaption = GetXtremeColor(COLOR_ACTIVECAPTION);
+	clrInActiveCaption = GetXtremeColor(COLOR_INACTIVECAPTION);
+	clrGradActiveCapt = GetXtremeColor(COLOR_GRADIENTACTIVECAPTION);
+	clrGradInActiveCapt = GetXtremeColor(COLOR_GRADIENTINACTIVECAPTION);
+	clrActiveCaptText = GetXtremeColor(COLOR_CAPTIONTEXT);
+	clrInactiveCaptText = GetXtremeColor(COLOR_INACTIVECAPTIONTEXT);
+
+	// Initialize special colors for XP style interfaces.
+	clrXPBarFace = GetXtremeColor(XPCOLOR_TOOLBAR_FACE);
+	clrXPHighlight = GetXtremeColor(XPCOLOR_HIGHLIGHT);
+	clrXPHighlightBorder = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
+	clrXPHighlightPushed = GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED);
+	clrXPIconShadow = GetXtremeColor(XPCOLOR_ICONSHADDOW);
+	clrXPGrayText = GetXtremeColor(XPCOLOR_GRAYTEXT);
+	clrXPHighlightChecked = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED);
+	clrXPHighlightCheckedBorder = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED_BORDER);
+	clrXPGripper = GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER);
+	clrXPSeparator = GetXtremeColor(XPCOLOR_SEPARATOR);
+	clrXPDisabled = GetXtremeColor(XPCOLOR_DISABLED);
+	clrXPMenuTextBack = GetXtremeColor(XPCOLOR_MENUBAR_FACE);
+	clrXPMenuExpanded = GetXtremeColor(XPCOLOR_MENUBAR_EXPANDED);
+	clrXPMenuBorder = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
+	clrXPMenuText = GetXtremeColor(XPCOLOR_MENUBAR_TEXT);
+	clrXPHighlightText = GetXtremeColor(XPCOLOR_HIGHLIGHT_TEXT);
+	clrXPBarText = GetXtremeColor(XPCOLOR_TOOLBAR_TEXT);
+	clrXPBarTextPushed = GetXtremeColor(XPCOLOR_PUSHED_TEXT);
+	clrXPTabInactiveBack = GetXtremeColor(XPCOLOR_TAB_INACTIVE_BACK);
+	clrXPTabInactiveText = GetXtremeColor(XPCOLOR_TAB_INACTIVE_TEXT);
+}
+
+void CXTAuxData::UpdateSysMetrics()
+{
+	cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
+	cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
+	cxHThumb = ::GetSystemMetrics(SM_CXHTHUMB);
+	cyVThumb = ::GetSystemMetrics(SM_CYVTHUMB);
+	cyMenuItem = ::GetSystemMetrics(SM_CYMENU);
+	cxSize = 18; //::GetSystemMetrics(SM_CXSIZE);
+	cySize = 18; //::GetSystemMetrics(SM_CYSIZE);
+}
+
+BOOL CXTAuxData::LoadSysFonts(LPCTSTR strHorzFaceName/*= _T("")*/, LPCTSTR strVertFaceName/*= _T("")*/)
+{
+	CString strFaceTahoma(_T("Tahoma"));
+	CString strFaceArial(_T("Arial"));
+
+	// Free up any resources previously allocated.
+	FreeSysFonts();
+
+	CXTNonClientMetrics ncm;
+
+	LOGFONT lfMenuFont;
+	MEMCPY_S(&lfMenuFont, &ncm.lfMenuFont, sizeof(LOGFONT));
+
+	if (strHorzFaceName != NULL)
+	{
+		if (FontExists(strHorzFaceName))
+		{
+			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
+			STRCPY_S(ncm.lfStatusFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
+			STRCPY_S(ncm.lfSmCaptionFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
+		}
+	}
+
+	// check to see if we can use the "Tahoma" font.
+	else if (bUseOfficeFont && !(ncm.lfMenuFont.lfCharSet > SYMBOL_CHARSET))
+	{
+		if (FontExists(strFaceTahoma))
+		{
+			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strFaceTahoma);
+		}
+	}
+
+	// create the menu fonts.
+	if (!CreateSysFont(lfMenuFont, font))
+		return FALSE;
+
+	if (!CreateSysFont(lfMenuFont, fontBold, FW_BOLD))
+		return FALSE;
+
+	if (!CreateSysFont(lfMenuFont, fontULine, -1, 1))
+		return FALSE;
+
+	// If the "Tahoma" font is not used see if we can use "Arial" for vertical
+	// fonts because it displays better than MS Sans Serif on older operating
+	// systems...
+
+	if (strVertFaceName != NULL)
+	{
+		if (FontExists(strVertFaceName))
+		{
+			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strVertFaceName);
+		}
+	}
+
+	else if (strFaceTahoma.CompareNoCase(ncm.lfMenuFont.lfFaceName) != 0)
+	{
+		if (FontExists(strFaceArial))
+		{
+			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strFaceArial);
+		}
+	}
+
+	// create the vertical menu fonts.
+	if (!CreateSysFont(lfMenuFont, fontVert, -1, -1, 900, 2700))
+		return FALSE;
+
+	if (!CreateSysFont(lfMenuFont, fontVertBold, FW_BOLD, -1, 900, 2700))
+		return FALSE;
+
+	// create the icon title fonts.
+	CXTLogFont lfIconTitleFont;
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT,
+		sizeof(LOGFONT), &lfIconTitleFont, 0));
+
+	if (!CreateSysFont(lfIconTitleFont, fontIconTitle))
+		return FALSE;
+
+	if (!CreateSysFont(lfIconTitleFont, fontIconTitleBold, FW_BOLD))
+		return FALSE;
+
+	// Create the status bar font.
+	if (!CreateSysFont(ncm.lfStatusFont, fontStatus))
+		return FALSE;
+
+	// Create the small caption font.
+	if (!CreateSysFont(ncm.lfSmCaptionFont, fontSmCaption))
+		return FALSE;
+
+	// Create the marlett icon font.
+	LOGFONT lfMarlettIcon = {lfIconTitleFont.lfHeight, 0, 0, 0, 0, 0, 0, 0,
+		DEFAULT_CHARSET, 0, 0, 0, 0, _T("Marlett")};
+
+	if (!CreateSysFont(lfMarlettIcon, fontMarlettIcon))
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTAuxData::FreeSysFonts()
+{
+	if (font.GetSafeHandle())
+		font.DeleteObject();
+	if (fontBold.GetSafeHandle())
+		fontBold.DeleteObject();
+	if (fontULine.GetSafeHandle())
+		fontULine.DeleteObject();
+	if (fontVert.GetSafeHandle())
+		fontVert.DeleteObject();
+	if (fontVertBold.GetSafeHandle())
+		fontVertBold.DeleteObject();
+	if (fontIconTitle.GetSafeHandle())
+		fontIconTitle.DeleteObject();
+	if (fontIconTitleBold.GetSafeHandle())
+		fontIconTitleBold.DeleteObject();
+	if (fontMarlettIcon.GetSafeHandle())
+		fontMarlettIcon.DeleteObject();
+	if (fontStatus.GetSafeHandle())
+		fontStatus.DeleteObject();
+	if (fontSmCaption.GetSafeHandle())
+		fontSmCaption.DeleteObject();
+}
+
+void CXTAuxData::UseOfficeFont(BOOL bOfficeFont)
+{
+	bUseOfficeFont = bOfficeFont;
+	LoadSysFonts();
+}
+
+BOOL CXTAuxData::FontExists(LPCTSTR strFaceName)
+{
+	return CXTPDrawHelpers::FontExists(strFaceName);
+}
+
+BOOL CXTAuxData::CreateSysFont(const CXTLogFont& logFont, CFont& font, long lfWeight/*= -1*/, char lfUnderline/*= -1*/, long lfOrientation/*= -1*/, long lfEscapement/*= -1*/)
+{
+	// delete the font if it has already been created.
+	if (font.GetSafeHandle())
+	{
+		font.DeleteObject();
+	}
+
+	// construct the log font.
+	CXTLogFont lf(logFont);
+
+	// set font weight.
+	if (lfWeight != -1)
+	{
+		lf.lfWeight = lfWeight;
+	}
+
+	// set font orientation.
+	if (lfOrientation != -1)
+	{
+		lf.lfOrientation = lfOrientation;
+	}
+
+	// set font escapement.
+	if (lfEscapement != -1)
+	{
+		lf.lfEscapement = lfEscapement;
+	}
+
+	// set font underline style.
+	if (lfUnderline != -1)
+	{
+		lf.lfUnderline = lfUnderline;
+	}
+
+	// create the font using the log font we constructed.
+	return font.CreateFontIndirect(&lf);
+}
+
+BOOL CXTAuxData::SetGlobalFont(LPCTSTR lpszFaceName, LPCTSTR lpszVertFaceName/*= NULL*/)
+{
+	return LoadSysFonts(lpszFaceName, lpszVertFaceName);
+}
+
+BOOL CXTAuxData::SetGlobalFont(CFont* pHorzFont, CFont* pVertFont/*= NULL*/)
+{
+	if (pHorzFont != NULL && pHorzFont->GetSafeHandle() != NULL)
+	{
+		CXTLogFont lf;
+		pHorzFont->GetLogFont(&lf);
+
+		// create the menu fonts.
+		if (!CreateSysFont(lf, font))
+			return FALSE;
+
+		if (!CreateSysFont(lf, fontBold, FW_BOLD))
+			return FALSE;
+
+		if (!CreateSysFont(lf, fontULine, -1, 1))
+			return FALSE;
+
+		if (!CreateSysFont(lf, fontStatus))
+			return FALSE;
+	}
+
+	if (pVertFont != NULL && pVertFont->GetSafeHandle() != NULL)
+	{
+		CXTLogFont lf;
+		pVertFont->GetLogFont(&lf);
+
+		if (!CreateSysFont(lf, fontVert, -1, -1, 900, 2700))
+			return FALSE;
+
+		if (!CreateSysFont(lf, fontVertBold, FW_BOLD, -1, 900, 2700))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+DWORD CXTAuxData::GetComCtlVersion()
+{
+	iComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
+	return iComCtlVersion;
+}
+
+BOOL CXTAuxData::IsComCtlValid() const
+{
+	return TRUE;
+}
+
+CString CXTAuxData::GetXTVersion(bool bVerNumOnly/*= false*/)
+{
+	CString strVersion;
+	if (bVerNumOnly)
+	{
+		strVersion.Format(_T("%d.%02d"),
+			_XTPLIB_VERSION_MAJOR, _XTPLIB_VERSION_MINOR);
+	}
+	else
+	{
+		strVersion.Format(_T("Xtreme Toolkit v%d.%02d"),
+			_XTPLIB_VERSION_MAJOR, _XTPLIB_VERSION_MINOR);
+	}
+	return strVersion;
+}
+
+void CXTAuxData::InitResources(HINSTANCE hInst)
+{
+	// Set the resource handle used by the library.
+	XTPResourceManager()->SetResourceHandle(hInst);
+
+	LoadSysCursors(); // Load cursors.
+}
+
+_XTP_EXT_CLASS CXTAuxData& AFXAPI XTAuxData()
+{
+	static CXTAuxData instance;
+	return instance;
+}
+
+// CXTTcbItem
+
+CXTTcbItem::CXTTcbItem()
+: uiToolTipId(0)
+, pWnd(0)
+, dwStyle(0)
+, dwExStyle(0)
+, crTabBack(COLORREF_NULL)
+, crTabText(COLORREF_NULL)
+, crTabSelBack(COLORREF_NULL)
+, crTabSelText(COLORREF_NULL)
+{
+
+}

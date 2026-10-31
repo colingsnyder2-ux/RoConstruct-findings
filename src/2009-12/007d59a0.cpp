@@ -1,228 +1,467 @@
-// roc 2009-12 007d59a0  unit: seg_007d0000  size: 579 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 007d59a0
-//
-// 007d59a0  83ec50               sub esp, 0x50
-// 007d59a3  53                   push ebx
-// 007d59a4  55                   push ebp
-// 007d59a5  8b6c245c             mov ebp, dword ptr [esp + 0x5c]
-// 007d59a9  56                   push esi
-// 007d59aa  8bd8                 mov ebx, eax
-// 007d59ac  8b03                 mov eax, dword ptr [ebx]
-// 007d59ae  57                   push edi
-// 007d59af  50                   push eax
-// 007d59b0  e8cbf7ffff           call 0x7d5180
-// 007d59b5  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d59b8  8b08                 mov ecx, dword ptr [eax]
-// 007d59ba  33ff                 xor edi, edi
-// 007d59bc  83c404               add esp, 4
-// 007d59bf  8d51ff               lea edx, [ecx - 1]
-// 007d59c2  8910                 mov dword ptr [eax], edx
-// 007d59c4  3bcf                 cmp ecx, edi
-// 007d59c6  760f                 jbe 0x7d59d7
-// 007d59c8  8b4b38               mov ecx, dword ptr [ebx + 0x38]
-// 007d59cb  8b5104               mov edx, dword ptr [ecx + 4]
-// 007d59ce  0fb602               movzx eax, byte ptr [edx]
-// 007d59d1  42                   inc edx
-// 007d59d2  895104               mov dword ptr [ecx + 4], edx
-// 007d59d5  eb0c                 jmp 0x7d59e3
-// 007d59d7  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d59da  50                   push eax
-// 007d59db  e8f0b6ffff           call 0x7d10d0
-// 007d59e0  83c404               add esp, 4
-// 007d59e3  8903                 mov dword ptr [ebx], eax
-// 007d59e5  83f80a               cmp eax, 0xa
-// 007d59e8  7405                 je 0x7d59ef
-// 007d59ea  83f80d               cmp eax, 0xd
-// 007d59ed  7507                 jne 0x7d59f6
-// 007d59ef  8bf3                 mov esi, ebx
-// 007d59f1  e8baf9ffff           call 0x7d53b0
-// 007d59f6  8b03                 mov eax, dword ptr [ebx]
-// 007d59f8  8d4801               lea ecx, [eax + 1]
-// 007d59fb  83f95e               cmp ecx, 0x5e
-// 007d59fe  0f87cc000000         ja 0x7d5ad0
-// 007d5a04  0fb689845b7d00       movzx ecx, byte ptr [ecx + 0x7d5b84]
-// 007d5a0b  ff248d745b7d00       jmp dword ptr [ecx*4 + 0x7d5b74]
-// 007d5a12  be44f49e00           mov esi, 0x9ef444
-// 007d5a17  3bef                 cmp ebp, edi
-// 007d5a19  7505                 jne 0x7d5a20
-// 007d5a1b  be2cf49e00           mov esi, 0x9ef42c
-// 007d5a20  8b5340               mov edx, dword ptr [ebx + 0x40]
-// 007d5a23  6a50                 push 0x50
-// 007d5a25  83c210               add edx, 0x10
-// 007d5a28  52                   push edx
-// 007d5a29  8d442418             lea eax, [esp + 0x18]
-// 007d5a2d  50                   push eax
-// 007d5a2e  e86d4bfcff           call 0x79a5a0
-// 007d5a33  8b4b04               mov ecx, dword ptr [ebx + 4]
-// 007d5a36  8b4334               mov eax, dword ptr [ebx + 0x34]
-// 007d5a39  56                   push esi
-// 007d5a3a  51                   push ecx
-// 007d5a3b  8d542424             lea edx, [esp + 0x24]
-// 007d5a3f  52                   push edx
-// 007d5a40  68b4ab9e00           push 0x9eabb4
-// 007d5a45  50                   push eax
-// 007d5a46  e8354bfcff           call 0x79a580
-// 007d5a4b  8b0db0f39e00         mov ecx, dword ptr [0x9ef3b0]
-// 007d5a51  8b5334               mov edx, dword ptr [ebx + 0x34]
-// 007d5a54  51                   push ecx
-// 007d5a55  50                   push eax
-// 007d5a56  68e4f39e00           push 0x9ef3e4
-// 007d5a5b  52                   push edx
-// 007d5a5c  e81f4bfcff           call 0x79a580
-// 007d5a61  8b4334               mov eax, dword ptr [ebx + 0x34]
-// 007d5a64  6a03                 push 3
-// 007d5a66  50                   push eax
-// 007d5a67  e8e41dfcff           call 0x797850
-// 007d5a6c  83c438               add esp, 0x38
-// 007d5a6f  eb85                 jmp 0x7d59f6
-// 007d5a71  8bf3                 mov esi, ebx
-// 007d5a73  e8d8fdffff           call 0x7d5850
-// 007d5a78  8b742468             mov esi, dword ptr [esp + 0x68]
-// 007d5a7c  3bc6                 cmp eax, esi
-// 007d5a7e  0f8572ffffff         jne 0x7d59f6
-// 007d5a84  8b0b                 mov ecx, dword ptr [ebx]
-// 007d5a86  51                   push ecx
-// 007d5a87  e8f4f6ffff           call 0x7d5180
-// 007d5a8c  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d5a8f  8b08                 mov ecx, dword ptr [eax]
-// 007d5a91  83c404               add esp, 4
-// 007d5a94  8d51ff               lea edx, [ecx - 1]
-// 007d5a97  8910                 mov dword ptr [eax], edx
-// 007d5a99  3bcf                 cmp ecx, edi
-// 007d5a9b  7675                 jbe 0x7d5b12
-// 007d5a9d  8b4b38               mov ecx, dword ptr [ebx + 0x38]
-// 007d5aa0  8b5104               mov edx, dword ptr [ecx + 4]
-// 007d5aa3  0fb602               movzx eax, byte ptr [edx]
-// 007d5aa6  42                   inc edx
-// 007d5aa7  895104               mov dword ptr [ecx + 4], edx
-// 007d5aaa  eb72                 jmp 0x7d5b1e
-// 007d5aac  6a0a                 push 0xa
-// 007d5aae  e8cdf6ffff           call 0x7d5180
-// 007d5ab3  83c404               add esp, 4
-// 007d5ab6  8bf3                 mov esi, ebx
-// 007d5ab8  e8f3f8ffff           call 0x7d53b0
-// 007d5abd  3bef                 cmp ebp, edi
-// 007d5abf  0f8531ffffff         jne 0x7d59f6
-// 007d5ac5  8b4b3c               mov ecx, dword ptr [ebx + 0x3c]
-// 007d5ac8  897904               mov dword ptr [ecx + 4], edi
-// 007d5acb  e926ffffff           jmp 0x7d59f6
-// 007d5ad0  3bef                 cmp ebp, edi
-// 007d5ad2  7409                 je 0x7d5add
-// 007d5ad4  50                   push eax
-// 007d5ad5  e8a6f6ffff           call 0x7d5180
-// 007d5ada  83c404               add esp, 4
-// 007d5add  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d5ae0  8b08                 mov ecx, dword ptr [eax]
-// 007d5ae2  8d51ff               lea edx, [ecx - 1]
-// 007d5ae5  8910                 mov dword ptr [eax], edx
-// 007d5ae7  3bcf                 cmp ecx, edi
-// 007d5ae9  7614                 jbe 0x7d5aff
-// 007d5aeb  8b4b38               mov ecx, dword ptr [ebx + 0x38]
-// 007d5aee  8b5104               mov edx, dword ptr [ecx + 4]
-// 007d5af1  0fb602               movzx eax, byte ptr [edx]
-// 007d5af4  42                   inc edx
-// 007d5af5  895104               mov dword ptr [ecx + 4], edx
-// 007d5af8  8903                 mov dword ptr [ebx], eax
-// 007d5afa  e9f7feffff           jmp 0x7d59f6
-// 007d5aff  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d5b02  50                   push eax
-// 007d5b03  e8c8b5ffff           call 0x7d10d0
-// 007d5b08  83c404               add esp, 4
-// 007d5b0b  8903                 mov dword ptr [ebx], eax
-// 007d5b0d  e9e4feffff           jmp 0x7d59f6
-// 007d5b12  8b4338               mov eax, dword ptr [ebx + 0x38]
-// 007d5b15  50                   push eax
-// 007d5b16  e8b5b5ffff           call 0x7d10d0
-// 007d5b1b  83c404               add esp, 4
-// 007d5b1e  8903                 mov dword ptr [ebx], eax
-// 007d5b20  3bef                 cmp ebp, edi
-// 007d5b22  7448                 je 0x7d5b6c
-// 007d5b24  8b4b3c               mov ecx, dword ptr [ebx + 0x3c]
-// 007d5b27  8b4104               mov eax, dword ptr [ecx + 4]
-// 007d5b2a  8b09                 mov ecx, dword ptr [ecx]
-// 007d5b2c  8d1436               lea edx, [esi + esi]
-// 007d5b2f  2bc2                 sub eax, edx
-// 007d5b31  83e804               sub eax, 4
-// 007d5b34  8d4c3102             lea ecx, [ecx + esi + 2]
-// 007d5b38  8b7334               mov esi, dword ptr [ebx + 0x34]
-// 007d5b3b  50                   push eax
-// 007d5b3c  51                   push ecx
-// 007d5b3d  56                   push esi
-// 007d5b3e  e84db0ffff           call 0x7d0b90
-// 007d5b43  8b5330               mov edx, dword ptr [ebx + 0x30]
-// 007d5b46  8bf8                 mov edi, eax
-// 007d5b48  8b4204               mov eax, dword ptr [edx + 4]
-// 007d5b4b  57                   push edi
-// 007d5b4c  50                   push eax
-// 007d5b4d  56                   push esi
-// 007d5b4e  e88daeffff           call 0x7d09e0
-// 007d5b53  83c418               add esp, 0x18
-// 007d5b56  83780800             cmp dword ptr [eax + 8], 0
-// 007d5b5a  750d                 jne 0x7d5b69
-// 007d5b5c  c70001000000         mov dword ptr [eax], 1
-// 007d5b62  c7400801000000       mov dword ptr [eax + 8], 1
-// 007d5b69  897d00               mov dword ptr [ebp], edi
-// 007d5b6c  5f                   pop edi
-// 007d5b6d  5e                   pop esi
-// 007d5b6e  5d                   pop ebp
-// 007d5b6f  5b                   pop ebx
-// 007d5b70  83c450               add esp, 0x50
-// 007d5b73  c3                   ret 
-// 007d5b74  125a7d               adc bl, byte ptr [edx + 0x7d]
-// 007d5b77  00ac5a7d00715a       add byte ptr [edx + ebx*2 + 0x5a71007d], ch
-// 007d5b7e  7d00                 jge 0x7d5b80
-// 007d5b80  d05a7d               rcr byte ptr [edx + 0x7d], 1
-// 007d5b83  0000                 add byte ptr [eax], al
-// 007d5b85  0303                 add eax, dword ptr [ebx]
-// 007d5b87  0303                 add eax, dword ptr [ebx]
-// 007d5b89  0303                 add eax, dword ptr [ebx]
-// 007d5b8b  0303                 add eax, dword ptr [ebx]
-// 007d5b8d  0303                 add eax, dword ptr [ebx]
-// 007d5b8f  0103                 add dword ptr [ebx], eax
-// 007d5b91  0301                 add eax, dword ptr [ecx]
-// 007d5b93  0303                 add eax, dword ptr [ebx]
-// 007d5b95  0303                 add eax, dword ptr [ebx]
-// 007d5b97  0303                 add eax, dword ptr [ebx]
-// 007d5b99  0303                 add eax, dword ptr [ebx]
-// 007d5b9b  0303                 add eax, dword ptr [ebx]
-// 007d5b9d  0303                 add eax, dword ptr [ebx]
-// 007d5b9f  0303                 add eax, dword ptr [ebx]
-// 007d5ba1  0303                 add eax, dword ptr [ebx]
-// 007d5ba3  0303                 add eax, dword ptr [ebx]
-// 007d5ba5  0303                 add eax, dword ptr [ebx]
-// 007d5ba7  0303                 add eax, dword ptr [ebx]
-// 007d5ba9  0303                 add eax, dword ptr [ebx]
-// 007d5bab  0303                 add eax, dword ptr [ebx]
-// 007d5bad  0303                 add eax, dword ptr [ebx]
-// 007d5baf  0303                 add eax, dword ptr [ebx]
-// 007d5bb1  0303                 add eax, dword ptr [ebx]
-// 007d5bb3  0303                 add eax, dword ptr [ebx]
-// 007d5bb5  0303                 add eax, dword ptr [ebx]
-// 007d5bb7  0303                 add eax, dword ptr [ebx]
-// 007d5bb9  0303                 add eax, dword ptr [ebx]
-// 007d5bbb  0303                 add eax, dword ptr [ebx]
-// 007d5bbd  0303                 add eax, dword ptr [ebx]
-// 007d5bbf  0303                 add eax, dword ptr [ebx]
-// 007d5bc1  0303                 add eax, dword ptr [ebx]
-// 007d5bc3  0303                 add eax, dword ptr [ebx]
-// 007d5bc5  0303                 add eax, dword ptr [ebx]
-// 007d5bc7  0303                 add eax, dword ptr [ebx]
-// 007d5bc9  0303                 add eax, dword ptr [ebx]
-// 007d5bcb  0303                 add eax, dword ptr [ebx]
-// 007d5bcd  0303                 add eax, dword ptr [ebx]
-// 007d5bcf  0303                 add eax, dword ptr [ebx]
-// 007d5bd1  0303                 add eax, dword ptr [ebx]
-// 007d5bd3  0303                 add eax, dword ptr [ebx]
-// 007d5bd5  0303                 add eax, dword ptr [ebx]
-// 007d5bd7  0303                 add eax, dword ptr [ebx]
-// 007d5bd9  0303                 add eax, dword ptr [ebx]
-// 007d5bdb  0303                 add eax, dword ptr [ebx]
-// 007d5bdd  0303                 add eax, dword ptr [ebx]
-// 007d5bdf  0303                 add eax, dword ptr [ebx]
-// 007d5be1  0302                 add eax, dword ptr [edx]
-// copied from an identical function in another client (function _read_long_string)
-
 // roc-cl: 21022
 // roc-lang: c
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4-dll-nolstr llex.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+** $Id: llex.c,v 2.20.1.1 2007/12/27 13:02:25 roberto Exp $
+** Lexical Analyzer
+** See Copyright Notice in lua.h
+*/
+
+
+#include <ctype.h>
+#include <locale.h>
+#include <string.h>
+
+#define llex_c
+#define LUA_CORE
+
+#include "lua.h"
+
+#include "ldo.h"
+#include "llex.h"
+#include "lobject.h"
+#include "lparser.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "ltable.h"
+#include "lzio.h"
+
+
+
+#define next(ls) (ls->current = zgetc(ls->z))
+
+
+
+
+#define currIsNewline(ls)	(ls->current == '\n' || ls->current == '\r')
+
+
+/* ORDER RESERVED */
+const char *const luaX_tokens [] = {
+    "and", "break", "do", "else", "elseif",
+    "end", "false", "for", "function", "if",
+    "in", "local", "nil", "not", "or", "repeat",
+    "return", "then", "true", "until", "while",
+    "..", "...", "==", ">=", "<=", "~=",
+    "<number>", "<name>", "<string>", "<eof>",
+    NULL
+};
+
+
+#define save_and_next(ls) (save(ls, ls->current), next(ls))
+
+
+static void save (LexState *ls, int c) {
+  Mbuffer *b = ls->buff;
+  if (b->n + 1 > b->buffsize) {
+    size_t newsize;
+    if (b->buffsize >= MAX_SIZET/2)
+      luaX_lexerror(ls, "lexical element too long", 0);
+    newsize = b->buffsize * 2;
+    luaZ_resizebuffer(ls->L, b, newsize);
+  }
+  b->buffer[b->n++] = cast(char, c);
+}
+
+
+void luaX_init (lua_State *L) {
+  int i;
+  for (i=0; i<NUM_RESERVED; i++) {
+    TString *ts = luaS_new(L, luaX_tokens[i]);
+    luaS_fix(ts);  /* reserved words are never collected */
+    lua_assert(strlen(luaX_tokens[i])+1 <= TOKEN_LEN);
+    ts->tsv.reserved = cast_byte(i+1);  /* reserved word */
+  }
+}
+
+
+#define MAXSRC          80
+
+
+const char *luaX_token2str (LexState *ls, int token) {
+  if (token < FIRST_RESERVED) {
+    lua_assert(token == cast(unsigned char, token));
+    return (iscntrl(token)) ? luaO_pushfstring(ls->L, "char(%d)", token) :
+                              luaO_pushfstring(ls->L, "%c", token);
+  }
+  else
+    return luaX_tokens[token-FIRST_RESERVED];
+}
+
+
+static const char *txtToken (LexState *ls, int token) {
+  switch (token) {
+    case TK_NAME:
+    case TK_STRING:
+    case TK_NUMBER:
+      save(ls, '\0');
+      return luaZ_buffer(ls->buff);
+    default:
+      return luaX_token2str(ls, token);
+  }
+}
+
+
+void luaX_lexerror (LexState *ls, const char *msg, int token) {
+  char buff[MAXSRC];
+  luaO_chunkid(buff, getstr(ls->source), MAXSRC);
+  msg = luaO_pushfstring(ls->L, "%s:%d: %s", buff, ls->linenumber, msg);
+  if (token)
+    luaO_pushfstring(ls->L, "%s near " LUA_QS, msg, txtToken(ls, token));
+  luaD_throw(ls->L, LUA_ERRSYNTAX);
+}
+
+
+void luaX_syntaxerror (LexState *ls, const char *msg) {
+  luaX_lexerror(ls, msg, ls->t.token);
+}
+
+
+TString *luaX_newstring (LexState *ls, const char *str, size_t l) {
+  lua_State *L = ls->L;
+  TString *ts = luaS_newlstr(L, str, l);
+  TValue *o = luaH_setstr(L, ls->fs->h, ts);  /* entry for `str' */
+  if (ttisnil(o))
+    setbvalue(o, 1);  /* make sure `str' will not be collected */
+  return ts;
+}
+
+
+static void inclinenumber (LexState *ls) {
+  int old = ls->current;
+  lua_assert(currIsNewline(ls));
+  next(ls);  /* skip `\n' or `\r' */
+  if (currIsNewline(ls) && ls->current != old)
+    next(ls);  /* skip `\n\r' or `\r\n' */
+  if (++ls->linenumber >= MAX_INT)
+    luaX_syntaxerror(ls, "chunk has too many lines");
+}
+
+
+void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source) {
+  ls->decpoint = '.';
+  ls->L = L;
+  ls->lookahead.token = TK_EOS;  /* no look-ahead token */
+  ls->z = z;
+  ls->fs = NULL;
+  ls->linenumber = 1;
+  ls->lastline = 1;
+  ls->source = source;
+  luaZ_resizebuffer(ls->L, ls->buff, LUA_MINBUFFER);  /* initialize buffer */
+  next(ls);  /* read first char */
+}
+
+
+
+/*
+** =======================================================
+** LEXICAL ANALYZER
+** =======================================================
+*/
+
+
+
+static int check_next (LexState *ls, const char *set) {
+  if (!strchr(set, ls->current))
+    return 0;
+  save_and_next(ls);
+  return 1;
+}
+
+
+static void buffreplace (LexState *ls, char from, char to) {
+  size_t n = luaZ_bufflen(ls->buff);
+  char *p = luaZ_buffer(ls->buff);
+  while (n--)
+    if (p[n] == from) p[n] = to;
+}
+
+
+static void trydecpoint (LexState *ls, SemInfo *seminfo) {
+  /* format error: try to update decimal point separator */
+  struct lconv *cv = localeconv();
+  char old = ls->decpoint;
+  ls->decpoint = (cv ? cv->decimal_point[0] : '.');
+  buffreplace(ls, old, ls->decpoint);  /* try updated decimal separator */
+  if (!luaO_str2d(luaZ_buffer(ls->buff), &seminfo->r)) {
+    /* format error with correct decimal point: no more options */
+    buffreplace(ls, ls->decpoint, '.');  /* undo change (for error message) */
+    luaX_lexerror(ls, "malformed number", TK_NUMBER);
+  }
+}
+
+
+/* LUA_NUMBER */
+static void read_numeral (LexState *ls, SemInfo *seminfo) {
+  lua_assert(isdigit(ls->current));
+  do {
+    save_and_next(ls);
+  } while (isdigit(ls->current) || ls->current == '.');
+  if (check_next(ls, "Ee"))  /* `E'? */
+    check_next(ls, "+-");  /* optional exponent sign */
+  while (isalnum(ls->current) || ls->current == '_')
+    save_and_next(ls);
+  save(ls, '\0');
+  buffreplace(ls, '.', ls->decpoint);  /* follow locale for decimal point */
+  if (!luaO_str2d(luaZ_buffer(ls->buff), &seminfo->r))  /* format error? */
+    trydecpoint(ls, seminfo); /* try to update decimal point separator */
+}
+
+
+static int skip_sep (LexState *ls) {
+  int count = 0;
+  int s = ls->current;
+  lua_assert(s == '[' || s == ']');
+  save_and_next(ls);
+  while (ls->current == '=') {
+    save_and_next(ls);
+    count++;
+  }
+  return (ls->current == s) ? count : (-count) - 1;
+}
+
+
+static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
+  int cont = 0;
+  (void)(cont);  /* avoid warnings when `cont' is not used */
+  save_and_next(ls);  /* skip 2nd `[' */
+  if (currIsNewline(ls))  /* string starts with a newline? */
+    inclinenumber(ls);  /* skip it */
+  for (;;) {
+    switch (ls->current) {
+      case EOZ:
+        luaX_lexerror(ls, (seminfo) ? "unfinished long string" :
+                                   "unfinished long comment", TK_EOS);
+        break;  /* to avoid warnings */
+#if defined(LUA_COMPAT_LSTR)
+      case '[': {
+        if (skip_sep(ls) == sep) {
+          save_and_next(ls);  /* skip 2nd `[' */
+          cont++;
+#if LUA_COMPAT_LSTR == 1
+          if (sep == 0)
+            luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
+#endif
+        }
+        break;
+      }
+#endif
+      case ']': {
+        if (skip_sep(ls) == sep) {
+          save_and_next(ls);  /* skip 2nd `]' */
+#if defined(LUA_COMPAT_LSTR) && LUA_COMPAT_LSTR == 2
+          cont--;
+          if (sep == 0 && cont >= 0) break;
+#endif
+          goto endloop;
+        }
+        break;
+      }
+      case '\n':
+      case '\r': {
+        save(ls, '\n');
+        inclinenumber(ls);
+        if (!seminfo) luaZ_resetbuffer(ls->buff);  /* avoid wasting space */
+        break;
+      }
+      default: {
+        if (seminfo) save_and_next(ls);
+        else next(ls);
+      }
+    }
+  } endloop:
+  if (seminfo)
+    seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + (2 + sep),
+                                     luaZ_bufflen(ls->buff) - 2*(2 + sep));
+}
+
+
+static void read_string (LexState *ls, int del, SemInfo *seminfo) {
+  save_and_next(ls);
+  while (ls->current != del) {
+    switch (ls->current) {
+      case EOZ:
+        luaX_lexerror(ls, "unfinished string", TK_EOS);
+        continue;  /* to avoid warnings */
+      case '\n':
+      case '\r':
+        luaX_lexerror(ls, "unfinished string", TK_STRING);
+        continue;  /* to avoid warnings */
+      case '\\': {
+        int c;
+        next(ls);  /* do not save the `\' */
+        switch (ls->current) {
+          case 'a': c = '\a'; break;
+          case 'b': c = '\b'; break;
+          case 'f': c = '\f'; break;
+          case 'n': c = '\n'; break;
+          case 'r': c = '\r'; break;
+          case 't': c = '\t'; break;
+          case 'v': c = '\v'; break;
+          case '\n':  /* go through */
+          case '\r': save(ls, '\n'); inclinenumber(ls); continue;
+          case EOZ: continue;  /* will raise an error next loop */
+          default: {
+            if (!isdigit(ls->current))
+              save_and_next(ls);  /* handles \\, \", \', and \? */
+            else {  /* \xxx */
+              int i = 0;
+              c = 0;
+              do {
+                c = 10*c + (ls->current-'0');
+                next(ls);
+              } while (++i<3 && isdigit(ls->current));
+              if (c > UCHAR_MAX)
+                luaX_lexerror(ls, "escape sequence too large", TK_STRING);
+              save(ls, c);
+            }
+            continue;
+          }
+        }
+        save(ls, c);
+        next(ls);
+        continue;
+      }
+      default:
+        save_and_next(ls);
+    }
+  }
+  save_and_next(ls);  /* skip delimiter */
+  seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + 1,
+                                   luaZ_bufflen(ls->buff) - 2);
+}
+
+
+static int llex (LexState *ls, SemInfo *seminfo) {
+  luaZ_resetbuffer(ls->buff);
+  for (;;) {
+    switch (ls->current) {
+      case '\n':
+      case '\r': {
+        inclinenumber(ls);
+        continue;
+      }
+      case '-': {
+        next(ls);
+        if (ls->current != '-') return '-';
+        /* else is a comment */
+        next(ls);
+        if (ls->current == '[') {
+          int sep = skip_sep(ls);
+          luaZ_resetbuffer(ls->buff);  /* `skip_sep' may dirty the buffer */
+          if (sep >= 0) {
+            read_long_string(ls, NULL, sep);  /* long comment */
+            luaZ_resetbuffer(ls->buff);
+            continue;
+          }
+        }
+        /* else short comment */
+        while (!currIsNewline(ls) && ls->current != EOZ)
+          next(ls);
+        continue;
+      }
+      case '[': {
+        int sep = skip_sep(ls);
+        if (sep >= 0) {
+          read_long_string(ls, seminfo, sep);
+          return TK_STRING;
+        }
+        else if (sep == -1) return '[';
+        else luaX_lexerror(ls, "invalid long string delimiter", TK_STRING);
+      }
+      case '=': {
+        next(ls);
+        if (ls->current != '=') return '=';
+        else { next(ls); return TK_EQ; }
+      }
+      case '<': {
+        next(ls);
+        if (ls->current != '=') return '<';
+        else { next(ls); return TK_LE; }
+      }
+      case '>': {
+        next(ls);
+        if (ls->current != '=') return '>';
+        else { next(ls); return TK_GE; }
+      }
+      case '~': {
+        next(ls);
+        if (ls->current != '=') return '~';
+        else { next(ls); return TK_NE; }
+      }
+      case '"':
+      case '\'': {
+        read_string(ls, ls->current, seminfo);
+        return TK_STRING;
+      }
+      case '.': {
+        save_and_next(ls);
+        if (check_next(ls, ".")) {
+          if (check_next(ls, "."))
+            return TK_DOTS;   /* ... */
+          else return TK_CONCAT;   /* .. */
+        }
+        else if (!isdigit(ls->current)) return '.';
+        else {
+          read_numeral(ls, seminfo);
+          return TK_NUMBER;
+        }
+      }
+      case EOZ: {
+        return TK_EOS;
+      }
+      default: {
+        if (isspace(ls->current)) {
+          lua_assert(!currIsNewline(ls));
+          next(ls);
+          continue;
+        }
+        else if (isdigit(ls->current)) {
+          read_numeral(ls, seminfo);
+          return TK_NUMBER;
+        }
+        else if (isalpha(ls->current) || ls->current == '_') {
+          /* identifier or reserved word */
+          TString *ts;
+          do {
+            save_and_next(ls);
+          } while (isalnum(ls->current) || ls->current == '_');
+          ts = luaX_newstring(ls, luaZ_buffer(ls->buff),
+                                  luaZ_bufflen(ls->buff));
+          if (ts->tsv.reserved > 0)  /* reserved word? */
+            return ts->tsv.reserved - 1 + FIRST_RESERVED;
+          else {
+            seminfo->ts = ts;
+            return TK_NAME;
+          }
+        }
+        else {
+          int c = ls->current;
+          next(ls);
+          return c;  /* single-char tokens (+ - / ...) */
+        }
+      }
+    }
+  }
+}
+
+
+void luaX_next (LexState *ls) {
+  ls->lastline = ls->linenumber;
+  if (ls->lookahead.token != TK_EOS) {  /* is there a look-ahead token? */
+    ls->t = ls->lookahead;  /* use this one */
+    ls->lookahead.token = TK_EOS;  /* and discharge it */
+  }
+  else
+    ls->t.token = llex(ls, &ls->t.seminfo);  /* read next token */
+}
+
+
+void luaX_lookahead (LexState *ls) {
+  lua_assert(ls->lookahead.token == TK_EOS);
+  ls->lookahead.token = llex(ls, &ls->lookahead.seminfo);
+}
+

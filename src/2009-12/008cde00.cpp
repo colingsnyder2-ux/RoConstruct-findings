@@ -1,119 +1,430 @@
-// roc 2009-12 008cde00  unit: CXTPPropertyGridInplaceList  size: 348 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008cde00
-//
-// 008cde00  6aff                 push -1
-// 008cde02  68c34d9600           push 0x964dc3
-// 008cde07  64a100000000         mov eax, dword ptr fs:[0]
-// 008cde0d  50                   push eax
-// 008cde0e  83ec10               sub esp, 0x10
-// 008cde11  53                   push ebx
-// 008cde12  55                   push ebp
-// 008cde13  56                   push esi
-// 008cde14  57                   push edi
-// 008cde15  a10052b600           mov eax, dword ptr [0xb65200]
-// 008cde1a  33c4                 xor eax, esp
-// 008cde1c  50                   push eax
-// 008cde1d  8d442424             lea eax, [esp + 0x24]
-// 008cde21  64a300000000         mov dword ptr fs:[0], eax
-// 008cde27  8bf9                 mov edi, ecx
-// 008cde29  33db                 xor ebx, ebx
-// 008cde2b  53                   push ebx
-// 008cde2c  53                   push ebx
-// 008cde2d  895c2424             mov dword ptr [esp + 0x24], ebx
-// 008cde31  8b4720               mov eax, dword ptr [edi + 0x20]
-// 008cde34  6888010000           push 0x188
-// 008cde39  50                   push eax
-// 008cde3a  ff15c4cb9800         call dword ptr [0x98cbc4]
-// 008cde40  8be8                 mov ebp, eax
-// 008cde42  83fdff               cmp ebp, -1
-// 008cde45  0f84cc000000         je 0x8cdf17
-// 008cde4b  8b7754               mov esi, dword ptr [edi + 0x54]
-// 008cde4e  85f6                 test esi, esi
-// 008cde50  0f84c1000000         je 0x8cdf17
-// 008cde56  895f54               mov dword ptr [edi + 0x54], ebx
-// 008cde59  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
-// 008cde5f  8d4c2418             lea ecx, [esp + 0x18]
-// 008cde63  896834               mov dword ptr [eax + 0x34], ebp
-// 008cde66  ff1574de9800         call dword ptr [0x98de74]
-// 008cde6c  8d4c2418             lea ecx, [esp + 0x18]
-// 008cde70  51                   push ecx
-// 008cde71  55                   push ebp
-// 008cde72  8bcf                 mov ecx, edi
-// 008cde74  895c2434             mov dword ptr [esp + 0x34], ebx
-// 008cde78  e8ef850500           call 0x92646c
-// 008cde7d  8b16                 mov edx, dword ptr [esi]
-// 008cde7f  8b9294000000         mov edx, dword ptr [edx + 0x94]
-// 008cde85  8d442418             lea eax, [esp + 0x18]
-// 008cde89  50                   push eax
-// 008cde8a  8bce                 mov ecx, esi
-// 008cde8c  ffd2                 call edx
-// 008cde8e  85c0                 test eax, eax
-// 008cde90  7435                 je 0x8cdec7
-// 008cde92  8d442420             lea eax, [esp + 0x20]
-// 008cde96  50                   push eax
-// 008cde97  8bce                 mov ecx, esi
-// 008cde99  e88247b6ff           call 0x432620
-// 008cde9e  bb01000000           mov ebx, 1
-// 008cdea3  8bc8                 mov ecx, eax
-// 008cdea5  c644242c01           mov byte ptr [esp + 0x2c], 1
-// 008cdeaa  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 008cdeae  ff1580de9800         call dword ptr [0x98de80]
-// 008cdeb4  50                   push eax
-// 008cdeb5  8d4c241c             lea ecx, [esp + 0x1c]
-// 008cdeb9  ff1584de9800         call dword ptr [0x98de84]
-// 008cdebf  885c2417             mov byte ptr [esp + 0x17], bl
-// 008cdec3  85c0                 test eax, eax
-// 008cdec5  7505                 jne 0x8cdecc
-// 008cdec7  c644241700           mov byte ptr [esp + 0x17], 0
-// 008cdecc  c744242c00000000     mov dword ptr [esp + 0x2c], 0
-// 008cded4  f6c301               test bl, 1
-// 008cded7  740a                 je 0x8cdee3
-// 008cded9  8d4c2420             lea ecx, [esp + 0x20]
-// 008cdedd  ff15c0de9800         call dword ptr [0x98dec0]
-// 008cdee3  807c241700           cmp byte ptr [esp + 0x17], 0
-// 008cdee8  741b                 je 0x8cdf05
-// 008cdeea  51                   push ecx
-// 008cdeeb  8d54241c             lea edx, [esp + 0x1c]
-// 008cdeef  8bcc                 mov ecx, esp
-// 008cdef1  89642420             mov dword ptr [esp + 0x20], esp
-// 008cdef5  52                   push edx
-// 008cdef6  ff1594de9800         call dword ptr [0x98de94]
-// 008cdefc  8b06                 mov eax, dword ptr [esi]
-// 008cdefe  8b5064               mov edx, dword ptr [eax + 0x64]
-// 008cdf01  8bce                 mov ecx, esi
-// 008cdf03  ffd2                 call edx
-// 008cdf05  8d4c2418             lea ecx, [esp + 0x18]
-// 008cdf09  c744242cffffffff     mov dword ptr [esp + 0x2c], 0xffffffff
-// 008cdf11  ff15c0de9800         call dword ptr [0x98dec0]
-// 008cdf17  837f2000             cmp dword ptr [edi + 0x20], 0
-// 008cdf1b  742b                 je 0x8cdf48
-// 008cdf1d  8b7720               mov esi, dword ptr [edi + 0x20]
-// 008cdf20  ff15eccb9800         call dword ptr [0x98cbec]
-// 008cdf26  3bc6                 cmp eax, esi
-// 008cdf28  751e                 jne 0x8cdf48
-// 008cdf2a  8b7f38               mov edi, dword ptr [edi + 0x38]
-// 008cdf2d  85ff                 test edi, edi
-// 008cdf2f  7403                 je 0x8cdf34
-// 008cdf31  57                   push edi
-// 008cdf32  eb08                 jmp 0x8cdf3c
-// 008cdf34  56                   push esi
-// 008cdf35  ff15bccb9800         call dword ptr [0x98cbbc]
-// 008cdf3b  50                   push eax
-// 008cdf3c  e8e95bf2ff           call 0x7f3b2a
-// 008cdf41  8bc8                 mov ecx, eax
-// 008cdf43  e8ba5cf2ff           call 0x7f3c02
-// 008cdf48  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 008cdf4c  64890d00000000       mov dword ptr fs:[0], ecx
-// 008cdf53  59                   pop ecx
-// 008cdf54  5f                   pop edi
-// 008cdf55  5e                   pop esi
-// 008cdf56  5d                   pop ebp
-// 008cdf57  5b                   pop ebx
-// 008cdf58  83c41c               add esp, 0x1c
-// 008cdf5b  c3                   ret 
-// copied from an identical function in another client (function ?Apply@CXTPPropertyGridInplaceList@@MAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\PropertyGrid\XTPPropertyGridInplaceList.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPropertyGridInplaceList.cpp : implementation of the CXTPPropertyGridInplaceList class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPVC80Helpers.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridView.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceList
+
+CXTPPropertyGridInplaceList::CXTPPropertyGridInplaceList()
+: m_pItem(0)
+{
+}
+
+CXTPPropertyGridInplaceList::~CXTPPropertyGridInplaceList()
+{
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridInplaceList, CListBox)
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceList, CListBox)
+	//{{AFX_MSG_MAP(CXTPPropertyGridInplaceList)
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONUP()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_MOUSEACTIVATE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPPropertyGridInplaceList::MeasureItem(LPMEASUREITEMSTRUCT)
+{
+
+}
+
+void CXTPPropertyGridInplaceList::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rc(lpDrawItemStruct->rcItem);
+	CXTPPropertyGridItemConstraint* pConstraint = (CXTPPropertyGridItemConstraint*)GetItemDataPtr(lpDrawItemStruct->itemID);
+
+	BOOL bSelected = (lpDrawItemStruct->itemState & ODS_SELECTED);
+
+	if (m_pItem)
+	{
+		m_pItem->OnDrawItemConstraint(pDC, pConstraint, rc, bSelected);
+	}
+}
+
+void CXTPPropertyGridInplaceList::Create(CXTPPropertyGridItem* pItem, CRect rect)
+{
+	ASSERT(pItem && pItem->GetGrid());
+	if (!pItem)
+		return;
+
+	CRect rcValue(rect);
+	rcValue.left = pItem->GetGrid()->GetDividerPos() + 1;
+
+	CWnd* pParent = (CWnd*)pItem->GetGrid();
+	m_pItem = pItem;
+
+	DestroyWindow();
+
+	if (!m_hWnd)
+	{
+		CListBox::CreateEx(WS_EX_TOOLWINDOW | (pParent->GetExStyle() & WS_EX_LAYOUTRTL), _T("LISTBOX"), _T(""), LBS_NOTIFY | WS_CHILD | WS_BORDER | WS_VSCROLL | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS, CRect(0, 0, 0, 0), pParent, 0);
+		SetOwner(pParent);
+	}
+	SetFont(pParent->GetFont());
+
+	ResetContent();
+
+	CXTPPropertyGridItemConstraints* pList = pItem->GetConstraints();
+
+
+	int dx = rect.right - rcValue.left;
+
+	CWindowDC dc(pParent);
+	CXTPFontDC font(&dc, pParent->GetFont());
+	int nHeight = dc.GetTextExtent(_T(" "), 1).cy + 3;
+
+	for (int i = 0; i < pList->GetCount(); i++)
+	{
+		CXTPPropertyGridItemConstraint* pConstraint = pList->GetConstraintAt(i);
+
+		CString str = pConstraint->m_strConstraint;
+		int nIndex = AddString(str);
+		SetItemDataPtr(nIndex, pConstraint);
+
+		CSize sz = pItem->OnMergeItemConstraint(&dc, pConstraint);
+
+		dx = max(dx, sz.cx);
+		nHeight = max(nHeight, sz.cy);
+
+		if (pItem->GetValue() == str)
+			SetCurSel(nIndex);
+	}
+
+	SetItemHeight(0, nHeight);
+
+	rect.top = rect.bottom;
+	rect.bottom += nHeight * __min(pItem->GetDropDownItemCount(), GetCount()) + 2;
+	rect.left = rect.right - __min(dx, rect.Width() - XTP_PGI_EXPAND_BORDER);
+
+	pParent->ClientToScreen(&rect);
+
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rect);
+	if (rect.bottom > rcWork.bottom && rect.top > rcWork.CenterPoint().y)
+	{
+		rect.OffsetRect(0, - rect.Height() - rcValue.Height() - 1);
+	}
+	if (rect.left < rcWork.left) rect.OffsetRect(rcWork.left - rect.left, 0);
+	if (rect.right > rcWork.right) rect.OffsetRect(rcWork.right - rect.right, 0);
+
+
+	SetFocus();
+
+
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+	ModifyStyle(WS_CHILD, WS_POPUP);
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParent->m_hWnd);
+
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+	CXTPMouseMonitor::SetupHook(this);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceList message handlers
+
+void CXTPPropertyGridInplaceList::OnKillFocus(CWnd* pNewWnd)
+{
+	CListBox::OnKillFocus(pNewWnd);
+
+	CXTPMouseMonitor::SetupHook(NULL);
+
+
+	Cancel();
+	DestroyWindow();
+}
+
+int CXTPPropertyGridInplaceList::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPPropertyGridInplaceList::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	CListBox::PostNcDestroy();
+}
+
+void CXTPPropertyGridInplaceList::OnLButtonUp(UINT, CPoint point)
+{
+	CXTPClientRect rc(this);
+
+	if (rc.PtInRect(point))
+		Apply();
+	else
+		Cancel();
+}
+
+
+void CXTPPropertyGridInplaceList::Cancel()
+{
+	if (m_pItem)
+	{
+		m_pItem->OnCancelEdit();
+		m_pItem = NULL;
+	}
+
+	if (m_hWnd && ::GetFocus() == m_hWnd)
+	{
+		GetOwner()->SetFocus();
+	}
+}
+
+void CXTPPropertyGridInplaceList::Apply()
+{
+	int nIndex = GetCurSel();
+	if (nIndex != LB_ERR && m_pItem)
+	{
+		CXTPPropertyGridItem* pItem = m_pItem;
+		m_pItem = NULL;
+
+		CXTPPropertyGridItemConstraints* pList = pItem->GetConstraints();
+		pList->SetCurrent(nIndex);
+
+		CString str;
+		GetText(nIndex, str);
+
+		if (pItem->OnAfterEdit(str) && str != pItem->GetValue())
+			pItem->OnValueChanged(str);
+	}
+
+	if (m_hWnd && ::GetFocus() == m_hWnd)
+	{
+		GetOwner()->SetFocus();
+	}
+}
+
+void CXTPPropertyGridInplaceList::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_ESCAPE) Cancel();
+	else if (nChar == VK_RETURN || nChar == VK_F4) Apply();
+	else CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceList::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		Apply();
+		return;
+	}
+
+	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
+void CXTPPropertyGridInplaceList::DestroyItem()
+{
+	// reset variables to defaults.
+	m_pItem = NULL;
+
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	// destroy the window.
+	DestroyWindow();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceMultilineEdit
+
+CXTPPropertyGridInplaceMultilineEdit::CXTPPropertyGridInplaceMultilineEdit()
+: m_pItem(0)
+{
+}
+
+CXTPPropertyGridInplaceMultilineEdit::~CXTPPropertyGridInplaceMultilineEdit()
+{
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridInplaceMultilineEdit, CEdit)
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceMultilineEdit, CEdit)
+	//{{AFX_MSG_MAP(CXTPPropertyGridInplaceMultilineEdit)
+	ON_WM_KILLFOCUS()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_MOUSEACTIVATE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPPropertyGridInplaceMultilineEdit::Create(CXTPPropertyGridItem* pItem, CRect rect)
+{
+	ASSERT(pItem && pItem->GetGrid());
+	if (!pItem)
+		return;
+
+	CRect rcValue(rect);
+	rcValue.left = pItem->GetGrid()->GetDividerPos() + 1;
+
+	CWnd* pParent = (CWnd*)pItem->GetGrid();
+	m_pItem = pItem;
+
+	if (!m_hWnd)
+	{
+		CEdit::CreateEx(WS_EX_TOOLWINDOW, _T("EDIT"), m_pItem->GetValue(), ES_MULTILINE | WS_CHILD | WS_BORDER | WS_VSCROLL | ES_AUTOVSCROLL, CRect(0, 0, 0, 0), pParent, 0);
+		SetOwner(pParent);
+	}
+	SetFont(pParent->GetFont());
+
+
+	int dx = rect.right - rcValue.left;
+
+	CWindowDC dc(pParent);
+	CXTPFontDC font(&dc, pParent->GetFont());
+	int nHeight = dc.GetTextExtent(_T(" "), 1).cy;
+
+	rect.top = rect.bottom;
+	rect.bottom += nHeight * pItem->GetDropDownItemCount() + 4;
+	rect.left = rect.right - __min(dx, rect.Width() - XTP_PGI_EXPAND_BORDER);
+
+	pParent->ClientToScreen(&rect);
+
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rect);
+	if (rect.bottom > rcWork.bottom && rect.top > rcWork.CenterPoint().y)
+	{
+		rect.OffsetRect(0, - rect.Height() - rcValue.Height() - 1);
+	}
+	if (rect.left < rcWork.left) rect.OffsetRect(rcWork.left - rect.left, 0);
+	if (rect.right > rcWork.right) rect.OffsetRect(rcWork.right - rect.right, 0);
+
+
+	SetFocus();
+
+
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+	ModifyStyle(WS_CHILD, WS_POPUP);
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParent->m_hWnd);
+
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+	CXTPMouseMonitor::SetupHook(this);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceMultilineEdit message handlers
+
+void CXTPPropertyGridInplaceMultilineEdit::OnKillFocus(CWnd* pNewWnd)
+{
+	CEdit::OnKillFocus(pNewWnd);
+
+	CXTPMouseMonitor::SetupHook(NULL);
+
+
+	Cancel();
+	DestroyWindow();
+}
+
+int CXTPPropertyGridInplaceMultilineEdit::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPPropertyGridInplaceMultilineEdit::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	delete this;
+}
+
+
+void CXTPPropertyGridInplaceMultilineEdit::Cancel()
+{
+	if (m_pItem)
+	{
+		m_pItem->OnCancelEdit();
+		m_pItem = NULL;
+	}
+
+	if (m_hWnd && ::GetFocus() == m_hWnd)
+	{
+		GetOwner()->SetFocus();
+	}
+}
+
+void CXTPPropertyGridInplaceMultilineEdit::Apply()
+{
+	if (m_pItem)
+	{
+		CXTPPropertyGridItem* pItem = m_pItem;
+		m_pItem = NULL;
+
+		CString str;
+		GetWindowText(str);
+
+		if (pItem->OnAfterEdit(str) && str != pItem->GetValue())
+			pItem->OnValueChanged(str);
+	}
+
+	if (m_hWnd && ::GetFocus() == m_hWnd)
+	{
+		GetOwner()->SetFocus();
+	}
+}
+
+void CXTPPropertyGridInplaceMultilineEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_ESCAPE)
+		Cancel();
+	else if (nChar == VK_F4)
+		Apply();
+	else if (nChar == VK_RETURN && GetKeyState(VK_CONTROL) < 0)
+		Apply();
+	else CEdit::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceMultilineEdit::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		Apply();
+		return;
+	}
+
+	CEdit::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}

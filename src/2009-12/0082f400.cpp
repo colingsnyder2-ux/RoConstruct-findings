@@ -1,244 +1,887 @@
-// roc 2009-12 0082f400  unit: CXTPReportSelectedRows  size: 810 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0082f400
-//
-// 0082f400  6aff                 push -1
-// 0082f402  6816be9500           push 0x95be16
-// 0082f407  64a100000000         mov eax, dword ptr fs:[0]
-// 0082f40d  50                   push eax
-// 0082f40e  81ec38060000         sub esp, 0x638
-// 0082f414  a10052b600           mov eax, dword ptr [0xb65200]
-// 0082f419  33c4                 xor eax, esp
-// 0082f41b  89842434060000       mov dword ptr [esp + 0x634], eax
-// 0082f422  53                   push ebx
-// 0082f423  56                   push esi
-// 0082f424  57                   push edi
-// 0082f425  a10052b600           mov eax, dword ptr [0xb65200]
-// 0082f42a  33c4                 xor eax, esp
-// 0082f42c  50                   push eax
-// 0082f42d  8d842448060000       lea eax, [esp + 0x648]
-// 0082f434  64a300000000         mov dword ptr fs:[0], eax
-// 0082f43a  8bf1                 mov esi, ecx
-// 0082f43c  89742410             mov dword ptr [esp + 0x10], esi
-// 0082f440  6a01                 push 1
-// 0082f442  8d4c2424             lea ecx, [esp + 0x24]
-// 0082f446  e8f5c20300           call 0x86b740
-// 0082f44b  8bc8                 mov ecx, eax
-// 0082f44d  c784245006000000000000 mov dword ptr [esp + 0x650], 0
-// 0082f458  e803c80300           call 0x86bc60
-// 0082f45d  85c0                 test eax, eax
-// 0082f45f  8d4c2420             lea ecx, [esp + 0x20]
-// 0082f463  0f94c3               sete bl
-// 0082f466  c7842450060000ffffffff mov dword ptr [esp + 0x650], 0xffffffff
-// 0082f471  e89acc0300           call 0x86c110
-// 0082f476  84db                 test bl, bl
-// 0082f478  0f8583020000         jne 0x82f701
-// 0082f47e  6a00                 push 0
-// 0082f480  8bce                 mov ecx, esi
-// 0082f482  e839feffff           call 0x82f2c0
-// 0082f487  85c0                 test eax, eax
-// 0082f489  0f8572020000         jne 0x82f701
-// 0082f48f  6804010000           push 0x104
-// 0082f494  50                   push eax
-// 0082f495  8d442434             lea eax, [esp + 0x34]
-// 0082f499  50                   push eax
-// 0082f49a  e80556fcff           call 0x7f4aa4
-// 0082f49f  6804010000           push 0x104
-// 0082f4a4  8d8c2444020000       lea ecx, [esp + 0x244]
-// 0082f4ab  6a00                 push 0
-// 0082f4ad  51                   push ecx
-// 0082f4ae  e8f155fcff           call 0x7f4aa4
-// 0082f4b3  6804010000           push 0x104
-// 0082f4b8  8d942458040000       lea edx, [esp + 0x458]
-// 0082f4bf  6a00                 push 0
-// 0082f4c1  52                   push edx
-// 0082f4c2  e8dd55fcff           call 0x7f4aa4
-// 0082f4c7  83c424               add esp, 0x24
-// 0082f4ca  6a01                 push 1
-// 0082f4cc  8d4c2418             lea ecx, [esp + 0x18]
-// 0082f4d0  e86bc20300           call 0x86b740
-// 0082f4d5  6804010000           push 0x104
-// 0082f4da  8d8c2440040000       lea ecx, [esp + 0x440]
-// 0082f4e1  51                   push ecx
-// 0082f4e2  6804010000           push 0x104
-// 0082f4e7  8d942440020000       lea edx, [esp + 0x240]
-// 0082f4ee  52                   push edx
-// 0082f4ef  6804010000           push 0x104
-// 0082f4f4  8d4c2440             lea ecx, [esp + 0x40]
-// 0082f4f8  51                   push ecx
-// 0082f4f9  8bc8                 mov ecx, eax
-// 0082f4fb  c784246806000001000000 mov dword ptr [esp + 0x668], 1
-// 0082f506  e8e5c30300           call 0x86b8f0
-// 0082f50b  85c0                 test eax, eax
-// 0082f50d  8d4c2414             lea ecx, [esp + 0x14]
-// 0082f511  0f95c3               setne bl
-// 0082f514  c7842450060000ffffffff mov dword ptr [esp + 0x650], 0xffffffff
-// 0082f51f  e8eccb0300           call 0x86c110
-// 0082f524  84db                 test bl, bl
-// 0082f526  0f85d5010000         jne 0x82f701
-// 0082f52c  8b35f8b99800         mov esi, dword ptr [0x98b9f8]
-// 0082f532  8d54242c             lea edx, [esp + 0x2c]
-// 0082f536  6804010000           push 0x104
-// 0082f53b  52                   push edx
-// 0082f53c  ffd6                 call esi
-// 0082f53e  8b3d88b99800         mov edi, dword ptr [0x98b988]
-// 0082f544  8d442434             lea eax, [esp + 0x34]
-// 0082f548  68f0649f00           push 0x9f64f0
-// 0082f54d  50                   push eax
-// 0082f54e  ffd7                 call edi
-// 0082f550  83c410               add esp, 0x10
-// 0082f553  85c0                 test eax, eax
-// 0082f555  7523                 jne 0x82f57a
-// 0082f557  8d4c242c             lea ecx, [esp + 0x2c]
-// 0082f55b  6804010000           push 0x104
-// 0082f560  51                   push ecx
-// 0082f561  ffd6                 call esi
-// 0082f563  8d542434             lea edx, [esp + 0x34]
-// 0082f567  68c8649f00           push 0x9f64c8
-// 0082f56c  52                   push edx
-// 0082f56d  ffd7                 call edi
-// 0082f56f  83c410               add esp, 0x10
-// 0082f572  85c0                 test eax, eax
-// 0082f574  0f8406010000         je 0x82f680
-// 0082f57a  8d842434020000       lea eax, [esp + 0x234]
-// 0082f581  6804010000           push 0x104
-// 0082f586  50                   push eax
-// 0082f587  ffd6                 call esi
-// 0082f589  83c408               add esp, 8
-// 0082f58c  b9b0649f00           mov ecx, 0x9f64b0
-// 0082f591  8d842434020000       lea eax, [esp + 0x234]
-// 0082f598  668b10               mov dx, word ptr [eax]
-// 0082f59b  663b11               cmp dx, word ptr [ecx]
-// 0082f59e  751e                 jne 0x82f5be
-// 0082f5a0  6685d2               test dx, dx
-// 0082f5a3  7415                 je 0x82f5ba
-// 0082f5a5  668b5002             mov dx, word ptr [eax + 2]
-// 0082f5a9  663b5102             cmp dx, word ptr [ecx + 2]
-// 0082f5ad  750f                 jne 0x82f5be
-// 0082f5af  83c004               add eax, 4
-// 0082f5b2  83c104               add ecx, 4
-// 0082f5b5  6685d2               test dx, dx
-// 0082f5b8  75de                 jne 0x82f598
-// 0082f5ba  33c0                 xor eax, eax
-// 0082f5bc  eb05                 jmp 0x82f5c3
-// 0082f5be  1bc0                 sbb eax, eax
-// 0082f5c0  83d8ff               sbb eax, -1
-// 0082f5c3  85c0                 test eax, eax
-// 0082f5c5  750a                 jne 0x82f5d1
-// 0082f5c7  b801000000           mov eax, 1
-// 0082f5cc  e932010000           jmp 0x82f703
-// 0082f5d1  8d8c2434020000       lea ecx, [esp + 0x234]
-// 0082f5d8  6804010000           push 0x104
-// 0082f5dd  51                   push ecx
-// 0082f5de  ffd6                 call esi
-// 0082f5e0  83c408               add esp, 8
-// 0082f5e3  b99c649f00           mov ecx, 0x9f649c
-// 0082f5e8  8d842434020000       lea eax, [esp + 0x234]
-// 0082f5ef  90                   nop 
-// 0082f5f0  668b10               mov dx, word ptr [eax]
-// 0082f5f3  663b11               cmp dx, word ptr [ecx]
-// 0082f5f6  751e                 jne 0x82f616
-// 0082f5f8  6685d2               test dx, dx
-// 0082f5fb  7415                 je 0x82f612
-// 0082f5fd  668b5002             mov dx, word ptr [eax + 2]
-// 0082f601  663b5102             cmp dx, word ptr [ecx + 2]
-// 0082f605  750f                 jne 0x82f616
-// 0082f607  83c004               add eax, 4
-// 0082f60a  83c104               add ecx, 4
-// 0082f60d  6685d2               test dx, dx
-// 0082f610  75de                 jne 0x82f5f0
-// 0082f612  33c0                 xor eax, eax
-// 0082f614  eb05                 jmp 0x82f61b
-// 0082f616  1bc0                 sbb eax, eax
-// 0082f618  83d8ff               sbb eax, -1
-// 0082f61b  85c0                 test eax, eax
-// 0082f61d  750a                 jne 0x82f629
-// 0082f61f  b802000000           mov eax, 2
-// 0082f624  e9da000000           jmp 0x82f703
-// 0082f629  8d942434020000       lea edx, [esp + 0x234]
-// 0082f630  6804010000           push 0x104
-// 0082f635  52                   push edx
-// 0082f636  ffd6                 call esi
-// 0082f638  83c408               add esp, 8
-// 0082f63b  b988649f00           mov ecx, 0x9f6488
-// 0082f640  8d842434020000       lea eax, [esp + 0x234]
-// 0082f647  668b10               mov dx, word ptr [eax]
-// 0082f64a  663b11               cmp dx, word ptr [ecx]
-// 0082f64d  751e                 jne 0x82f66d
-// 0082f64f  6685d2               test dx, dx
-// 0082f652  7415                 je 0x82f669
-// 0082f654  668b5002             mov dx, word ptr [eax + 2]
-// 0082f658  663b5102             cmp dx, word ptr [ecx + 2]
-// 0082f65c  750f                 jne 0x82f66d
-// 0082f65e  83c004               add eax, 4
-// 0082f661  83c104               add ecx, 4
-// 0082f664  6685d2               test dx, dx
-// 0082f667  75de                 jne 0x82f647
-// 0082f669  33c0                 xor eax, eax
-// 0082f66b  eb05                 jmp 0x82f672
-// 0082f66d  1bc0                 sbb eax, eax
-// 0082f66f  83d8ff               sbb eax, -1
-// 0082f672  85c0                 test eax, eax
-// 0082f674  750a                 jne 0x82f680
-// 0082f676  b803000000           mov eax, 3
-// 0082f67b  e983000000           jmp 0x82f703
-// 0082f680  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 0082f684  83bb6001000000       cmp dword ptr [ebx + 0x160], 0
-// 0082f68b  7445                 je 0x82f6d2
-// 0082f68d  8d44242c             lea eax, [esp + 0x2c]
-// 0082f691  6804010000           push 0x104
-// 0082f696  50                   push eax
-// 0082f697  ffd6                 call esi
-// 0082f699  8d4c2434             lea ecx, [esp + 0x34]
-// 0082f69d  6868649f00           push 0x9f6468
-// 0082f6a2  51                   push ecx
-// 0082f6a3  ffd7                 call edi
-// 0082f6a5  83c410               add esp, 0x10
-// 0082f6a8  85c0                 test eax, eax
-// 0082f6aa  751f                 jne 0x82f6cb
-// 0082f6ac  8d54242c             lea edx, [esp + 0x2c]
-// 0082f6b0  6804010000           push 0x104
-// 0082f6b5  52                   push edx
-// 0082f6b6  ffd6                 call esi
-// 0082f6b8  8d442434             lea eax, [esp + 0x34]
-// 0082f6bc  683c649f00           push 0x9f643c
-// 0082f6c1  50                   push eax
-// 0082f6c2  ffd7                 call edi
-// 0082f6c4  83c410               add esp, 0x10
-// 0082f6c7  85c0                 test eax, eax
-// 0082f6c9  7407                 je 0x82f6d2
-// 0082f6cb  b804000000           mov eax, 4
-// 0082f6d0  eb31                 jmp 0x82f703
-// 0082f6d2  83bb6401000000       cmp dword ptr [ebx + 0x164], 0
-// 0082f6d9  7426                 je 0x82f701
-// 0082f6db  8d4c242c             lea ecx, [esp + 0x2c]
-// 0082f6df  6804010000           push 0x104
-// 0082f6e4  51                   push ecx
-// 0082f6e5  ffd6                 call esi
-// 0082f6e7  8d542434             lea edx, [esp + 0x34]
-// 0082f6eb  6820649f00           push 0x9f6420
-// 0082f6f0  52                   push edx
-// 0082f6f1  ffd7                 call edi
-// 0082f6f3  83c410               add esp, 0x10
-// 0082f6f6  85c0                 test eax, eax
-// 0082f6f8  7407                 je 0x82f701
-// 0082f6fa  b805000000           mov eax, 5
-// 0082f6ff  eb02                 jmp 0x82f703
-// 0082f701  33c0                 xor eax, eax
-// 0082f703  8b8c2448060000       mov ecx, dword ptr [esp + 0x648]
-// 0082f70a  64890d00000000       mov dword ptr fs:[0], ecx
-// 0082f711  59                   pop ecx
-// 0082f712  5f                   pop edi
-// 0082f713  5e                   pop esi
-// 0082f714  5b                   pop ebx
-// 0082f715  8b8c2434060000       mov ecx, dword ptr [esp + 0x634]
-// 0082f71c  33cc                 xor ecx, esp
-// 0082f71e  e8775cfcff           call 0x7f539a
-// 0082f723  81c444060000         add esp, 0x644
-// 0082f729  c3                   ret 
-// copied from an identical function in another client (function ?_GetWinThemeWrapperTheme@CXTPColorManager@@AAE?AW4XTPCurrentSystemTheme@@XZ)
-
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPColorManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPColorManager.cpp: implementation of the CXTPColorManager class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include <math.h>
+
+#include "XTPVC80Helpers.h"
+#include "XTPWinThemeWrapper.h"
+#include "XTPColorManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//===========================================================================
+// CXTPPaintManagerColor class
+//===========================================================================
+
+CXTPPaintManagerColor::CXTPPaintManagerColor()
+: m_clrStandardValue(COLORREF_NULL)
+, m_clrCustomValue(COLORREF_NULL)
+{
+
+}
+
+CXTPPaintManagerColor::CXTPPaintManagerColor(COLORREF clr)
+: m_clrStandardValue(clr)
+, m_clrCustomValue(COLORREF_NULL)
+{
+
+}
+
+void CXTPPaintManagerColor::Serialize(CArchive& ar)
+{
+	if (ar.IsStoring())
+	{
+		ar << (DWORD)m_clrStandardValue;
+		ar << (DWORD)m_clrCustomValue;
+	}
+	else
+	{
+		ar >> (DWORD)m_clrStandardValue;
+		ar >> (DWORD)m_clrCustomValue;
+	}
+}
+
+//===========================================================================
+// CXTPPaintManagerColorGradient class
+//===========================================================================
+
+CXTPPaintManagerColorGradient::CXTPPaintManagerColorGradient()
+{
+	fGradientFactor = 0.5f;
+}
+CXTPPaintManagerColorGradient::CXTPPaintManagerColorGradient(const CXTPPaintManagerColor clr)
+{
+	clrLight = clr;
+	clrDark = clr;
+	fGradientFactor = 0.5f;
+}
+
+CXTPPaintManagerColorGradient::CXTPPaintManagerColorGradient(const COLORREF clr)
+{
+	fGradientFactor = 0.5f;
+	SetStandardValue(clr);
+}
+
+CXTPPaintManagerColorGradient::CXTPPaintManagerColorGradient(COLORREF clrLight, COLORREF clrDark)
+{
+	fGradientFactor = 0.5f;
+	SetStandardValue(clrLight, clrDark);
+}
+
+//---------------------------------------------------------------------------
+// Settings for standard values
+//---------------------------------------------------------------------------
+
+void CXTPPaintManagerColorGradient::SetStandardValue(const COLORREF clr)
+{
+	SetStandardValue(clr, clr);
+}
+
+void CXTPPaintManagerColorGradient::SetStandardValue(COLORREF _clrLight, COLORREF _clrDark, float _fGradientFactor)
+{
+	clrLight.SetStandardValue(_clrLight);
+	clrDark.SetStandardValue(_clrDark);
+	fGradientFactor = _fGradientFactor;
+}
+
+void CXTPPaintManagerColorGradient::SetStandardValue(CXTPPaintManagerColorGradient& clr)
+{
+	clrLight.SetStandardValue(clr.clrLight);
+	clrDark.SetStandardValue(clr.clrDark);
+	fGradientFactor = clr.fGradientFactor;
+}
+
+//---------------------------------------------------------------------------
+// Settings for custom values
+//---------------------------------------------------------------------------
+
+void CXTPPaintManagerColorGradient::SetCustomValue(const COLORREF clr)
+{
+	SetCustomValue(clr, clr);
+}
+
+void CXTPPaintManagerColorGradient::SetCustomValue(CXTPPaintManagerColorGradient& clr)
+{
+	clrLight.SetCustomValue(clr.clrLight);
+	clrDark.SetCustomValue(clr.clrDark);
+	fGradientFactor = clr.fGradientFactor;
+
+}
+
+void CXTPPaintManagerColorGradient::SetCustomValue(COLORREF _clrLight, COLORREF _clrDark)
+{
+	clrLight.SetCustomValue(_clrLight);
+	clrDark.SetCustomValue(_clrDark);
+}
+
+void CXTPPaintManagerColorGradient::Serialize(CArchive& ar)
+{
+	clrLight.Serialize(ar);
+	clrDark.Serialize(ar);
+
+	if (ar.IsStoring())
+	{
+		ar << fGradientFactor;
+	}
+	else
+	{
+		ar >> fGradientFactor;
+	}
+}
+//===========================================================================
+// CXTPColorManager class
+//===========================================================================
+#pragma warning(disable  : 4244)
+
+#define clrToolBar GetColor(XPCOLOR_TOOLBAR_FACE)
+#define clrWindow GetColor(COLOR_WINDOW)
+#define clrHighlight GetColor(COLOR_HIGHLIGHT)
+#define pow2(x) pow(x, 2)
+#define NORMVALUE(a, b) a = (a < 0) ? 0 : (a > b) ? b : a
+
+CXTPColorManager::CXTPColorManager()
+{
+	m_bDisableLunaColors = FALSE;
+	m_systemTheme = xtpSystemThemeAuto;
+	m_winThemeWrapperTheme = xtpSystemThemeUnknown;
+	m_pfnGetSysColor = 0;
+
+	m_bEnableLunaBlueForRoyaleTheme = TRUE;
+	m_bEnableLunaBlueForAeroTheme = TRUE;
+
+	for (int i = 0; i <= XPCOLOR_LAST; i++)
+		m_arrCustomColor[i] = m_arrLunaColor[i] = COLORREF_NULL;
+
+	RefreshColors();
+
+	grcLunaChecked.SetStandardValue(RGB(255, 213, 140), RGB(255, 173, 85));
+	grcLunaPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
+	grcLunaSelected.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
+
+}
+
+CXTPColorManager& AFX_CDECL CXTPColorManager::Instance()
+{
+	static CXTPColorManager instance;
+	return instance;
+}
+
+
+float CXTPColorManager::ColorWidth(int nLength, int nWidth)
+{
+	if (nLength > 220) nLength = 220;
+	return (2.0 - (float)nLength / 220) * nWidth;
+}
+
+
+float CXTPColorManager::ColorDelta(COLORREF clrA, COLORREF clrB)
+{
+	return pow2(GetRDelta(clrA) - GetRDelta(clrB)) +
+		pow2(GetGDelta(clrA) - GetGDelta(clrB)) +
+		pow2(GetBDelta(clrA) - GetBDelta(clrB));
+}
+
+float CXTPColorManager::Length(COLORREF clrA, COLORREF clrB)
+{
+	return sqrt(ColorDelta(clrA, clrB));
+}
+
+BOOL CXTPColorManager::LongColor(COLORREF clrMain, COLORREF clrSub, BOOL bCalcLength, float fDistance)
+{
+	if (bCalcLength)
+		fDistance = ColorWidth(Length(clrMain, 0), fDistance);
+
+	return pow2(fDistance) < ColorDelta(clrMain, clrSub);
+}
+
+COLORREF CXTPColorManager::MixColor(COLORREF clrMain, COLORREF clrSub, float fDistance)
+{
+	float fMainLength = Length(clrMain, 0);
+
+	float fGate = ColorWidth(fMainLength, fDistance);
+
+	BOOL bReverse = TRUE;
+
+	if (Length(clrSub, 0) > fMainLength)
+	{
+		if (fMainLength > 442 - fGate)
+			bReverse = FALSE;
+
+	}
+	else
+	{
+		if (fMainLength > fGate)
+			bReverse = FALSE;
+	}
+
+	float fSubRed = GetRDelta(clrSub);
+	float fSubGreen = GetGDelta(clrSub);
+	float fSubBlue = GetBDelta(clrSub);
+
+	float fMainRed = GetRDelta(clrMain);
+	float fMainGreen = GetGDelta(clrMain);
+	float fMainBlue = GetBDelta(clrMain);
+
+	if (bReverse)
+	{
+		fSubRed = 195.0 - fSubRed;
+		fSubGreen = 390.0 - fSubGreen;
+		fSubBlue = 65.0 - fSubBlue;
+
+		fMainRed = 195.0 - fMainRed;
+		fMainGreen = 390.0 - fMainGreen;
+		fMainBlue = 65.0 - fMainBlue;
+	}
+
+	float A = __max(0.001, sqrt(pow2(fSubRed) + pow2(fSubGreen) + pow2(fSubBlue)));
+	float B = fMainRed * fSubRed + fMainGreen * fSubGreen + fMainBlue * fSubBlue;
+	float X = B / pow2(A);
+
+	float fR = X * fSubRed - fMainRed;
+	float fG = X * fSubGreen - fMainGreen;
+	float fB = X * fSubBlue - fMainBlue;
+
+	float Y = sqrt(pow2(fGate) - (pow2(fR) + pow2(fG) + pow2(fB)));
+
+	float Z = (B / A - Y);
+
+	fR = Z * fSubRed / A;
+	fG = Z * fSubGreen / A;
+	fB = Z * fSubBlue / A;
+
+	if (bReverse)
+	{
+		fR = 195.0 - fR;
+		fG = 390.0 - fG;
+		fB = 65.0 - fB;
+	}
+
+	NORMVALUE(fR, 195.0);
+	NORMVALUE(fG, 390.0);
+	NORMVALUE(fB, 65.0);
+
+	int nR = int(.5 + fR * (255.0/195.0));
+	int nG = int(.5 + fG * (255.0/390.0));
+	int nB = int(.5 + fB * (255.0/65.0));
+
+	return RGB(NORMVALUE(nR, 255), NORMVALUE(nG, 255), NORMVALUE(nB, 255));
+}
+
+COLORREF CXTPColorManager::AdjustColor(COLORREF clrMain, COLORREF clrSub, float fDistance)
+{
+	float Z = sqrt(
+		pow2(GetRDelta(clrMain) - GetRDelta(clrSub)) +
+		pow2(GetGDelta(clrMain) - GetGDelta(clrSub)) +
+		pow2(GetBDelta(clrMain) - GetBDelta(clrSub)));
+
+	float Q = (Z - ColorWidth(Length(0, clrMain), fDistance)) / Z;
+
+	float fR = Q * (GetRDelta(clrMain) - GetRDelta(clrSub)) + GetRDelta(clrSub);
+	float fG = Q * (GetGDelta(clrMain) - GetGDelta(clrSub)) + GetGDelta(clrSub);
+	float fB = Q * (GetBDelta(clrMain) - GetBDelta(clrSub)) + GetBDelta(clrSub);
+
+	NORMVALUE(fR, 195.0);
+	NORMVALUE(fG, 390.0);
+	NORMVALUE(fB, 65.0);
+
+	int nR = int(.5 + fR * (255.0/195.0));
+	int nG = int(.5 + fG * (255.0/390.0));
+	int nB = int(.5 + fB * (255.0/65.0));
+
+	return RGB(NORMVALUE(nR, 255), NORMVALUE(nG, 255), NORMVALUE(nB, 255));
+}
+
+COLORREF CXTPColorManager::LightColor(COLORREF clrLight, COLORREF clrDark, int nDelta) const
+{
+	int nParam = (nDelta < 100 ? 100 : 1000);
+
+	int nR = (GetRValue(clrDark) * (nParam - nDelta) + nParam / 2 +  GetRValue(clrLight) * nDelta) / nParam;
+	int nG = (GetGValue(clrDark) * (nParam - nDelta) + nParam / 2 +  GetGValue(clrLight) * nDelta) / nParam;
+	int nB = (GetBValue(clrDark) * (nParam - nDelta) + nParam / 2 +  GetBValue(clrLight) * nDelta) / nParam;
+
+	return RGB(nR, nG, nB);
+}
+
+COLORREF CXTPColorManager::GetColor(int nIndex) const
+{
+	if (nIndex > XPCOLOR_LAST) return nIndex;
+	return m_arrCustomColor[nIndex] == COLORREF_NULL ? m_arrStandardColor[nIndex]: m_arrCustomColor[nIndex];
+}
+
+void CXTPColorManager::RefreshSysColors()
+{
+	m_arrStandardColor[0] = 0;
+	for (int i = 1; i < 30; i++) m_arrStandardColor[i] = (m_pfnGetSysColor != 0 ? (*m_pfnGetSysColor)(i) : GetSysColor(i));
+}
+
+void CXTPColorManager::SetGetSysColorPtr(PFNGETSYSCOLOR pfnGetSysColor)
+{
+	m_pfnGetSysColor = pfnGetSysColor;
+	RefreshColors();
+}
+
+void CXTPColorManager::RefreshXPColors()
+{
+	COLORREF clr3DFace = GetColor(COLOR_3DFACE);
+	COLORREF clr3DShadow = GetColor(COLOR_3DSHADOW);
+
+	m_arrStandardColor[XPCOLOR_TOOLBAR_FACE] = clr3DFace;
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT] = GetColor(COLOR_WINDOW);
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_PUSHED] = GetColor(COLOR_HIGHLIGHT);
+	m_arrStandardColor[XPCOLOR_MENUBAR_FACE] = GetColor(COLOR_WINDOW);
+	m_arrStandardColor[XPCOLOR_MENUBAR_GRAYTEXT] = GetColor(COLOR_GRAYTEXT);
+	m_arrStandardColor[XPCOLOR_TOOLBAR_GRIPPER] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_SEPARATOR] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_MENUBAR_BORDER] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_FLOATBAR_BORDER] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_DISABLED] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_CHECKED] = GetColor(COLOR_WINDOW);
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_BORDER] = GetColor(COLOR_HIGHLIGHT);
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_CHECKED_BORDER] = GetColor(COLOR_HIGHLIGHT);
+	m_arrStandardColor[XPCOLOR_MENUBAR_TEXT] = GetColor(COLOR_WINDOWTEXT);
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_TEXT] = GetColor(COLOR_MENUTEXT);
+	m_arrStandardColor[XPCOLOR_TOOLBAR_TEXT] = GetColor(COLOR_BTNTEXT);
+	m_arrStandardColor[XPCOLOR_PUSHED_TEXT] = GetColor(COLOR_HIGHLIGHTTEXT);
+	m_arrStandardColor[XPCOLOR_TAB_INACTIVE_BACK] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_TAB_INACTIVE_TEXT] = GetColor(COLOR_HIGHLIGHTTEXT);
+	m_arrStandardColor[XPCOLOR_MENUBAR_EXPANDED] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_PUSHED_BORDER] = GetColor(COLOR_HIGHLIGHT);
+	m_arrStandardColor[XPCOLOR_ICONSHADDOW] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_3DFACE] = clr3DFace;
+	m_arrStandardColor[XPCOLOR_3DSHADOW] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_EDITCTRLBORDER] = clr3DFace;
+	m_arrStandardColor[XPCOLOR_FRAME] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_SPLITTER_FACE] = clr3DFace;
+	m_arrStandardColor[XPCOLOR_LABEL] = clr3DFace;
+	m_arrStandardColor[XPCOLOR_STATICFRAME] = clr3DShadow;
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_DISABLED_BORDER] = GetColor(COLOR_GRAYTEXT);
+	m_arrStandardColor[XPCOLOR_SHADOW_FACTOR] = 0;
+	m_arrStandardColor[XPCOLOR_TOOLBAR_GRAYTEXT] = clr3DShadow;
+}
+
+void CXTPColorManager::RefreshGradientColors()
+{
+	XTPCurrentSystemTheme systemTheme = GetCurrentSystemTheme();
+
+	if (m_bDisableLunaColors)
+		systemTheme = xtpSystemThemeUnknown;
+
+	switch (systemTheme)
+	{
+	case xtpSystemThemeBlue:
+	case xtpSystemThemeRoyale:
+	case xtpSystemThemeAero:
+		{
+			m_arrStandardColor[XPCOLOR_FRAME] = RGB(0, 45, 150);
+			grcCaption.SetStandardValue(RGB(89, 135, 214), RGB(0, 45, 150));
+			grcDockBar.SetStandardValue(RGB(158, 190, 245), RGB(196, 218, 250));
+			grcShortcutBarGripper.SetStandardValue(RGB(89, 135, 214), RGB(0, 45, 150));
+
+			// Toolbar gradients.
+			grcToolBar.SetStandardValue(RGB(221, 236, 254), RGB(129, 169, 226), 0.75f);
+
+			// Menu gradients.
+			grcMenu.SetStandardValue(RGB(227, 239, 255), RGB(135, 173, 228));
+			grcMenuExpanded.SetStandardValue(RGB(203, 221, 246), RGB(121, 161, 220));
+			grcMenuItemPopup.SetStandardValue(RGB(227, 239, 255), RGB(147, 181, 231));
+		}
+		break;
+
+	case xtpSystemThemeOlive:
+		{
+			m_arrStandardColor[XPCOLOR_FRAME] = RGB(96, 128, 88);
+			grcCaption.SetStandardValue(RGB(175, 192, 130), RGB(99, 122, 68));
+			grcDockBar.SetStandardValue(RGB(217, 217, 167), RGB(242, 241, 228));
+			grcShortcutBarGripper.SetStandardValue(RGB(120, 142, 111), RGB(73, 91, 67));
+
+			// Toolbar gradients.
+			grcToolBar.SetStandardValue(RGB(244, 247, 222), RGB(183, 198, 145), 0.3f);
+
+			// Menu gradients.
+			grcMenu.SetStandardValue(RGB(255, 255, 237), RGB(184, 199, 146), 0.3f);
+			grcMenuExpanded.SetStandardValue(RGB(230, 230, 209), RGB(164, 180, 120), 0.3f);
+			grcMenuItemPopup.SetStandardValue(RGB(236, 240, 213), RGB(194, 206, 159));
+		}
+		break;
+
+	case xtpSystemThemeSilver:
+		{
+			m_arrStandardColor[XPCOLOR_FRAME] = RGB(124, 124, 148);
+			grcCaption.SetStandardValue(RGB(168, 167, 191), RGB(112, 111, 145));
+			grcDockBar.SetStandardValue(RGB(215, 215, 229), RGB(243, 243, 247));
+			grcShortcutBarGripper.SetStandardValue(RGB(168, 167, 191), RGB(119, 118, 151));
+
+			// Toolbar gradients.
+			grcToolBar.SetStandardValue(RGB(249, 249, 255), RGB(156, 155, 183), 0.75f);
+
+			// Menu gradients.
+			grcMenu.SetStandardValue(RGB(249, 249, 255), RGB(159, 157, 185), 0.75f);
+			grcMenuExpanded.SetStandardValue(RGB(215, 215, 226), RGB(128, 126, 158), 0.75f);
+			grcMenuItemPopup.SetStandardValue(RGB(233, 231, 241), RGB(186, 185, 205));
+		}
+		break;
+
+	default:
+		{
+			grcCaption.SetStandardValue(GetColor(COLOR_3DSHADOW), GetColor(COLOR_3DSHADOW));
+			grcDockBar.SetStandardValue(GetColor(COLOR_3DFACE), LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0xd7));
+			grcShortcutBarGripper.SetStandardValue(GetColor(COLOR_3DFACE), GetColor(COLOR_3DSHADOW));
+
+			// Toolbar gradients.
+			grcToolBar.SetStandardValue(LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd), GetXtremeColor(COLOR_3DFACE));
+
+			// Menu gradients.
+			grcMenu.SetStandardValue(LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0x91), LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0x5d));
+			grcMenuExpanded.SetStandardValue(LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0x28), LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_3DSHADOW), 0x5f));
+			grcMenuItemPopup.SetStandardValue(LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0xa5), LightColor(GetColor(COLOR_3DFACE), GetColor(COLOR_WINDOW), 0x2a));
+		}
+		break;
+	}
+
+	if (IsLowResolution())
+	{
+		grcToolBar.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+		grcDockBar.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	}
+}
+
+_XTP_EXT_CLASS void AFX_CDECL RefreshXtremeColors()
+{
+#if 1
+	XTPColorManager()->RefreshColors();
+#else
+	static DWORD dwLastRefresh = 0;
+
+	if (GetTickCount() - dwLastRefresh > 500)
+	{
+		XTPColorManager()->RefreshColors();
+
+		if (AfxGetMainWnd() != NULL)
+		{
+			dwLastRefresh = GetTickCount();
+		}
+	}
+#endif
+}
+
+BOOL CXTPColorManager::IsLowResolution(HDC hDC/* = 0*/)
+{
+	if (hDC)
+	{
+		int nColors = ::GetDeviceCaps(hDC, BITSPIXEL);
+		return (nColors > 0 && nColors <= 8);
+	}
+	hDC = ::GetDC(::GetDesktopWindow());
+	if (hDC)
+	{
+		int nColors = ::GetDeviceCaps(hDC, BITSPIXEL);
+		::ReleaseDC(::GetDesktopWindow(), hDC);
+		return (nColors > 0 && nColors <= 8);
+	}
+	return FALSE;
+}
+
+void CXTPColorManager::RefreshColors()
+{
+	m_winThemeWrapperTheme = _GetWinThemeWrapperTheme();
+
+	BOOL bSimpleColors = IsLowResolution();
+
+	RefreshSysColors();
+	RefreshXPColors();
+	RefreshLunaColors();
+
+	if (bSimpleColors)
+	{
+		RefreshGradientColors();
+		return;
+	}
+
+	struct MUTECOLOR
+	{
+		int nIndex;
+		int clrMain;
+		int clrSub;
+		int nDistance;
+	};
+
+	const MUTECOLOR IndexTable[] =
+	{
+		{ XPCOLOR_TOOLBAR_FACE, COLOR_WINDOW, COLOR_3DFACE, 165 },
+		{ XPCOLOR_HIGHLIGHT, COLOR_HIGHLIGHT, COLOR_WINDOW, 0x1E },
+		{ XPCOLOR_HIGHLIGHT_PUSHED, COLOR_HIGHLIGHT, COLOR_WINDOW, 0x32 },
+		{ XPCOLOR_MENUBAR_FACE, COLOR_3DFACE, COLOR_WINDOW, 0x8f },
+		{ XPCOLOR_MENUBAR_GRAYTEXT, COLOR_GRAYTEXT, COLOR_WINDOW, 0x46 },
+		{ XPCOLOR_TOOLBAR_GRIPPER, COLOR_3DSHADOW, COLOR_WINDOW, 0x4b },
+		{ XPCOLOR_SEPARATOR, COLOR_3DSHADOW, COLOR_WINDOW, 0x46 },
+		{ XPCOLOR_MENUBAR_BORDER, XPCOLOR_TOOLBAR_TEXT, COLOR_BTNSHADOW, 0x14 },
+		{ XPCOLOR_FLOATBAR_BORDER, XPCOLOR_TOOLBAR_TEXT, COLOR_BTNSHADOW, 0xF },
+		{ XPCOLOR_DISABLED, COLOR_3DSHADOW, COLOR_WINDOW, 0x5A },
+		{ XPCOLOR_MENUBAR_EXPANDED, COLOR_3DFACE, COLOR_3DSHADOW, 90 }
+	};
+
+	int i;
+	for (i = 0; i < sizeof(IndexTable) / sizeof(IndexTable[0]); i++)
+	{
+		m_arrStandardColor[IndexTable[i].nIndex] = LightColor(GetColor(IndexTable[i].clrMain),
+			GetColor(IndexTable[i].clrSub), IndexTable[i].nDistance);
+
+	}
+
+	const MUTECOLOR LongTable[] =
+	{
+		{ XPCOLOR_HIGHLIGHT, XPCOLOR_TOOLBAR_FACE, XPCOLOR_HIGHLIGHT, 50 },
+		{ XPCOLOR_HIGHLIGHT_BORDER, XPCOLOR_TOOLBAR_FACE, COLOR_HIGHLIGHT, 100 },
+		{ XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_TOOLBAR_FACE, XPCOLOR_HIGHLIGHT_PUSHED, 30  },
+		{ XPCOLOR_MENUBAR_GRAYTEXT, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_GRAYTEXT, 80 },
+		{ XPCOLOR_HIGHLIGHT_CHECKED_BORDER, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_HIGHLIGHT_CHECKED_BORDER, 100 },
+		{ XPCOLOR_TOOLBAR_GRIPPER, XPCOLOR_TOOLBAR_FACE, XPCOLOR_TOOLBAR_GRIPPER, 85  },
+		{ XPCOLOR_SEPARATOR, XPCOLOR_TOOLBAR_FACE, XPCOLOR_SEPARATOR, 50 },
+		{ XPCOLOR_MENUBAR_BORDER, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_BORDER, 100 },
+		{ XPCOLOR_FLOATBAR_BORDER, XPCOLOR_TOOLBAR_FACE, XPCOLOR_FLOATBAR_BORDER, 100 },
+		{ XPCOLOR_DISABLED, XPCOLOR_TOOLBAR_FACE, XPCOLOR_DISABLED, 80 },
+		{ XPCOLOR_MENUBAR_TEXT, XPCOLOR_MENUBAR_FACE, XPCOLOR_MENUBAR_TEXT, 180 },
+		{ XPCOLOR_HIGHLIGHT_TEXT, XPCOLOR_HIGHLIGHT, XPCOLOR_HIGHLIGHT_TEXT, 180 },
+		{ XPCOLOR_TOOLBAR_TEXT, XPCOLOR_TOOLBAR_FACE, XPCOLOR_TOOLBAR_TEXT, 180 },
+		{ XPCOLOR_PUSHED_TEXT, XPCOLOR_HIGHLIGHT_PUSHED, XPCOLOR_PUSHED_TEXT, 180 }
+	};
+
+	if (LongColor(GetColor(COLOR_3DFACE), GetColor(XPCOLOR_TOOLBAR_FACE), 1, 35))
+	{
+		m_arrStandardColor[XPCOLOR_TOOLBAR_FACE] = AdjustColor(GetColor(COLOR_3DFACE), GetColor(XPCOLOR_TOOLBAR_FACE), 35);
+	}
+
+	for (i = 0; i < sizeof(LongTable) / sizeof(LongTable[0]); i++)
+	{
+		if (!LongColor(GetColor(LongTable[i].clrMain), GetColor(LongTable[i].clrSub) , 1, LongTable[i].nDistance))
+		{
+			m_arrStandardColor[LongTable[i].nIndex] = MixColor(GetColor(LongTable[i].clrMain), GetColor(LongTable[i].clrSub), LongTable[i].nDistance);
+		}
+	}
+
+	if (LongColor(GetColor(XPCOLOR_MENUBAR_FACE), GetColor(XPCOLOR_MENUBAR_GRAYTEXT), 1, 145))
+	{
+
+		m_arrStandardColor[XPCOLOR_MENUBAR_GRAYTEXT] = AdjustColor(GetColor(XPCOLOR_MENUBAR_FACE), GetColor(XPCOLOR_MENUBAR_GRAYTEXT), 145);
+	}
+
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_CHECKED] =
+		RGB(GetRValue(clrWindow) * 40 / 100 + GetRValue(clrHighlight) * 10 / 100 + GetRValue(clrToolBar) * 50 / 100,
+		GetGValue(clrWindow) * 40 / 100 + GetGValue(clrHighlight) * 10 / 100 + GetGValue(clrToolBar) * 50 / 100,
+		GetBValue(clrWindow) * 40 / 100 + GetBValue(clrHighlight) * 10 / 100 + GetBValue(clrToolBar) * 50 / 100);
+
+
+	COLORREF clrBtn = GetColor(COLOR_3DFACE);
+	int r = GetRValue(clrBtn), g = GetGValue(clrBtn), b = GetBValue(clrBtn);
+	int nMax = __max(__max(r, g), b);
+	if (nMax == 0)
+		m_arrStandardColor[XPCOLOR_TAB_INACTIVE_BACK] = RGB(35, 35, 35); else
+	{
+		int nDelta = __min(35, 255 - nMax) + nMax;
+		m_arrStandardColor[XPCOLOR_TAB_INACTIVE_BACK] = RGB(r * nDelta / nMax, g * nDelta / nMax, b * nDelta / nMax);
+	}
+
+	COLORREF clrShadow = GetColor(COLOR_3DSHADOW);
+	r = GetRValue(clrShadow);
+	g = GetGValue(clrShadow);
+	b = GetBValue(clrShadow);
+	nMax = __max(__max(r, g), b);
+
+	if (clrBtn == 0) m_arrStandardColor[XPCOLOR_TAB_INACTIVE_TEXT] = RGB(0x7f, 0x7f, 0x7f);
+	else if (nMax == 0) m_arrStandardColor[XPCOLOR_TAB_INACTIVE_TEXT] = RGB(0, 0, 0);
+	else
+	{
+		int nDelta = __max(0, nMax - 43);
+		m_arrStandardColor[XPCOLOR_TAB_INACTIVE_TEXT] = RGB(r * nDelta / nMax, g * nDelta / nMax, b * nDelta / nMax);
+	}
+
+	COLORREF clrBackground = m_arrStandardColor[XPCOLOR_HIGHLIGHT];
+	m_arrStandardColor[XPCOLOR_ICONSHADDOW] = RGB(GetRValue(clrBackground) * .75, GetGValue(clrBackground) * .75, GetBValue(clrBackground) * .75);
+
+	m_arrStandardColor[COLOR_3DLIGHT] = RGB(min(GetRValue(clrBtn) + 15, 255), min(GetGValue(clrBtn) + 15, 255), min(GetBValue(clrBtn) + 15, 255));
+	m_arrStandardColor[XPCOLOR_EDITCTRLBORDER] = GetColor(XPCOLOR_TOOLBAR_FACE);
+	m_arrStandardColor[XPCOLOR_HIGHLIGHT_DISABLED_BORDER] = GetColor(XPCOLOR_DISABLED);
+	m_arrStandardColor[XPCOLOR_TOOLBAR_GRAYTEXT] = m_arrStandardColor[XPCOLOR_DISABLED];
+
+	RefreshGradientColors();
+
+	CXTPWinThemeWrapper wrpTreeView;
+	wrpTreeView.OpenTheme(0, L"TREEVIEW");
+	if (wrpTreeView.IsAppThemed())
+	{
+		wrpTreeView.GetThemeColor(0, 0, TMT_BORDERCOLOR, &m_arrStandardColor[XPCOLOR_STATICFRAME]);
+	}
+}
+
+COLORREF CXTPColorManager::GetLunaColor(int nIndex) const
+{
+	// index out of range try standard colors
+	if (nIndex < XPCOLOR_BASE || nIndex > XPCOLOR_LAST)
+		return GetColor(nIndex);
+
+	return (m_arrLunaColor[nIndex] == COLORREF_NULL) ? GetColor(nIndex) : m_arrLunaColor[nIndex];
+}
+
+void CXTPColorManager::RefreshLunaColors()
+{
+	XTPCurrentSystemTheme systemTheme = GetCurrentSystemTheme();
+
+	if (m_bDisableLunaColors)
+		systemTheme = xtpSystemThemeUnknown;
+
+	int nLunaElements[] =
+	{
+		XPCOLOR_TOOLBAR_GRIPPER,
+		XPCOLOR_SEPARATOR,
+		XPCOLOR_DISABLED,
+		XPCOLOR_MENUBAR_FACE,
+		XPCOLOR_MENUBAR_BORDER,
+		XPCOLOR_HIGHLIGHT,
+		XPCOLOR_HIGHLIGHT_BORDER,
+		XPCOLOR_HIGHLIGHT_PUSHED_BORDER,
+		XPCOLOR_HIGHLIGHT_CHECKED_BORDER,
+		XPCOLOR_HIGHLIGHT_PUSHED,
+		XPCOLOR_HIGHLIGHT_CHECKED,
+		XPCOLOR_TOOLBAR_FACE,
+		XPCOLOR_PUSHED_TEXT,
+		XPCOLOR_SHADOW_FACTOR
+	};
+
+	switch (systemTheme)
+	{
+	case xtpSystemThemeBlue:
+	case xtpSystemThemeRoyale:
+	case xtpSystemThemeAero:
+		{
+			COLORREF clrValues[] =
+			{
+				RGB(0x27, 0x41, 0x76), // XPCOLOR_TOOLBAR_GRIPPER
+				RGB(0x6a, 0x8c, 0xcb), // XPCOLOR_SEPARATOR
+				RGB(0x6d, 0x96, 0xd0), // XPCOLOR_DISABLED
+				RGB(0xf6, 0xf6, 0xf6), // XPCOLOR_MENUBAR_FACE
+				RGB(0x00, 0x2d, 0x96), // XPCOLOR_MENUBAR_BORDER
+				RGB(0xff, 0xee, 0xc2), // XPCOLOR_HIGHLIGHT
+				RGB(0x00, 0x00, 0x80), // XPCOLOR_HIGHLIGHT_BORDER
+				RGB(0x00, 0x00, 0x80), // XPCOLOR_HIGHLIGHT_PUSHED_BORDER
+				RGB(0x00, 0x00, 0x80), // XPCOLOR_HIGHLIGHT_CHECKED_BORDER
+				RGB(0xfe, 0x80, 0x3e), // XPCOLOR_HIGHLIGHT_PUSHED
+				RGB(0xff, 0xc0, 0x6f), // XPCOLOR_HIGHLIGHT_CHECKED
+				RGB(0x9e, 0xbe, 0xf5), // XPCOLOR_TOOLBAR_FACE
+				RGB(0x00, 0x00, 0x00), // XPCOLOR_PUSHED_TEXT
+				RGB(0x16, 0x1E, 0x36), // XPCOLOR_SHADOW_FACTOR
+				LightColor(GetColor(COLOR_APPWORKSPACE), GetColor(COLOR_WINDOW), 0x5a)
+			};
+
+			for (int i = 0; i < _countof(nLunaElements); i++)
+				m_arrLunaColor[nLunaElements[i]] = clrValues[i];
+		}
+		break;
+
+	case xtpSystemThemeOlive:
+		{
+			COLORREF clrValues[] =
+			{
+				RGB(0x51, 0x5e, 0x33), // XPCOLOR_TOOLBAR_GRIPPER
+				RGB(0x60, 0x80, 0x58), // XPCOLOR_SEPARATOR
+				RGB(0x9f, 0xae, 0x7a), // XPCOLOR_DISABLED
+				RGB(0xf4, 0xf4, 0xee), // XPCOLOR_MENUBAR_FACE
+				RGB(0x75, 0x8d, 0x5e), // XPCOLOR_MENUBAR_BORDER
+				RGB(0xff, 0xee, 0xc2), // XPCOLOR_HIGHLIGHT
+				RGB(0x3f, 0x5d, 0x38), // XPCOLOR_HIGHLIGHT_BORDER
+				RGB(0x3f, 0x5d, 0x38), // XPCOLOR_HIGHLIGHT_PUSHED_BORDER
+				RGB(0x3f, 0x5d, 0x38), // XPCOLOR_HIGHLIGHT_CHECKED_BORDER
+				RGB(0xfe, 0x80, 0x3e), // XPCOLOR_HIGHLIGHT_PUSHED
+				RGB(0xff, 0xc0, 0x6f), // XPCOLOR_HIGHLIGHT_CHECKED
+				RGB(0xd9, 0xd9, 0xa7), // XPCOLOR_TOOLBAR_FACE
+				RGB(0x00, 0x00, 0x00), // XPCOLOR_PUSHED_TEXT
+				RGB(0x1F, 0x22, 0x19), // XPCOLOR_SHADOW_FACTOR
+				LightColor(GetColor(COLOR_APPWORKSPACE), GetColor(COLOR_WINDOW), 0x5a)
+			};
+
+			for (int i = 0; i < _countof(nLunaElements); i++)
+				m_arrLunaColor[nLunaElements[i]] = clrValues[i];
+		}
+		break;
+
+	case xtpSystemThemeSilver:
+		{
+			COLORREF clrValues[] =
+			{
+				RGB(0x54, 0x54, 0x75), // XPCOLOR_TOOLBAR_GRIPPER
+				RGB(0x6e, 0x6d, 0x8f), // XPCOLOR_SEPARATOR
+				RGB(0xa8, 0xa7, 0xbe), // XPCOLOR_DISABLED
+				RGB(0xfd, 0xfa, 0xff), // XPCOLOR_MENUBAR_FACE
+				RGB(0x7c, 0x7c, 0x94), // XPCOLOR_MENUBAR_BORDER
+				RGB(0xff, 0xee, 0xc2), // XPCOLOR_HIGHLIGHT
+				RGB(0x4b, 0x4b, 0x6f), // XPCOLOR_HIGHLIGHT_BORDER
+				RGB(0x4b, 0x4b, 0x6f), // XPCOLOR_HIGHLIGHT_PUSHED_BORDER
+				RGB(0x4b, 0x4b, 0x6f), // XPCOLOR_HIGHLIGHT_CHECKED_BORDER
+				RGB(0xfe, 0x80, 0x3e), // XPCOLOR_HIGHLIGHT_PUSHED
+				RGB(0xff, 0xc0, 0x6f), // XPCOLOR_HIGHLIGHT_CHECKED
+				RGB(0xd7, 0xd7, 0xe5), // XPCOLOR_TOOLBAR_FACE
+				RGB(0x00, 0x00, 0x00), // XPCOLOR_PUSHED_TEXT
+				RGB(0x24, 0x20, 0x29), // XPCOLOR_SHADOW_FACTOR
+				LightColor(GetColor(COLOR_APPWORKSPACE), GetColor(COLOR_WINDOW), 0x5a)
+			};
+
+			for (int i = 0; i < _countof(nLunaElements); i++)
+				m_arrLunaColor[nLunaElements[i]] = clrValues[i];
+		}
+		break;
+
+	default:
+		{
+			for (int i = 0; i <= XPCOLOR_LAST; i++)
+				m_arrLunaColor[i] = COLORREF_NULL;
+		}
+		break;
+	}
+}
+
+void CXTPColorManager::SetColors(int cElements, CONST INT* lpaElements, CONST COLORREF* lpaRgbValues)
+{
+	for (int i = 0; i < cElements; i++)
+		m_arrCustomColor[lpaElements[i]] = lpaRgbValues[i];
+}
+
+void CXTPColorManager::SetColor(int nIndex, COLORREF clrValue)
+{
+	m_arrCustomColor[nIndex] = clrValue;
+}
+
+double CXTPColorManager::GetRDelta(COLORREF clr)
+{
+	return GetRValue(clr) * (195.0/255.0);
+}
+
+double CXTPColorManager::GetGDelta(COLORREF clr)
+{
+	return GetGValue(clr) * (390.0/255.0);
+}
+
+double CXTPColorManager::GetBDelta(COLORREF clr)
+{
+	return GetBValue(clr) * (65.0/255.0);
+}
+
+void CXTPColorManager::DisableLunaColors(BOOL bDisable)
+{
+	m_bDisableLunaColors = bDisable;
+}
+
+BOOL CXTPColorManager::IsLunaColorsDisabled() const
+{
+	return m_bDisableLunaColors;
+}
+
+void CXTPColorManager::SetLunaTheme(XTPCurrentSystemTheme systemTheme)
+{
+	m_systemTheme = systemTheme;
+	RefreshColors();
+}
+
+XTPCurrentSystemTheme CXTPColorManager::GetWinThemeWrapperTheme() const
+{
+	return m_winThemeWrapperTheme;
+}
+
+XTPCurrentSystemTheme CXTPColorManager::_GetWinThemeWrapperTheme()
+{
+	// windows classic theme is in use we do not need to go further.
+	if (!CXTPWinThemeWrapper().IsThemeActive())
+		return xtpSystemThemeUnknown;
+
+	if (IsLowResolution())
+		return xtpSystemThemeUnknown;
+
+	WCHAR pszThemeFileName[MAX_PATH];
+	WCHAR pszColorBuff[MAX_PATH];
+	WCHAR pszSizeBuff[MAX_PATH];
+
+	ZeroMemory(pszThemeFileName, MAX_PATH);
+	ZeroMemory(pszColorBuff, MAX_PATH);
+	ZeroMemory(pszSizeBuff, MAX_PATH);
+
+	// get the name of the current theme in use.
+	if (CXTPWinThemeWrapper().GetCurrentThemeName(pszThemeFileName, MAX_PATH,
+		pszColorBuff, MAX_PATH, pszSizeBuff, MAX_PATH) != S_OK)
+	{
+		return xtpSystemThemeUnknown;
+	}
+
+	// search for "luna.msstyles" string in theme name.
+	if (wcsstr(WCSLWR_S(pszThemeFileName, MAX_PATH), L"luna.msstyles") ||
+		wcsstr(WCSLWR_S(pszThemeFileName, MAX_PATH), L"winxp.luna.cjstyles"))
+	{
+		if (wcscmp(WCSLWR_S(pszColorBuff, MAX_PATH), L"normalcolor") == 0)
+			return xtpSystemThemeBlue;
+
+		if (wcscmp(WCSLWR_S(pszColorBuff, MAX_PATH), L"homestead") == 0)
+			return xtpSystemThemeOlive;
+
+		if (wcscmp(WCSLWR_S(pszColorBuff, MAX_PATH), L"metallic") == 0)
+			return xtpSystemThemeSilver;
+	}
+
+	if (m_bEnableLunaBlueForRoyaleTheme)
+	{
+		// search for "royale.msstyles" (Windows Media Center) string in theme name.
+		if (wcsstr(WCSLWR_S(pszThemeFileName, MAX_PATH), L"royale.msstyles") ||
+			wcsstr(WCSLWR_S(pszThemeFileName, MAX_PATH), L"winxp.royale.cjstyles"))
+		{
+			return xtpSystemThemeRoyale;
+		}
+	}
+
+	if (m_bEnableLunaBlueForAeroTheme)
+	{
+		// search for "aero.msstyles" (Vista Aero) string in theme name.
+		if (wcsstr(WCSLWR_S(pszThemeFileName, MAX_PATH), L"aero.msstyles"))
+		{
+			return xtpSystemThemeAero;
+		}
+
+	}
+
+	// theme was found just not luna theme.
+	return xtpSystemThemeUnknown;
+}
+
+XTPCurrentSystemTheme CXTPColorManager::GetCurrentSystemTheme() const
+{
+	if (m_systemTheme != xtpSystemThemeAuto && m_systemTheme != xtpSystemThemeDefault)
+		return m_systemTheme;
+
+	return m_winThemeWrapperTheme;
+}
+
+

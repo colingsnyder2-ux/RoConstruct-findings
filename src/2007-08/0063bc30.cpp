@@ -1,48 +1,5 @@
-// from server: 52% by colin
-// roc 2007-08 0063bc30  unit: PAVCXTPControlAction::?$CArray  size: 51 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0063bc30
-//
-// 0063bc30  56                   push esi
-// 0063bc31  8bf1                 mov esi, ecx
-// 0063bc33  33d2                 xor edx, edx
-// 0063bc35  395664               cmp dword ptr [esi + 0x64], edx
-// 0063bc38  7e22                 jle 0x63bc5c
-// 0063bc3a  8d9b00000000         lea ebx, [ebx]
-// 0063bc40  85d2                 test edx, edx
-// 0063bc42  7c1a                 jl 0x63bc5e
-// 0063bc44  3b5664               cmp edx, dword ptr [esi + 0x64]
-// 0063bc47  7d15                 jge 0x63bc5e
-// 0063bc49  8b4660               mov eax, dword ptr [esi + 0x60]
-// 0063bc4c  8b0c90               mov ecx, dword ptr [eax + edx*4]
-// 0063bc4f  e85ce1ffff           call 0x639db0
-// 0063bc54  83c201               add edx, 1
-// 0063bc57  3b5664               cmp edx, dword ptr [esi + 0x64]
-// 0063bc5a  7ce4                 jl 0x63bc40
-// 0063bc5c  5e                   pop esi
-// 0063bc5d  c3                   ret 
-// 0063bc5e  e9bd42ffff           jmp 0x62ff20
-
-struct CXTPControlAction
-{
-    char pad[0x60];
-    void** m_pData;
-    int m_nCount;
-    void RemoveAll();
-};
-
-extern "C" void __stdcall sub_639DB0(void*);
-
-void CXTPControlAction::RemoveAll()
-{
-    int i = 0;
-    if (m_nCount > 0)
-    {
-        do
-        {
-            if (i < 0 || i >= m_nCount)
-                break;
-            sub_639DB0(m_pData[i]);
-            ++i;
-        } while (i < m_nCount);
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ee3ddb2069d93767.cpp

@@ -1,19 +1,5 @@
-// from server: 25% by colin
-struct CRbxDocTemplate {
-    int* field0;
-    void (__stdcall *fn)(int, int);
-    int field8;
-    void f(int);
-};
-
-extern "C" void* __stdcall sub_413C00(void*);
-extern "C" void __stdcall sub_414170(void*);
-
-void CRbxDocTemplate::f(int arg)
-{
-    if (this->field0 == 0) {
-        void* p = sub_413C00((char*)this + 4);
-        sub_414170(p);
-    }
-    this->fn(arg, this->field8);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_cppunwind_fa27daf49781ff99.cpp

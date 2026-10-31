@@ -1,235 +1,617 @@
 // from server: 100% by auto
-// roc 2008-06 00525570  unit: seg_00520000  size: 704 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00525570
-//
-// 00525570  53                   push ebx
-// 00525571  56                   push esi
-// 00525572  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 00525576  8b4628               mov eax, dword ptr [esi + 0x28]
-// 00525579  57                   push edi
-// 0052557a  83f805               cmp eax, 5
-// 0052557d  0f877c020000         ja 0x5257ff
-// 00525583  ff248518585200       jmp dword ptr [eax*4 + 0x525818]
-// 0052558a  837e1464             cmp dword ptr [esi + 0x14], 0x64
-// 0052558e  741b                 je 0x5255ab
-// 00525590  8b06                 mov eax, dword ptr [esi]
-// 00525592  c7401414000000       mov dword ptr [eax + 0x14], 0x14
-// 00525599  8b0e                 mov ecx, dword ptr [esi]
-// 0052559b  8b5614               mov edx, dword ptr [esi + 0x14]
-// 0052559e  895118               mov dword ptr [ecx + 0x18], edx
-// 005255a1  8b06                 mov eax, dword ptr [esi]
-// 005255a3  8b08                 mov ecx, dword ptr [eax]
-// 005255a5  56                   push esi
-// 005255a6  ffd1                 call ecx
-// 005255a8  83c404               add esp, 4
-// 005255ab  b801000000           mov eax, 1
-// 005255b0  894640               mov dword ptr [esi + 0x40], eax
-// 005255b3  8886c4000000         mov byte ptr [esi + 0xc4], al
-// 005255b9  89463c               mov dword ptr [esi + 0x3c], eax
-// 005255bc  33c9                 xor ecx, ecx
-// 005255be  888ecc000000         mov byte ptr [esi + 0xcc], cl
-// 005255c4  8b7644               mov esi, dword ptr [esi + 0x44]
-// 005255c7  5f                   pop edi
-// 005255c8  8906                 mov dword ptr [esi], eax
-// 005255ca  894608               mov dword ptr [esi + 8], eax
-// 005255cd  89460c               mov dword ptr [esi + 0xc], eax
-// 005255d0  894e10               mov dword ptr [esi + 0x10], ecx
-// 005255d3  894e14               mov dword ptr [esi + 0x14], ecx
-// 005255d6  894e18               mov dword ptr [esi + 0x18], ecx
-// 005255d9  5e                   pop esi
-// 005255da  5b                   pop ebx
-// 005255db  c3                   ret 
-// 005255dc  837e1464             cmp dword ptr [esi + 0x14], 0x64
-// 005255e0  741b                 je 0x5255fd
-// 005255e2  8b16                 mov edx, dword ptr [esi]
-// 005255e4  c7421414000000       mov dword ptr [edx + 0x14], 0x14
-// 005255eb  8b06                 mov eax, dword ptr [esi]
-// 005255ed  8b4e14               mov ecx, dword ptr [esi + 0x14]
-// 005255f0  894818               mov dword ptr [eax + 0x18], ecx
-// 005255f3  8b16                 mov edx, dword ptr [esi]
-// 005255f5  8b02                 mov eax, dword ptr [edx]
-// 005255f7  56                   push esi
-// 005255f8  ffd0                 call eax
-// 005255fa  83c404               add esp, 4
-// 005255fd  8b5644               mov edx, dword ptr [esi + 0x44]
-// 00525600  b801000000           mov eax, 1
-// 00525605  8886c4000000         mov byte ptr [esi + 0xc4], al
-// 0052560b  33c9                 xor ecx, ecx
-// 0052560d  888ecc000000         mov byte ptr [esi + 0xcc], cl
-// 00525613  bb03000000           mov ebx, 3
-// 00525618  895e40               mov dword ptr [esi + 0x40], ebx
-// 0052561b  895e3c               mov dword ptr [esi + 0x3c], ebx
-// 0052561e  8902                 mov dword ptr [edx], eax
-// 00525620  bf02000000           mov edi, 2
-// 00525625  897a08               mov dword ptr [edx + 8], edi
-// 00525628  897a0c               mov dword ptr [edx + 0xc], edi
-// 0052562b  894a10               mov dword ptr [edx + 0x10], ecx
-// 0052562e  894a14               mov dword ptr [edx + 0x14], ecx
-// 00525631  894a18               mov dword ptr [edx + 0x18], ecx
-// 00525634  8b4e44               mov ecx, dword ptr [esi + 0x44]
-// 00525637  897954               mov dword ptr [ecx + 0x54], edi
-// 0052563a  89415c               mov dword ptr [ecx + 0x5c], eax
-// 0052563d  83c154               add ecx, 0x54
-// 00525640  89410c               mov dword ptr [ecx + 0xc], eax
-// 00525643  894110               mov dword ptr [ecx + 0x10], eax
-// 00525646  894114               mov dword ptr [ecx + 0x14], eax
-// 00525649  894118               mov dword ptr [ecx + 0x18], eax
-// 0052564c  8b7644               mov esi, dword ptr [esi + 0x44]
-// 0052564f  81c6a8000000         add esi, 0xa8
-// 00525655  891e                 mov dword ptr [esi], ebx
-// 00525657  894608               mov dword ptr [esi + 8], eax
-// 0052565a  89460c               mov dword ptr [esi + 0xc], eax
-// 0052565d  894610               mov dword ptr [esi + 0x10], eax
-// 00525660  894614               mov dword ptr [esi + 0x14], eax
-// 00525663  5f                   pop edi
-// 00525664  894618               mov dword ptr [esi + 0x18], eax
-// 00525667  5e                   pop esi
-// 00525668  5b                   pop ebx
-// 00525669  c3                   ret 
-// 0052566a  837e1464             cmp dword ptr [esi + 0x14], 0x64
-// 0052566e  748d                 je 0x5255fd
-// 00525670  8b0e                 mov ecx, dword ptr [esi]
-// 00525672  c7411414000000       mov dword ptr [ecx + 0x14], 0x14
-// 00525679  8b16                 mov edx, dword ptr [esi]
-// 0052567b  8b4614               mov eax, dword ptr [esi + 0x14]
-// 0052567e  894218               mov dword ptr [edx + 0x18], eax
-// 00525681  8b0e                 mov ecx, dword ptr [esi]
-// 00525683  8b11                 mov edx, dword ptr [ecx]
-// 00525685  56                   push esi
-// 00525686  ffd2                 call edx
-// 00525688  e96dffffff           jmp 0x5255fa
-// 0052568d  837e1464             cmp dword ptr [esi + 0x14], 0x64
-// 00525691  741b                 je 0x5256ae
-// 00525693  8b06                 mov eax, dword ptr [esi]
-// 00525695  c7401414000000       mov dword ptr [eax + 0x14], 0x14
-// 0052569c  8b0e                 mov ecx, dword ptr [esi]
-// 0052569e  8b5614               mov edx, dword ptr [esi + 0x14]
-// 005256a1  895118               mov dword ptr [ecx + 0x18], edx
-// 005256a4  8b06                 mov eax, dword ptr [esi]
-// 005256a6  8b08                 mov ecx, dword ptr [eax]
-// 005256a8  56                   push esi
-// 005256a9  ffd1                 call ecx
-// 005256ab  83c404               add esp, 4
-// 005256ae  8b5644               mov edx, dword ptr [esi + 0x44]
-// 005256b1  33c9                 xor ecx, ecx
-// 005256b3  888ec4000000         mov byte ptr [esi + 0xc4], cl
-// 005256b9  b801000000           mov eax, 1
-// 005256be  8886cc000000         mov byte ptr [esi + 0xcc], al
-// 005256c4  bb04000000           mov ebx, 4
-// 005256c9  895e40               mov dword ptr [esi + 0x40], ebx
-// 005256cc  895e3c               mov dword ptr [esi + 0x3c], ebx
-// 005256cf  c70243000000         mov dword ptr [edx], 0x43
-// 005256d5  894208               mov dword ptr [edx + 8], eax
-// 005256d8  89420c               mov dword ptr [edx + 0xc], eax
-// 005256db  894a10               mov dword ptr [edx + 0x10], ecx
-// 005256de  894a14               mov dword ptr [edx + 0x14], ecx
-// 005256e1  894a18               mov dword ptr [edx + 0x18], ecx
-// 005256e4  8b5644               mov edx, dword ptr [esi + 0x44]
-// 005256e7  c742544d000000       mov dword ptr [edx + 0x54], 0x4d
-// 005256ee  89425c               mov dword ptr [edx + 0x5c], eax
-// 005256f1  894260               mov dword ptr [edx + 0x60], eax
-// 005256f4  894a64               mov dword ptr [edx + 0x64], ecx
-// 005256f7  894a68               mov dword ptr [edx + 0x68], ecx
-// 005256fa  894a6c               mov dword ptr [edx + 0x6c], ecx
-// 005256fd  83c254               add edx, 0x54
-// 00525700  8b5644               mov edx, dword ptr [esi + 0x44]
-// 00525703  81c2a8000000         add edx, 0xa8
-// 00525709  c70259000000         mov dword ptr [edx], 0x59
-// 0052570f  894208               mov dword ptr [edx + 8], eax
-// 00525712  89420c               mov dword ptr [edx + 0xc], eax
-// 00525715  894a10               mov dword ptr [edx + 0x10], ecx
-// 00525718  894a14               mov dword ptr [edx + 0x14], ecx
-// 0052571b  894a18               mov dword ptr [edx + 0x18], ecx
-// 0052571e  8b7644               mov esi, dword ptr [esi + 0x44]
-// 00525721  81c6fc000000         add esi, 0xfc
-// 00525727  5f                   pop edi
-// 00525728  c7064b000000         mov dword ptr [esi], 0x4b
-// 0052572e  894608               mov dword ptr [esi + 8], eax
-// 00525731  89460c               mov dword ptr [esi + 0xc], eax
-// 00525734  894e10               mov dword ptr [esi + 0x10], ecx
-// 00525737  894e14               mov dword ptr [esi + 0x14], ecx
-// 0052573a  894e18               mov dword ptr [esi + 0x18], ecx
-// 0052573d  5e                   pop esi
-// 0052573e  5b                   pop ebx
-// 0052573f  c3                   ret 
-// 00525740  837e1464             cmp dword ptr [esi + 0x14], 0x64
-// 00525744  741b                 je 0x525761
-// 00525746  8b16                 mov edx, dword ptr [esi]
-// 00525748  c7421414000000       mov dword ptr [edx + 0x14], 0x14
-// 0052574f  8b06                 mov eax, dword ptr [esi]
-// 00525751  8b4e14               mov ecx, dword ptr [esi + 0x14]
-// 00525754  894818               mov dword ptr [eax + 0x18], ecx
-// 00525757  8b16                 mov edx, dword ptr [esi]
-// 00525759  8b02                 mov eax, dword ptr [edx]
-// 0052575b  56                   push esi
-// 0052575c  ffd0                 call eax
-// 0052575e  83c404               add esp, 4
-// 00525761  8b5644               mov edx, dword ptr [esi + 0x44]
-// 00525764  c7464005000000       mov dword ptr [esi + 0x40], 5
-// 0052576b  b801000000           mov eax, 1
-// 00525770  8886cc000000         mov byte ptr [esi + 0xcc], al
-// 00525776  33c9                 xor ecx, ecx
-// 00525778  888ec4000000         mov byte ptr [esi + 0xc4], cl
-// 0052577e  bf02000000           mov edi, 2
-// 00525783  bb04000000           mov ebx, 4
-// 00525788  895e3c               mov dword ptr [esi + 0x3c], ebx
-// 0052578b  897a08               mov dword ptr [edx + 8], edi
-// 0052578e  897a0c               mov dword ptr [edx + 0xc], edi
-// 00525791  8902                 mov dword ptr [edx], eax
-// 00525793  894a10               mov dword ptr [edx + 0x10], ecx
-// 00525796  894a14               mov dword ptr [edx + 0x14], ecx
-// 00525799  894a18               mov dword ptr [edx + 0x18], ecx
-// 0052579c  8b5644               mov edx, dword ptr [esi + 0x44]
-// 0052579f  897a54               mov dword ptr [edx + 0x54], edi
-// 005257a2  89425c               mov dword ptr [edx + 0x5c], eax
-// 005257a5  894260               mov dword ptr [edx + 0x60], eax
-// 005257a8  894264               mov dword ptr [edx + 0x64], eax
-// 005257ab  894268               mov dword ptr [edx + 0x68], eax
-// 005257ae  89426c               mov dword ptr [edx + 0x6c], eax
-// 005257b1  83c254               add edx, 0x54
-// 005257b4  8b5644               mov edx, dword ptr [esi + 0x44]
-// 005257b7  81c2a8000000         add edx, 0xa8
-// 005257bd  c70203000000         mov dword ptr [edx], 3
-// 005257c3  894208               mov dword ptr [edx + 8], eax
-// 005257c6  89420c               mov dword ptr [edx + 0xc], eax
-// 005257c9  894210               mov dword ptr [edx + 0x10], eax
-// 005257cc  894214               mov dword ptr [edx + 0x14], eax
-// 005257cf  894218               mov dword ptr [edx + 0x18], eax
-// 005257d2  8b7644               mov esi, dword ptr [esi + 0x44]
-// 005257d5  81c6fc000000         add esi, 0xfc
-// 005257db  897e08               mov dword ptr [esi + 8], edi
-// 005257de  897e0c               mov dword ptr [esi + 0xc], edi
-// 005257e1  5f                   pop edi
-// 005257e2  891e                 mov dword ptr [esi], ebx
-// 005257e4  894e10               mov dword ptr [esi + 0x10], ecx
-// 005257e7  894e14               mov dword ptr [esi + 0x14], ecx
-// 005257ea  894e18               mov dword ptr [esi + 0x18], ecx
-// 005257ed  5e                   pop esi
-// 005257ee  5b                   pop ebx
-// 005257ef  c3                   ret 
-// 005257f0  6a00                 push 0
-// 005257f2  56                   push esi
-// 005257f3  e888faffff           call 0x525280
-// 005257f8  83c408               add esp, 8
-// 005257fb  5f                   pop edi
-// 005257fc  5e                   pop esi
-// 005257fd  5b                   pop ebx
-// 005257fe  c3                   ret 
-// 005257ff  8b0e                 mov ecx, dword ptr [esi]
-// 00525801  c7411409000000       mov dword ptr [ecx + 0x14], 9
-// 00525808  8b16                 mov edx, dword ptr [esi]
-// 0052580a  8b02                 mov eax, dword ptr [edx]
-// 0052580c  56                   push esi
-// 0052580d  ffd0                 call eax
-// 0052580f  83c404               add esp, 4
-// 00525812  5f                   pop edi
-// 00525813  5e                   pop esi
-// 00525814  5b                   pop ebx
-// 00525815  c3                   ret 
-// 00525816  8bff                 mov edi, edi
-// library jpeg-6b/jcparam.c (function _jpeg_default_colorspace)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcparam.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcparam.c
+ *
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains optional default-setting code for the JPEG compressor.
+ * Applications do not have to use this file, but those that don't use it
+ * must know a lot more about the innards of the JPEG code.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * Quantization table setup routines
+ */
+
+GLOBAL(void)
+jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
+		      const unsigned int *basic_table,
+		      int scale_factor, boolean force_baseline)
+/* Define a quantization table equal to the basic_table times
+ * a scale factor (given as a percentage).
+ * If force_baseline is TRUE, the computed quantization table entries
+ * are limited to 1..255 for JPEG baseline compatibility.
+ */
+{
+  JQUANT_TBL ** qtblptr;
+  int i;
+  long temp;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  if (which_tbl < 0 || which_tbl >= NUM_QUANT_TBLS)
+    ERREXIT1(cinfo, JERR_DQT_INDEX, which_tbl);
+
+  qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
+
+  if (*qtblptr == NULL)
+    *qtblptr = jpeg_alloc_quant_table((j_common_ptr) cinfo);
+
+  for (i = 0; i < DCTSIZE2; i++) {
+    temp = ((long) basic_table[i] * scale_factor + 50L) / 100L;
+    /* limit the values to the valid range */
+    if (temp <= 0L) temp = 1L;
+    if (temp > 32767L) temp = 32767L; /* max quantizer needed for 12 bits */
+    if (force_baseline && temp > 255L)
+      temp = 255L;		/* limit to baseline range if requested */
+    (*qtblptr)->quantval[i] = (UINT16) temp;
+  }
+
+  /* Initialize sent_table FALSE so table will be written to JPEG file. */
+  (*qtblptr)->sent_table = FALSE;
+}
+
+
+GLOBAL(void)
+jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
+			 boolean force_baseline)
+/* Set or change the 'quality' (quantization) setting, using default tables
+ * and a straight percentage-scaling quality scale.  In most cases it's better
+ * to use jpeg_set_quality (below); this entry point is provided for
+ * applications that insist on a linear percentage scaling.
+ */
+{
+  /* These are the sample quantization tables given in JPEG spec section K.1.
+   * The spec says that the values given produce "good" quality, and
+   * when divided by 2, "very good" quality.
+   */
+  static const unsigned int std_luminance_quant_tbl[DCTSIZE2] = {
+    16,  11,  10,  16,  24,  40,  51,  61,
+    12,  12,  14,  19,  26,  58,  60,  55,
+    14,  13,  16,  24,  40,  57,  69,  56,
+    14,  17,  22,  29,  51,  87,  80,  62,
+    18,  22,  37,  56,  68, 109, 103,  77,
+    24,  35,  55,  64,  81, 104, 113,  92,
+    49,  64,  78,  87, 103, 121, 120, 101,
+    72,  92,  95,  98, 112, 100, 103,  99
+  };
+  static const unsigned int std_chrominance_quant_tbl[DCTSIZE2] = {
+    17,  18,  24,  47,  99,  99,  99,  99,
+    18,  21,  26,  66,  99,  99,  99,  99,
+    24,  26,  56,  99,  99,  99,  99,  99,
+    47,  66,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99
+  };
+
+  /* Set up two quantization tables using the specified scaling */
+  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
+		       scale_factor, force_baseline);
+  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
+		       scale_factor, force_baseline);
+}
+
+
+GLOBAL(int)
+jpeg_quality_scaling (int quality)
+/* Convert a user-specified quality rating to a percentage scaling factor
+ * for an underlying quantization table, using our recommended scaling curve.
+ * The input 'quality' factor should be 0 (terrible) to 100 (very good).
+ */
+{
+  /* Safety limit on quality factor.  Convert 0 to 1 to avoid zero divide. */
+  if (quality <= 0) quality = 1;
+  if (quality > 100) quality = 100;
+
+  /* The basic table is used as-is (scaling 100) for a quality of 50.
+   * Qualities 50..100 are converted to scaling percentage 200 - 2*Q;
+   * note that at Q=100 the scaling is 0, which will cause jpeg_add_quant_table
+   * to make all the table entries 1 (hence, minimum quantization loss).
+   * Qualities 1..50 are converted to scaling percentage 5000/Q.
+   */
+  if (quality < 50)
+    quality = 5000 / quality;
+  else
+    quality = 200 - quality*2;
+
+  return quality;
+}
+
+
+GLOBAL(void)
+jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
+/* Set or change the 'quality' (quantization) setting, using default tables.
+ * This is the standard quality-adjusting entry point for typical user
+ * interfaces; only those who want detailed control over quantization tables
+ * would use the preceding three routines directly.
+ */
+{
+  /* Convert user 0-100 rating to percentage scaling */
+  quality = jpeg_quality_scaling(quality);
+
+  /* Set up standard quality tables */
+  jpeg_set_linear_quality(cinfo, quality, force_baseline);
+}
+
+
+/*
+ * Huffman table setup routines
+ */
+
+LOCAL(void)
+add_huff_table (j_compress_ptr cinfo,
+		JHUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
+/* Define a Huffman table */
+{
+  int nsymbols, len;
+
+  if (*htblptr == NULL)
+    *htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
+
+  /* Copy the number-of-symbols-of-each-code-length counts */
+  MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
+
+  /* Validate the counts.  We do this here mainly so we can copy the right
+   * number of symbols from the val[] array, without risking marching off
+   * the end of memory.  jchuff.c will do a more thorough test later.
+   */
+  nsymbols = 0;
+  for (len = 1; len <= 16; len++)
+    nsymbols += bits[len];
+  if (nsymbols < 1 || nsymbols > 256)
+    ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+
+  MEMCOPY((*htblptr)->huffval, val, nsymbols * SIZEOF(UINT8));
+
+  /* Initialize sent_table FALSE so table will be written to JPEG file. */
+  (*htblptr)->sent_table = FALSE;
+}
+
+
+LOCAL(void)
+std_huff_tables (j_compress_ptr cinfo)
+/* Set up the standard Huffman tables (cf. JPEG standard section K.3) */
+/* IMPORTANT: these are only valid for 8-bit data precision! */
+{
+  static const UINT8 bits_dc_luminance[17] =
+    { /* 0-base */ 0, 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+  static const UINT8 val_dc_luminance[] =
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+  
+  static const UINT8 bits_dc_chrominance[17] =
+    { /* 0-base */ 0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
+  static const UINT8 val_dc_chrominance[] =
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+  
+  static const UINT8 bits_ac_luminance[17] =
+    { /* 0-base */ 0, 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d };
+  static const UINT8 val_ac_luminance[] =
+    { 0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12,
+      0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07,
+      0x22, 0x71, 0x14, 0x32, 0x81, 0x91, 0xa1, 0x08,
+      0x23, 0x42, 0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0,
+      0x24, 0x33, 0x62, 0x72, 0x82, 0x09, 0x0a, 0x16,
+      0x17, 0x18, 0x19, 0x1a, 0x25, 0x26, 0x27, 0x28,
+      0x29, 0x2a, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+      0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
+      0x4a, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59,
+      0x5a, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
+      0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79,
+      0x7a, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
+      0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98,
+      0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+      0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
+      0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3, 0xc4, 0xc5,
+      0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4,
+      0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2,
+      0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea,
+      0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
+      0xf9, 0xfa };
+  
+  static const UINT8 bits_ac_chrominance[17] =
+    { /* 0-base */ 0, 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77 };
+  static const UINT8 val_ac_chrominance[] =
+    { 0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21,
+      0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71,
+      0x13, 0x22, 0x32, 0x81, 0x08, 0x14, 0x42, 0x91,
+      0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33, 0x52, 0xf0,
+      0x15, 0x62, 0x72, 0xd1, 0x0a, 0x16, 0x24, 0x34,
+      0xe1, 0x25, 0xf1, 0x17, 0x18, 0x19, 0x1a, 0x26,
+      0x27, 0x28, 0x29, 0x2a, 0x35, 0x36, 0x37, 0x38,
+      0x39, 0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
+      0x49, 0x4a, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58,
+      0x59, 0x5a, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68,
+      0x69, 0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
+      0x79, 0x7a, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+      0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96,
+      0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5,
+      0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4,
+      0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3,
+      0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2,
+      0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
+      0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9,
+      0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
+      0xf9, 0xfa };
+  
+  add_huff_table(cinfo, &cinfo->dc_huff_tbl_ptrs[0],
+		 bits_dc_luminance, val_dc_luminance);
+  add_huff_table(cinfo, &cinfo->ac_huff_tbl_ptrs[0],
+		 bits_ac_luminance, val_ac_luminance);
+  add_huff_table(cinfo, &cinfo->dc_huff_tbl_ptrs[1],
+		 bits_dc_chrominance, val_dc_chrominance);
+  add_huff_table(cinfo, &cinfo->ac_huff_tbl_ptrs[1],
+		 bits_ac_chrominance, val_ac_chrominance);
+}
+
+
+/*
+ * Default parameter setup for compression.
+ *
+ * Applications that don't choose to use this routine must do their
+ * own setup of all these parameters.  Alternately, you can call this
+ * to establish defaults and then alter parameters selectively.  This
+ * is the recommended approach since, if we add any new parameters,
+ * your code will still work (they'll be set to reasonable defaults).
+ */
+
+GLOBAL(void)
+jpeg_set_defaults (j_compress_ptr cinfo)
+{
+  int i;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Allocate comp_info array large enough for maximum component count.
+   * Array is made permanent in case application wants to compress
+   * multiple images at same param settings.
+   */
+  if (cinfo->comp_info == NULL)
+    cinfo->comp_info = (jpeg_component_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				  MAX_COMPONENTS * SIZEOF(jpeg_component_info));
+
+  /* Initialize everything not dependent on the color space */
+
+  cinfo->data_precision = BITS_IN_JSAMPLE;
+  /* Set up two quantization tables using default quality of 75 */
+  jpeg_set_quality(cinfo, 75, TRUE);
+  /* Set up two Huffman tables */
+  std_huff_tables(cinfo);
+
+  /* Initialize default arithmetic coding conditioning */
+  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+    cinfo->arith_dc_L[i] = 0;
+    cinfo->arith_dc_U[i] = 1;
+    cinfo->arith_ac_K[i] = 5;
+  }
+
+  /* Default is no multiple-scan output */
+  cinfo->scan_info = NULL;
+  cinfo->num_scans = 0;
+
+  /* Expect normal source image, not raw downsampled data */
+  cinfo->raw_data_in = FALSE;
+
+  /* Use Huffman coding, not arithmetic coding, by default */
+  cinfo->arith_code = FALSE;
+
+  /* By default, don't do extra passes to optimize entropy coding */
+  cinfo->optimize_coding = FALSE;
+  /* The standard Huffman tables are only valid for 8-bit data precision.
+   * If the precision is higher, force optimization on so that usable
+   * tables will be computed.  This test can be removed if default tables
+   * are supplied that are valid for the desired precision.
+   */
+  if (cinfo->data_precision > 8)
+    cinfo->optimize_coding = TRUE;
+
+  /* By default, use the simpler non-cosited sampling alignment */
+  cinfo->CCIR601_sampling = FALSE;
+
+  /* No input smoothing */
+  cinfo->smoothing_factor = 0;
+
+  /* DCT algorithm preference */
+  cinfo->dct_method = JDCT_DEFAULT;
+
+  /* No restart markers */
+  cinfo->restart_interval = 0;
+  cinfo->restart_in_rows = 0;
+
+  /* Fill in default JFIF marker parameters.  Note that whether the marker
+   * will actually be written is determined by jpeg_set_colorspace.
+   *
+   * By default, the library emits JFIF version code 1.01.
+   * An application that wants to emit JFIF 1.02 extension markers should set
+   * JFIF_minor_version to 2.  We could probably get away with just defaulting
+   * to 1.02, but there may still be some decoders in use that will complain
+   * about that; saying 1.01 should minimize compatibility problems.
+   */
+  cinfo->JFIF_major_version = 1; /* Default JFIF version = 1.01 */
+  cinfo->JFIF_minor_version = 1;
+  cinfo->density_unit = 0;	/* Pixel size is unknown by default */
+  cinfo->X_density = 1;		/* Pixel aspect ratio is square by default */
+  cinfo->Y_density = 1;
+
+  /* Choose JPEG colorspace based on input space, set defaults accordingly */
+
+  jpeg_default_colorspace(cinfo);
+}
+
+
+/*
+ * Select an appropriate JPEG colorspace for in_color_space.
+ */
+
+GLOBAL(void)
+jpeg_default_colorspace (j_compress_ptr cinfo)
+{
+  switch (cinfo->in_color_space) {
+  case JCS_GRAYSCALE:
+    jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
+    break;
+  case JCS_RGB:
+    jpeg_set_colorspace(cinfo, JCS_YCbCr);
+    break;
+  case JCS_YCbCr:
+    jpeg_set_colorspace(cinfo, JCS_YCbCr);
+    break;
+  case JCS_CMYK:
+    jpeg_set_colorspace(cinfo, JCS_CMYK); /* By default, no translation */
+    break;
+  case JCS_YCCK:
+    jpeg_set_colorspace(cinfo, JCS_YCCK);
+    break;
+  case JCS_UNKNOWN:
+    jpeg_set_colorspace(cinfo, JCS_UNKNOWN);
+    break;
+  default:
+    ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+  }
+}
+
+
+/*
+ * Set the JPEG colorspace, and choose colorspace-dependent default values.
+ */
+
+GLOBAL(void)
+jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
+{
+  jpeg_component_info * compptr;
+  int ci;
+
+#define SET_COMP(index,id,hsamp,vsamp,quant,dctbl,actbl)  \
+  (compptr = &cinfo->comp_info[index], \
+   compptr->component_id = (id), \
+   compptr->h_samp_factor = (hsamp), \
+   compptr->v_samp_factor = (vsamp), \
+   compptr->quant_tbl_no = (quant), \
+   compptr->dc_tbl_no = (dctbl), \
+   compptr->ac_tbl_no = (actbl) )
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* For all colorspaces, we use Q and Huff tables 0 for luminance components,
+   * tables 1 for chrominance components.
+   */
+
+  cinfo->jpeg_color_space = colorspace;
+
+  cinfo->write_JFIF_header = FALSE; /* No marker for non-JFIF colorspaces */
+  cinfo->write_Adobe_marker = FALSE; /* write no Adobe marker by default */
+
+  switch (colorspace) {
+  case JCS_GRAYSCALE:
+    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+    cinfo->num_components = 1;
+    /* JFIF specifies component ID 1 */
+    SET_COMP(0, 1, 1,1, 0, 0,0);
+    break;
+  case JCS_RGB:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag RGB */
+    cinfo->num_components = 3;
+    SET_COMP(0, 0x52 /* 'R' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x47 /* 'G' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x42 /* 'B' */, 1,1, 0, 0,0);
+    break;
+  case JCS_YCbCr:
+    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+    cinfo->num_components = 3;
+    /* JFIF specifies component IDs 1,2,3 */
+    /* We default to 2x2 subsamples of chrominance */
+    SET_COMP(0, 1, 2,2, 0, 0,0);
+    SET_COMP(1, 2, 1,1, 1, 1,1);
+    SET_COMP(2, 3, 1,1, 1, 1,1);
+    break;
+  case JCS_CMYK:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag CMYK */
+    cinfo->num_components = 4;
+    SET_COMP(0, 0x43 /* 'C' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x4D /* 'M' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x59 /* 'Y' */, 1,1, 0, 0,0);
+    SET_COMP(3, 0x4B /* 'K' */, 1,1, 0, 0,0);
+    break;
+  case JCS_YCCK:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag YCCK */
+    cinfo->num_components = 4;
+    SET_COMP(0, 1, 2,2, 0, 0,0);
+    SET_COMP(1, 2, 1,1, 1, 1,1);
+    SET_COMP(2, 3, 1,1, 1, 1,1);
+    SET_COMP(3, 4, 2,2, 0, 0,0);
+    break;
+  case JCS_UNKNOWN:
+    cinfo->num_components = cinfo->input_components;
+    if (cinfo->num_components < 1 || cinfo->num_components > MAX_COMPONENTS)
+      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
+	       MAX_COMPONENTS);
+    for (ci = 0; ci < cinfo->num_components; ci++) {
+      SET_COMP(ci, ci, 1,1, 0, 0,0);
+    }
+    break;
+  default:
+    ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+  }
+}
+
+
+#ifdef C_PROGRESSIVE_SUPPORTED
+
+LOCAL(jpeg_scan_info *)
+fill_a_scan (jpeg_scan_info * scanptr, int ci,
+	     int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for specified component */
+{
+  scanptr->comps_in_scan = 1;
+  scanptr->component_index[0] = ci;
+  scanptr->Ss = Ss;
+  scanptr->Se = Se;
+  scanptr->Ah = Ah;
+  scanptr->Al = Al;
+  scanptr++;
+  return scanptr;
+}
+
+LOCAL(jpeg_scan_info *)
+fill_scans (jpeg_scan_info * scanptr, int ncomps,
+	    int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for each component */
+{
+  int ci;
+
+  for (ci = 0; ci < ncomps; ci++) {
+    scanptr->comps_in_scan = 1;
+    scanptr->component_index[0] = ci;
+    scanptr->Ss = Ss;
+    scanptr->Se = Se;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  }
+  return scanptr;
+}
+
+LOCAL(jpeg_scan_info *)
+fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
+/* Support routine: generate interleaved DC scan if possible, else N scans */
+{
+  int ci;
+
+  if (ncomps <= MAX_COMPS_IN_SCAN) {
+    /* Single interleaved DC scan */
+    scanptr->comps_in_scan = ncomps;
+    for (ci = 0; ci < ncomps; ci++)
+      scanptr->component_index[ci] = ci;
+    scanptr->Ss = scanptr->Se = 0;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  } else {
+    /* Noninterleaved DC scan for each component */
+    scanptr = fill_scans(scanptr, ncomps, 0, 0, Ah, Al);
+  }
+  return scanptr;
+}
+
+
+/*
+ * Create a recommended progressive-JPEG script.
+ * cinfo->num_components and cinfo->jpeg_color_space must be correct.
+ */
+
+GLOBAL(void)
+jpeg_simple_progression (j_compress_ptr cinfo)
+{
+  int ncomps = cinfo->num_components;
+  int nscans;
+  jpeg_scan_info * scanptr;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Figure space needed for script.  Calculation must match code below! */
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    nscans = 10;
+  } else {
+    /* All-purpose script for other color spaces. */
+    if (ncomps > MAX_COMPS_IN_SCAN)
+      nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
+    else
+      nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+  }
+
+  /* Allocate space for script.
+   * We need to put it in the permanent pool in case the application performs
+   * multiple compressions without changing the settings.  To avoid a memory
+   * leak if jpeg_simple_progression is called repeatedly for the same JPEG
+   * object, we try to re-use previously allocated space, and we allocate
+   * enough space to handle YCbCr even if initially asked for grayscale.
+   */
+  if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
+    cinfo->script_space_size = MAX(nscans, 10);
+    cinfo->script_space = (jpeg_scan_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+			cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+  }
+  scanptr = cinfo->script_space;
+  cinfo->scan_info = scanptr;
+  cinfo->num_scans = nscans;
+
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    /* Initial DC scan */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    /* Initial AC scan: get some luma data out in a hurry */
+    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);
+    /* Chroma data is too small to be worth expending many scans on */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 1);
+    /* Complete spectral selection for luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 2);
+    /* Refine next bit of luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+    /* Finish DC successive approximation */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    /* Finish AC successive approximation */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
+    /* Luma bottom bit comes last since it's usually largest scan */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+  } else {
+    /* All-purpose script for other color spaces. */
+    /* Successive approximation first pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
+    scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);
+    /* Successive approximation second pass */
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
+    /* Successive approximation final pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+  }
+}
+
+#endif /* C_PROGRESSIVE_SUPPORTED */

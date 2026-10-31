@@ -1,504 +1,548 @@
-// from server: 42% by tester
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-g3d GLG3Dcpp/ToneMap.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Vector3.cpp
- 
- 3D vector class
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
- 
- @created 2001-06-02
- @edited  2006-01-30
- */
+#include "GLG3D/ToneMap.h"
+#include <GLG3D/Draw.h>
+#include <G3D/Rect2D.h>
 
-#include <limits>
-#include <stdlib.h>
-#include "G3D/Vector3.h"
-#include "G3D/g3dmath.h"
-#include "G3D/stringutils.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
-#include "G3D/Vector3int16.h"
-#include "G3D/Matrix3.h"
-#include "G3D/Vector2.h"
- 
 namespace G3D {
 
-Vector3 Vector3::dummy;
+ToneMap::Profile ToneMap::profile = ToneMap::UNINITIALIZED;
 
-// Deprecated.
-const Vector3 Vector3::ZERO(0, 0, 0);
-const Vector3 Vector3::ZERO3(0, 0, 0);
-const Vector3 Vector3::UNIT_X(1, 0, 0);
-const Vector3 Vector3::UNIT_Y(0, 1, 0);
-const Vector3 Vector3::UNIT_Z(0, 0, 1);
-const Vector3 Vector3::INF3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
-const Vector3 Vector3::NAN3((float)G3D::nan(), (float)G3D::nan(), (float)G3D::nan());
+ShaderRef  ToneMap::bloomShader[3];
+GLuint     ToneMap::gammaShaderPS14ATI;
+TextureRef ToneMap::RG;
+TextureRef ToneMap::B;
 
-Vector3::Vector3(const class Vector2& v, float _z) : x(v.x), y(v.y), z(_z) {
+void ToneMap::beginFrame(RenderDevice* rd) {
+    // Intentionally empty.  Future implementations might
+    // use this opportunity to switch from the back buffer to a 
+    // render buffer.
 }
 
-Vector3::Axis Vector3::primaryAxis() const {
+
+void ToneMap::endFrame(RenderDevice* rd) {
+    if (! mEnabled) {
+        return;
+    }
+
+    switch (profile) {
+    case PS20:
+        applyPS20(rd);
+        break;
+        
+    case PS14ATI:
+        applyPS14ATI(rd);
+        break;
+        
+    default:
+        // No tone mapping
+        ;
+    }
+}
+
+
+TextureRef ToneMap::getBloomMap(RenderDevice* rd) const {
+    if (stereo && 
+        (rd->drawBuffer() == RenderDevice::BUFFER_FRONT_RIGHT) ||
+        (rd->drawBuffer() == RenderDevice::BUFFER_BACK_RIGHT)) {
+        return stereoBloomMap[1];
+    } else {
+        return stereoBloomMap[0];
+    }
+}
+
+
+void ToneMap::applyPS14ATI(RenderDevice* rd) {
+
+    // TODO: obey viewport
+
+    // TODO: gamma correct
+    // TODO: bloom
+    resizeImages(rd);
+    TextureRef bloomMap = getBloomMap(rd);
+
+    // We're going to use combiners, which G3D does not preserve
+    glPushAttrib(GL_TEXTURE_BIT);
+    rd->push2D();
+        rd->disableLighting();
+
+        // Undo renderdevice's 0.35 translation
+        rd->setCameraToWorldMatrix(CoordinateFrame(Matrix3::identity(), Vector3(0, 0, 0.0)));
+        
+        Rect2D rect = Rect2D::xywh(0, 0, rd->width(), rd->height());
+        Rect2D smallRect = bloomMap->rect2DBounds();
+        screenImage->copyFromScreen(rect);
+        
+        glBindFragmentShaderATI(gammaShaderPS14ATI);
+        glEnable(GL_FRAGMENT_SHADER_ATI);
+
+            rd->setTexture(0, screenImage);
+            rd->setTexture(1, RG);
+            rd->setTexture(2, B);
+
+            Draw::rect2D(rect, rd, Color3::white());
     
-    Axis a = X_AXIS;
+        glDisable(GL_FRAGMENT_SHADER_ATI);
+    rd->pop2D();
+    glPopAttrib();
+}
 
-    double nx = abs(x);
-    double ny = abs(y);
-    double nz = abs(z);
+/*
+        // On NVIDIA, use GL_NV_texture_shader OFFSET_TEXTURE_2D_NV
 
-    if (nx > ny) {
-        if (nx > nz) {
-            a = X_AXIS;
-        } else {
-            a = Z_AXIS;
+        // Combiner setup
+        //
+        // Unit 0:
+        // Mode = replace
+        // arg0 = texture (screen) 
+        // 
+        // Unit 1:
+        // Mode = dependent read off 0
+        // arg0 = texture (RG gamma) 
+        //
+        // Unit 2:
+        // Mode = dependent read off 0
+        // arg0 = texture (B gamma) 
+        //
+        // Unit 3:
+        // Mode = add
+        // arg0 = unit 1
+        // arg1 = unit 2 
+
+        // Apply gamma correction
+        rd->setTexture(0, screenImage);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_MODULATE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+
+        rd->setTexture(1, RG);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 1);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   BUMP_TARGET_ATI);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+        
+        rd->setTexture(2, B);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 2);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_MODULATE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+
+        rd->setTexture(3, B); // Bind B as a dummy texture
+        glActiveTextureARB(GL_TEXTURE0_ARB + 3);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_ADD);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_TEXTURE1_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE2_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+        */
+
+
+void ToneMap::applyPS20(RenderDevice* rd) {
+    // TODO: obey viewport
+
+    resizeImages(rd);
+    TextureRef bloomMap = getBloomMap(rd);
+
+    rd->push2D();
+        rd->setAlphaTest(RenderDevice::ALPHA_ALWAYS_PASS, 0);    
+        rd->setColor(Color3::white());
+        // Undo renderdevice's 0.35 translation
+        rd->setCameraToWorldMatrix(CoordinateFrame());
+        rd->setObjectToWorldMatrix(CoordinateFrame());
+
+        // Grab the image of the screen that was just rendered
+        Rect2D rect = Rect2D::xywh(0, 0, rd->width(), rd->height());
+        screenImage->copyFromScreen(rect);
+        // Threshold, gaussian blur horizontally, and subsample so that we have an image 1/4 as wide.
+        bloomShader[0]->args.set("screenImage", screenImage);
+        rd->setShader(bloomShader[0]);
+        Draw::fastRect2D(bloomMapIntermediate->rect2DBounds(), rd);
+        bloomMapIntermediate->copyFromScreen(bloomMapIntermediate->rect2DBounds());
+
+        // Gaussian filter vertically and subsample so that we have an image 1/4 as high and 
+        // blend this result in with the previous frame's bloom map to produce motion blur in
+        // bright areas.
+        bloomShader[1]->args.set("bloomImage",  bloomMapIntermediate);
+        bloomShader[1]->args.set("oldBloom",    bloomMap);
+        rd->setShader(bloomShader[1]);
+        Draw::fastRect2D(bloomMap->rect2DBounds(), rd);
+        bloomMap->copyFromScreen(bloomMap->rect2DBounds());
+
+        bool showBloomMap = false; // Set to true for debugging
+        if (! showBloomMap) {
+            // Now combine
+            bloomShader[2]->args.set("screenImage", screenImage);
+            bloomShader[2]->args.set("bloomImage",  bloomMap);
+            bloomShader[2]->args.set("gamma",       RG);
+            rd->setShader(bloomShader[2]);
+            Draw::fastRect2D(rect, rd);
+        }                
+    rd->pop2D();
+}
+
+
+void ToneMap::makeGammaCorrectionTextures() {
+    if (RG.notNull() || (profile == NO_TONE)) {
+        return;
+    }
+    
+    // The inverse gamma ramp function
+    G3D::uint8 ramp[256];
+    
+    for (int i = 0; i < 256; ++i) {
+        // Linear
+        //ramp[i] = i;
+
+        // Inverse power
+        const double A = 1.9;
+        // Brighten the screen image by 1.0 / 0.75 = 1.34, since we darkened the 
+        // scene when rendering to avoid saturation.
+        ramp[i] = iClamp(iRound((1.0 - pow(1.0 - i/255.0, A)) * 255.0 / 0.75), 0, 255);
+
+        // Log
+        // const double A = 10, B = 1; 
+        // ramp[i] = iRound(((log(A*i/255.0 + B) - log(B)) /
+        //                  (log(A+B) - log(B))) * 255.0);
+    }
+    
+    GImage data(256, 256, 3);
+    
+    for (int g = 0; g < 256; ++g) {
+        for (int r = 0; r < 256; ++r) {
+            Color3uint8& p = data.pixel3(r, g);
+            p.r = ramp[r];
+            p.g = ramp[g];
+            p.b = 0;
         }
-    } else {
-        if (ny > nz) {
-            a = Y_AXIS;
-        } else {
-            a = Z_AXIS;
+    }
+    
+    // MIP-mapping causes bad interpolation for some reason
+    RG = Texture::fromGImage("RG Gamma", data, TextureFormat::RGB8, 
+        Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+        Texture::DEPTH_NORMAL, 1.0);
+    
+    if (profile != PS20) {
+        // On PS20 we can re-use the original RG texture
+        data.resize(256, 1, 3);
+        for (int b = 0; b < 256; ++b) {
+            Color3uint8& p = data.pixel3(b, 0);
+            p.r = 0;
+            p.g = 0;
+            p.b = ramp[b];
+        }
+    
+        B = Texture::fromGImage("B Gamma", data, TextureFormat::RGB8, 
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+            Texture::DEPTH_NORMAL, 1.0);
+    }
+}
+
+
+void ToneMap::makeShadersPS14ATI() {
+
+    // Really slow--appears to be implemented in software!
+    gammaShaderPS14ATI = glGenFragmentShadersATI(1);
+    glBindFragmentShaderATI(gammaShaderPS14ATI);
+    glBeginFragmentShaderATI();
+
+        // Pass 1
+
+        // R0 = texture0[texcoord0]
+        glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);  
+
+        // Move the blue component of R0 into the red component of R3
+        glColorFragmentOp1ATI(GL_MOV_ATI, GL_REG_3_ATI, GL_RED_BIT_ATI, GL_NONE, 
+                              GL_REG_0_ATI, GL_BLUE, GL_NONE);
+        // R1 = texture1[R0]
+        // R2 = texture2[R3]
+        glSampleMapATI(GL_REG_1_ATI, GL_REG_0_ATI, GL_SWIZZLE_STR_ATI);  
+        glSampleMapATI(GL_REG_2_ATI, GL_REG_3_ATI, GL_SWIZZLE_STR_ATI);
+
+        // At this point, R1 contains the gamma corrected red and green channels
+        // and R2 contains the corrected blue channel.  Combine them:
+
+        // R0 = R1 + R2
+        glColorFragmentOp2ATI(GL_ADD_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, 
+                              GL_REG_1_ATI, GL_NONE, GL_NONE,
+                              GL_REG_2_ATI, GL_NONE, GL_NONE);
+        
+        // R0 = texcoord 0
+        //glPassTexCoordATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);
+        // 
+        //glPassTexCoordATI(GL_REG_1_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);
+
+    glEndFragmentShaderATI();
+}
+
+
+void ToneMap::makeShadersPS20() {
+    // Bloom filter pass 1 (horizontal).
+    // Threshold and horizontal gaussian blur.
+    bloomShader[0] = Shader::fromStrings("",
+        std::string(
+        "/* Amount to brighten the bloom*/ \
+         const float scale = 3.0;\
+         const int kernelSize = 17;\
+         const float gaussCoef[kernelSize] = {\
+             0.013960189 * scale, 0.022308318 * scale, 0.033488752 * scale, 0.047226710 * scale,\
+             0.062565226 * scale, 0.077863682 * scale, 0.091031867 * scale, 0.099978946 * scale,\
+             0.103152619 * scale, 0.099978946 * scale, 0.091031867 * scale, 0.077863682 * scale,\
+             0.062565226 * scale, 0.047226710 * scale, 0.033488752 * scale, 0.022308318 * scale,\
+             0.013960189 * scale};") +
+        STR(
+        uniform sampler2D screenImage;
+
+        vec3 threshold(vec3 v) {
+            const float T = 0.88;
+            return vec3((v.r > T) ? v.r : 0.0,
+                        (v.g > T) ? v.g : 0.0,
+                        (v.b > T) ? v.b : 0.0);
+        }
+
+        vec3 sample(vec2 p, int tap, vec2 stride) {
+            return texture2D(screenImage, p + stride * float(tap)).rgb;
+        }
+        
+        void main() {
+
+            vec2 direction = vec2(1.0, 0.0);
+            vec2 pixelSize = g3d_sampler2DInvSize(screenImage);
+            vec2 stride    = pixelSize * 2.0 * direction;
+            
+            vec2 p = gl_TexCoord[0].xy + direction * pixelSize * (0.5 - float(kernelSize));
+            
+            vec3 color = threshold(sample(p, 0, stride)) * gaussCoef[0];
+            for (int tap = 1; tap < kernelSize; ++tap) {
+                color += threshold(sample(p, tap, stride)) * gaussCoef[tap];
+            }
+            
+            gl_FragColor.rgb = color;
+        }));
+
+    // Bloom filter pass 2 (vertical).
+    // Vertical gaussian blur and blend with the old bloom map.
+    bloomShader[1] = Shader::fromStrings("", 
+        std::string("const int kernelSize = 17;\
+         const float gaussCoef[kernelSize] = \
+            {0.013960189, 0.022308318, 0.033488752, 0.047226710, 0.062565226,\
+             0.077863682, 0.091031867, 0.099978946, 0.103152619, 0.099978946,\
+             0.091031867, 0.077863682, 0.062565226, 0.047226710, 0.033488752,\
+             0.022308318, 0.013960189};")+
+        STR(
+        uniform sampler2D bloomImage;
+        uniform sampler2D oldBloom;
+
+        vec3 sample(vec2 p, int tap, vec2 stride) {
+            return texture2D(bloomImage, p + stride * vec2(0.0, tap)).rgb;
+        }
+        
+        void main() {
+        
+            vec2 direction = vec2(0.0, 1.0);
+            vec2 pixelSize = g3d_sampler2DInvSize(bloomImage);
+            vec2 stride    = 2.0 * pixelSize * direction;
+            
+            vec2 p = gl_TexCoord[0].xy + direction * (0.5 - float(kernelSize)) * pixelSize;
+            
+            vec3 bloom = sample(p, 0, stride) * gaussCoef[0];
+            for (int tap = 1; tap < kernelSize; ++tap) {
+                bloom += sample(p, tap, stride) * gaussCoef[tap];
+            }
+            
+            vec3 old = texture2D(oldBloom, gl_TexCoord[0].xy).rgb;
+            
+            gl_FragColor.rgb = (bloom + old) * 0.7;
+        }));
+
+    // Bloom pass 3:
+    // Gamma correct the screen image and
+    // add it to a 2D blur of the bloom image.
+    bloomShader[2] = Shader::fromStrings("", 
+        STR(
+        uniform sampler2D screenImage;
+        uniform sampler2D bloomImage;
+        uniform sampler2D gamma; 
+
+        void main() {
+                
+            // Use a 3-vector so that swizzles give us the 4-neighbors
+            vec3 s = vec3(g3d_sampler2DInvSize(bloomImage) * 2.0, 0.0);
+            
+            // Offset by half a texel to get bilinear
+            vec2 p = gl_TexCoord[0].xy - s.xy * 0.5;
+            
+            vec3 bloom = 
+                (texture2D(bloomImage, p) +
+                 texture2D(bloomImage, p - s.xz) +
+                 texture2D(bloomImage, p + s.xz) +
+                 texture2D(bloomImage, p + s.zy) +
+                 texture2D(bloomImage, p - s.zy)).rgb * 0.2;
+            
+            vec3 screen = texture2D(screenImage, gl_TexCoord[0].xy).rgb;
+
+            // Apply gamma correction.  Use gamma lookup table.
+            // Process red and green simultaneously to reduce 
+            // the number of texture reads.
+            screen.rg = texture2D(gamma, screen.rg).rg;
+            screen.b  = texture2D(gamma, screen.rb).g; 
+            
+            gl_FragColor.rgb = screen + bloom;
+        }
+        ));
+  
+    // Shaders don't need to preserve state since tonemap is wrapped in
+    // push2D
+    for (int i = 0; i < 3; ++i) {
+        bloomShader[i]->setPreserveState(false);
+    }
+}
+
+
+ToneMap::ToneMap() : mEnabled(true) {
+
+    // Determine shading language profile
+
+    if (profile == UNINITIALIZED) {
+        profile = NO_TONE;
+        
+        if (GLCaps::supports_GL_ARB_texture_non_power_of_two()) {
+            if (Shader::supportsPixelShaders()) {
+                profile = PS20;
+            } else if (GLCaps::supports("GL_ARB_texture_env_crossbar") &&
+                GLCaps::supports("GL_ARB_texture_env_combine") &&
+                GLCaps::supports("GL_EXT_texture_env_add") &&
+                GLCaps::supports("GL_NV_texture_shader") &&
+                (GLCaps::numTextureUnits() >= 4)) {
+
+                profile = PS14NVIDIA;
+
+                // TODO: remove (not currently supporting PS14NIVIDA)
+                profile = NO_TONE;
+            } else if (GLCaps::supports("GL_ATI_fragment_shader") &&
+                (GLCaps::numTextureUnits() >= 4)) {
+
+                // profile = PS14ATI;
+                profile = NO_TONE;
+            }
         }
     }
 
-    return a;
-}
-
-
-unsigned int Vector3::hashCode() const {
-    unsigned int xhash = (*(int*)(void*)(&x));
-    unsigned int yhash = (*(int*)(void*)(&y));
-    unsigned int zhash = (*(int*)(void*)(&z));
-
-    return xhash + (yhash * 37) + (zhash * 101);
-}
-
-std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-    return os << v.toString();
-}
-
-
-//----------------------------------------------------------------------------
-
-double frand() {
-    return rand() / (double) RAND_MAX;
-}
-
-Vector3::Vector3(TextInput& t) {
-	deserialize(t);
-}
-
-Vector3::Vector3(BinaryInput& b) {
-    deserialize(b);
-}
-
-
-Vector3::Vector3(const class Vector3int16& v) {
-    x = v.x;
-    y = v.y;
-    z = v.z;
-}
-
-
-void Vector3::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-    z = b.readFloat32();
-}
-
-
-void Vector3::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(",");
-    z = (float)t.readNumber();
-    t.readSymbol(")");
-}
-
-
-void Vector3::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(",");
-   t.writeNumber(z);
-   t.writeSymbol(")");
-}
-
-
-void Vector3::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-    b.writeFloat32(z);
-}
-
-
-Vector3 Vector3::random() {
-    Vector3 result;
-
-    do {
-        result = Vector3(uniformRandom(-1.0, 1.0), 
-                         uniformRandom(-1.0, 1.0),
-                         uniformRandom(-1.0, 1.0));
-    } while (result.squaredMagnitude() >= 1.0f);
-
-    result.unitize();
-
-    return result;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::operator/ (float fScalar) const {
-    Vector3 kQuot;
-
-    if ( fScalar != 0.0 ) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.x = fInvScalar * x;
-        kQuot.y = fInvScalar * y;
-        kQuot.z = fInvScalar * z;
-        return kQuot;
-    } else {
-        return Vector3::inf();
+    if (profile != NO_TONE) {
+        makeGammaCorrectionTextures();
+        
+        if (profile == PS20) {
+            makeShadersPS20();
+        } else if (profile == PS14ATI) {
+            makeShadersPS14ATI();
+        }
     }
 }
 
-//----------------------------------------------------------------------------
-Vector3& Vector3::operator/= (float fScalar) {
-    if (fScalar != 0.0) {
-		float fInvScalar = 1.0f / fScalar;
-        x *= fInvScalar;
-        y *= fInvScalar;
-        z *= fInvScalar;
-    } else {
-        x = (float)G3D::inf();
-        y = (float)G3D::inf();
-        z = (float)G3D::inf();
-    }
 
-    return *this;
-}
+void ToneMap::resizeImages(RenderDevice* rd) {
+    
+    const Rect2D viewport = rd->getViewport();
+    
+    if (screenImage.isNull() ||
+        (viewport.wh() != screenImage->vector2Bounds())) {
 
-//----------------------------------------------------------------------------
-float Vector3::unitize (float fTolerance) {
-	float fMagnitude = magnitude();
+        screenImage = Texture::createEmpty(viewport.width(), viewport.height(), 
+            "Copied Screen Image", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT,
+            Texture::DEPTH_NORMAL, 1.0);
 
-    if (fMagnitude > fTolerance) {
-		float fInvMagnitude = 1.0f / fMagnitude;
-        x *= fInvMagnitude;
-        y *= fInvMagnitude;
-        z *= fInvMagnitude;
-    } else {
-        fMagnitude = 0.0f;
-    }
+        bloomMapIntermediate = Texture::createEmpty(viewport.width() / 4, viewport.height(), 
+            "Bloom map intermediate", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT, 
+            Texture::DEPTH_NORMAL, 1.0);
 
-    return fMagnitude;
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::reflectAbout(const Vector3& normal) const {
-
-    Vector3 out;
-
-    Vector3 N = normal.direction();
-
-    // 2 * normal.dot(this) * normal - this
-    return N * 2 * this->dot(N) - *this;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::cosRandom(const Vector3& normal) {
-    double e1 = G3D::random(0, 1);
-    double e2 = G3D::random(0, 1);
-
-    // Angle from normal
-    double theta = acos(sqrt(e1));
-
-    // Angle about normal
-    double phi   = 2 * G3D_PI * e2;
-
-    // Make a coordinate system
-    Vector3 U = normal.direction();
-    Vector3 V = Vector3::unitX();
-
-    if (abs(U.dot(V)) > .9) {
-        V = Vector3::unitY();
-    }
-
-    Vector3 W = U.cross(V).direction();
-    V = W.cross(U);
-
-    // Convert to rectangular form
-    return cos(theta) * U + sin(theta) * (cos(phi) * V + sin(phi) * W);
-}
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::hemiRandom(const Vector3& normal) {
-    Vector3 V = Vector3::random();
-
-    if (V.dot(normal) < 0) {
-        return -V;
-    } else {
-        return V;
+        resizeBloomMap(viewport.width() / 4, viewport.height() / 4);
     }
 }
 
-//----------------------------------------------------------------------------
 
-Vector3 Vector3::reflectionDirection(const Vector3& normal) const {
-    return -reflectAbout(normal).direction();
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::refractionDirection(
-    const Vector3&  normal,
-    float           iInside,
-    float           iOutside) const {
-
-    // From pg. 24 of Henrik Wann Jensen. Realistic Image Synthesis
-    // Using Photon Mapping.  AK Peters. ISBN: 1568811470. July 2001.
-
-    // Invert the directions from Wann Jensen's formulation
-    // and normalize the vectors.
-    const Vector3 W = -direction();
-    Vector3 N = normal.direction();
-
-    float h1 = iOutside;
-    float h2 = iInside;
-
-    if (normal.dot(*this) > 0.0f) {
-        h1 = iInside;
-        h2 = iOutside;
-        N  = -N;
-    }
-
-    const float hRatio = h1 / h2;
-    const float WdotN = W.dot(N);
-
-    float det = 1.0f - (float)square(hRatio) * (1.0f - (float)square(WdotN));
-
-    if (det < 0) {
-        // Total internal reflection
-        return Vector3::zero();
-    } else {
-        return -hRatio * (W - WdotN * N) - N * sqrt(det);
+void ToneMap::resizeBloomMap(int w, int h) {
+    stereo = glGetBoolean(GL_STEREO) != 0;
+    
+    for (int i = 0; i < (stereo ? 2 : 1); ++i) {
+        stereoBloomMap[i] = Texture::createEmpty(w, h, 
+            "Bloom map", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT, 
+            Texture::DEPTH_NORMAL, 1.0);
     }
 }
 
-//----------------------------------------------------------------------------
-void Vector3::orthonormalize (Vector3 akVector[3]) {
-    // If the input vectors are v0, v1, and v2, then the Gram-Schmidt
-    // orthonormalization produces vectors u0, u1, and u2 as follows,
-    //
-    //   u0 = v0/|v0|
-    //   u1 = (v1-(u0*v1)u0)/|v1-(u0*v1)u0|
-    //   u2 = (v2-(u0*v2)u0-(u1*v2)u1)/|v2-(u0*v2)u0-(u1*v2)u1|
-    //
-    // where |A| indicates length of vector A and A*B indicates dot
-    // product of vectors A and B.
 
-    // compute u0
-    akVector[0].unitize();
+LightingParameters ToneMap::prepareLightingParameters(const LightingParameters& L) const {
 
-    // compute u1
-	float fDot0 = akVector[0].dot(akVector[1]);
-    akVector[1] -= akVector[0] * fDot0;
-    akVector[1].unitize();
+    bool on = mEnabled && (profile != NO_TONE);
 
-    // compute u2
-	float fDot1 = akVector[1].dot(akVector[2]);
-    fDot0 = akVector[0].dot(akVector[2]);
-    akVector[2] -= akVector[0] * fDot0 + akVector[1] * fDot1;
-    akVector[2].unitize();
+    double lightScale = on ? 0.75 : 1.0;
+    LightingParameters params = L;
+
+    params.emissiveScale *= lightScale;
+    params.skyAmbient   *= on ? 0.5 : 1.0;
+    params.diffuseAmbient *= lightScale;
+    params.lightColor   *= lightScale;
+    params.ambient      *= lightScale;
+    
+    return params;
 }
 
-//----------------------------------------------------------------------------
-void Vector3::generateOrthonormalBasis (Vector3& rkU, Vector3& rkV,
-                                        Vector3& rkW, bool bUnitLengthW) {
-    if ( !bUnitLengthW )
-        rkW.unitize();
 
-    if ( G3D::abs(rkW.x) >= G3D::abs(rkW.y)
-            && G3D::abs(rkW.x) >= G3D::abs(rkW.z) ) {
-        rkU.x = -rkW.y;
-        rkU.y = + rkW.x;
-        rkU.z = 0.0;
-    } else {
-        rkU.x = 0.0;
-        rkU.y = + rkW.z;
-        rkU.z = -rkW.y;
+LightingRef ToneMap::prepareLighting(const LightingRef& L) const {
+
+    double lightScale = (mEnabled && (profile != NO_TONE)) ? 0.75 : 1.0;
+
+    LightingRef lighting = Lighting::create();
+    *lighting = *L;
+
+    lighting->environmentMapColor *= lightScale;
+    lighting->emissiveScale *= lightScale;
+
+    lighting->ambientTop *= lightScale;
+    lighting->ambientBottom *= lightScale;
+
+    for (int i = 0; i < lighting->lightArray.size(); ++i) {
+        lighting->lightArray[i].color *= lightScale;
     }
 
-    rkU.unitize();
-    rkV = rkW.cross(rkU);
-}
-
-//----------------------------------------------------------------------------
-
-std::string Vector3::toString() const {
-    return G3D::format("(%g, %g, %g)", x, y, z);
+    for (int i = 0; i < lighting->shadowedLightArray.size(); ++i) {
+        lighting->shadowedLightArray[i].color *= lightScale;
+    }
+ 
+    return lighting;
 }
 
 
-//----------------------------------------------------------------------------
+void ToneMap::setEnabled(bool e) {
+    if (e == mEnabled) {
+        return;
+    }
 
-Matrix3 Vector3::cross() const {
-    return Matrix3( 0, -z,  y,
-                    z,  0, -x,
-                   -y,  x,  0);
+    if (! mEnabled && stereoBloomMap[0].notNull()) {
+        // Wipe old bloomMap out on re-enable
+        // (this implementation leaves noise; we should really color them black)
+        //resizeBloomMap(stereoBloomMap[0]->getTexelWidth(), stereoBloomMap[0]->getTexelHeight());
+    }
+
+    mEnabled = e;
 }
 
-
-void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
-    bo.writeUInt8((uint8)a);
-}
-
-void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
-    a = (Vector3::Axis)bi.readUInt8();
-}
-
-//----------------------------------------------------------------------------
-// 2-char swizzles
-
-Vector2 Vector3::xx() const  { return Vector2       (x, x); }
-Vector2 Vector3::yx() const  { return Vector2       (y, x); }
-Vector2 Vector3::zx() const  { return Vector2       (z, x); }
-Vector2 Vector3::xy() const  { return Vector2       (x, y); }
-Vector2 Vector3::yy() const  { return Vector2       (y, y); }
-Vector2 Vector3::zy() const  { return Vector2       (z, y); }
-Vector2 Vector3::xz() const  { return Vector2       (x, z); }
-Vector2 Vector3::yz() const  { return Vector2       (y, z); }
-Vector2 Vector3::zz() const  { return Vector2       (z, z); }
-
-// 3-char swizzles
-
-Vector3 Vector3::xxx() const  { return Vector3       (x, x, x); }
-Vector3 Vector3::yxx() const  { return Vector3       (y, x, x); }
-Vector3 Vector3::zxx() const  { return Vector3       (z, x, x); }
-Vector3 Vector3::xyx() const  { return Vector3       (x, y, x); }
-Vector3 Vector3::yyx() const  { return Vector3       (y, y, x); }
-Vector3 Vector3::zyx() const  { return Vector3       (z, y, x); }
-Vector3 Vector3::xzx() const  { return Vector3       (x, z, x); }
-Vector3 Vector3::yzx() const  { return Vector3       (y, z, x); }
-Vector3 Vector3::zzx() const  { return Vector3       (z, z, x); }
-Vector3 Vector3::xxy() const  { return Vector3       (x, x, y); }
-Vector3 Vector3::yxy() const  { return Vector3       (y, x, y); }
-Vector3 Vector3::zxy() const  { return Vector3       (z, x, y); }
-Vector3 Vector3::xyy() const  { return Vector3       (x, y, y); }
-Vector3 Vector3::yyy() const  { return Vector3       (y, y, y); }
-Vector3 Vector3::zyy() const  { return Vector3       (z, y, y); }
-Vector3 Vector3::xzy() const  { return Vector3       (x, z, y); }
-Vector3 Vector3::yzy() const  { return Vector3       (y, z, y); }
-Vector3 Vector3::zzy() const  { return Vector3       (z, z, y); }
-Vector3 Vector3::xxz() const  { return Vector3       (x, x, z); }
-Vector3 Vector3::yxz() const  { return Vector3       (y, x, z); }
-Vector3 Vector3::zxz() const  { return Vector3       (z, x, z); }
-Vector3 Vector3::xyz() const  { return Vector3       (x, y, z); }
-Vector3 Vector3::yyz() const  { return Vector3       (y, y, z); }
-Vector3 Vector3::zyz() const  { return Vector3       (z, y, z); }
-Vector3 Vector3::xzz() const  { return Vector3       (x, z, z); }
-Vector3 Vector3::yzz() const  { return Vector3       (y, z, z); }
-Vector3 Vector3::zzz() const  { return Vector3       (z, z, z); }
-
-// 4-char swizzles
-
-Vector4 Vector3::xxxx() const  { return Vector4       (x, x, x, x); }
-Vector4 Vector3::yxxx() const  { return Vector4       (y, x, x, x); }
-Vector4 Vector3::zxxx() const  { return Vector4       (z, x, x, x); }
-Vector4 Vector3::xyxx() const  { return Vector4       (x, y, x, x); }
-Vector4 Vector3::yyxx() const  { return Vector4       (y, y, x, x); }
-Vector4 Vector3::zyxx() const  { return Vector4       (z, y, x, x); }
-Vector4 Vector3::xzxx() const  { return Vector4       (x, z, x, x); }
-Vector4 Vector3::yzxx() const  { return Vector4       (y, z, x, x); }
-Vector4 Vector3::zzxx() const  { return Vector4       (z, z, x, x); }
-Vector4 Vector3::xxyx() const  { return Vector4       (x, x, y, x); }
-Vector4 Vector3::yxyx() const  { return Vector4       (y, x, y, x); }
-Vector4 Vector3::zxyx() const  { return Vector4       (z, x, y, x); }
-Vector4 Vector3::xyyx() const  { return Vector4       (x, y, y, x); }
-Vector4 Vector3::yyyx() const  { return Vector4       (y, y, y, x); }
-Vector4 Vector3::zyyx() const  { return Vector4       (z, y, y, x); }
-Vector4 Vector3::xzyx() const  { return Vector4       (x, z, y, x); }
-Vector4 Vector3::yzyx() const  { return Vector4       (y, z, y, x); }
-Vector4 Vector3::zzyx() const  { return Vector4       (z, z, y, x); }
-Vector4 Vector3::xxzx() const  { return Vector4       (x, x, z, x); }
-Vector4 Vector3::yxzx() const  { return Vector4       (y, x, z, x); }
-Vector4 Vector3::zxzx() const  { return Vector4       (z, x, z, x); }
-Vector4 Vector3::xyzx() const  { return Vector4       (x, y, z, x); }
-Vector4 Vector3::yyzx() const  { return Vector4       (y, y, z, x); }
-Vector4 Vector3::zyzx() const  { return Vector4       (z, y, z, x); }
-Vector4 Vector3::xzzx() const  { return Vector4       (x, z, z, x); }
-Vector4 Vector3::yzzx() const  { return Vector4       (y, z, z, x); }
-Vector4 Vector3::zzzx() const  { return Vector4       (z, z, z, x); }
-Vector4 Vector3::xxxy() const  { return Vector4       (x, x, x, y); }
-Vector4 Vector3::yxxy() const  { return Vector4       (y, x, x, y); }
-Vector4 Vector3::zxxy() const  { return Vector4       (z, x, x, y); }
-Vector4 Vector3::xyxy() const  { return Vector4       (x, y, x, y); }
-Vector4 Vector3::yyxy() const  { return Vector4       (y, y, x, y); }
-Vector4 Vector3::zyxy() const  { return Vector4       (z, y, x, y); }
-Vector4 Vector3::xzxy() const  { return Vector4       (x, z, x, y); }
-Vector4 Vector3::yzxy() const  { return Vector4       (y, z, x, y); }
-Vector4 Vector3::zzxy() const  { return Vector4       (z, z, x, y); }
-Vector4 Vector3::xxyy() const  { return Vector4       (x, x, y, y); }
-Vector4 Vector3::yxyy() const  { return Vector4       (y, x, y, y); }
-Vector4 Vector3::zxyy() const  { return Vector4       (z, x, y, y); }
-Vector4 Vector3::xyyy() const  { return Vector4       (x, y, y, y); }
-Vector4 Vector3::yyyy() const  { return Vector4       (y, y, y, y); }
-Vector4 Vector3::zyyy() const  { return Vector4       (z, y, y, y); }
-Vector4 Vector3::xzyy() const  { return Vector4       (x, z, y, y); }
-Vector4 Vector3::yzyy() const  { return Vector4       (y, z, y, y); }
-Vector4 Vector3::zzyy() const  { return Vector4       (z, z, y, y); }
-Vector4 Vector3::xxzy() const  { return Vector4       (x, x, z, y); }
-Vector4 Vector3::yxzy() const  { return Vector4       (y, x, z, y); }
-Vector4 Vector3::zxzy() const  { return Vector4       (z, x, z, y); }
-Vector4 Vector3::xyzy() const  { return Vector4       (x, y, z, y); }
-Vector4 Vector3::yyzy() const  { return Vector4       (y, y, z, y); }
-Vector4 Vector3::zyzy() const  { return Vector4       (z, y, z, y); }
-Vector4 Vector3::xzzy() const  { return Vector4       (x, z, z, y); }
-Vector4 Vector3::yzzy() const  { return Vector4       (y, z, z, y); }
-Vector4 Vector3::zzzy() const  { return Vector4       (z, z, z, y); }
-Vector4 Vector3::xxxz() const  { return Vector4       (x, x, x, z); }
-Vector4 Vector3::yxxz() const  { return Vector4       (y, x, x, z); }
-Vector4 Vector3::zxxz() const  { return Vector4       (z, x, x, z); }
-Vector4 Vector3::xyxz() const  { return Vector4       (x, y, x, z); }
-Vector4 Vector3::yyxz() const  { return Vector4       (y, y, x, z); }
-Vector4 Vector3::zyxz() const  { return Vector4       (z, y, x, z); }
-Vector4 Vector3::xzxz() const  { return Vector4       (x, z, x, z); }
-Vector4 Vector3::yzxz() const  { return Vector4       (y, z, x, z); }
-Vector4 Vector3::zzxz() const  { return Vector4       (z, z, x, z); }
-Vector4 Vector3::xxyz() const  { return Vector4       (x, x, y, z); }
-Vector4 Vector3::yxyz() const  { return Vector4       (y, x, y, z); }
-Vector4 Vector3::zxyz() const  { return Vector4       (z, x, y, z); }
-Vector4 Vector3::xyyz() const  { return Vector4       (x, y, y, z); }
-Vector4 Vector3::yyyz() const  { return Vector4       (y, y, y, z); }
-Vector4 Vector3::zyyz() const  { return Vector4       (z, y, y, z); }
-Vector4 Vector3::xzyz() const  { return Vector4       (x, z, y, z); }
-Vector4 Vector3::yzyz() const  { return Vector4       (y, z, y, z); }
-Vector4 Vector3::zzyz() const  { return Vector4       (z, z, y, z); }
-Vector4 Vector3::xxzz() const  { return Vector4       (x, x, z, z); }
-Vector4 Vector3::yxzz() const  { return Vector4       (y, x, z, z); }
-Vector4 Vector3::zxzz() const  { return Vector4       (z, x, z, z); }
-Vector4 Vector3::xyzz() const  { return Vector4       (x, y, z, z); }
-Vector4 Vector3::yyzz() const  { return Vector4       (y, y, z, z); }
-Vector4 Vector3::zyzz() const  { return Vector4       (z, y, z, z); }
-Vector4 Vector3::xzzz() const  { return Vector4       (x, z, z, z); }
-Vector4 Vector3::yzzz() const  { return Vector4       (y, z, z, z); }
-Vector4 Vector3::zzzz() const  { return Vector4       (z, z, z, z); }
-
-
-
-
-
-
-} // namespace
+} // namespace G3D

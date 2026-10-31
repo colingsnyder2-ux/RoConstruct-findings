@@ -1,85 +1,426 @@
-// roc 2011-06 008ff100  unit: CXTPRibbonControlSystemPopupBarListItem  size: 223 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 008ff100
-//
-// 008ff100  6aff                 push -1
-// 008ff102  68f9f4a000           push 0xa0f4f9
-// 008ff107  64a100000000         mov eax, dword ptr fs:[0]
-// 008ff10d  50                   push eax
-// 008ff10e  83ec10               sub esp, 0x10
-// 008ff111  53                   push ebx
-// 008ff112  56                   push esi
-// 008ff113  57                   push edi
-// 008ff114  a12058c900           mov eax, dword ptr [0xc95820]
-// 008ff119  33c4                 xor eax, esp
-// 008ff11b  50                   push eax
-// 008ff11c  8d442420             lea eax, [esp + 0x20]
-// 008ff120  64a300000000         mov dword ptr fs:[0], eax
-// 008ff126  8bf1                 mov esi, ecx
-// 008ff128  e833d6f0ff           call 0x80c760
-// 008ff12d  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 008ff131  8bd8                 mov ebx, eax
-// 008ff133  8b03                 mov eax, dword ptr [ebx]
-// 008ff135  8b5078               mov edx, dword ptr [eax + 0x78]
-// 008ff138  56                   push esi
-// 008ff139  57                   push edi
-// 008ff13a  8bcb                 mov ecx, ebx
-// 008ff13c  ffd2                 call edx
-// 008ff13e  8b03                 mov eax, dword ptr [ebx]
-// 008ff140  8b507c               mov edx, dword ptr [eax + 0x7c]
-// 008ff143  56                   push esi
-// 008ff144  8bcb                 mov ecx, ebx
-// 008ff146  ffd2                 call edx
-// 008ff148  8b17                 mov edx, dword ptr [edi]
-// 008ff14a  50                   push eax
-// 008ff14b  8b4238               mov eax, dword ptr [edx + 0x38]
-// 008ff14e  8bcf                 mov ecx, edi
-// 008ff150  ffd0                 call eax
-// 008ff152  6a01                 push 1
-// 008ff154  8bcf                 mov ecx, edi
-// 008ff156  e893d40c00           call 0x9cc5ee
-// 008ff15b  8b86c0000000         mov eax, dword ptr [esi + 0xc0]
-// 008ff161  8b96c8000000         mov edx, dword ptr [esi + 0xc8]
-// 008ff167  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
-// 008ff16d  8b9ecc000000         mov ebx, dword ptr [esi + 0xcc]
-// 008ff173  83c007               add eax, 7
-// 008ff176  89542418             mov dword ptr [esp + 0x18], edx
-// 008ff17a  8b16                 mov edx, dword ptr [esi]
-// 008ff17c  8b5258               mov edx, dword ptr [edx + 0x58]
-// 008ff17f  89442410             mov dword ptr [esp + 0x10], eax
-// 008ff183  8d442430             lea eax, [esp + 0x30]
-// 008ff187  894c2414             mov dword ptr [esp + 0x14], ecx
-// 008ff18b  50                   push eax
-// 008ff18c  8bce                 mov ecx, esi
-// 008ff18e  895c2420             mov dword ptr [esp + 0x20], ebx
-// 008ff192  ffd2                 call edx
-// 008ff194  8bf0                 mov esi, eax
-// 008ff196  8b1f                 mov ebx, dword ptr [edi]
-// 008ff198  6a24                 push 0x24
-// 008ff19a  8d442414             lea eax, [esp + 0x14]
-// 008ff19e  50                   push eax
-// 008ff19f  8bce                 mov ecx, esi
-// 008ff1a1  c744243000000000     mov dword ptr [esp + 0x30], 0
-// 008ff1a9  ff15a826a400         call dword ptr [0xa426a8]
-// 008ff1af  50                   push eax
-// 008ff1b0  8bce                 mov ecx, esi
-// 008ff1b2  ff15c82da400         call dword ptr [0xa42dc8]
-// 008ff1b8  8b5370               mov edx, dword ptr [ebx + 0x70]
-// 008ff1bb  50                   push eax
-// 008ff1bc  8bcf                 mov ecx, edi
-// 008ff1be  ffd2                 call edx
-// 008ff1c0  8d4c2430             lea ecx, [esp + 0x30]
-// 008ff1c4  ff15082ea400         call dword ptr [0xa42e08]
-// 008ff1ca  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 008ff1ce  64890d00000000       mov dword ptr fs:[0], ecx
-// 008ff1d5  59                   pop ecx
-// 008ff1d6  5f                   pop edi
-// 008ff1d7  5e                   pop esi
-// 008ff1d8  5b                   pop ebx
-// 008ff1d9  83c41c               add esp, 0x1c
-// 008ff1dc  c20400               ret 4
-// copied from an identical function in another client (function ?Draw@CXTPRibbonControlSystemPopupBarListItem@@UAEXPAVCDC@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Ribbon\XTPRibbonSystemButton.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPRibbonSystemButton.cpp : implementation file
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPOffice2007Image.h"
+#include "Common/XTPIntel80Helpers.h"
+#include "CommandBars/XTPCommandBars.h"
+#include "CommandBars/XTPControlExt.h"
+
+#include "XTPRibbonSystemButton.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonTheme.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemButton, CXTPControlPopup)
+
+CXTPRibbonControlSystemButton::CXTPRibbonControlSystemButton()
+{
+	SetFlags(xtpFlagNoMovable | xtpFlagManualUpdate);
+}
+
+void CXTPRibbonControlSystemButton::Draw(CDC* pDC)
+{
+	((CXTPRibbonBar*)GetParent())->GetRibbonPaintManager()->DrawRibbonFrameSystemButton(pDC, this, GetRect());
+}
+
+BOOL CXTPRibbonControlSystemButton::OnLButtonDblClk(CPoint /*point*/)
+{
+	GetParent()->GetCommandBars()->ClosePopups();
+	GetParent()->GetSite()->SendMessage(WM_SYSCOMMAND, SC_CLOSE | HTSYSMENU, 0);
+
+	return TRUE;
+}
+
+void CXTPRibbonControlSystemButton::AdjustExcludeRect(CRect& rc, BOOL bVertical)
+{
+	CXTPRibbonBar* pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, GetParent());
+	if (!pRibbonBar)
+	{
+		CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
+		return;
+	}
+
+	if (pRibbonBar->IsCaptionVisible() && pRibbonBar->IsTabsVisible() &&
+		DYNAMIC_DOWNCAST(CXTPRibbonSystemPopupBar, GetCommandBar()))
+	{
+		rc.bottom -= 18;
+		return;
+	}
+
+	//rc.bottom -= 20;
+	CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPRibbonSystemPopupBar, CXTPPopupBar)
+
+BEGIN_MESSAGE_MAP(CXTPRibbonSystemPopupBar, CXTPPopupBar)
+	ON_WM_NCHITTEST_EX()
+END_MESSAGE_MAP()
+
+CXTPRibbonSystemPopupBar::CXTPRibbonSystemPopupBar()
+{
+	m_rcBorders.SetRect(6, 18, 6, 29);
+	SetShowGripper(FALSE);
+}
+
+CRect CXTPRibbonSystemPopupBar::GetBorders()
+{
+	return m_rcBorders;
+}
+
+void CXTPRibbonSystemPopupBar::FillCommandBarEntry(CDC* pDC)
+{
+	CXTPClientRect rc(this);
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+
+	CXTPOffice2007Image* pImage = pPaintManager->LoadImage(_T("RIBBONSYSTEMMENU"));
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(), m_rcBorders, COLORREF_NULL);
+
+	if (!DYNAMIC_DOWNCAST(CXTPRibbonControlSystemButton, m_pControlPopup))
+		return;
+
+	CXTPRibbonBar* pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, m_pControlPopup->GetParent());
+	if (!pRibbonBar)
+		return;
+
+	CRect rcPopup = m_pControlPopup->GetRect();
+	m_pControlPopup->GetParent()->ClientToScreen(rcPopup);
+	ScreenToClient(rcPopup);
+
+	if (pRibbonBar->IsCaptionVisible() && CRect().IntersectRect(rcPopup, rc))
+	{
+		((CXTPRibbonTheme*)pPaintManager)->DrawRibbonFrameSystemButton(pDC, m_pControlPopup, rcPopup);
+	}
+
+	for (int i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (pControl && pControl->GetWrap())
+		{
+			CRect rcRow = pControl->GetRowRect();
+			pDC->FillSolidRect(rcRow, pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListBackground")));
+			break;
+		}
+	}
+
+}
+
+LRESULT CXTPRibbonSystemPopupBar::OnNcHitTest(CPoint point)
+{
+	if (!DYNAMIC_DOWNCAST(CXTPRibbonControlSystemButton, m_pControlPopup))
+		return CXTPPopupBar::OnNcHitTest(point);
+
+	CRect rcPopup = m_pControlPopup->GetRect();
+	m_pControlPopup->GetParent()->ClientToScreen(rcPopup);
+	if (rcPopup.PtInRect(point))
+		return HTTRANSPARENT;
+
+	return CXTPPopupBar::OnNcHitTest(point);
+}
+
+CSize CXTPRibbonSystemPopupBar::CalcDynamicLayout(int nLength, DWORD dwMode)
+{
+	CArray<CXTPControl*, CXTPControl*> arrButtons;
+	int i;
+
+	for (i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (pControl && pControl->IsKindOf(RUNTIME_CLASS(CXTPRibbonControlSystemPopupBarButton)))
+		{
+			arrButtons.Add(pControl);
+			pControl->SetHideFlag(xtpHideDockingPosition, TRUE);
+		}
+	}
+
+	CSize sz = CXTPPopupBar::CalcDynamicLayout(nLength, dwMode);
+
+	if (arrButtons.GetSize() == 0)
+		return sz;
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	int nRight = sz.cx - m_rcBorders.right + 1;
+
+	for (i = (int)arrButtons.GetSize() - 1; i >= 0; i--)
+	{
+		CXTPControl* pControl = arrButtons[i];
+		pControl->SetHideFlag(xtpHideDockingPosition, FALSE);
+
+		CSize szControl = pControl->GetSize(&dc);
+		pControl->SetRect(CRect(nRight - szControl.cx, sz.cy - m_rcBorders.bottom + 4, nRight, sz.cy - 3));
+		nRight -= szControl.cx + 6;
+	}
+
+	return sz;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonControlSystemPopupBarButton
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarButton, CXTPControlButton)
+
+CXTPRibbonControlSystemPopupBarButton::CXTPRibbonControlSystemPopupBarButton()
+{
+
+}
+
+BOOL CXTPRibbonControlSystemPopupBarButton::IsTransparent() const
+{
+	return TRUE;
+}
+
+void CXTPRibbonControlSystemPopupBarButton::Draw(CDC* pDC)
+{
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+	CXTPOffice2007Image* pImage = pPaintManager->LoadImage(_T("RIBBONSYSTEMMENUBUTTON"));
+
+	if (pImage)
+	{
+		pImage->DrawImage(pDC, GetRect(), pImage->GetSource(GetSelected() ? 1 : 0, 2), CRect(2, 2, 2, 2), 0xFF00FF);
+	}
+
+	GetPaintManager()->DrawControlToolBarParent(pDC, this, TRUE);
+}
+
+CSize CXTPRibbonControlSystemPopupBarButton::GetSize(CDC* pDC)
+{
+	return GetPaintManager()->DrawControlToolBarParent(pDC, this, FALSE);
+}
+
+CSize CXTPRibbonControlSystemPopupBarButton::GetButtonSize() const
+{
+	return CSize(22, 22);
+}
+
+CSize CXTPRibbonControlSystemPopupBarButton::GetIconSize() const
+{
+	return CSize(16, 16);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlRecentFileList
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarListItem, CXTPControlButton)
+
+CXTPRibbonControlSystemPopupBarListItem::CXTPRibbonControlSystemPopupBarListItem()
+{
+	m_nWidth = 300;
+	m_nHeight = 21;
+}
+
+CSize CXTPRibbonControlSystemPopupBarListItem::GetSize(CDC* /*pDC*/)
+{
+	return CSize(m_nWidth, m_nHeight);
+}
+
+void CXTPRibbonControlSystemPopupBarListItem::Draw(CDC* pDC)
+{
+	CXTPPaintManager* pPaintManager = (CXTPPaintManager*)GetPaintManager();
+
+	pPaintManager->DrawControlEntry(pDC, this);
+
+	COLORREF clrText = pPaintManager->GetControlTextColor(this);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rc(GetRect());
+	CRect rcText(rc.left + 7, rc.top, rc.right, rc.bottom);
+
+	pDC->DrawText(GetCaption(), &rcText, DT_SINGLELINE | DT_VCENTER);
+}
+
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarListCaption, CXTPControl)
+
+CXTPRibbonControlSystemPopupBarListCaption::CXTPRibbonControlSystemPopupBarListCaption()
+{
+	SetFlags(xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable | xtpFlagWrapRow);
+	m_nWidth = 300;
+	m_nHeight = 27;
+}
+
+CSize CXTPRibbonControlSystemPopupBarListCaption::GetSize(CDC* /*pDC*/)
+{
+	return CSize(m_nWidth, m_nHeight);
+}
+
+void CXTPRibbonControlSystemPopupBarListCaption::Draw(CDC* pDC)
+{
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+	CXTPFontDC dont(pDC, pPaintManager->GetRegularBoldFont());
+
+	COLORREF clrText = pPaintManager->GetControlTextColor(this);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rc(GetRect());
+	CRect rcText(rc.left + 7, rc.top + 4, rc.right, rc.bottom - 5);
+
+	pDC->DrawText(GetCaption(), &rcText, DT_SINGLELINE | DT_TOP);
+
+	pPaintManager->HorizontalLine(pDC, rc.left, rc.bottom - 6, rc.right,
+		pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListEdgeShadow")));
+	pPaintManager->HorizontalLine(pDC, rc.left, rc.bottom - 5, rc.right,
+		pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListEdgeHighLight")));
+}
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemRecentFileList, CXTPRibbonControlSystemPopupBarListCaption)
+
+CXTPRibbonControlSystemRecentFileList::CXTPRibbonControlSystemRecentFileList()
+{
+}
+
+CRecentFileList* CXTPRibbonControlSystemRecentFileList::GetRecentFileList()
+{
+	USES_PROTECTED_ACCESS(CXTPRibbonControlSystemRecentFileList, CWinApp, CRecentFileList*, m_pRecentFileList)
+
+	return PROTECTED_ACCESS(CWinApp, AfxGetApp(), m_pRecentFileList);
+
+}
+
+int CXTPRibbonControlSystemRecentFileList::GetFirstMruID()
+{
+	return ID_FILE_MRU_FILE1;
+}
+
+UINT AFXAPI AfxGetFileTitle(LPCTSTR lpszPathName, LPTSTR lpszTitle, UINT nMax);
+
+void CXTPRibbonControlSystemRecentFileList::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	CRecentFileList* pRecentFileList = GetRecentFileList();
+
+	if (!pRecentFileList)
+		return;
+
+	ASSERT(pRecentFileList->m_arrNames != NULL);
+	if (!pRecentFileList->m_arrNames)
+		return;
+
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetID() >= GetFirstMruID() && pControl->GetID() <= GetFirstMruID() + pRecentFileList->m_nSize)
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	if (m_pParent->IsCustomizeMode())
+	{
+		m_dwHideFlags = 0;
+		SetEnabled(TRUE);
+		return;
+	}
+
+	CString strName;
+
+	for (int iMRU = 0; iMRU < pRecentFileList->m_nSize; iMRU++)
+	{
+		if (pRecentFileList->m_arrNames[iMRU].IsEmpty())
+			break;
+
+		// copy file name only since directories are same
+		AfxGetFileTitle(pRecentFileList->m_arrNames[iMRU], strName.GetBuffer(_MAX_PATH), _MAX_PATH);
+		strName.ReleaseBuffer();
+
+		CXTPControl* pControl = m_pControls->Add(new CXTPRibbonControlSystemPopupBarListItem(), iMRU + GetFirstMruID(), _T(""), m_nIndex + iMRU + 1 , TRUE);
+
+		pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strName, iMRU + 1));
+		pControl->SetFlags(xtpFlagManualUpdate|xtpFlagShowPopupBarTip);
+		pControl->SetTooltip(pRecentFileList->m_arrNames[iMRU]);
+		pControl->SetDescription(NULL);
+	}
+}
+
+BOOL CXTPRibbonControlSystemRecentFileList::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonSystemPopupBarPage
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPRibbonSystemPopupBarPage, CXTPPopupBar)
+
+CXTPRibbonSystemPopupBarPage::CXTPRibbonSystemPopupBarPage()
+{
+
+}
+
+CSize CXTPRibbonSystemPopupBarPage::CalcDynamicLayout(int nLength, DWORD dwMode)
+{
+	CSize sz = CXTPPopupBar::CalcDynamicLayout(nLength, dwMode);
+
+	if (!m_pControlPopup->GetParent()->IsKindOf(RUNTIME_CLASS(CXTPRibbonSystemPopupBar)))
+		return sz;
+
+	CXTPRibbonSystemPopupBar* pParent = ((CXTPRibbonSystemPopupBar*)m_pControlPopup->GetParent());
+
+	int nHeight = CXTPClientRect(pParent).Height() - (pParent->GetBorders().top + pParent->GetBorders().bottom) - 2;
+
+	if (nHeight > sz.cy)
+		sz.cy = nHeight;
+
+	return sz;
+}
+
+void CXTPRibbonSystemPopupBarPage::AdjustExcludeRect(CRect& rc, BOOL bVertical)
+{
+	if (!m_pControlPopup->GetParent()->IsKindOf(RUNTIME_CLASS(CXTPRibbonSystemPopupBar)))
+	{
+		CXTPPopupBar::AdjustExcludeRect(rc, bVertical);
+		return;
+	}
+
+	rc.top = ((CXTPRibbonSystemPopupBar*)m_pControlPopup->GetParent())->GetBorders().top + 1;
+	rc.right += 1;
+}

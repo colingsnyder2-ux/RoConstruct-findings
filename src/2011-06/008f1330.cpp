@@ -1,36 +1,443 @@
-// roc 2011-06 008f1330  unit: CXTCaptionThemeFactory  size: 94 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 008f1330
-//
-// 008f1330  6aff                 push -1
-// 008f1332  6888f6a000           push 0xa0f688
-// 008f1337  64a100000000         mov eax, dword ptr fs:[0]
-// 008f133d  50                   push eax
-// 008f133e  51                   push ecx
-// 008f133f  56                   push esi
-// 008f1340  a12058c900           mov eax, dword ptr [0xc95820]
-// 008f1345  33c4                 xor eax, esp
-// 008f1347  50                   push eax
-// 008f1348  8d44240c             lea eax, [esp + 0xc]
-// 008f134c  64a300000000         mov dword ptr fs:[0], eax
-// 008f1352  8bf1                 mov esi, ecx
-// 008f1354  89742408             mov dword ptr [esp + 8], esi
-// 008f1358  e8f3a2f7ff           call 0x86b650
-// 008f135d  8d4e14               lea ecx, [esi + 0x14]
-// 008f1360  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 008f1368  c7060ca2ad00         mov dword ptr [esi], 0xada20c
-// 008f136e  e84d35f5ff           call 0x8448c0
-// 008f1373  8d4e20               lea ecx, [esi + 0x20]
-// 008f1376  e84535f5ff           call 0x8448c0
-// 008f137b  8bc6                 mov eax, esi
-// 008f137d  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 008f1381  64890d00000000       mov dword ptr fs:[0], ecx
-// 008f1388  59                   pop ecx
-// 008f1389  5e                   pop esi
-// 008f138a  83c410               add esp, 0x10
-// 008f138d  c3                   ret 
-// copied from an identical function in another client (function ??0CXTCaptionTheme@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTCaptionTheme.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTCaptionTheme.cpp: implementation of the CXTCaptionTheme class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPWinThemeWrapper.h"
+
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTDefines.h"
+#include "XTButton.h"
+#include "XTCaption.h"
+#include "XTCaptionTheme.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_THEME_FACTORY(CXTCaptionTheme)
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionTheme
+
+CXTCaptionTheme::CXTCaptionTheme()
+{
+}
+
+void CXTCaptionTheme::RefreshMetrics()
+{
+	CXTThemeManagerStyle ::RefreshMetrics();
+
+	m_clrEdgeShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrEdgeLight.SetStandardValue(GetXtremeColor(COLOR_3DHILIGHT));
+}
+
+void CXTCaptionTheme::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	CRect rc = rcItem;
+
+	// Set the background mode to transparent.
+	pDC->SetBkMode(TRANSPARENT);
+
+	// repaint the background.
+	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
+
+	// draw the caption border.
+	if (pCaption->m_dwExStyle & CPWS_EX_GROOVE_EDGE)
+	{
+		pDC->Draw3dRect(rc, m_clrEdgeShadow, m_clrEdgeLight);
+		rc.DeflateRect(1, 1);
+		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
+
+		if (pCaption->m_nBorder == 0)
+		{
+			rc.DeflateRect(1, 1);
+		}
+	}
+
+	else
+	if (pCaption->m_dwExStyle & CPWS_EX_RAISED_EDGE)
+	{
+		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
+
+		if (pCaption->m_nBorder == 0)
+		{
+			rc.DeflateRect(1, 1);
+		}
+	}
+
+	// draw the caption banner border.
+	rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
+	pDC->FillSolidRect(rc, pCaption->m_clrFace);
+}
+
+void CXTCaptionTheme::DrawCaptionText(CDC* pDC, CXTCaption* pCaption)
+{
+		// if the caption text is empty, return.
+	if (pCaption->GetCaptionText().IsEmpty())
+	{
+		return;
+	}
+
+	// Get the display area for the text.
+	CRect rcText(pCaption->GetTextRect());
+
+	// Set the text color and select the caption font.
+	CXTPFontDC fontDC(pDC, pCaption->GetFont());
+	pDC->SetTextColor(pCaption->m_clrText);
+
+	// draw the text, and select the original font.
+	pDC->DrawText(pCaption->GetCaptionText(), rcText,
+		DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+}
+
+void CXTCaptionTheme::DrawCaptionIcon(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	// If no icon was defined, just return.
+	if (pCaption->m_hIcon == NULL)
+		return;
+
+	CRect rc = rcItem;
+	rc.left = (rc.right - pCaption->m_sizeIcon.cx)-(pCaption->m_nBorder + 2);
+
+	// stop the icon at the left hand border
+	if (rc.left < pCaption->m_nBorder)
+	{
+		rc.left = pCaption->m_nBorder;
+	}
+
+	rc.top = (rcItem.Height() - pCaption->m_sizeIcon.cy)/2;
+	rc.right = rc.left + pCaption->m_sizeIcon.cx;
+	rc.bottom = rc.top + pCaption->m_sizeIcon.cy;
+
+	// Only draw the icon if it will fit into the space between the borders
+	if (rc.right < rcItem.right - pCaption->m_nBorder)
+	{
+		// draw the icon associated with the caption.
+		::DrawIconEx(pDC->GetSafeHdc(), rc.left, rc.top, pCaption->m_hIcon,
+			rc.Width(), rc.Height(), NULL, (HBRUSH)NULL, DI_NORMAL);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionThemeOfficeXP
+
+void CXTCaptionThemeOfficeXP::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	CRect rc = rcItem;
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	// repaint the background.
+	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
+
+	if (!pCaption->IsAppCaption())
+	{
+		pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
+	}
+	else
+	{
+		// draw the caption banner border.
+		rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
+		pDC->FillSolidRect(rc, pCaption->m_clrFace);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionThemeOffice2003
+
+CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003()
+{
+
+}
+
+CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL /*bPrimaryCaption*/)
+{
+	XT_ERROR_MSG("CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL bPrimaryCaption) has been deprecated.\n\n"
+		"Use CXTCaption::SetAppCaption(bool bAppCaption) to set the application's primary caption.");
+}
+
+void CXTCaptionThemeOffice2003::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	if (pCaption->IsAppCaption())
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcCaption, FALSE);
+		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_FRAME), GetXtremeColor(XPCOLOR_FRAME));
+	}
+	else
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcToolBar, FALSE);
+		pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
+	}
+}
+
+IMPLEMENT_THEME_FACTORY(CXTCaptionButtonTheme)
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonTheme
+
+CXTCaptionButtonTheme::CXTCaptionButtonTheme()
+{
+	m_bOffsetHiliteText = FALSE;
+}
+
+BOOL CXTCaptionButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		SetColorFace(pCaption->m_clrFace);
+	}
+
+	return CXTButtonTheme::DrawButtonThemeBackground(lpDIS, pButton);
+}
+
+COLORREF CXTCaptionButtonTheme::GetTextColor(UINT /*nState*/, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		return pCaption->m_clrText;
+	}
+
+	return m_crText;
+}
+
+void CXTCaptionButtonTheme::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
+		{
+			// select font into device context.
+			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
+			pDC->SetTextColor(GetTextColor(nState, pButton));
+
+			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
+				rcItem.OffsetRect(1, 1);
+
+			// draw the text, and select the original font.
+			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
+				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonThemeOfficeXP
+
+CXTCaptionButtonThemeOfficeXP::CXTCaptionButtonThemeOfficeXP()
+{
+	m_bAnimateIcon = FALSE;
+	m_bFadedIcon = FALSE;
+	m_bOffsetHiliteText = FALSE;
+}
+
+COLORREF CXTCaptionButtonThemeOfficeXP::GetTextColor(UINT nState, CXTButton* pButton)
+{
+	if (nState & ODS_DISABLED)
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+		return m_crTextHilite;
+
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		return pCaption->m_clrText;
+	}
+
+	return m_crText;
+}
+
+BOOL CXTCaptionButtonThemeOfficeXP::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+
+	// Paint the background.
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+	{
+		pDC->FillSolidRect(rcItem, (nState & ODS_SELECTED) ?
+			GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED) : GetXtremeColor(XPCOLOR_HIGHLIGHT));
+
+		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER),
+			GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
+	}
+	else
+	{
+		CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+		if (::IsWindow(pCaption->GetSafeHwnd()))
+		{
+			m_crBack = pCaption->m_clrFace;
+		}
+
+		pDC->FillSolidRect(rcItem, m_crBack);
+
+		if (m_bWordTheme)
+		{
+			pDC->Draw3dRect(rcItem,
+				m_crBorderShadow, m_crBorderShadow);
+
+		}
+	}
+
+	return TRUE;
+}
+
+void CXTCaptionButtonThemeOfficeXP::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
+		{
+			// select font into device context.
+			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
+			pDC->SetTextColor(GetTextColor(nState, pButton));
+
+			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
+				rcItem.OffsetRect(1, 1);
+
+			// draw the text, and select the original font.
+			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
+				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonThemeOffice2003
+
+BOOL CXTCaptionButtonThemeOffice2003::GetGradientValues(CRect& rButton, CXTCaption* pCaption, CXTPPaintManagerColorGradient& clr)
+{
+	if (!::IsWindow(pCaption->GetSafeHwnd()))
+		return FALSE;
+
+	// get caption and button coordinates.
+	CXTPClientRect rCaption(pCaption);
+	pCaption->ScreenToClient(&rButton);
+
+	// get the caption's device context.
+	CClientDC dc(pCaption);
+
+	// create a memory device context to simulate caption background.
+	CDC memDC;
+	if (memDC.CreateCompatibleDC(&dc))
+	{
+		CBitmap bitmap;
+		bitmap.CreateCompatibleBitmap(&dc, rCaption.Width(), rCaption.Height());
+		CBitmap* pBmp = memDC.SelectObject(&bitmap);
+
+		// draw a gradient to the memory device context that matches what should be drawn
+		// on the caption background.
+		XTPDrawHelpers()->GradientFill(&memDC, rCaption, pCaption->IsAppCaption() ?
+			XTPColorManager()->grcCaption: XTPColorManager()->grcToolBar, FALSE);
+
+		// determine the light color gradient.
+		COLORREF crLight = memDC.GetPixel(rButton.TopLeft());
+
+		// determine the dark color gradient.
+		COLORREF crDark = memDC.GetPixel(rButton.BottomRight());
+
+		// set the gradient to and from values.
+		clr.SetStandardValue(crLight, crDark);
+
+		// cleanup GDI
+		memDC.SelectObject(pBmp);
+		memDC.DeleteDC();
+		bitmap.DeleteObject();
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTCaptionButtonThemeOffice2003::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	if (!::IsWindow(pButton->GetSafeHwnd()))
+		return FALSE;
+
+	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rc = lpDIS->rcItem;
+	int nState = lpDIS->itemState;
+
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		BOOL bHilite = pButton->GetHilite();
+		BOOL bSelected = (nState & ODS_SELECTED) != 0;
+
+		// Paint the background.
+		if (bSelected || bHilite)
+		{
+			XTPDrawHelpers()->GradientFill(pDC, rc, bSelected ?
+				XTPColorManager()->grcLunaPushed: XTPColorManager()->grcLunaSelected, FALSE);
+
+			pDC->Draw3dRect(&rc, GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER),
+				GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER));
+		}
+		else
+		{
+			CXTPWindowRect rButton(pButton);
+
+			CXTPPaintManagerColorGradient clr;
+			GetGradientValues(rButton, pCaption, clr);
+
+			XTPDrawHelpers()->GradientFill(pDC, rc, clr, FALSE);
+		}
+
+		return TRUE;
+	}
+
+	return CXTButtonThemeOffice2003::DrawButtonThemeBackground(lpDIS, pButton);
+}
+
+COLORREF CXTCaptionButtonThemeOffice2003::GetTextColor(UINT nState, CXTButton* pButton)
+{
+	if (nState & ODS_DISABLED)
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+		return m_crTextHilite;
+
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		return pCaption->m_clrText;
+	}
+
+	return m_crText;
+}

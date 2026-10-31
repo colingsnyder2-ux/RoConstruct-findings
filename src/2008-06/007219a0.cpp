@@ -1,179 +1,860 @@
 // from server: 100% by auto
-// roc 2008-06 007219a0  unit: CXTPMenuBar  size: 531 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007219a0
-//
-// 007219a0  53                   push ebx
-// 007219a1  8b5c240c             mov ebx, dword ptr [esp + 0xc]
-// 007219a5  55                   push ebp
-// 007219a6  8b6c2418             mov ebp, dword ptr [esp + 0x18]
-// 007219aa  56                   push esi
-// 007219ab  57                   push edi
-// 007219ac  8bf9                 mov edi, ecx
-// 007219ae  81fb12010000         cmp ebx, 0x112
-// 007219b4  0f87dc000000         ja 0x721a96
-// 007219ba  7433                 je 0x7219ef
-// 007219bc  83fb05               cmp ebx, 5
-// 007219bf  7409                 je 0x7219ca
-// 007219c1  83fb47               cmp ebx, 0x47
-// 007219c4  0f85ca010000         jne 0x721b94
-// 007219ca  8b442414             mov eax, dword ptr [esp + 0x14]
-// 007219ce  3b8758010000         cmp eax, dword ptr [edi + 0x158]
-// 007219d4  0f85ba010000         jne 0x721b94
-// 007219da  8b4fcc               mov ecx, dword ptr [edi - 0x34]
-// 007219dd  6a00                 push 0
-// 007219df  68bf2f0000           push 0x2fbf
-// 007219e4  6813010000           push 0x113
-// 007219e9  51                   push ecx
-// 007219ea  e99f010000           jmp 0x721b8e
-// 007219ef  8d77ac               lea esi, [edi - 0x54]
-// 007219f2  8bce                 mov ecx, esi
-// 007219f4  e8a71efaff           call 0x6c38a0
-// 007219f9  85c0                 test eax, eax
-// 007219fb  0f8493010000         je 0x721b94
-// 00721a01  6810306a00           push 0x6a3010
-// 00721a06  b99ced9700           mov ecx, 0x97ed9c
-// 00721a0b  e8caa50900           call 0x7bbfda
-// 00721a10  85c0                 test eax, eax
-// 00721a12  7505                 jne 0x721a19
-// 00721a14  e82beff7ff           call 0x6a0944
-// 00721a19  83780400             cmp dword ptr [eax + 4], 0
-// 00721a1d  0f8f71010000         jg 0x721b94
-// 00721a23  6a10                 push 0x10
-// 00721a25  ff15a42d8000         call dword ptr [0x802da4]
-// 00721a2b  6685c0               test ax, ax
-// 00721a2e  0f8c60010000         jl 0x721b94
-// 00721a34  8bce                 mov ecx, esi
-// 00721a36  e80534f9ff           call 0x6b4e40
-// 00721a3b  85c0                 test eax, eax
-// 00721a3d  0f8551010000         jne 0x721b94
-// 00721a43  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00721a47  8b02                 mov eax, dword ptr [edx]
-// 00721a49  25f0ff0000           and eax, 0xfff0
-// 00721a4e  3d00f10000           cmp eax, 0xf100
-// 00721a53  0f853b010000         jne 0x721b94
-// 00721a59  837d0000             cmp dword ptr [ebp], 0
-// 00721a5d  0f8531010000         jne 0x721b94
-// 00721a63  8b16                 mov edx, dword ptr [esi]
-// 00721a65  8b82f8010000         mov eax, dword ptr [edx + 0x1f8]
-// 00721a6b  6a12                 push 0x12
-// 00721a6d  8bce                 mov ecx, esi
-// 00721a6f  ffd0                 call eax
-// 00721a71  85c0                 test eax, eax
-// 00721a73  7515                 jne 0x721a8a
-// 00721a75  8bce                 mov ecx, esi
-// 00721a77  e89433f9ff           call 0x6b4e10
-// 00721a7c  85c0                 test eax, eax
-// 00721a7e  740a                 je 0x721a8a
-// 00721a80  6a00                 push 0
-// 00721a82  56                   push esi
-// 00721a83  8bc8                 mov ecx, eax
-// 00721a85  e8f63bf8ff           call 0x6a5680
-// 00721a8a  5f                   pop edi
-// 00721a8b  5e                   pop esi
-// 00721a8c  5d                   pop ebp
-// 00721a8d  b801000000           mov eax, 1
-// 00721a92  5b                   pop ebx
-// 00721a93  c21400               ret 0x14
-// 00721a96  81fb20020000         cmp ebx, 0x220
-// 00721a9c  0f82f2000000         jb 0x721b94
-// 00721aa2  81fb22020000         cmp ebx, 0x222
-// 00721aa8  0f86d0000000         jbe 0x721b7e
-// 00721aae  81fb30020000         cmp ebx, 0x230
-// 00721ab4  0f85da000000         jne 0x721b94
-// 00721aba  8b57ac               mov edx, dword ptr [edi - 0x54]
-// 00721abd  8b8268010000         mov eax, dword ptr [edx + 0x168]
-// 00721ac3  8d77ac               lea esi, [edi - 0x54]
-// 00721ac6  8bce                 mov ecx, esi
-// 00721ac8  ffd0                 call eax
-// 00721aca  8bce                 mov ecx, esi
-// 00721acc  85c0                 test eax, eax
-// 00721ace  0f8486000000         je 0x721b5a
-// 00721ad4  e86733f9ff           call 0x6b4e40
-// 00721ad9  85c0                 test eax, eax
-// 00721adb  7428                 je 0x721b05
-// 00721add  8bce                 mov ecx, esi
-// 00721adf  e8dc5ef9ff           call 0x6b79c0
-// 00721ae4  8b10                 mov edx, dword ptr [eax]
-// 00721ae6  8bc8                 mov ecx, eax
-// 00721ae8  8b4278               mov eax, dword ptr [edx + 0x78]
-// 00721aeb  6a00                 push 0
-// 00721aed  ffd0                 call eax
-// 00721aef  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00721af3  5f                   pop edi
-// 00721af4  5e                   pop esi
-// 00721af5  5d                   pop ebp
-// 00721af6  c70100000000         mov dword ptr [ecx], 0
-// 00721afc  b801000000           mov eax, 1
-// 00721b01  5b                   pop ebx
-// 00721b02  c21400               ret 0x14
-// 00721b05  f7879800000000040000 test dword ptr [edi + 0x98], 0x400
-// 00721b0f  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 00721b13  751a                 jne 0x721b2f
-// 00721b15  8b03                 mov eax, dword ptr [ebx]
-// 00721b17  85c0                 test eax, eax
-// 00721b19  750c                 jne 0x721b27
-// 00721b1b  8bbf5c010000         mov edi, dword ptr [edi + 0x15c]
-// 00721b21  85ff                 test edi, edi
-// 00721b23  740a                 je 0x721b2f
-// 00721b25  8bc7                 mov eax, edi
-// 00721b27  50                   push eax
-// 00721b28  8bce                 mov ecx, esi
-// 00721b2a  e811feffff           call 0x721940
-// 00721b2f  8bce                 mov ecx, esi
-// 00721b31  e88a5ef9ff           call 0x6b79c0
-// 00721b36  8b10                 mov edx, dword ptr [eax]
-// 00721b38  8bc8                 mov ecx, eax
-// 00721b3a  8b4278               mov eax, dword ptr [edx + 0x78]
-// 00721b3d  6a00                 push 0
-// 00721b3f  ffd0                 call eax
-// 00721b41  8bce                 mov ecx, esi
-// 00721b43  e8b8ecffff           call 0x720800
-// 00721b48  5f                   pop edi
-// 00721b49  5e                   pop esi
-// 00721b4a  5d                   pop ebp
-// 00721b4b  c70300000000         mov dword ptr [ebx], 0
-// 00721b51  b801000000           mov eax, 1
-// 00721b56  5b                   pop ebx
-// 00721b57  c21400               ret 0x14
-// 00721b5a  e8615ef9ff           call 0x6b79c0
-// 00721b5f  8b10                 mov edx, dword ptr [eax]
-// 00721b61  8bc8                 mov ecx, eax
-// 00721b63  8b4274               mov eax, dword ptr [edx + 0x74]
-// 00721b66  ffd0                 call eax
-// 00721b68  85c0                 test eax, eax
-// 00721b6a  7528                 jne 0x721b94
-// 00721b6c  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00721b70  5f                   pop edi
-// 00721b71  5e                   pop esi
-// 00721b72  5d                   pop ebp
-// 00721b73  8901                 mov dword ptr [ecx], eax
-// 00721b75  b801000000           mov eax, 1
-// 00721b7a  5b                   pop ebx
-// 00721b7b  c21400               ret 0x14
-// 00721b7e  8b57cc               mov edx, dword ptr [edi - 0x34]
-// 00721b81  6a00                 push 0
-// 00721b83  68bf2f0000           push 0x2fbf
-// 00721b88  6813010000           push 0x113
-// 00721b8d  52                   push edx
-// 00721b8e  ff150c2e8000         call dword ptr [0x802e0c]
-// 00721b94  8b442424             mov eax, dword ptr [esp + 0x24]
-// 00721b98  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00721b9c  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00721ba0  50                   push eax
-// 00721ba1  55                   push ebp
-// 00721ba2  51                   push ecx
-// 00721ba3  53                   push ebx
-// 00721ba4  52                   push edx
-// 00721ba5  8bcf                 mov ecx, edi
-// 00721ba7  e8245bf9ff           call 0x6b76d0
-// 00721bac  5f                   pop edi
-// 00721bad  5e                   pop esi
-// 00721bae  5d                   pop ebp
-// 00721baf  5b                   pop ebx
-// 00721bb0  c21400               ret 0x14
-// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPMenuBar.cpp (function ?OnHookMessage@CXTPMenuBar@@MAEHPAUHWND__@@IAAIAAJ2@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPMenuBar.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPMenuBar.cpp : implementation of the CXTPMenuBar class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPIntel80Helpers.h"
+
+#include "XTPMenuBar.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPHookManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPPaintManager.h"
+#include "XTPCommandBars.h"
+#include "XTPMouseManager.h"
+#include "XTPPopupBar.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define TID_REFRESH 12223
+
+#ifndef OIC_WINLOGO
+#define OIC_WINLOGO         32517
+#endif
+
+
+CXTPMenuBarMDIMenuInfo::CXTPMenuBarMDIMenuInfo(CXTPCommandBars* pCommandBars, UINT nIDResource)
+{
+	ASSERT(pCommandBars);
+	ASSERT(nIDResource != 0);
+
+	m_pControls = new CXTPControls;
+	m_pControls->SetCommandBars(pCommandBars);
+
+	m_nIDResource = nIDResource;
+	m_bChanged = FALSE;
+
+	m_hIcon = AfxGetApp()->LoadIcon(nIDResource);
+
+	#pragma warning(disable:4510)
+	#pragma warning(disable:4610)
+
+	POSITION pos = AfxGetApp()->GetFirstDocTemplatePosition();
+	while (pos)
+	{
+		CDocTemplate* pDocTemplate = AfxGetApp()->GetNextDocTemplate(pos);
+
+		USES_PROTECTED_ACCESS(CXTPMenuBarMDIMenuInfo, CDocTemplate, UINT, m_nIDResource);
+		UINT nID = PROTECTED_ACCESS(CDocTemplate, pDocTemplate, m_nIDResource);
+
+		if (nIDResource == nID)
+		{
+			pDocTemplate->GetDocString(m_strTitle, CDocTemplate::docName);
+			pDocTemplate->GetDocString(m_strDescription, CDocTemplate::regFileTypeName);
+			break;
+		}
+	}
+}
+
+CXTPMenuBarMDIMenuInfo::~CXTPMenuBarMDIMenuInfo()
+{
+	m_pControls->InternalRelease();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CXTPMenuBarMDIMenus::CXTPMenuBarMDIMenus(CXTPMenuBar* pMenuBar)
+	: m_pMenuBar(pMenuBar)
+{
+}
+
+CXTPMenuBarMDIMenus::~CXTPMenuBarMDIMenus()
+{
+	RemoveAll();
+}
+
+void CXTPMenuBarMDIMenus::RemoveAll()
+{
+	POSITION pos = m_mapMenus.GetStartPosition();
+	while (pos)
+	{
+		UINT nIDCommand;
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		m_mapMenus.GetNextAssoc(pos, nIDCommand, pInfo);
+		pInfo->InternalRelease();
+	}
+	m_mapMenus.RemoveAll();
+}
+
+void CXTPMenuBarMDIMenus::Remove(UINT nIDResource)
+{
+	CXTPMenuBarMDIMenuInfo* pInfo = Lookup(nIDResource);
+	if (pInfo)
+	{
+		m_mapMenus.RemoveKey(nIDResource);
+		pInfo->InternalRelease();
+	}
+}
+
+void CXTPMenuBarMDIMenus::SetAt(UINT nIDResource, CXTPMenuBarMDIMenuInfo* pInfo)
+{
+	ASSERT(pInfo);
+	ASSERT(!Lookup(nIDResource));
+
+	m_mapMenus.SetAt(nIDResource, pInfo);
+}
+
+CXTPMenuBarMDIMenuInfo* CXTPMenuBarMDIMenus::Lookup(UINT nIDResource) const
+{
+	CXTPMenuBarMDIMenuInfo* pInfo;
+	if (!m_mapMenus.Lookup(nIDResource, pInfo))
+		return NULL;
+
+	return pInfo;
+}
+
+int CXTPMenuBarMDIMenus::GetCount() const
+{
+	return (int)m_mapMenus.GetCount();
+}
+
+POSITION CXTPMenuBarMDIMenus::GetStartPosition() const
+{
+	return m_mapMenus.GetStartPosition();
+}
+
+void CXTPMenuBarMDIMenus::GetNextMenu(POSITION& pos, CXTPMenuBarMDIMenuInfo*& pInfo) const
+{
+	UINT nIDResource = 0;
+	m_mapMenus.GetNextAssoc(pos, nIDResource, pInfo);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+class CXTPMenuBar::CControlMDIButton : public CXTPControlButton
+{
+public:
+	CControlMDIButton()
+	{
+		m_dwFlags |= xtpFlagRightAlign | xtpFlagSkipFocus | xtpFlagManualUpdate | xtpFlagNoMovable;
+	}
+	CSize GetSize(CDC* /*pDC*/)
+	{
+		return CSize(16, 16);
+	};
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	void Draw(CDC* pDC);
+	void OnExecute()
+	{
+		HWND hWndChild = ((CXTPMenuBar*)m_pParent)->GetActiveMdiChildWnd();
+		ASSERT(hWndChild);
+
+		UINT nId = m_nId == XTP_ID_MENUBAR_CLOSE ? SC_CLOSE :
+			m_nId == XTP_ID_MENUBAR_RESTORE ? SC_RESTORE : SC_MINIMIZE;
+
+		::PostMessage(hWndChild, WM_SYSCOMMAND, nId, 0);
+	}
+};
+
+class CXTPMenuBar::CControlMDISysMenuPopup : public CXTPControlPopup
+{
+	class CXTPSysMenuPopupBar : public CXTPPopupBar
+	{
+		void UpdateShortcuts()
+		{
+		}
+
+	};
+
+public:
+	CControlMDISysMenuPopup(HWND hWndActiveChild, HMENU hDocMenu)
+	{
+		m_dwFlags |= xtpFlagManualUpdate | xtpFlagNoMovable;
+		m_controlType = xtpControlPopup;
+		m_strCaption = _T("-");
+		m_hIcon = 0;
+
+		m_pCommandBar = new CXTPSysMenuPopupBar();
+		m_pCommandBar->EnableCustomization(FALSE);
+
+		SetMDISysMenu(hWndActiveChild, hDocMenu);
+
+	}
+	void SetMDISysMenu(HWND hWndActiveChild, HMENU hDocMenu)
+	{
+		m_hDocMenu = hDocMenu;
+
+		HICON hIcon = (HICON)::SendMessage(hWndActiveChild, WM_XTP_GETTABICON, 0, 0);
+
+		if (hIcon == NULL) hIcon = (HICON)::SendMessage(hWndActiveChild, WM_GETICON, ICON_SMALL, 0);
+		if (hIcon == NULL) hIcon = (HICON)::SendMessage(hWndActiveChild, WM_GETICON, ICON_BIG, 0);
+		if (hIcon == NULL) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWndActiveChild, GCLP_HICONSM);
+		if (hIcon == NULL) hIcon = AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
+
+		if (m_hIcon)
+		{
+			DestroyIcon(m_hIcon);
+			m_hIcon = 0;
+		}
+
+		if (hIcon)
+			m_hIcon = CXTPImageManagerIcon::ScaleToFit(hIcon, CXTPImageManagerIcon::GetExtent(hIcon), 16);
+
+		m_pCommandBar->GetControls()->RemoveAll();
+
+		CMenu* pMenu = CMenu::FromHandle(hDocMenu);
+
+		BOOL bSeparator = FALSE;
+		for (int i = 0; i < (int)pMenu->GetMenuItemCount(); i++)
+		{
+			UINT nItemID = pMenu->GetMenuItemID(i);
+			if (nItemID == 0)
+				bSeparator = TRUE;
+			else
+			{
+				CXTPControl* pControl = NULL;
+				if (nItemID >= 0xF000 && nItemID < 0xF1F0)
+				{
+					pControl = (CXTPControl*)CXTPControlButton::CreateObject();
+					pControl->SetFlags(xtpFlagManualUpdate);
+					m_pCommandBar->GetControls()->Add(pControl, nItemID);
+
+					CString strCaption;
+					pMenu->GetMenuString(i, strCaption, MF_BYPOSITION);
+					pControl->SetCaption(strCaption);
+
+					CString strDescription;
+					if (!strDescription.LoadString(ID_COMMAND_FROM_SC(nItemID)))
+					{
+					}
+					pControl->SetDescription(strDescription);
+
+					pControl->SetItemDefault((int)::GetMenuDefaultItem(pMenu->m_hMenu, TRUE, GMDI_USEDISABLED) == i);
+
+
+					pControl->SetEnabled(!(pMenu->GetMenuState (i, MF_BYPOSITION) & MF_DISABLED));
+				}
+				else
+				{
+					pControl = m_pCommandBar->GetControls()->AddMenuItem(pMenu, i);
+
+				}
+
+				if (pControl && bSeparator)
+				{
+					pControl->SetBeginGroup(TRUE);
+					bSeparator = FALSE;
+				}
+			}
+		}
+
+
+	}
+	~CControlMDISysMenuPopup()
+	{
+		if (m_hIcon) DestroyIcon(m_hIcon);
+	}
+	CSize GetSize(CDC* /*pDC*/)
+	{
+		return CSize(16, 16);
+	};
+	void Draw(CDC* pDC)
+	{
+		if (m_hIcon)
+		{
+			pDC->DrawState (GetRect().TopLeft(), CSize(16, 16), m_hIcon, (UINT)DSS_NORMAL, HBRUSH(0));
+		}
+	}
+	void UpdateShadow()
+	{
+
+	}
+	void AdjustExcludeRect(CRect& rc, BOOL /*bVertical*/)
+	{
+		rc.InflateRect(1, 1);
+	}
+
+public:
+	HMENU m_hDocMenu;
+	HICON m_hIcon;
+};
+
+void CXTPMenuBar::CControlMDIButton::Draw(CDC* pDC)
+{
+	CFont font;
+	font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
+	CFont* pFont = pDC->SelectObject(&font);
+	GetPaintManager()->DrawControlEntry(pDC, this);
+	pDC->SetTextColor(GetPaintManager()->GetControlTextColor(this));
+	pDC->DrawText(m_strParameter, m_rcControl, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	pDC->SelectObject(pFont);
+}
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPMenuBar, CXTPToolBar)
+
+CXTPMenuBar::CXTPMenuBar()
+{
+	m_barType = xtpBarTypeMenuBar;
+	m_bMdiApp = FALSE;
+	m_hWndActiveChild = 0;
+	m_nIDResource = 0;
+	m_nIDResourceCurrent = 0;
+
+	m_bDirtyMenu = FALSE;
+	m_hMenuDefault = NULL;
+	m_bShowExpandButton = FALSE;
+
+	m_bCloseable = FALSE;
+
+	m_nBarID = XTP_IDR_MENUBAR;
+	m_dwFlags = xtpFlagAlignAny | xtpFlagFloating | xtpFlagStretched;
+
+	m_pMDIMenus = new CXTPMenuBarMDIMenus(this);
+
+	EnableAutomation();
+}
+
+CXTPMenuBar::~CXTPMenuBar()
+{
+	FreeMDIMenus();
+
+	CMDTARGET_RELEASE(m_pMDIMenus);
+
+	if (m_hMenuDefault)
+	{
+		DestroyMenu(m_hMenuDefault);
+	}
+}
+
+
+void CXTPMenuBar::SetupHook()
+{
+	m_bMdiApp = GetSite()->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd));
+
+
+	CWnd* pSite = GetSite();
+	XTPHookManager()->SetHook(pSite->GetSafeHwnd(), this);
+
+	CMDIFrameWnd* pMDIFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, pSite);
+	if (pMDIFrame)
+	{
+		XTPHookManager()->SetHook(pMDIFrame->m_hWndMDIClient, this);
+	}
+}
+
+HWND CXTPMenuBar::GetActiveMdiChildWnd(BOOL* bMaximized)
+{
+	BOOL bMax = FALSE;
+	if (!m_bMdiApp) return NULL;
+	CMDIFrameWnd * pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, GetSite());
+	ASSERT_VALID(pFrame);
+	HWND hWndMdiArea = pFrame->m_hWndMDIClient;
+
+	ASSERT(hWndMdiArea && ::IsWindow(hWndMdiArea));
+	if (!hWndMdiArea)
+		return 0;
+
+	HWND hWnd = (HWND) ::SendMessage(hWndMdiArea, WM_MDIGETACTIVE, 0, (LPARAM)&bMax);
+	if (!hWnd) bMax = FALSE;
+	ASSERT(hWnd == NULL || ::IsWindow(hWnd));
+	if (bMaximized) *bMaximized = bMax;
+	return hWnd;
+}
+
+
+BOOL CXTPMenuBar::IsOleDocumentActive(HWND hWndActiveChild) const
+{
+#if _MSC_VER >= 1200 // MFC 6.0
+	CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, CWnd::FromHandle(hWndActiveChild));
+
+	COleDocument* pActiveOleDoc =  DYNAMIC_DOWNCAST(COleDocument,
+		pFrame && pFrame->GetActiveView() ? pFrame->GetActiveView()->GetDocument() : NULL);
+
+	if (!pActiveOleDoc || !pFrame)
+		return FALSE;
+
+	COleDocObjectItem* pItem = DYNAMIC_DOWNCAST(COleDocObjectItem,
+		pActiveOleDoc->GetInPlaceActiveItem(pFrame->GetActiveView()));
+
+	return  pItem != NULL;
+#else
+	UNREFERENCED_PARAMETER(hWndActiveChild);
+	return FALSE;
+#endif
+}
+
+void CXTPMenuBar::SyncActiveMdiChild()
+{
+	HWND hWndActiveChild = GetActiveMdiChildWnd();
+	if (m_hWndActiveChild == hWndActiveChild)
+		return;
+
+	if (IsOleDocumentActive(hWndActiveChild))
+		return;
+
+	if (m_hWndActiveChild != NULL)
+		XTPHookManager()->RemoveHook(m_hWndActiveChild, this);
+	m_hWndActiveChild = hWndActiveChild;
+	if (m_hWndActiveChild != NULL)
+		XTPHookManager()->SetHook(m_hWndActiveChild, this);
+}
+
+void CXTPMenuBar::RefreshMenu()
+{
+	SyncActiveMdiChild();
+
+	if (IsVisible())
+	{
+		RefreshSysButtons();
+	}
+}
+
+
+void CXTPMenuBar::AddSysButton(CXTPControl* pControl, int nId, LPCTSTR strParameter, int nBefore /*= -1*/)
+{
+	m_pControls->Add(pControl, nId, strParameter, nBefore, TRUE);
+}
+
+void CXTPMenuBar::RefreshSysButtons()
+{
+	BOOL bMax = FALSE;
+	HWND hWndActiveChild = GetActiveMdiChildWnd(&bMax);
+	DWORD dwStyle = hWndActiveChild ? GetWindowLong(hWndActiveChild, GWL_STYLE) : 0;
+	CXTPControl*  pButton;
+
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_SYSMENU);
+
+	if (bMax && (m_dwFlags & xtpFlagAddMDISysPopup))
+	{
+		HMENU hDocMenuButton = pButton ? ((CControlMDISysMenuPopup*)pButton)->m_hDocMenu : 0;
+
+		HMENU hDocMenu =
+			::GetSystemMenu(hWndActiveChild, FALSE);
+		if (hDocMenu && ::IsMenu(hDocMenu))
+		{
+			if (hDocMenuButton != hDocMenu)
+			{
+				if (pButton)
+				{
+					((CControlMDISysMenuPopup*)pButton)->SetMDISysMenu(hWndActiveChild, hDocMenu);
+					DelayRedraw();
+				}
+				else
+				{
+					AddSysButton(new CControlMDISysMenuPopup(hWndActiveChild, hDocMenu), XTP_ID_MENUBAR_SYSMENU, _T(""), 0);
+				}
+			}
+		}
+		else
+		{
+			if (pButton) m_pControls->Remove(pButton);
+		}
+	}
+	else if (pButton) m_pControls->Remove(pButton);
+
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_MINIMIZE);
+	if (!pButton && bMax && (dwStyle & WS_MINIMIZEBOX) && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideMinimizeBox))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_MINIMIZE, _T("0"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_RESTORE);
+	if (!pButton && bMax && (dwStyle & WS_MAXIMIZEBOX) && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideMaximizeBox))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_RESTORE, _T("2"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_CLOSE);
+	if (!pButton && bMax && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideClose))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_CLOSE, _T("r"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+}
+
+void CXTPMenuBar::FreeMDIMenus()
+{
+	m_pMDIMenus->RemoveAll();
+}
+
+BOOL CXTPMenuBar::IsMDIMenusChanged()
+{
+	m_bDirtyMenu = FALSE;
+
+	if (m_pMDIMenus->GetCount() > 0)
+	{
+		SwitchMDIMenu(GetDefaultMenuResource());
+		m_bDirtyMenu = TRUE;
+	}
+
+	BOOL bChanged = FALSE;
+
+	POSITION pos = m_pMDIMenus->GetStartPosition();
+	while (pos)
+	{
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		m_pMDIMenus->GetNextMenu(pos, pInfo);
+
+		pInfo->m_bChanged = pInfo->m_pControls->IsChanged();
+		bChanged = bChanged || pInfo->m_bChanged;
+	}
+	return bChanged;
+}
+
+
+CXTPMenuBarMDIMenuInfo* CXTPMenuBar::AddMDIMenu(UINT nIDResource)
+{
+	CXTPMenuBarMDIMenuInfo* pInfo = m_pMDIMenus->Lookup(nIDResource);
+	if (pInfo)
+		return pInfo;
+
+	pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), nIDResource);
+	m_pMDIMenus->SetAt(nIDResource, pInfo);
+
+	CMenu menu;
+	VERIFY(menu.LoadMenu(nIDResource));
+
+	pInfo->m_pControls->LoadMenu(&menu);
+	pInfo->m_pControls->CreateOriginalControls();
+
+	return pInfo;
+}
+
+void CXTPMenuBar::SwitchActiveMenu()
+{
+	CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, GetSite());
+	if (pFrame && pFrame->GetSafeHwnd()) pFrame->OnUpdateFrameMenu(0);
+	m_bDirtyMenu = FALSE;
+}
+
+void CXTPMenuBar::SwitchMDIMenu(UINT nIDResource, CMenu* pMenu)
+{
+	if ((nIDResource == 0) || (m_nIDResourceCurrent == 0) || (m_nIDResourceCurrent == nIDResource))
+		return;
+
+	if (GetCommandBars()->IsCustomizeAvail() || m_pMDIMenus->Lookup(nIDResource))
+	{
+		if (pMenu == NULL && !m_pMDIMenus->Lookup(nIDResource))
+			return;
+
+		CXTPMenuBarMDIMenuInfo* pInfo = m_pMDIMenus->Lookup(m_nIDResourceCurrent);
+		if (pInfo)
+		{
+			ASSERT(pInfo->m_pControls == m_pControls);
+		}
+		else
+		{
+			pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), m_nIDResourceCurrent);
+			pInfo->m_pControls->InternalRelease();
+
+			pInfo->m_pControls = m_pControls;
+			m_pControls->InternalAddRef();
+
+			m_pMDIMenus->SetAt(m_nIDResourceCurrent, pInfo);
+		}
+
+		m_pControls->SetParent(0);
+		m_pControls->InternalRelease();
+		m_pControls = NULL;
+
+		pInfo = m_pMDIMenus->Lookup(nIDResource);
+		if (!pInfo)
+		{
+			pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), nIDResource);
+			m_pControls = pInfo->m_pControls;
+			m_pControls->InternalAddRef();
+			m_pControls->SetParent(this);
+
+			ASSERT(pMenu);
+			if (pMenu)
+			{
+				LoadMenu(pMenu);
+			}
+			m_pControls->CreateOriginalControls();
+
+			ASSERT(nIDResource != m_nIDResource);
+
+			m_pMDIMenus->SetAt(nIDResource, pInfo);
+		}
+		else
+		{
+			m_pControls = pInfo->m_pControls;
+			m_pControls->SetParent(this);
+			m_pControls->InternalAddRef();
+
+			if (m_pControls->GetOriginalControls() == 0 && pMenu)
+			{
+				CXTPOriginalControls* pOriginalControls = new CXTPOriginalControls();
+				pOriginalControls->LoadMenu(pMenu);
+				m_pControls->SetOriginalControls(pOriginalControls);
+			}
+
+			if (nIDResource == m_nIDResource)
+			{
+				m_pMDIMenus->Remove(nIDResource);
+			}
+		}
+	}
+	else if (pMenu)
+	{
+		LoadMenu(pMenu);
+	}
+
+	OnRecalcLayout();
+
+	m_nIDResourceCurrent = nIDResource;
+}
+
+void CXTPMenuBar::SwitchMDIMenu(HMENU hMenu)
+{
+	UINT nIDResource = GetActiveDocTemplate();
+
+	if (hMenu == m_hMenuDefault)
+	{
+		nIDResource = m_nIDResource;
+	}
+
+	if ((nIDResource == 0) || (m_nIDResourceCurrent == 0) || (m_nIDResourceCurrent == nIDResource))
+		return;
+
+	CMenu* pMenu = CMenu::FromHandle(hMenu);
+	if (!pMenu || pMenu->GetMenuItemCount() == 0)
+		return;
+
+	SwitchMDIMenu(nIDResource, pMenu);
+}
+
+int CXTPMenuBar::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
+{
+
+	switch (nMessage)
+	{
+		case WM_SYSCOMMAND:
+			if (IsWindowVisible() && !XTPMouseManager()->IsMouseLocked() && (GetKeyState(VK_SHIFT) >= 0) && !IsCustomizeMode())
+			if (((wParam & 0xFFF0) == SC_KEYMENU) && (lParam == 0))
+			{
+				if (PreviewAccel((UINT)VK_MENU))
+					return TRUE;
+
+				CXTPCommandBars* pCommandBars = GetCommandBars();
+				if (pCommandBars)
+				{
+					pCommandBars->SetToolBarFocus(this);
+				}
+				return TRUE;
+			}
+			break;
+
+		case WM_MDISETMENU:
+			if (IsVisible())
+			{
+				if (IsCustomizeMode())
+				{
+					GetSite()->SetMenu(0);
+					wParam = 0;
+					return TRUE;
+				}
+
+				BOOL bAccepMenus = ((m_dwFlags & xtpFlagIgnoreSetMenuMessage) == 0) && (wParam || m_hMenuDefault);
+
+				if (bAccepMenus)
+				{
+					SwitchMDIMenu(wParam ? (HMENU)wParam : m_hMenuDefault);
+				}
+
+				GetSite()->SetMenu(0);
+				RefreshMenu();
+
+				wParam = 0;
+				return TRUE;
+			}
+			else if (GetSite()->GetMenu() == 0)
+			{
+				wParam = 0;
+				return TRUE;
+
+			}
+			break;
+
+		case WM_MDICREATE:
+		case WM_MDIDESTROY:
+		case WM_MDIACTIVATE:
+			PostMessage(WM_TIMER, TID_REFRESH, 0);
+			break;
+
+		case WM_SIZE:
+		case WM_WINDOWPOSCHANGED:
+			if (hWnd == m_hWndActiveChild)
+				PostMessage(WM_TIMER, TID_REFRESH, 0);
+			break;
+
+	}
+	return CXTPToolBar::OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
+}
+
+BOOL CXTPMenuBar::LoadMenuBar(UINT nIDResource)
+{
+	ASSERT(m_pControls->GetCount() == 0);
+
+	if (nIDResource != 0)
+	{
+		CMenu menu;
+		if (!menu.LoadMenu(nIDResource))
+			return FALSE;
+
+		if (!LoadMenu(&menu))
+			return FALSE;
+
+		m_nIDResourceCurrent = m_nIDResource = nIDResource;
+	}
+
+
+	SetupHook();
+
+	UINT nIDMenuBarIcons[] =
+	{
+		SC_RESTORE, SC_MINIMIZE, SC_MAXIMIZE, SC_CLOSE
+	};
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+		pCommandBars->GetImageManager()->SetIcons(XTP_IDB_MENUBAR_ICONS, nIDMenuBarIcons, 4, CSize(16, 16));
+
+	m_hMenuDefault = ::GetMenu(GetSite()->GetSafeHwnd());
+	GetSite()->SetMenu(0);
+
+	return TRUE;
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPMenuBar, CXTPToolBar)
+	ON_WM_TIMER()
+END_MESSAGE_MAP()
+
+void CXTPMenuBar::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == TID_REFRESH)
+		RefreshMenu();
+
+	CXTPToolBar::OnTimer(nIDEvent);
+}
+
+void CXTPMenuBar::Reset(BOOL bShowWarningMessage)
+{
+	if (GetControls()->GetOriginalControls() != NULL)
+	{
+		CXTPToolBar::Reset(bShowWarningMessage);
+	}
+	else if (((m_pMDIMenus->GetCount() > 0) || (GetControls()->GetOriginalControls() == NULL)) && m_nIDResourceCurrent)
+	{
+		if (bShowWarningMessage)
+		{
+			CString strMessage, strTitle = GetTitle(), strReset;
+
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+			CXTPPushRoutingFrame push(GetFrameSite());
+
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+				return;
+		}
+
+		CMenu menu;
+		VERIFY(menu.LoadMenu(m_nIDResourceCurrent));
+		LoadMenu(&menu);
+
+		CWnd* pWnd = GetSite();
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
+	}
+
+	RefreshMenu();
+	OnInitialUpdate();
+	OnRecalcLayout();
+}
+
+void CXTPMenuBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPToolBar::Copy(pCommandBar, bRecursive);
+
+	m_nIDResource = ((CXTPMenuBar*)pCommandBar)->m_nIDResource;
+
+	POSITION pos = ((CXTPMenuBar*)pCommandBar)->m_pMDIMenus->GetStartPosition();
+	while (pos)
+	{
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		((CXTPMenuBar*)pCommandBar)->m_pMDIMenus->GetNextMenu(pos, pInfo);
+
+		CXTPMenuBarMDIMenuInfo* pInfoOrig = m_pMDIMenus->Lookup(pInfo->m_nIDResource);
+		if (pInfoOrig)
+		{
+			if (pInfoOrig->m_pControls && pInfoOrig->m_pControls->m_pOriginalControls != NULL &&
+				pInfo->m_pControls && pInfo->m_pControls->m_pOriginalControls == NULL)
+			{
+				CXTPOriginalControls* pOriginalControls = pInfoOrig->m_pControls->m_pOriginalControls;
+				CMDTARGET_ADDREF(pOriginalControls);
+				pInfo->m_pControls->SetOriginalControls(pOriginalControls);
+			}
+
+			pInfoOrig->m_pControls->InternalRelease();
+			pInfoOrig->m_pControls = pInfo->m_pControls;
+			pInfoOrig->m_pControls->InternalAddRef();
+		}
+		else
+		{
+			m_pMDIMenus->SetAt(pInfo->m_nIDResource, pInfo);
+			pInfo->InternalAddRef();
+		}
+	}
+
+}
+
+BOOL CXTPMenuBar::ShouldSerializeBar()
+{
+	if (!IsCustomizable())
+		return FALSE;
+
+	BOOL bChanged = IsMDIMenusChanged();
+	if (bChanged)
+		return TRUE;
+
+	if ((GetControls()->GetOriginalControls() && !GetControls()->IsChanged()))
+		return FALSE;
+
+	return TRUE;
+}
+
+

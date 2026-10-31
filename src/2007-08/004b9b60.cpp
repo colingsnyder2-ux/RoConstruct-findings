@@ -1,41 +1,5 @@
-// from server: 97% by colin
-extern "C" void* __cdecl memset(void*, int, unsigned int);
-
-struct RakPeer {
-    void __cdecl shiftRight(unsigned int bitIndex, unsigned int* data);
-};
-
-void RakPeer::shiftRight(unsigned int bitIndex, unsigned int* data)
-{
-    unsigned int wordIndex = bitIndex >> 5;
-    unsigned int bitOffset = bitIndex & 0x1f;
-
-    if (wordIndex != 0)
-    {
-        int i = 15 - (int)wordIndex;
-        if (i >= 0)
-        {
-            unsigned int* dst = data + i + wordIndex;
-            do
-            {
-                *dst = data[i];
-                --i;
-                --dst;
-            } while (i >= 0);
-        }
-        unsigned int count = wordIndex * 4;
-        memset(data, 0, count);
-    }
-
-    if (bitOffset != 0)
-    {
-        unsigned int carry = 0;
-        unsigned int shift = 32 - bitOffset;
-        for (unsigned int j = 0; j < 16; ++j)
-        {
-            unsigned int cur = data[j];
-            data[j] = (cur << bitOffset) | carry;
-            carry = cur >> shift;
-        }
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs-raknet roc_espeon_aug2007_rakpeer_recovered_dc9e23195932f1c7.cpp

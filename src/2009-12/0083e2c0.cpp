@@ -1,236 +1,1248 @@
-// roc 2009-12 0083e2c0  unit: CXTPCustomizeSheet  size: 809 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0083e2c0
-//
-// 0083e2c0  6aff                 push -1
-// 0083e2c2  6859c99500           push 0x95c959
-// 0083e2c7  64a100000000         mov eax, dword ptr fs:[0]
-// 0083e2cd  50                   push eax
-// 0083e2ce  83ec48               sub esp, 0x48
-// 0083e2d1  53                   push ebx
-// 0083e2d2  55                   push ebp
-// 0083e2d3  56                   push esi
-// 0083e2d4  57                   push edi
-// 0083e2d5  a10052b600           mov eax, dword ptr [0xb65200]
-// 0083e2da  33c4                 xor eax, esp
-// 0083e2dc  50                   push eax
-// 0083e2dd  8d44245c             lea eax, [esp + 0x5c]
-// 0083e2e1  64a300000000         mov dword ptr fs:[0], eax
-// 0083e2e7  8bf1                 mov esi, ecx
-// 0083e2e9  bb64309a00           mov ebx, 0x9a3064
-// 0083e2ee  33ff                 xor edi, edi
-// 0083e2f0  895c2428             mov dword ptr [esp + 0x28], ebx
-// 0083e2f4  897c242c             mov dword ptr [esp + 0x2c], edi
-// 0083e2f8  897c2464             mov dword ptr [esp + 0x64], edi
-// 0083e2fc  e89f050300           call 0x86e8a0
-// 0083e301  8b10                 mov edx, dword ptr [eax]
-// 0083e303  8b520c               mov edx, dword ptr [edx + 0xc]
-// 0083e306  68a1230000           push 0x23a1
-// 0083e30b  8d4c242c             lea ecx, [esp + 0x2c]
-// 0083e30f  51                   push ecx
-// 0083e310  8bc8                 mov ecx, eax
-// 0083e312  ffd2                 call edx
-// 0083e314  85c0                 test eax, eax
-// 0083e316  7509                 jne 0x83e321
-// 0083e318  895c2428             mov dword ptr [esp + 0x28], ebx
-// 0083e31c  e9a3020000           jmp 0x83e5c4
-// 0083e321  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 0083e325  57                   push edi
-// 0083e326  50                   push eax
-// 0083e327  ff1548cc9800         call dword ptr [0x98cc48]
-// 0083e32d  50                   push eax
-// 0083e32e  e8b75bfbff           call 0x7f3eea
-// 0083e333  8be8                 mov ebp, eax
-// 0083e335  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 0083e339  3bef                 cmp ebp, edi
-// 0083e33b  74db                 je 0x83e318
-// 0083e33d  57                   push edi
-// 0083e33e  e84d360000           call 0x841990
-// 0083e343  8b8eb8000000         mov ecx, dword ptr [esi + 0xb8]
-// 0083e349  8986bc000000         mov dword ptr [esi + 0xbc], eax
-// 0083e34f  8b89a0000000         mov ecx, dword ptr [ecx + 0xa0]
-// 0083e355  8988e4000000         mov dword ptr [eax + 0xe4], ecx
-// 0083e35b  8b96bc000000         mov edx, dword ptr [esi + 0xbc]
-// 0083e361  89b208010000         mov dword ptr [edx + 0x108], esi
-// 0083e367  8b8eb8000000         mov ecx, dword ptr [esi + 0xb8]
-// 0083e36d  83c404               add esp, 4
-// 0083e370  e86b63fdff           call 0x8146e0
-// 0083e375  8b1d0cb29800         mov ebx, dword ptr [0x98b20c]
-// 0083e37b  8bf8                 mov edi, eax
-// 0083e37d  8d4704               lea eax, [edi + 4]
-// 0083e380  50                   push eax
-// 0083e381  ffd3                 call ebx
-// 0083e383  8b8ebc000000         mov ecx, dword ptr [esi + 0xbc]
-// 0083e389  57                   push edi
-// 0083e38a  e8d161fcff           call 0x804560
-// 0083e38f  8b86c0000000         mov eax, dword ptr [esi + 0xc0]
-// 0083e395  83c004               add eax, 4
-// 0083e398  50                   push eax
-// 0083e399  ffd3                 call ebx
-// 0083e39b  8b8eb8000000         mov ecx, dword ptr [esi + 0xb8]
-// 0083e3a1  e8fa5ffdff           call 0x8143a0
-// 0083e3a6  8b8ec0000000         mov ecx, dword ptr [esi + 0xc0]
-// 0083e3ac  894178               mov dword ptr [ecx + 0x78], eax
-// 0083e3af  8b8ec0000000         mov ecx, dword ptr [esi + 0xc0]
-// 0083e3b5  51                   push ecx
-// 0083e3b6  8b8ebc000000         mov ecx, dword ptr [esi + 0xbc]
-// 0083e3bc  e81f62fcff           call 0x8045e0
-// 0083e3c1  8b5504               mov edx, dword ptr [ebp + 4]
-// 0083e3c4  33db                 xor ebx, ebx
-// 0083e3c6  52                   push edx
-// 0083e3c7  895c2418             mov dword ptr [esp + 0x18], ebx
-// 0083e3cb  ff1540cc9800         call dword ptr [0x98cc40]
-// 0083e3d1  85c0                 test eax, eax
-// 0083e3d3  0f8ee3010000         jle 0x83e5bc
-// 0083e3d9  8da42400000000       lea esp, [esp]
-// 0083e3e0  8b4d04               mov ecx, dword ptr [ebp + 4]
-// 0083e3e3  33c0                 xor eax, eax
-// 0083e3e5  89442438             mov dword ptr [esp + 0x38], eax
-// 0083e3e9  8944243c             mov dword ptr [esp + 0x3c], eax
-// 0083e3ed  89442440             mov dword ptr [esp + 0x40], eax
-// 0083e3f1  89442444             mov dword ptr [esp + 0x44], eax
-// 0083e3f5  89442448             mov dword ptr [esp + 0x48], eax
-// 0083e3f9  8944244c             mov dword ptr [esp + 0x4c], eax
-// 0083e3fd  89442450             mov dword ptr [esp + 0x50], eax
-// 0083e401  89442454             mov dword ptr [esp + 0x54], eax
-// 0083e405  89442458             mov dword ptr [esp + 0x58], eax
-// 0083e409  8d442430             lea eax, [esp + 0x30]
-// 0083e40d  50                   push eax
-// 0083e40e  6a01                 push 1
-// 0083e410  53                   push ebx
-// 0083e411  51                   push ecx
-// 0083e412  c74424402c000000     mov dword ptr [esp + 0x40], 0x2c
-// 0083e41a  c744244411000000     mov dword ptr [esp + 0x44], 0x11
-// 0083e422  ff15b4ca9800         call dword ptr [0x98cab4]
-// 0083e428  8b5504               mov edx, dword ptr [ebp + 4]
-// 0083e42b  53                   push ebx
-// 0083e42c  52                   push edx
-// 0083e42d  ff1544cc9800         call dword ptr [0x98cc44]
-// 0083e433  8bf8                 mov edi, eax
-// 0083e435  8d4c2418             lea ecx, [esp + 0x18]
-// 0083e439  897c2420             mov dword ptr [esp + 0x20], edi
-// 0083e43d  ff1574de9800         call dword ptr [0x98de74]
-// 0083e443  6800040000           push 0x400
-// 0083e448  8d44241c             lea eax, [esp + 0x1c]
-// 0083e44c  50                   push eax
-// 0083e44d  53                   push ebx
-// 0083e44e  55                   push ebp
-// 0083e44f  c644247401           mov byte ptr [esp + 0x74], 1
-// 0083e454  e847040300           call 0x86e8a0
-// 0083e459  8bc8                 mov ecx, eax
-// 0083e45b  e880ff0200           call 0x86e3e0
-// 0083e460  f744243800080000     test dword ptr [esp + 0x38], 0x800
-// 0083e468  0f8529010000         jne 0x83e597
-// 0083e46e  85ff                 test edi, edi
-// 0083e470  0f8421010000         je 0x83e597
-// 0083e476  81ffaa230000         cmp edi, 0x23aa
-// 0083e47c  7577                 jne 0x83e4f5
-// 0083e47e  6884010000           push 0x184
-// 0083e483  e8d853fbff           call 0x7f3860
-// 0083e488  83c404               add esp, 4
-// 0083e48b  89442424             mov dword ptr [esp + 0x24], eax
-// 0083e48f  c644246402           mov byte ptr [esp + 0x64], 2
-// 0083e494  85c0                 test eax, eax
-// 0083e496  740b                 je 0x83e4a3
-// 0083e498  8bc8                 mov ecx, eax
-// 0083e49a  e831c6ffff           call 0x83aad0
-// 0083e49f  8bf8                 mov edi, eax
-// 0083e4a1  eb02                 jmp 0x83e4a5
-// 0083e4a3  33ff                 xor edi, edi
-// 0083e4a5  685c020000           push 0x25c
-// 0083e4aa  c644246801           mov byte ptr [esp + 0x68], 1
-// 0083e4af  e8ac53fbff           call 0x7f3860
-// 0083e4b4  83c404               add esp, 4
-// 0083e4b7  89442424             mov dword ptr [esp + 0x24], eax
-// 0083e4bb  c644246403           mov byte ptr [esp + 0x64], 3
-// 0083e4c0  85c0                 test eax, eax
-// 0083e4c2  740b                 je 0x83e4cf
-// 0083e4c4  8bc8                 mov ecx, eax
-// 0083e4c6  e8656a0000           call 0x844f30
-// 0083e4cb  8be8                 mov ebp, eax
-// 0083e4cd  eb02                 jmp 0x83e4d1
-// 0083e4cf  33ed                 xor ebp, ebp
-// 0083e4d1  55                   push ebp
-// 0083e4d2  8bcf                 mov ecx, edi
-// 0083e4d4  c644246801           mov byte ptr [esp + 0x68], 1
-// 0083e4d9  c785d8000000aa230000 mov dword ptr [ebp + 0xd8], 0x23aa
-// 0083e4e3  e868d1ffff           call 0x83b650
-// 0083e4e8  8bcd                 mov ecx, ebp
-// 0083e4ea  e8ed58fbff           call 0x7f3ddc
-// 0083e4ef  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 0083e4f3  eb57                 jmp 0x83e54c
-// 0083e4f5  81ffa5230000         cmp edi, 0x23a5
-// 0083e4fb  7523                 jne 0x83e520
-// 0083e4fd  68b0010000           push 0x1b0
-// 0083e502  e85953fbff           call 0x7f3860
-// 0083e507  83c404               add esp, 4
-// 0083e50a  89442424             mov dword ptr [esp + 0x24], eax
-// 0083e50e  c644246404           mov byte ptr [esp + 0x64], 4
-// 0083e513  85c0                 test eax, eax
-// 0083e515  742c                 je 0x83e543
-// 0083e517  8bc8                 mov ecx, eax
-// 0083e519  e832f4ffff           call 0x83d950
-// 0083e51e  eb25                 jmp 0x83e545
-// 0083e520  6874010000           push 0x174
-// 0083e525  e83653fbff           call 0x7f3860
-// 0083e52a  83c404               add esp, 4
-// 0083e52d  89442424             mov dword ptr [esp + 0x24], eax
-// 0083e531  c644246405           mov byte ptr [esp + 0x64], 5
-// 0083e536  85c0                 test eax, eax
-// 0083e538  7409                 je 0x83e543
-// 0083e53a  8bc8                 mov ecx, eax
-// 0083e53c  e85ff4ffff           call 0x83d9a0
-// 0083e541  eb02                 jmp 0x83e545
-// 0083e543  33c0                 xor eax, eax
-// 0083e545  8bf8                 mov edi, eax
-// 0083e547  c644246401           mov byte ptr [esp + 0x64], 1
-// 0083e54c  8d4c2418             lea ecx, [esp + 0x18]
-// 0083e550  ff1580de9800         call dword ptr [0x98de80]
-// 0083e556  50                   push eax
-// 0083e557  8bcf                 mov ecx, edi
-// 0083e559  e8d281fbff           call 0x7f6730
-// 0083e55e  8b542420             mov edx, dword ptr [esp + 0x20]
-// 0083e562  8b8ebc000000         mov ecx, dword ptr [esi + 0xbc]
-// 0083e568  8b89fc000000         mov ecx, dword ptr [ecx + 0xfc]
-// 0083e56e  6a00                 push 0
-// 0083e570  6aff                 push -1
-// 0083e572  6a00                 push 0
-// 0083e574  52                   push edx
-// 0083e575  57                   push edi
-// 0083e576  e8759a0000           call 0x847ff0
-// 0083e57b  837c241400           cmp dword ptr [esp + 0x14], 0
-// 0083e580  741d                 je 0x83e59f
-// 0083e582  8b07                 mov eax, dword ptr [edi]
-// 0083e584  8b5064               mov edx, dword ptr [eax + 0x64]
-// 0083e587  6a01                 push 1
-// 0083e589  8bcf                 mov ecx, edi
-// 0083e58b  ffd2                 call edx
-// 0083e58d  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0083e595  eb08                 jmp 0x83e59f
-// 0083e597  c744241401000000     mov dword ptr [esp + 0x14], 1
-// 0083e59f  8d4c2418             lea ecx, [esp + 0x18]
-// 0083e5a3  ff15c0de9800         call dword ptr [0x98dec0]
-// 0083e5a9  8b4504               mov eax, dword ptr [ebp + 4]
-// 0083e5ac  50                   push eax
-// 0083e5ad  43                   inc ebx
-// 0083e5ae  ff1540cc9800         call dword ptr [0x98cc40]
-// 0083e5b4  3bd8                 cmp ebx, eax
-// 0083e5b6  0f8c24feffff         jl 0x83e3e0
-// 0083e5bc  c744242864309a00     mov dword ptr [esp + 0x28], 0x9a3064
-// 0083e5c4  8d4c2428             lea ecx, [esp + 0x28]
-// 0083e5c8  c7442464ffffffff     mov dword ptr [esp + 0x64], 0xffffffff
-// 0083e5d0  e8fd5bfbff           call 0x7f41d2
-// 0083e5d5  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 0083e5d9  64890d00000000       mov dword ptr fs:[0], ecx
-// 0083e5e0  59                   pop ecx
-// 0083e5e1  5f                   pop edi
-// 0083e5e2  5e                   pop esi
-// 0083e5e3  5d                   pop ebp
-// 0083e5e4  5b                   pop ebx
-// 0083e5e5  83c454               add esp, 0x54
-// 0083e5e8  c3                   ret 
-// copied from an identical function in another client (function ?CreateContextMenu@CXTPCustomizeSheet@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\CommandBars\XTPCustomizeSheet.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPCustomizeSheet.cpp : implementation of the CXTPCustomizeSheet class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include <math.h>
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+
+#include "XTPCustomizeSheet.h"
+#include "XTPControls.h"
+#include "XTPToolBar.h"
+#include "XTPHookManager.h"
+#include "XTPCustomizeTools.h"
+#include "XTPMouseManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlEdit.h"
+#include "XTPCommandBars.h"
+#include "XTPCustomizeToolbarsPage.h"
+#include "XTPCustomizeCommandsPage.h"
+#include "XTPShortcutManager.h"
+#include "XTPPaintManager.h"
+#include "XTPImageEditor.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#ifndef WS_EX_NOINHERITLAYOUT
+#define WS_EX_NOINHERITLAYOUT   0x00100000L
+#endif
+
+#define WM_GRABFOCUS (WM_APP + 0x130)
+
+class CXTPCustomizeSheet::CCustomizeButton : public CXTPControlButton
+{
+	virtual void OnExecute()
+	{
+		CWnd* pOwner = m_pParent->GetOwnerSite();
+		m_pParent->GetRootParent()->OnTrackLost();
+
+		NMXTPCONTROL tagNMCONTROL;
+
+		if (NotifySite(pOwner, CBN_XTP_EXECUTE, &tagNMCONTROL) == 0)
+		{
+			pOwner->SendMessage(WM_COMMAND, m_nId);
+		}
+	}
+};
+
+class CXTPCustomizeSheet::CCustomizeEdit : public CXTPControlEdit
+{
+	BOOL OnSetSelected(int bSelected)
+	{
+		if (!bSelected && m_pEdit && ::GetFocus() == *m_pEdit)
+		{
+			SendCommand(FALSE);
+		}
+
+		return CXTPControlEdit::OnSetSelected(bSelected);
+	}
+
+	virtual void OnExecute()
+	{
+		SendCommand(TRUE);
+	}
+
+	void SendCommand(BOOL bTrackLost)
+	{
+		CWnd* pOwner = m_pParent->GetOwnerSite();
+		if (bTrackLost) m_pParent->OnTrackLost();
+
+		NMXTPCONTROL tagNMCONTROL;
+		tagNMCONTROL.hdr.code = CBN_XTP_EXECUTE;
+		tagNMCONTROL.hdr.idFrom = m_nId;
+		tagNMCONTROL.hdr.hwndFrom = 0;
+		tagNMCONTROL.pControl = this;
+
+		pOwner->SendMessage(WM_XTP_COMMAND, m_nId, (LPARAM)&tagNMCONTROL);
+	}
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeSheet
+
+IMPLEMENT_DYNAMIC(CXTPCustomizeSheet, CPropertySheet)
+
+CXTPCustomizeSheet::CXTPCustomizeSheet(CXTPCommandBars* pCommandBars, UINT iSelectPage)
+{
+	CString strCaption;
+	XTPResourceManager()->LoadString(&strCaption, XTP_IDS_CUSTOMIZE);
+	Construct(strCaption, pCommandBars->GetSite(), iSelectPage);
+
+	m_pPageToolBars = new CXTPCustomizeToolbarsPage(this);
+	AddPage(m_pPageToolBars);
+
+	m_pPageCommands = new CXTPCustomizeCommandsPage(this);
+	AddPage(m_pPageCommands);
+
+
+	m_pWndParent = pCommandBars->GetSite();
+	m_pCommandBars = pCommandBars;
+
+
+	CBitmap bmp;
+	XTPResourceManager()->LoadBitmap(&bmp, XTP_IDB_CUSTOMIZE_ICONS);
+
+	BITMAP bmpInfo;
+	bmp.GetBitmap(&bmpInfo);
+	int nCount = bmpInfo.bmWidth / 16;
+
+	m_pCustomIcons = new CXTPImageManager;
+
+	UINT* pIDs = new UINT[nCount];
+	for (int i = 0; i < nCount; i++)
+	{
+		pIDs[i] = i + 1;
+	}
+	VERIFY(m_pCustomIcons->SetIcons(bmp, pIDs, nCount, CSize(16, 16), xtpImageNormal));
+	delete[] pIDs;
+
+	m_psh.dwFlags |= PSH_NOAPPLYNOW;
+
+	m_pContextMenu = 0;
+	CreateContextMenu();
+}
+
+CXTPCustomizeSheet::~CXTPCustomizeSheet()
+{
+	delete m_pPageToolBars;
+	delete m_pPageCommands;
+
+	m_pContextMenu->InternalRelease();
+	m_pCustomIcons->InternalRelease();
+}
+
+void CXTPCustomizeSheet::CreateContextMenu()
+{
+	CMenu menu;
+
+	if (!XTPResourceManager()->LoadMenu(&menu, XTP_IDR_CUSTOMIZEMENU))
+		return;
+
+	CMenu* pMenu = menu.GetSubMenu(0);
+	ASSERT(pMenu);
+	if (!pMenu)
+		return;
+
+	m_pContextMenu = CXTPPopupBar::CreatePopupBar(NULL);
+	m_pContextMenu->m_pSite = m_pCommandBars->GetSite();
+	m_pContextMenu->m_pOwner = this;
+
+	CXTPPaintManager* pPaintManager = m_pCommandBars->GetPaintManager();
+	pPaintManager->InternalAddRef();
+	m_pContextMenu->SetPaintManager(pPaintManager);
+
+	m_pCustomIcons->InternalAddRef();
+	m_pCustomIcons->DrawReverted(m_pCommandBars->IsLayoutRTL());
+	m_pContextMenu->SetImageManager(m_pCustomIcons);
+
+	BOOL bSeparator = FALSE;
+	for (int i = 0; i < ::GetMenuItemCount(pMenu->m_hMenu); i++)
+	{
+		MENUITEMINFO info = { sizeof(MENUITEMINFO), MIIM_TYPE | MIIM_STATE};
+		::GetMenuItemInfo(pMenu->m_hMenu, i, TRUE, &info);
+
+		UINT nID = pMenu->GetMenuItemID(i);
+
+		CString strCaption;
+		XTPResourceManager()->GetMenuLocaleString(pMenu, i, strCaption, MF_BYPOSITION);
+
+		if (((info.fType & MFT_SEPARATOR) == MFT_SEPARATOR) || (nID == 0))
+			bSeparator = TRUE;
+		else
+		{
+			CXTPControl* pControl = 0;
+
+			if (nID == XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE)
+			{
+				pControl = new CXTPControlPopup();
+				CXTPPopupBar* pPopupBar = new CXTPPopupToolBar();
+				pPopupBar->SetBarID(XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE);
+				((CXTPControlPopup*)pControl)->SetCommandBar(pPopupBar);
+				pPopupBar->InternalRelease();
+			}
+			else if (nID == XTP_ID_CUSTOMIZE_NAME)
+				pControl = new CCustomizeEdit();
+			else
+				pControl = new CCustomizeButton();
+
+			pControl->SetCaption(strCaption);
+
+
+			ASSERT(pControl);
+			m_pContextMenu->GetControls()->Add(pControl, nID);
+
+			if (bSeparator)
+			{
+				pControl->SetBeginGroup(TRUE);
+				bSeparator = FALSE;
+			}
+		}
+	}
+}
+
+void CXTPCustomizeSheet::AddPage(CPropertyPage* pPage)
+{
+	CPropertySheet::AddPage(pPage);
+
+	LPCDLGTEMPLATE pResource = XTPResourceManager()->LoadDialogTemplate((UINT)(UINT_PTR)pPage->m_psp.pszTemplate);
+
+	if (pResource)
+	{
+		pPage->m_psp.pResource = pResource;
+		pPage->m_psp.dwFlags |= PSP_DLGINDIRECT;
+	}
+}
+
+
+
+BEGIN_MESSAGE_MAP(CXTPCustomizeSheet, CPropertySheet)
+	//{{AFX_MSG_MAP(CXTPCustomizeSheet)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+	//}}AFX_MSG_MAP
+	ON_COMMAND(XTP_ID_CUSTOMIZE_DEFAULTSTYLE, OnCustomizeDefaultStyle)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_IMAGEANDTEXT, OnCustomizeImageAndText)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_TEXTONLY, OnCustomizeTextOnly)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_BEGINAGROUP, OnCustomizeBeginGroup)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_DELETE, OnCustomizeDelete)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_COPYBUTTONIMAGE, OnCustomizeCopyImage)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_PASTEBUTTONIMAGE, OnCustomizePasteImage)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_RESETBUTTONIMAGE, OnCustomizeResetImage)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_RESET, OnCustomizeReset)
+	ON_COMMAND(XTP_ID_CUSTOMIZE_EDITBUTTONIMAGE, OnCustomizeEditImage)
+
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_DEFAULTSTYLE, OnUpdateCustomizeDefaultStyle)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_IMAGEANDTEXT, OnUpdateCustomizeImageAndText)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_TEXTONLY, OnUpdateCustomizeTextOnly)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_BEGINAGROUP, OnUpdateCustomizeBeginGroup)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_NAME, OnUpdateCustomizeName)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_COPYBUTTONIMAGE, OnUpdateCustomizeCopyImage)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE, OnUpdateCustomizeCopyImage)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_PASTEBUTTONIMAGE, OnUpdateCustomizePasteImage)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_RESETBUTTONIMAGE, OnUpdateCustomizeResetImage)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_RESET, OnUpdateCustomizeReset)
+	ON_UPDATE_COMMAND_UI(XTP_ID_CUSTOMIZE_EDITBUTTONIMAGE, OnUpdateCustomizeEditImage)
+
+	ON_XTP_INITCOMMANDSPOPUP()
+	ON_MESSAGE(WM_XTP_COMMAND, OnCustomizeName)
+	ON_WM_SYSKEYDOWN()
+	ON_MESSAGE_VOID(WM_GRABFOCUS, OnGrabFocus)
+
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeSheet message handlers
+
+
+BOOL CXTPCustomizeSheet::OnInitDialog()
+{
+
+	BOOL bResult = CPropertySheet::OnInitDialog();
+
+
+		// Remove the OK button.
+	CWnd* pWnd = GetDlgItem(IDOK);
+	if (pWnd && ::IsWindow(pWnd->m_hWnd))
+	{
+		pWnd->ShowWindow(SW_HIDE);
+	}
+
+	// Rename the cancel button to 'Close"
+	pWnd = GetDlgItem(IDCANCEL);
+	if (pWnd && ::IsWindow(pWnd->m_hWnd))
+	{
+		CString strClose;
+		XTPResourceManager()->LoadString(&strClose, XTP_IDS_CUSTOMIZE_CLOSE);
+
+		pWnd->SetWindowText(strClose);
+	}
+
+
+	return bResult;
+}
+
+
+
+
+typedef  BOOL (CXTPCustomizeSheet::*FILTERPROC)(WPARAM wParam, LPARAM lParam);
+
+// A hook used in customization sheet to filter keyboard/mouse events
+class CXTPCustomizeHook
+{
+public:
+
+
+private:
+	HHOOK m_hHook;
+	FILTERPROC m_pFilter;
+	CXTPCustomizeSheet* m_pSheet;
+
+public:
+
+	CXTPCustomizeHook(CXTPCustomizeSheet* pSheet, FILTERPROC pFilter)
+		: m_pFilter(pFilter), m_hHook(0), m_pSheet(pSheet)
+	{ }
+
+
+	~CXTPCustomizeHook()
+	{
+		Unhook();
+	}
+
+	void Hook(int idHook, HOOKPROC lpfn)
+	{
+		ASSERT(m_hHook == 0);
+		m_hHook = ::SetWindowsHookEx(idHook, lpfn, NULL, ::GetCurrentThreadId());
+	}
+
+	void Unhook()
+	{
+		if (m_hHook)
+		{
+			::UnhookWindowsHookEx(m_hHook);
+			m_hHook = 0;
+		}
+	}
+
+	LRESULT HandleEvent(int nCode, WPARAM wParam, LPARAM lParam)
+	{
+
+		if (nCode < 0)
+			return TRUE;
+
+		if ((m_pSheet->*m_pFilter)(wParam, lParam))
+		{
+			// process normally
+			return  CallNextHookEx(m_hHook, nCode, wParam, lParam);
+		}
+
+		return TRUE;
+
+	}
+};
+
+// A combination of keyboard/mouse hooks
+class CXTPCustomizeHooks
+{
+private:
+
+	CXTPCustomizeHook m_mouseHook;
+	CXTPCustomizeHook m_keyHook;
+	CXTPCustomizeHook m_messageHook;
+	static CXTPCustomizeHooks* m_pThis;
+
+public:
+
+	CXTPCustomizeHooks(CXTPCustomizeSheet* pSheet, FILTERPROC FilterMouse, FILTERPROC FilterKey, FILTERPROC FilterMessage)
+	: m_mouseHook(pSheet, FilterMouse)
+	, m_keyHook(pSheet, FilterKey)
+	, m_messageHook(pSheet, FilterMessage)
+	{
+		ASSERT(m_pThis == 0);  // one instance at a time
+		m_pThis = this;
+	}
+
+	~CXTPCustomizeHooks()
+	{
+		Unhook();
+		m_pThis = 0;
+	}
+
+	void Hook()
+	{
+		m_mouseHook.Hook(WH_MOUSE, HOOKPROC(MouseProc));
+		m_keyHook.Hook(WH_KEYBOARD, HOOKPROC(KeyProc));
+		m_messageHook.Hook(WH_CALLWNDPROC, HOOKPROC(MessageProc));
+	}
+
+	void Unhook()
+	{
+		m_mouseHook.Unhook();
+		m_keyHook.Unhook();
+		m_messageHook.Unhook();
+	}
+
+	static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+	{
+		return m_pThis->m_mouseHook.HandleEvent(nCode, wParam, lParam);
+	}
+
+	static LRESULT CALLBACK KeyProc(int nCode, WPARAM wParam, LPARAM lParam)
+	{
+		return m_pThis->m_keyHook.HandleEvent(nCode, wParam, lParam);
+	}
+	static LRESULT CALLBACK MessageProc(int nCode, WPARAM wParam, LPARAM lParam)
+	{
+		return m_pThis->m_messageHook.HandleEvent(nCode, wParam, lParam);
+	}
+
+	friend class CXTPCustomizeSheet;
+};
+CXTPCustomizeHooks* CXTPCustomizeHooks::m_pThis = 0;
+
+void CXTPCustomizeSheet::ContextMenu(CPoint point)
+{
+	if (m_pContextMenu)
+	{
+		BOOL bLayourRTL = m_pCommandBars->IsLayoutRTL();
+		CXTPCommandBars::TrackPopupMenu(m_pContextMenu, TPM_RECURSE | (bLayourRTL ? TPM_RIGHTALIGN : 0), point.x, point.y, (CWnd*)m_pCommandBars->GetSite(), NULL, this);
+	}
+}
+
+
+
+INT_PTR CXTPCustomizeSheet::DoModal()
+{
+	if (CXTPCustomizeHooks::m_pThis != 0)
+		return IDCANCEL;
+
+	ASSERT_VALID(this);
+	ASSERT(m_hWnd == NULL);
+
+
+	m_pCommandBars->SetCustomizeMode(TRUE);
+	m_pCommandBars->GetDropSource()->m_pSheet = this;
+
+	// register common controls
+	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTLS_REG));
+
+	// finish building PROPSHEETHEADER structure
+	BuildPropPageArray();
+
+	// allow OLE servers to disable themselves
+	CWinApp* pApp = AfxGetApp();
+	if (pApp != NULL)
+		pApp->EnableModeless(FALSE);
+
+	// find parent HWND
+	HWND hWndParent = m_pWndParent->GetSafeHwnd();
+
+
+#if _MSC_VER != 1200 // !MFC 6.0
+	PROPSHEETHEADER* psh = &m_psh;
+#else
+	AFX_OLDPROPSHEETHEADER* psh = GetPropSheetHeader();
+#endif //_MSC_VER != 1200
+
+
+	psh->hwndParent = hWndParent;
+	CXTPCustomizeHooks hooks(this, &CXTPCustomizeSheet::FilterMouse,
+		&CXTPCustomizeSheet::FilterKey, &CXTPCustomizeSheet::FilterMessage);
+	if (hWndParent)
+		hooks.Hook();
+
+	HWND hWndCapture = ::GetCapture();
+	if (hWndCapture != NULL)
+		::SendMessage(hWndCapture, WM_CANCELMODE, 0, 0);
+
+	// setup for modal loop and creation
+	m_nModalResult = 0;
+	m_nFlags |= WF_CONTINUEMODAL;
+
+	// hook for creation of window
+	AfxHookWindowCreate(this);
+	psh->dwFlags |= PSH_MODELESS;
+	m_nFlags |= WF_CONTINUEMODAL;
+	HWND hWnd = (HWND)::PropertySheet((PROPSHEETHEADER*)psh);
+#ifdef _DEBUG
+	DWORD dwError = ::GetLastError();
+#endif
+	psh->dwFlags &= ~PSH_MODELESS;
+	AfxUnhookWindowCreate();
+
+	// handle error
+	if (hWnd == NULL || hWnd == (HWND)-1)
+	{
+		TRACE1("PropertySheet() failed: GetLastError returned %d\n", dwError);
+		m_nFlags &= ~WF_CONTINUEMODAL;
+	}
+
+	if (GetCommandBars()->IsLayoutRTL())
+	{
+		ModifyStyleEx(0, WS_EX_LAYOUTRTL | WS_EX_NOINHERITLAYOUT, SWP_FRAMECHANGED);
+		CWnd* pWndTabControl = GetDlgItem(12320);
+		if (pWndTabControl)
+		{
+			pWndTabControl->ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+			pWndTabControl->Invalidate();
+		}
+	}
+
+	int nResult = m_nModalResult;
+	if (ContinueModal())
+	{
+		// enter modal loop
+		DWORD dwFlags = MLF_SHOWONIDLE;
+		if (GetStyle() & DS_NOIDLEMSG)
+			dwFlags |= MLF_NOIDLEMSG;
+		//CXTCustomizeSheetWndHook hook(m_bAppActive);  // disables window menu from taskbar
+		nResult = RunModalLoop(dwFlags);
+	}
+
+	// hide the window before enabling parent window, etc.
+	if (m_hWnd != NULL)
+	{
+		SetWindowPos(NULL, 0, 0, 0, 0, SWP_HIDEWINDOW |
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
+	}
+
+
+	hooks.Unhook();
+	bool bActivateParent = false;
+	if (hWndParent != NULL && ::GetActiveWindow() == m_hWnd)
+	{
+		bActivateParent = TRUE;
+	}
+
+	// cleanup
+	DestroyWindow();
+
+	if (bActivateParent)
+	{
+		::SetActiveWindow(hWndParent);
+	}
+
+	// allow OLE servers to enable themselves
+	if (pApp != NULL)
+		pApp->EnableModeless(TRUE);
+
+
+	m_pCommandBars->SetCustomizeMode(FALSE);
+	m_pCommandBars->GetDropSource()->m_pSheet = 0;
+	m_pCommandBars->ClosePopups();
+
+	return nResult;
+}
+
+static BOOL IsDescendant(HWND hwndParent, HWND hwnd)
+{
+	while (hwnd)
+	{
+		if (hwndParent == hwnd)
+		{
+			return TRUE;
+		}
+		hwnd = ::GetParent(hwnd);
+	}
+	return FALSE;
+}
+
+BOOL CXTPCustomizeSheet::FilterMouse(WPARAM wParam, LPARAM lParam)
+{
+	LPMOUSEHOOKSTRUCT pMsg = (LPMOUSEHOOKSTRUCT)(LPVOID)lParam;
+
+	if (wParam == WM_MOUSEMOVE || wParam == WM_NCMOUSEMOVE)
+		return TRUE;
+
+	CXTPMouseManager* pMouseManager = m_pCommandBars->GetMouseManager();
+
+	if (pMouseManager->IsTrackedLock(NULL))
+	{
+		CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+		if (pWnd->IsKindOf(RUNTIME_CLASS(CXTPCommandBar)))
+		{
+			if (((CXTPCommandBar*)pWnd)->GetCommandBars() == NULL)
+				return  TRUE;
+		}
+		CWnd* pWndParent = pWnd ? pWnd->GetParent() : 0;
+		if (pWndParent && pWndParent->IsKindOf(RUNTIME_CLASS(CXTPCommandBar)))
+		{
+			if (((CXTPCommandBar*)pWndParent)->GetCommandBars() == NULL)
+				return  TRUE;
+		}
+
+		pMouseManager->PreTranslateMouseEvents(wParam, pMsg->pt);
+	}
+
+	if ((m_pWndParent->GetStyle() & WS_POPUP) && (!IsDescendant(m_pWndParent->m_hWnd, ::GetForegroundWindow())))
+	{
+		SetFocus();
+	}
+
+	if (IsDescendant(m_pWndParent->m_hWnd, pMsg->hwnd))
+	{
+		if (IsDescendant(m_hWnd, pMsg->hwnd))
+		{
+			return TRUE;
+		}
+		if (::GetForegroundWindow() && IsDescendant(::GetForegroundWindow(), pMsg->hwnd))
+		{
+			return TRUE;
+		}
+
+		CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+		CWnd* pWndParent = pWnd ? pWnd->GetParent() : 0;
+
+		if (pWnd && pWnd->IsKindOf(RUNTIME_CLASS(CXTPCommandBar)))
+		{
+			CXTPCommandBars* pCommandBars = ((CXTPCommandBar*)pWnd)->GetCommandBars();
+			return  pCommandBars == m_pCommandBars;
+		}
+
+		if (pWndParent && pWndParent->IsKindOf(RUNTIME_CLASS(CXTPCommandBar)))
+		{
+			CXTPCommandBars* pCommandBars = ((CXTPCommandBar*)pWndParent)->GetCommandBars();
+			return  pCommandBars == m_pCommandBars;
+		}
+
+		// eat this message
+		return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CXTPCustomizeSheet::FilterKey(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	// allow keyboard events only if current focus window belongs to this one
+	if (IsDescendant(m_hWnd, ::GetFocus()))
+	{
+		return TRUE;
+	}
+
+	CWnd* pWnd = GetFocus();
+	CWnd* pWndParent = pWnd ? pWnd->GetParent() : 0;
+	if (pWndParent && pWndParent->IsKindOf(RUNTIME_CLASS(CXTPCommandBar)))
+	{
+		return TRUE;
+	}
+
+	if (::GetForegroundWindow() && IsDescendant(::GetForegroundWindow(), ::GetFocus()))
+	{
+		return TRUE;
+	}
+
+
+
+	// pass thru if the capture is set (toolbar tracking does this)
+	if (::GetCapture() != 0)
+	{
+		return TRUE;
+	}
+
+	// eat this message
+	return FALSE;
+}
+
+BOOL CXTPCustomizeSheet::FilterMessage(WPARAM /*wParam*/, LPARAM lParam)
+{
+	CWPSTRUCT* pMSG = (CWPSTRUCT*)lParam;
+
+	if (pMSG && pMSG->message == WM_NCACTIVATE &&
+		pMSG->hwnd == m_pWndParent->GetSafeHwnd() && pMSG->wParam)
+	{
+		PostMessage(WM_GRABFOCUS);
+		return TRUE;
+	}
+
+	return TRUE;
+}
+
+
+void CXTPCustomizeSheet::OnCustomizeDefaultStyle()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->m_buttonCustomStyle = xtpButtonAutomatic;
+		pControl->GetParent()->OnRecalcLayout();
+	}
+}
+
+void CXTPCustomizeSheet::OnCustomizeImageAndText()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->m_buttonCustomStyle = xtpButtonIconAndCaption;
+		pControl->GetParent()->OnRecalcLayout();
+	}
+}
+void CXTPCustomizeSheet::OnCustomizeTextOnly()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->m_buttonCustomStyle = xtpButtonCaption;
+		pControl->GetParent()->OnRecalcLayout();
+	}
+}
+void CXTPCustomizeSheet::OnCustomizeBeginGroup()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->SetBeginGroup(!pControl->GetBeginGroup());
+		pControl->GetParent()->OnRecalcLayout();
+	}
+}
+void CXTPCustomizeSheet::OnCustomizeDelete()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		GetCommandBars()->SetDragControl(NULL);
+
+		CXTPCommandBar* pCommandBar = pControl->GetParent();
+		pCommandBar->GetControls()->Remove(pControl);
+		pCommandBar->OnRecalcLayout();
+	}
+}
+
+
+void CXTPCustomizeSheet::OnCustomizeEditImage()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl && pControl->GetIconId() != 0)
+	{
+		CSize szIcon = pControl->GetIconSize();
+
+		CXTPImageManagerIcon* pImage = m_pCommandBars->GetImageManager()->GetImage(pControl->GetIconId(), szIcon.cx);
+
+		CXTPImageEditorDlg ed(this, TRUE);
+		if (pImage)
+		{
+			ed.SetIcon(pImage->GetIcon());
+		}
+		else
+		{
+			ed.SetIconSize(szIcon);
+		}
+
+		if (ed.DoModal() == IDOK)
+		{
+			CXTPImageManagerIconHandle hIcon;
+			ed.GetIcon(&hIcon);
+
+			if (hIcon.IsEmpty())
+				return;
+
+			if (pControl->m_nCustomIconId == 0)
+			{
+				pControl->m_nCustomIconId = m_pCommandBars->GetImageManager()->AddCustomIcon(hIcon);
+			}
+			else
+			{
+				pImage->SetIcon(hIcon);
+
+			}
+
+			pControl->GetParent()->OnRecalcLayout();
+		}
+	}
+
+}
+
+
+void CXTPCustomizeSheet::OnCustomizeCopyImage()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl && pControl->GetIconId() != 0)
+	{
+		CXTPImageManagerIcon* pImage = m_pCommandBars->GetImageManager()->GetImage(pControl->GetIconId());
+		if (pImage)
+		{
+			CXTPImageManagerIconHandle& hIcon = pImage->GetIcon();
+			CBitmap bitmapCopy;
+
+			if (!hIcon.IsAlpha())
+			{
+				CSize sz = hIcon.GetExtent();
+
+				CWindowDC dc(this);
+
+				CDC memDC;
+				memDC.CreateCompatibleDC (&dc);
+
+
+				if (!bitmapCopy.CreateCompatibleBitmap (&dc, sz.cx, sz.cy))
+				{
+					return;
+				}
+
+				CBitmap* pOldBitmap = memDC.SelectObject (&bitmapCopy);
+				memDC.FillSolidRect(0, 0, sz.cx, sz.cy, GetSysColor(COLOR_3DFACE));
+				memDC.DrawState(CPoint(0, 0), sz, hIcon.GetIcon(), (UINT)DSS_NORMAL, HBRUSH(0));
+				memDC.SelectObject (pOldBitmap);
+			}
+			else
+			{
+				bitmapCopy.Attach(CXTPImageManagerIcon::CopyAlphaBitmap(hIcon.GetBitmap()));
+			}
+
+
+			if (!OpenClipboard ())
+			{
+				return;
+			}
+
+			if (!::EmptyClipboard ())
+			{
+				::CloseClipboard ();
+				return;
+			}
+
+			HANDLE hclipData = ::SetClipboardData (CF_BITMAP, bitmapCopy.Detach ());
+			if (hclipData == NULL)
+			{
+				TRACE (_T ("CXTPCustomizeSheet::OnCustomizeCopyImage() error. Error code = %x\n"), GetLastError ());
+			}
+
+			if (hIcon.IsAlpha())
+			{
+				SetClipboardData(XTPImageManager()->m_nAlphaClipFormat, GlobalAlloc(GMEM_MOVEABLE, 1));
+			}
+
+			if (m_pCommandBars->GetImageManager()->GetIconSet(pControl->GetIconId()))
+			{
+				m_pCommandBars->GetImageManager()->CopyImage(pControl->GetIconId());
+			}
+
+			::CloseClipboard ();
+		}
+	}
+}
+
+void CXTPCustomizeSheet::OnCustomizePasteImage()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		COleDataObject data;
+		if (!data.AttachClipboard ())
+		{
+			return;
+		}
+
+		if (data.IsDataAvailable(m_pCommandBars->GetImageManager()->m_nImageClipFormat))
+		{
+			int nCustom = m_pCommandBars->GetImageManager()->PasteCustomImage(data);
+			if (nCustom != 0)
+			{
+				pControl->m_nCustomIconId = nCustom;
+				pControl->GetParent()->OnRecalcLayout();
+			}
+
+			return;
+
+		}
+
+		if (!data.IsDataAvailable (CF_BITMAP))
+		{
+			return;
+		}
+
+		tagSTGMEDIUM dataMedium;
+		if (!data.GetData (CF_BITMAP, &dataMedium))
+		{
+			return;
+		}
+
+		CBitmap* pBmpClip = CBitmap::FromHandle (dataMedium.hBitmap);
+		if (pBmpClip == NULL)
+		{
+			return;
+		}
+
+		CXTPImageManagerIconHandle hIcon;
+
+		if (data.IsDataAvailable(XTPImageManager()->m_nAlphaClipFormat))
+		{
+			hIcon.CopyHandle(dataMedium.hBitmap);
+		}
+		else
+		{
+			BITMAP bmp;
+			pBmpClip->GetBitmap (&bmp);
+
+			CImageList imgList;
+			imgList.Create(bmp.bmWidth, bmp.bmHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
+			imgList.Add(pBmpClip, GetSysColor(COLOR_3DFACE));
+
+			if (imgList.GetImageCount() != 1)
+				return;
+
+			hIcon = imgList.ExtractIcon(0);
+		}
+
+		if (hIcon.IsEmpty())
+			return;
+
+		pControl->m_nCustomIconId = m_pCommandBars->GetImageManager()->AddCustomIcon(hIcon);
+		pControl->GetParent()->OnRecalcLayout();
+
+	}
+}
+void CXTPCustomizeSheet::OnCustomizeResetImage()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->m_nCustomIconId = 0;
+		pControl->GetParent()->OnRecalcLayout();
+	}
+}
+
+void CXTPCustomizeSheet::OnCustomizeReset()
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pControl->Reset();
+	}
+}
+
+void CXTPCustomizeSheet::OnInitCommandsPopup(CXTPPopupBar* pPopupBar)
+{
+	if (pPopupBar->GetBarID() == XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE)
+	{
+		if (pPopupBar->GetControlCount() > 0)
+			return;
+
+		int nCount = (int)m_pCustomIcons->GetImages()->GetCount();
+
+		for (int i = 0; i < nCount; i++)
+		{
+			CXTPControl* pControl = pPopupBar->GetControls()->Add(new CCustomizeButton(), XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE);
+			pControl->SetIconId(i + 1);
+			pControl->SetFlags(xtpFlagManualUpdate);
+		}
+
+		int nWidth = (int)pow((double)nCount, (double).5) * (16 + 7) + 6;
+		pPopupBar->SetWidth(nWidth);
+	}
+}
+
+BOOL CXTPCustomizeSheet::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+	if (IsCustomizeCommand(nID))
+		return CPropertySheet::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+
+	if ((nCode == CN_COMMAND) && (nID == IDCANCEL || nID == IDOK || nID == IDHELP))
+		return CPropertySheet::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+
+	return m_pCommandBars->GetSite()->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+LRESULT CXTPCustomizeSheet::OnCustomizeName(WPARAM wParam, LPARAM lParam)
+{
+	NMXTPCONTROL* tagNMCONTROL = (NMXTPCONTROL*)lParam;
+
+	if (tagNMCONTROL->hdr.code != CBN_XTP_EXECUTE)
+		return FALSE;
+
+	if (wParam == XTP_ID_CUSTOMIZE_NAME)
+	{
+		CXTPControlEdit* pControlEdit = (CXTPControlEdit*)tagNMCONTROL->pControl;
+		ASSERT(pControlEdit->GetType() == xtpControlEdit);
+
+		CXTPControl* pControl = m_pCommandBars->GetDragControl();
+		if (pControl)
+		{
+			pControl->m_strCustomCaption = pControlEdit->GetEditText();
+			pControl->GetParent()->OnRecalcLayout();
+		}
+
+		return TRUE;
+	}
+
+	if (wParam == XTP_ID_CUSTOMIZE_CHANGEBUTTONIMAGE)
+	{
+		UINT nID = tagNMCONTROL->pControl->GetIconId();
+
+		CXTPControl* pControl = m_pCommandBars->GetDragControl();
+		if (pControl)
+		{
+			CXTPImageManagerIconSet* pIconSet = m_pCustomIcons->GetIconSet(nID);
+			ASSERT(pIconSet);
+			ASSERT(pIconSet->GetIcons()->GetCount() == 1);
+
+			if (pIconSet && pIconSet->GetIcons()->GetCount() == 1)
+			{
+				POSITION pos = pIconSet->GetIcons()->GetStartPosition();
+
+				CXTPImageManagerIcon* pIcon = NULL;
+				pIconSet->GetIcons()->GetNextAssoc(pos, nID, pIcon);
+
+
+				pControl->m_nCustomIconId = m_pCommandBars->GetImageManager()->AddCustomIcon(pIcon->GetIcon());
+
+				pControl->GetParent()->OnRecalcLayout();
+			}
+		}
+
+		return TRUE;
+	}
+
+	if (!IsCustomizeCommand((int)wParam))
+	{
+		tagNMCONTROL->pControl->GetParent()->GetRootParent()->OnTrackLost();
+
+		if (m_pCommandBars->GetSite()->SendMessage(WM_XTP_COMMAND, wParam, lParam) == 0)
+		{
+			m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, wParam);
+		}
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CXTPCustomizeSheet::IsAllowChangeStyle(CXTPControl* pControl) const
+{
+	if (!pControl)
+		return FALSE;
+
+	if (pControl->GetType() == xtpControlButton || IsPopupControlType(pControl->GetType()))
+	{
+		return pControl->GetIconId() > 0;
+	}
+	return FALSE;
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeDefaultStyle(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (IsAllowChangeStyle(pControl))
+	{
+		pCmdUI->Enable();
+		pCmdUI->SetCheck((pControl->GetStyle() == xtpButtonAutomatic || pControl->GetStyle() == xtpButtonIcon));
+	}
+	else
+	{
+		pCmdUI->SetCheck(TRUE);
+		pCmdUI->Enable(FALSE);
+	}
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeImageAndText(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (IsAllowChangeStyle(pControl))
+	{
+		pCmdUI->Enable();
+		pCmdUI->SetCheck(pControl->GetStyle() == xtpButtonIconAndCaption);
+	}
+	else pCmdUI->Enable(FALSE);
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeTextOnly(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (IsAllowChangeStyle(pControl))
+	{
+		pCmdUI->Enable();
+		pCmdUI->SetCheck(pControl->GetStyle() == xtpButtonCaption);
+	}
+	else pCmdUI->Enable(FALSE);
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeCopyImage(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		XTPControlType controlType = pControl->GetType();
+		BOOL bDrawImage = IsPopupControlType(controlType) || (controlType == xtpControlButton);
+		pCmdUI->Enable(pControl->GetIconId() > 0 && bDrawImage);
+	}
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizePasteImage(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+
+		XTPControlType controlType = pControl->GetType();
+		BOOL bDrawImage = IsPopupControlType(controlType) || (controlType == xtpControlButton);
+		pCmdUI->Enable(::IsClipboardFormatAvailable(CF_BITMAP) && bDrawImage);
+	}
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeEditImage(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		XTPControlType controlType = pControl->GetType();
+		BOOL bDrawImage = IsPopupControlType(controlType) || (controlType == xtpControlButton);
+		pCmdUI->Enable(pControl->GetIconId() > 0 && bDrawImage);
+	}
+
+}
+
+
+void CXTPCustomizeSheet::OnUpdateCustomizeResetImage(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pCmdUI->Enable(pControl->m_nCustomIconId > 0);
+	}
+}
+void CXTPCustomizeSheet::OnUpdateCustomizeReset(CCmdUI* pCmdUI)
+{
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pCmdUI->Enable((pControl->m_nCustomIconId > 0) || (!pControl->m_strCustomCaption.IsEmpty())
+			|| (pControl->m_buttonCustomStyle != xtpButtonUndefined));
+	}
+}
+
+
+void CXTPCustomizeSheet::OnUpdateCustomizeBeginGroup(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(FALSE);
+
+	CXTPControl* pControl = m_pCommandBars->GetDragControl();
+	if (pControl)
+	{
+		pCmdUI->SetCheck(pControl->GetBeginGroup());
+		pCmdUI->Enable(pControl->GetIndex() != 0);
+	}
+}
+
+void CXTPCustomizeSheet::OnUpdateCustomizeName(CCmdUI* pCmdUI)
+{
+
+	CXTPCommandBar* pCommandBar = (CXTPCommandBar*)pCmdUI->m_pOther;
+	if (pCommandBar)
+	{
+		CXTPControlEdit* pEdit = (CXTPControlEdit*)pCommandBar->GetControls()->GetAt(pCmdUI->m_nIndex);
+
+		CXTPControl* pControl = m_pCommandBars->GetDragControl();
+		pEdit->SetEditText(pControl ? pControl->GetCaption() : _T(""));
+	}
+
+	pCmdUI->Enable(TRUE);
+}
+
+void CXTPCustomizeSheet::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CPropertySheet::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPCustomizeSheet::OnGrabFocus()
+{
+	SetFocus();
+}
+
+BOOL CXTPCustomizeSheet::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_SYSKEYDOWN)
+	{
+		CTabCtrl* pTabCtrl = GetTabControl();
+		if (pTabCtrl)
+		{
+			for (int i = 0; i < pTabCtrl->GetItemCount(); i++)
+			{
+				TCHAR lpCaption[256];
+				lpCaption[0] = _T('\0');
+				TCITEM tcItem;
+				tcItem.mask = TCIF_TEXT;
+				tcItem.pszText = lpCaption;
+				tcItem.cchTextMax = 256;
+
+				if (pTabCtrl->GetItem(i, &tcItem))
+				{
+					TCHAR* pAmp = _tcsrchr(lpCaption, _T('&'));
+					if (pAmp)
+					{
+						if (CXTPShortcutManager::CompareAccelKey(*(pAmp + 1), (TCHAR)pMsg->wParam))
+						{
+							SetActivePage(i);
+							return TRUE;
+						}
+
+					}
+				}
+			}
+
+		}
+	}
+	return  CPropertySheet::PreTranslateMessage(pMsg);
+}
+
+int CXTPCustomizeSheet::MessageBox(LPCTSTR lpszText, UINT nType/* = MB_OK*/)
+{
+	// disable windows for modal dialog
+	AfxGetApp()->EnableModeless(FALSE);
+
+	HWND hWndTop = m_hWnd;
+	HWND hWndParent = GetCommandBars()->GetSite()->GetSafeHwnd();
+
+	::EnableWindow(hWndTop, FALSE);
+
+	BOOL bEnableParent = FALSE;
+	if (hWndParent != NULL && ::IsWindowEnabled(hWndParent))
+	{
+		::EnableWindow(hWndParent, FALSE);
+		bEnableParent = TRUE;
+	}
+
+	LPCTSTR pszAppName = AfxGetApp()->m_pszAppName;
+
+	int nResult =
+		::MessageBox(hWndTop, lpszText, pszAppName, nType);
+
+	// re-enable windows
+	if (bEnableParent)
+		::EnableWindow(hWndParent, TRUE);
+
+	if (::IsWindow(hWndTop))
+		::EnableWindow(hWndTop, TRUE);
+
+
+	AfxGetApp()->EnableModeless(TRUE);
+
+	return nResult;
+}

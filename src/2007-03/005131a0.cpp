@@ -1,107 +1,286 @@
-// roc 2007-03 005131a0  unit: seg_00510000  size: 275 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005131a0
-//
-// 005131a0  56                   push esi
-// 005131a1  8b742408             mov esi, dword ptr [esp + 8]
-// 005131a5  8b4614               mov eax, dword ptr [esi + 0x14]
-// 005131a8  83f865               cmp eax, 0x65
-// 005131ab  7421                 je 0x5131ce
-// 005131ad  83f866               cmp eax, 0x66
-// 005131b0  741c                 je 0x5131ce
-// 005131b2  83f867               cmp eax, 0x67
-// 005131b5  7444                 je 0x5131fb
-// 005131b7  8b06                 mov eax, dword ptr [esi]
-// 005131b9  c7401414000000       mov dword ptr [eax + 0x14], 0x14
-// 005131c0  8b0e                 mov ecx, dword ptr [esi]
-// 005131c2  8b5614               mov edx, dword ptr [esi + 0x14]
-// 005131c5  895118               mov dword ptr [ecx + 0x18], edx
-// 005131c8  8b06                 mov eax, dword ptr [esi]
-// 005131ca  8b08                 mov ecx, dword ptr [eax]
-// 005131cc  eb27                 jmp 0x5131f5
-// 005131ce  8b96d0000000         mov edx, dword ptr [esi + 0xd0]
-// 005131d4  3b5620               cmp edx, dword ptr [esi + 0x20]
-// 005131d7  7313                 jae 0x5131ec
-// 005131d9  8b06                 mov eax, dword ptr [esi]
-// 005131db  c7401443000000       mov dword ptr [eax + 0x14], 0x43
-// 005131e2  8b0e                 mov ecx, dword ptr [esi]
-// 005131e4  8b11                 mov edx, dword ptr [ecx]
-// 005131e6  56                   push esi
-// 005131e7  ffd2                 call edx
-// 005131e9  83c404               add esp, 4
-// 005131ec  8b863c010000         mov eax, dword ptr [esi + 0x13c]
-// 005131f2  8b4808               mov ecx, dword ptr [eax + 8]
-// 005131f5  56                   push esi
-// 005131f6  ffd1                 call ecx
-// 005131f8  83c404               add esp, 4
-// 005131fb  8b863c010000         mov eax, dword ptr [esi + 0x13c]
-// 00513201  80780d00             cmp byte ptr [eax + 0xd], 0
-// 00513205  0f8588000000         jne 0x513293
-// 0051320b  53                   push ebx
-// 0051320c  57                   push edi
-// 0051320d  bb18000000           mov ebx, 0x18
-// 00513212  8b10                 mov edx, dword ptr [eax]
-// 00513214  56                   push esi
-// 00513215  ffd2                 call edx
-// 00513217  33ff                 xor edi, edi
-// 00513219  83c404               add esp, 4
-// 0051321c  39bee0000000         cmp dword ptr [esi + 0xe0], edi
-// 00513222  7652                 jbe 0x513276
-// 00513224  837e0800             cmp dword ptr [esi + 8], 0
-// 00513228  741d                 je 0x513247
-// 0051322a  8b4608               mov eax, dword ptr [esi + 8]
-// 0051322d  897804               mov dword ptr [eax + 4], edi
-// 00513230  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00513233  8b96e0000000         mov edx, dword ptr [esi + 0xe0]
-// 00513239  895108               mov dword ptr [ecx + 8], edx
-// 0051323c  8b4608               mov eax, dword ptr [esi + 8]
-// 0051323f  8b08                 mov ecx, dword ptr [eax]
-// 00513241  56                   push esi
-// 00513242  ffd1                 call ecx
-// 00513244  83c404               add esp, 4
-// 00513247  8b9648010000         mov edx, dword ptr [esi + 0x148]
-// 0051324d  8b4204               mov eax, dword ptr [edx + 4]
-// 00513250  6a00                 push 0
-// 00513252  56                   push esi
-// 00513253  ffd0                 call eax
-// 00513255  83c408               add esp, 8
-// 00513258  84c0                 test al, al
-// 0051325a  750f                 jne 0x51326b
-// 0051325c  8b0e                 mov ecx, dword ptr [esi]
-// 0051325e  895914               mov dword ptr [ecx + 0x14], ebx
-// 00513261  8b16                 mov edx, dword ptr [esi]
-// 00513263  8b02                 mov eax, dword ptr [edx]
-// 00513265  56                   push esi
-// 00513266  ffd0                 call eax
-// 00513268  83c404               add esp, 4
-// 0051326b  83c701               add edi, 1
-// 0051326e  3bbee0000000         cmp edi, dword ptr [esi + 0xe0]
-// 00513274  72ae                 jb 0x513224
-// 00513276  8b8e3c010000         mov ecx, dword ptr [esi + 0x13c]
-// 0051327c  8b5108               mov edx, dword ptr [ecx + 8]
-// 0051327f  56                   push esi
-// 00513280  ffd2                 call edx
-// 00513282  8b863c010000         mov eax, dword ptr [esi + 0x13c]
-// 00513288  83c404               add esp, 4
-// 0051328b  80780d00             cmp byte ptr [eax + 0xd], 0
-// 0051328f  7481                 je 0x513212
-// 00513291  5f                   pop edi
-// 00513292  5b                   pop ebx
-// 00513293  8b864c010000         mov eax, dword ptr [esi + 0x14c]
-// 00513299  8b480c               mov ecx, dword ptr [eax + 0xc]
-// 0051329c  56                   push esi
-// 0051329d  ffd1                 call ecx
-// 0051329f  8b5618               mov edx, dword ptr [esi + 0x18]
-// 005132a2  8b4210               mov eax, dword ptr [edx + 0x10]
-// 005132a5  56                   push esi
-// 005132a6  ffd0                 call eax
-// 005132a8  56                   push esi
-// 005132a9  e8e21b0000           call 0x514e90
-// 005132ae  83c40c               add esp, 0xc
-// 005132b1  5e                   pop esi
-// 005132b2  c3                   ret 
-// library jpeg-6b/jcapimin.c (function _jpeg_finish_compress)
-
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcapimin.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcapimin.c
+ *
+ * Copyright (C) 1994-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface code for the compression half
+ * of the JPEG library.  These are the "minimum" API routines that may be
+ * needed in either the normal full-compression case or the transcoding-only
+ * case.
+ *
+ * Most of the routines intended to be called directly by an application
+ * are in this file or in jcapistd.c.  But also see jcparam.c for
+ * parameter-setup helper routines, jcomapi.c for routines shared by
+ * compression and decompression, and jctrans.c for the transcoding case.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * Initialization of a JPEG compression object.
+ * The error manager must already be set up (in case memory manager fails).
+ */
+
+GLOBAL(void)
+jpeg_CreateCompress (j_compress_ptr cinfo, int version, size_t structsize)
+{
+  int i;
+
+  /* Guard against version mismatches between library and caller. */
+  cinfo->mem = NULL;		/* so jpeg_destroy knows mem mgr not called */
+  if (version != JPEG_LIB_VERSION)
+    ERREXIT2(cinfo, JERR_BAD_LIB_VERSION, JPEG_LIB_VERSION, version);
+  if (structsize != SIZEOF(struct jpeg_compress_struct))
+    ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE, 
+	     (int) SIZEOF(struct jpeg_compress_struct), (int) structsize);
+
+  /* For debugging purposes, we zero the whole master structure.
+   * But the application has already set the err pointer, and may have set
+   * client_data, so we have to save and restore those fields.
+   * Note: if application hasn't set client_data, tools like Purify may
+   * complain here.
+   */
+  {
+    struct jpeg_error_mgr * err = cinfo->err;
+    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
+    MEMZERO(cinfo, SIZEOF(struct jpeg_compress_struct));
+    cinfo->err = err;
+    cinfo->client_data = client_data;
+  }
+  cinfo->is_decompressor = FALSE;
+
+  /* Initialize a memory manager instance for this object */
+  jinit_memory_mgr((j_common_ptr) cinfo);
+
+  /* Zero out pointers to permanent structures. */
+  cinfo->progress = NULL;
+  cinfo->dest = NULL;
+
+  cinfo->comp_info = NULL;
+
+  for (i = 0; i < NUM_QUANT_TBLS; i++)
+    cinfo->quant_tbl_ptrs[i] = NULL;
+
+  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    cinfo->dc_huff_tbl_ptrs[i] = NULL;
+    cinfo->ac_huff_tbl_ptrs[i] = NULL;
+  }
+
+  cinfo->script_space = NULL;
+
+  cinfo->input_gamma = 1.0;	/* in case application forgets */
+
+  /* OK, I'm ready */
+  cinfo->global_state = CSTATE_START;
+}
+
+
+/*
+ * Destruction of a JPEG compression object
+ */
+
+GLOBAL(void)
+jpeg_destroy_compress (j_compress_ptr cinfo)
+{
+  jpeg_destroy((j_common_ptr) cinfo); /* use common routine */
+}
+
+
+/*
+ * Abort processing of a JPEG compression operation,
+ * but don't destroy the object itself.
+ */
+
+GLOBAL(void)
+jpeg_abort_compress (j_compress_ptr cinfo)
+{
+  jpeg_abort((j_common_ptr) cinfo); /* use common routine */
+}
+
+
+/*
+ * Forcibly suppress or un-suppress all quantization and Huffman tables.
+ * Marks all currently defined tables as already written (if suppress)
+ * or not written (if !suppress).  This will control whether they get emitted
+ * by a subsequent jpeg_start_compress call.
+ *
+ * This routine is exported for use by applications that want to produce
+ * abbreviated JPEG datastreams.  It logically belongs in jcparam.c, but
+ * since it is called by jpeg_start_compress, we put it here --- otherwise
+ * jcparam.o would be linked whether the application used it or not.
+ */
+
+GLOBAL(void)
+jpeg_suppress_tables (j_compress_ptr cinfo, boolean suppress)
+{
+  int i;
+  JQUANT_TBL * qtbl;
+  JHUFF_TBL * htbl;
+
+  for (i = 0; i < NUM_QUANT_TBLS; i++) {
+    if ((qtbl = cinfo->quant_tbl_ptrs[i]) != NULL)
+      qtbl->sent_table = suppress;
+  }
+
+  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    if ((htbl = cinfo->dc_huff_tbl_ptrs[i]) != NULL)
+      htbl->sent_table = suppress;
+    if ((htbl = cinfo->ac_huff_tbl_ptrs[i]) != NULL)
+      htbl->sent_table = suppress;
+  }
+}
+
+
+/*
+ * Finish JPEG compression.
+ *
+ * If a multipass operating mode was selected, this may do a great deal of
+ * work including most of the actual output.
+ */
+
+GLOBAL(void)
+jpeg_finish_compress (j_compress_ptr cinfo)
+{
+  JDIMENSION iMCU_row;
+
+  if (cinfo->global_state == CSTATE_SCANNING ||
+      cinfo->global_state == CSTATE_RAW_OK) {
+    /* Terminate first pass */
+    if (cinfo->next_scanline < cinfo->image_height)
+      ERREXIT(cinfo, JERR_TOO_LITTLE_DATA);
+    (*cinfo->master->finish_pass) (cinfo);
+  } else if (cinfo->global_state != CSTATE_WRCOEFS)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  /* Perform any remaining passes */
+  while (! cinfo->master->is_last_pass) {
+    (*cinfo->master->prepare_for_pass) (cinfo);
+    for (iMCU_row = 0; iMCU_row < cinfo->total_iMCU_rows; iMCU_row++) {
+      if (cinfo->progress != NULL) {
+	cinfo->progress->pass_counter = (long) iMCU_row;
+	cinfo->progress->pass_limit = (long) cinfo->total_iMCU_rows;
+	(*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+      }
+      /* We bypass the main controller and invoke coef controller directly;
+       * all work is being done from the coefficient buffer.
+       */
+      if (! (*cinfo->coef->compress_data) (cinfo, (JSAMPIMAGE) NULL))
+	ERREXIT(cinfo, JERR_CANT_SUSPEND);
+    }
+    (*cinfo->master->finish_pass) (cinfo);
+  }
+  /* Write EOI, do final cleanup */
+  (*cinfo->marker->write_file_trailer) (cinfo);
+  (*cinfo->dest->term_destination) (cinfo);
+  /* We can use jpeg_abort to release memory and reset global_state */
+  jpeg_abort((j_common_ptr) cinfo);
+}
+
+
+/*
+ * Write a special marker.
+ * This is only recommended for writing COM or APPn markers.
+ * Must be called after jpeg_start_compress() and before
+ * first call to jpeg_write_scanlines() or jpeg_write_raw_data().
+ */
+
+GLOBAL(void)
+jpeg_write_marker (j_compress_ptr cinfo, int marker,
+		   const JOCTET *dataptr, unsigned int datalen)
+{
+  JMETHOD(void, write_marker_byte, (j_compress_ptr info, int val));
+
+  if (cinfo->next_scanline != 0 ||
+      (cinfo->global_state != CSTATE_SCANNING &&
+       cinfo->global_state != CSTATE_RAW_OK &&
+       cinfo->global_state != CSTATE_WRCOEFS))
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  (*cinfo->marker->write_marker_header) (cinfo, marker, datalen);
+  write_marker_byte = cinfo->marker->write_marker_byte;	/* copy for speed */
+  while (datalen--) {
+    (*write_marker_byte) (cinfo, *dataptr);
+    dataptr++;
+  }
+}
+
+/* Same, but piecemeal. */
+
+GLOBAL(void)
+jpeg_write_m_header (j_compress_ptr cinfo, int marker, unsigned int datalen)
+{
+  if (cinfo->next_scanline != 0 ||
+      (cinfo->global_state != CSTATE_SCANNING &&
+       cinfo->global_state != CSTATE_RAW_OK &&
+       cinfo->global_state != CSTATE_WRCOEFS))
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  (*cinfo->marker->write_marker_header) (cinfo, marker, datalen);
+}
+
+GLOBAL(void)
+jpeg_write_m_byte (j_compress_ptr cinfo, int val)
+{
+  (*cinfo->marker->write_marker_byte) (cinfo, val);
+}
+
+
+/*
+ * Alternate compression function: just write an abbreviated table file.
+ * Before calling this, all parameters and a data destination must be set up.
+ *
+ * To produce a pair of files containing abbreviated tables and abbreviated
+ * image data, one would proceed as follows:
+ *
+ *		initialize JPEG object
+ *		set JPEG parameters
+ *		set destination to table file
+ *		jpeg_write_tables(cinfo);
+ *		set destination to image file
+ *		jpeg_start_compress(cinfo, FALSE);
+ *		write data...
+ *		jpeg_finish_compress(cinfo);
+ *
+ * jpeg_write_tables has the side effect of marking all tables written
+ * (same as jpeg_suppress_tables(..., TRUE)).  Thus a subsequent start_compress
+ * will not re-emit the tables unless it is passed write_all_tables=TRUE.
+ */
+
+GLOBAL(void)
+jpeg_write_tables (j_compress_ptr cinfo)
+{
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* (Re)initialize error mgr and destination modules */
+  (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);
+  (*cinfo->dest->init_destination) (cinfo);
+  /* Initialize the marker writer ... bit of a crock to do it here. */
+  jinit_marker_writer(cinfo);
+  /* Write them tables! */
+  (*cinfo->marker->write_tables_only) (cinfo);
+  /* And clean up. */
+  (*cinfo->dest->term_destination) (cinfo);
+  /*
+   * In library releases up through v6a, we called jpeg_abort() here to free
+   * any working memory allocated by the destination manager and marker
+   * writer.  Some applications had a problem with that: they allocated space
+   * of their own from the library memory manager, and didn't want it to go
+   * away during write_tables.  So now we do nothing.  This will cause a
+   * memory leak if an app calls write_tables repeatedly without doing a full
+   * compression cycle or otherwise resetting the JPEG object.  However, that
+   * seems less bad than unexpectedly freeing memory in the normal case.
+   * An app that prefers the old behavior can call jpeg_abort for itself after
+   * each call to jpeg_write_tables().
+   */
+}

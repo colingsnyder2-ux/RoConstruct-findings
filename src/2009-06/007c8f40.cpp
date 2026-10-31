@@ -1,34 +1,142 @@
 // from server: 100% by tester
-// roc 2008-06 00750930  unit: CXTPReportGroupRow  size: 76 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00750930
-//
-// 00750930  56                   push esi
-// 00750931  8bf1                 mov esi, ecx
-// 00750933  8d4e74               lea ecx, [esi + 0x74]
-// 00750936  ff15143f8000         call dword ptr [0x803f14]
-// 0075093c  8bce                 mov ecx, esi
-// 0075093e  e85d000000           call 0x7509a0
-// 00750943  f644240801           test byte ptr [esp + 8], 1
-// 00750948  742c                 je 0x750976
-// 0075094a  833d24e1970000       cmp dword ptr [0x97e124], 0
-// 00750951  740f                 je 0x750962
-// 00750953  56                   push esi
-// 00750954  e857abf7ff           call 0x6cb4b0
-// 00750959  83c404               add esp, 4
-// 0075095c  8bc6                 mov eax, esi
-// 0075095e  5e                   pop esi
-// 0075095f  c20400               ret 4
-// 00750962  681ce19700           push 0x97e11c
-// 00750967  ff15ac218000         call dword ptr [0x8021ac]
-// 0075096d  56                   push esi
-// 0075096e  e807fdf4ff           call 0x6a067a
-// 00750973  83c404               add esp, 4
-// 00750976  8bc6                 mov eax, esi
-// 00750978  5e                   pop esi
-// 00750979  c20400               ret 4
-// library xtp-11.2.2-shared-mfc/Source\ReportControl\XTPReportGroupRow.cpp (function ??_GCXTPReportGroupRow@@UAEPAXI@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportGroupRow.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportGroupRow.cpp : implementation of the CXTPReportGroupRow class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportGroupRow.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportGroupItem
+
+
+CXTPReportGroupRow::CXTPReportGroupRow()
+{
+	m_bExpanded = TRUE;
+
+}
+
+void CXTPReportGroupRow::SetCaption(LPCTSTR lpszCaption)
+{
+	m_strGroupText = lpszCaption;
+}
+
+
+CString CXTPReportGroupRow::GetCaption()
+{
+	return m_strGroupText;
+}
+
+void CXTPReportGroupRow::Draw(CDC* pDC, CRect rcRow, int nLeftOffset)
+{
+	CXTPReportPaintManager* pPaintManager = m_pControl->GetPaintManager();
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	m_rcRow = rcRow;
+	if (GetControl()->m_nFreezeColumnsCount == 0)
+	{
+		m_rcRow.left -= nLeftOffset;
+		m_rcRow.right -= nLeftOffset;
+	}
+
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pDC = pDC;
+	drawArgs.nTextAlign = DT_LEFT;
+
+	drawArgs.pControl = m_pControl;
+	drawArgs.pRow = this;
+	drawArgs.pColumn = NULL;
+	drawArgs.pItem = NULL;
+	drawArgs.rcItem = m_rcRow;
+
+	XTP_REPORTRECORDITEM_METRICS* pDrawMetrics = new XTP_REPORTRECORDITEM_METRICS;
+	pDrawMetrics->strText = GetCaption();
+
+	pPaintManager->FillGroupRowMetrics(this, pDrawMetrics, pDC->IsPrinting());
+
+	ASSERT(m_pControl);
+	if (m_pControl)
+	{
+		m_pControl->GetItemMetrics(&drawArgs, pDrawMetrics);
+	}
+
+	pPaintManager->DrawGroupRow(pDC, this, m_rcRow, pDrawMetrics);
+
+	pDrawMetrics->InternalRelease();
+}
+
+void CXTPReportGroupRow::OnClick(CPoint ptClicked)
+{
+	// expand/collapse on single click at the collapse bitmap
+	if (m_rcCollapse.PtInRect(ptClicked))
+	{
+		SetExpanded(!IsExpanded());
+	}
+}
+
+void CXTPReportGroupRow::OnDblClick(CPoint ptClicked)
+{
+	// do not expand if double clicked on the collapse bitmap
+	if (!m_rcCollapse.PtInRect(ptClicked))
+	{
+		// otherwise expand on double click
+		SetExpanded(!IsExpanded());
+	}
+	// process parent
+	CXTPReportRow::OnDblClick(ptClicked);
+}
+
+INT_PTR CXTPReportGroupRow::OnToolHitTest(CPoint /*point*/, TOOLINFO* pTI)
+{
+	INT_PTR nHit = (INT_PTR)this;
+	CString strTip = GetTooltip();
+
+	if (strTip.IsEmpty())
+		return -1;
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_pControl->m_hWnd, m_rcRow,
+		nHit, strTip);
+
+	return nHit;
+
+}
+

@@ -1,17 +1,5 @@
-// from server: 41% by colin
-struct CXTPImageManagerIconSet {
-    void func(int, int, int, int, int);
-};
-
-extern "C" void __stdcall sub_64CE50(int);
-extern "C" void __stdcall sub_6485E0(void*, void*);
-extern "C" void __stdcall sub_64B7F0(void*);
-extern "C" void __stdcall sub_6496A0(void*);
-
-void CXTPImageManagerIconSet::func(int a, int b, int c, int d, int e) {
-    void* p = 0;
-    sub_64CE50(e);
-    sub_6485E0(&p, &p);
-    sub_64B7F0(&p);
-    sub_6496A0(&p);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_d57fd5449bdc10f2.cpp

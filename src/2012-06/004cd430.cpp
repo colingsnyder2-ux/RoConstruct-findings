@@ -1,4 +1,4 @@
-// from server: 0% by intel
+// from server: 29% by Intel
 // from server: 29% by Intel
 struct String {
     char _buf[28];

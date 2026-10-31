@@ -1,22 +1,5 @@
-// from server: 71% by colin
-struct CXTPCommandBarKeyboardTip {
-    int FindTip(unsigned int id);
-    int GetAt(int index);
-    char pad[0x84];
-    int m_nCount;
-};
-
-int CXTPCommandBarKeyboardTip::FindTip(unsigned int id) {
-    if (id != 0) {
-        int i = 0;
-        if (m_nCount > 0) {
-            do {
-                int* p = (int*)GetAt(i);
-                if (*(unsigned int*)((char*)p + 0xd4) == id)
-                    return (int)p;
-                i++;
-            } while (i < m_nCount);
-        }
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_7b4e5d78aa001f92.cpp

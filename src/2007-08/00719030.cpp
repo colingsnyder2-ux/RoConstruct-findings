@@ -1,20 +1,5 @@
-// from server: 44% by colin
-struct CXTPRibbonQuickAccessControls {
-    void construct(int);
-};
-
-extern "C" void __stdcall sub_670500();
-extern "C" void __stdcall sub_63A120(int);
-extern "C" void* __stdcall sub_677390(int);
-
-void CXTPRibbonQuickAccessControls::construct(int arg)
-{
-    sub_670500();
-    *(void**)this = (void*)0x7dfa14;
-    *(void**)((char*)this + 0x20) = (void*)0x7df9b4;
-    *(int*)((char*)this + 0x154) = arg;
-    *(int*)((char*)this + 0x178) = arg;
-    sub_63A120(8);
-    *(int*)((char*)this + 0xf8) = 3;
-    *(void**)((char*)this + 0x16c) = sub_677390(0);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_9158669fdc87801c.cpp

@@ -1,32 +1,5 @@
-// from server: 42% by colin
-struct CXTPPropertyGridItem
-{
-    char pad[0xb4];
-    void* m_pGrid;
-    int GetGridSomething();
-};
-
-extern "C" void __stdcall sub_00630D23(void*);
-extern "C" void __stdcall sub_006FC8B0();
-
-extern unsigned char G_8C91F0;
-extern unsigned char G_8C9198;
-
-int CXTPPropertyGridItem::GetGridSomething()
-{
-    if (m_pGrid != 0)
-    {
-        char* p = (char*)m_pGrid;
-        p = *(char**)(p + 0xb0);
-        return *(int*)(p + 0x15c);
-    }
-
-    if ((G_8C91F0 & 1) == 0)
-    {
-        G_8C91F0 |= 1;
-        sub_006FC8B0();
-        sub_00630D23((void*)0x77cc80);
-    }
-
-    return (int)&G_8C9198;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_48c4e0bce00a99de.cpp

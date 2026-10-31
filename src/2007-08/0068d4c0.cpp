@@ -1,23 +1,5 @@
-// from server: 73% by colin
-struct CXTPTabClientWnd_CSingleWorkspace
-{
-    int GetCount();
-    int GetItemData(int, int);
-    int IsItemEnabled(int);
-    int FindItem(int);
-};
-
-int CXTPTabClientWnd_CSingleWorkspace::FindItem(int nData)
-{
-    int i = 0;
-    if (GetCount() > 0)
-    {
-        do
-        {
-            if (IsItemEnabled(GetItemData(i, nData)) != 0)
-                return i;
-            ++i;
-        } while (i < GetCount());
-    }
-    return 0;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ae7ff79e029656de.cpp

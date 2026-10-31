@@ -1,30 +1,5 @@
-// from server: 91% by colin
-extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
-
-struct VCXTPReportRow
-{
-    int m_nCount;
-    void* m_pData;
-    int m_nSize;
-    void* GetAt(int nIndex, int* pValue);
-};
-
-void* VCXTPReportRow::GetAt(int nIndex, int* pValue)
-{
-    if (nIndex < 0 || nIndex >= m_nSize)
-    {
-        void* dummy = 0;
-        return dummy;
-    }
-    char* pBase = (char*)m_pData;
-    char* pEntry = pBase + nIndex * 8;
-    if (pValue != 0)
-    {
-        long* pRef = (long*)(*(char**)(pEntry + 4));
-        if (pRef != 0)
-        {
-            InterlockedIncrement(pRef + 1);
-        }
-    }
-    return *(void**)(pEntry + 4);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_18df28f2fde24ee1.cpp

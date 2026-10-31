@@ -1,250 +1,2047 @@
-// roc 2010-06 00814980  unit: CXTPToolTipContextToolTip  size: 837 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00814980
-//
-// 00814980  6aff                 push -1
-// 00814982  6831479b00           push 0x9b4731
-// 00814987  64a100000000         mov eax, dword ptr fs:[0]
-// 0081498d  50                   push eax
-// 0081498e  83ec44               sub esp, 0x44
-// 00814991  53                   push ebx
-// 00814992  55                   push ebp
-// 00814993  56                   push esi
-// 00814994  57                   push edi
-// 00814995  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 0081499a  33c4                 xor eax, esp
-// 0081499c  50                   push eax
-// 0081499d  8d442458             lea eax, [esp + 0x58]
-// 008149a1  64a300000000         mov dword ptr fs:[0], eax
-// 008149a7  8bf1                 mov esi, ecx
-// 008149a9  8b7c246c             mov edi, dword ptr [esp + 0x6c]
-// 008149ad  57                   push edi
-// 008149ae  8d4c2420             lea ecx, [esp + 0x20]
-// 008149b2  ff15c4ce9e00         call dword ptr [0x9ecec4]
-// 008149b8  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 008149bb  8b5048               mov edx, dword ptr [eax + 0x48]
-// 008149be  8b684c               mov ebp, dword ptr [eax + 0x4c]
-// 008149c1  8b4844               mov ecx, dword ptr [eax + 0x44]
-// 008149c4  8b4050               mov eax, dword ptr [eax + 0x50]
-// 008149c7  014c2470             add dword ptr [esp + 0x70], ecx
-// 008149cb  8b5c2474             mov ebx, dword ptr [esp + 0x74]
-// 008149cf  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
-// 008149d3  8344247003           add dword ptr [esp + 0x70], 3
-// 008149d8  03da                 add ebx, edx
-// 008149da  8b542478             mov edx, dword ptr [esp + 0x78]
-// 008149de  2bd5                 sub edx, ebp
-// 008149e0  2bc8                 sub ecx, eax
-// 008149e2  8b4720               mov eax, dword ptr [edi + 0x20]
-// 008149e5  83c303               add ebx, 3
-// 008149e8  83ea03               sub edx, 3
-// 008149eb  83e903               sub ecx, 3
-// 008149ee  33ed                 xor ebp, ebp
-// 008149f0  c744246000000000     mov dword ptr [esp + 0x60], 0
-// 008149f8  895c2474             mov dword ptr [esp + 0x74], ebx
-// 008149fc  89542478             mov dword ptr [esp + 0x78], edx
-// 00814a00  894c247c             mov dword ptr [esp + 0x7c], ecx
-// 00814a04  c744241800080000     mov dword ptr [esp + 0x18], 0x800
-// 00814a0c  3bc5                 cmp eax, ebp
-// 00814a0e  0f84e1000000         je 0x814af5
-// 00814a14  6aec                 push -0x14
-// 00814a16  50                   push eax
-// 00814a17  ff15fcbb9e00         call dword ptr [0x9ebbfc]
-// 00814a1d  a900004000           test eax, 0x400000
-// 00814a22  0f84cd000000         je 0x814af5
-// 00814a28  c744246c01000000     mov dword ptr [esp + 0x6c], 1
-// 00814a30  c744241802080200     mov dword ptr [esp + 0x18], 0x20802
-// 00814a38  8b442478             mov eax, dword ptr [esp + 0x78]
-// 00814a3c  8b4c2474             mov ecx, dword ptr [esp + 0x74]
-// 00814a40  8b542470             mov edx, dword ptr [esp + 0x70]
-// 00814a44  83c0fe               add eax, -2
-// 00814a47  83c102               add ecx, 2
-// 00814a4a  83c202               add edx, 2
-// 00814a4d  33db                 xor ebx, ebx
-// 00814a4f  39ae2c010000         cmp dword ptr [esi + 0x12c], ebp
-// 00814a55  89442450             mov dword ptr [esp + 0x50], eax
-// 00814a59  8b44247c             mov eax, dword ptr [esp + 0x7c]
-// 00814a5d  0f95c3               setne bl
-// 00814a60  894c244c             mov dword ptr [esp + 0x4c], ecx
-// 00814a64  8dbe28010000         lea edi, [esi + 0x128]
-// 00814a6a  8bcf                 mov ecx, edi
-// 00814a6c  89542448             mov dword ptr [esp + 0x48], edx
-// 00814a70  89442454             mov dword ptr [esp + 0x54], eax
-// 00814a74  895c2424             mov dword ptr [esp + 0x24], ebx
-// 00814a78  ff15eccd9e00         call dword ptr [0x9ecdec]
-// 00814a7e  33c9                 xor ecx, ecx
-// 00814a80  84c0                 test al, al
-// 00814a82  0f94c1               sete cl
-// 00814a85  3bdd                 cmp ebx, ebp
-// 00814a87  8b5c2468             mov ebx, dword ptr [esp + 0x68]
-// 00814a8b  c744242001000000     mov dword ptr [esp + 0x20], 1
-// 00814a93  896c2438             mov dword ptr [esp + 0x38], ebp
-// 00814a97  894c2414             mov dword ptr [esp + 0x14], ecx
-// 00814a9b  0f8492000000         je 0x814b33
-// 00814aa1  8b8e2c010000         mov ecx, dword ptr [esi + 0x12c]
-// 00814aa7  e8a440faff           call 0x7b8b50
-// 00814aac  8b8e2c010000         mov ecx, dword ptr [esi + 0x12c]
-// 00814ab2  8be8                 mov ebp, eax
-// 00814ab4  e8e796fbff           call 0x7ce1a0
-// 00814ab9  33c9                 xor ecx, ecx
-// 00814abb  83fd10               cmp ebp, 0x10
-// 00814abe  0f9ec1               setle cl
-// 00814ac1  89442428             mov dword ptr [esp + 0x28], eax
-// 00814ac5  89442438             mov dword ptr [esp + 0x38], eax
-// 00814ac9  896c243c             mov dword ptr [esp + 0x3c], ebp
-// 00814acd  894c2420             mov dword ptr [esp + 0x20], ecx
-// 00814ad1  85c9                 test ecx, ecx
-// 00814ad3  745e                 je 0x814b33
-// 00814ad5  8b6c246c             mov ebp, dword ptr [esp + 0x6c]
-// 00814ad9  85ed                 test ebp, ebp
-// 00814adb  7421                 je 0x814afe
-// 00814add  8b542478             mov edx, dword ptr [esp + 0x78]
-// 00814ae1  2bd0                 sub edx, eax
-// 00814ae3  8b442474             mov eax, dword ptr [esp + 0x74]
-// 00814ae7  89442444             mov dword ptr [esp + 0x44], eax
-// 00814aeb  89542440             mov dword ptr [esp + 0x40], edx
-// 00814aef  8d442440             lea eax, [esp + 0x40]
-// 00814af3  eb0d                 jmp 0x814b02
-// 00814af5  896c246c             mov dword ptr [esp + 0x6c], ebp
-// 00814af9  e93affffff           jmp 0x814a38
-// 00814afe  8d442470             lea eax, [esp + 0x70]
-// 00814b02  8b4804               mov ecx, dword ptr [eax + 4]
-// 00814b05  8b10                 mov edx, dword ptr [eax]
-// 00814b07  51                   push ecx
-// 00814b08  8b8e2c010000         mov ecx, dword ptr [esi + 0x12c]
-// 00814b0e  52                   push edx
-// 00814b0f  53                   push ebx
-// 00814b10  e84b06fbff           call 0x7c5160
-// 00814b15  85ed                 test ebp, ebp
-// 00814b17  0f84b4000000         je 0x814bd1
-// 00814b1d  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00814b22  0f849a000000         je 0x814bc2
-// 00814b28  83c8ff               or eax, 0xffffffff
-// 00814b2b  2b442428             sub eax, dword ptr [esp + 0x28]
-// 00814b2f  01442450             add dword ptr [esp + 0x50], eax
-// 00814b33  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00814b38  0f84d5000000         je 0x814c13
-// 00814b3e  8b566c               mov edx, dword ptr [esi + 0x6c]
-// 00814b41  81c2a0000000         add edx, 0xa0
-// 00814b47  52                   push edx
-// 00814b48  53                   push ebx
-// 00814b49  8d4c2430             lea ecx, [esp + 0x30]
-// 00814b4d  e84eabfeff           call 0x7ff6a0
-// 00814b52  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00814b56  8b2b                 mov ebp, dword ptr [ebx]
-// 00814b58  83c820               or eax, 0x20
-// 00814b5b  50                   push eax
-// 00814b5c  8d4c244c             lea ecx, [esp + 0x4c]
-// 00814b60  51                   push ecx
-// 00814b61  8bcf                 mov ecx, edi
-// 00814b63  c644246801           mov byte ptr [esp + 0x68], 1
-// 00814b68  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 00814b6e  50                   push eax
-// 00814b6f  8bcf                 mov ecx, edi
-// 00814b71  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00814b77  8b5570               mov edx, dword ptr [ebp + 0x70]
-// 00814b7a  50                   push eax
-// 00814b7b  8bcb                 mov ecx, ebx
-// 00814b7d  ffd2                 call edx
-// 00814b7f  8d442440             lea eax, [esp + 0x40]
-// 00814b83  50                   push eax
-// 00814b84  8bcf                 mov ecx, edi
-// 00814b86  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 00814b8c  50                   push eax
-// 00814b8d  8bcf                 mov ecx, edi
-// 00814b8f  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00814b95  8b4b08               mov ecx, dword ptr [ebx + 8]
-// 00814b98  50                   push eax
-// 00814b99  51                   push ecx
-// 00814b9a  ff1594a19e00         call dword ptr [0x9ea194]
-// 00814ba0  8b442474             mov eax, dword ptr [esp + 0x74]
-// 00814ba4  03442444             add eax, dword ptr [esp + 0x44]
-// 00814ba8  83c00c               add eax, 0xc
-// 00814bab  837c246c00           cmp dword ptr [esp + 0x6c], 0
-// 00814bb0  89442474             mov dword ptr [esp + 0x74], eax
-// 00814bb4  7445                 je 0x814bfb
-// 00814bb6  834424700f           add dword ptr [esp + 0x70], 0xf
-// 00814bbb  836c24780a           sub dword ptr [esp + 0x78], 0xa
-// 00814bc0  eb43                 jmp 0x814c05
-// 00814bc2  b9fdffffff           mov ecx, 0xfffffffd
-// 00814bc7  2b4c2428             sub ecx, dword ptr [esp + 0x28]
-// 00814bcb  014c2478             add dword ptr [esp + 0x78], ecx
-// 00814bcf  eb42                 jmp 0x814c13
-// 00814bd1  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00814bd6  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00814bda  7411                 je 0x814bed
-// 00814bdc  8b542448             mov edx, dword ptr [esp + 0x48]
-// 00814be0  8d4c0201             lea ecx, [edx + eax + 1]
-// 00814be4  894c2448             mov dword ptr [esp + 0x48], ecx
-// 00814be8  e946ffffff           jmp 0x814b33
-// 00814bed  8b542470             mov edx, dword ptr [esp + 0x70]
-// 00814bf1  8d4c0203             lea ecx, [edx + eax + 3]
-// 00814bf5  894c2470             mov dword ptr [esp + 0x70], ecx
-// 00814bf9  eb18                 jmp 0x814c13
-// 00814bfb  834424700a           add dword ptr [esp + 0x70], 0xa
-// 00814c00  836c24780f           sub dword ptr [esp + 0x78], 0xf
-// 00814c05  8d4c2428             lea ecx, [esp + 0x28]
-// 00814c09  c644246000           mov byte ptr [esp + 0x60], 0
-// 00814c0e  e80dabfeff           call 0x7ff720
-// 00814c13  837c242400           cmp dword ptr [esp + 0x24], 0
-// 00814c18  745f                 je 0x814c79
-// 00814c1a  837c242000           cmp dword ptr [esp + 0x20], 0
-// 00814c1f  7558                 jne 0x814c79
-// 00814c21  8b6c246c             mov ebp, dword ptr [esp + 0x6c]
-// 00814c25  8b7c2438             mov edi, dword ptr [esp + 0x38]
-// 00814c29  85ed                 test ebp, ebp
-// 00814c2b  7418                 je 0x814c45
-// 00814c2d  8b442478             mov eax, dword ptr [esp + 0x78]
-// 00814c31  8b542474             mov edx, dword ptr [esp + 0x74]
-// 00814c35  2bc7                 sub eax, edi
-// 00814c37  89442440             mov dword ptr [esp + 0x40], eax
-// 00814c3b  89542444             mov dword ptr [esp + 0x44], edx
-// 00814c3f  8d442440             lea eax, [esp + 0x40]
-// 00814c43  eb04                 jmp 0x814c49
-// 00814c45  8d442470             lea eax, [esp + 0x70]
-// 00814c49  8b4804               mov ecx, dword ptr [eax + 4]
-// 00814c4c  8b10                 mov edx, dword ptr [eax]
-// 00814c4e  51                   push ecx
-// 00814c4f  8b8e2c010000         mov ecx, dword ptr [esi + 0x12c]
-// 00814c55  52                   push edx
-// 00814c56  53                   push ebx
-// 00814c57  e80405fbff           call 0x7c5160
-// 00814c5c  85ed                 test ebp, ebp
-// 00814c5e  740d                 je 0x814c6d
-// 00814c60  b8fbffffff           mov eax, 0xfffffffb
-// 00814c65  2bc7                 sub eax, edi
-// 00814c67  01442478             add dword ptr [esp + 0x78], eax
-// 00814c6b  eb0c                 jmp 0x814c79
-// 00814c6d  8b4c2470             mov ecx, dword ptr [esp + 0x70]
-// 00814c71  8d543905             lea edx, [ecx + edi + 5]
-// 00814c75  89542470             mov dword ptr [esp + 0x70], edx
-// 00814c79  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00814c7d  8b33                 mov esi, dword ptr [ebx]
-// 00814c7f  83c810               or eax, 0x10
-// 00814c82  50                   push eax
-// 00814c83  8d442474             lea eax, [esp + 0x74]
-// 00814c87  50                   push eax
-// 00814c88  8d4c2424             lea ecx, [esp + 0x24]
-// 00814c8c  ff15e4cd9e00         call dword ptr [0x9ecde4]
-// 00814c92  50                   push eax
-// 00814c93  8d4c2428             lea ecx, [esp + 0x28]
-// 00814c97  ff15b0ce9e00         call dword ptr [0x9eceb0]
-// 00814c9d  8b5670               mov edx, dword ptr [esi + 0x70]
-// 00814ca0  50                   push eax
-// 00814ca1  8bcb                 mov ecx, ebx
-// 00814ca3  ffd2                 call edx
-// 00814ca5  8d4c241c             lea ecx, [esp + 0x1c]
-// 00814ca9  ff15f0ce9e00         call dword ptr [0x9ecef0]
-// 00814caf  8b4c2458             mov ecx, dword ptr [esp + 0x58]
-// 00814cb3  64890d00000000       mov dword ptr fs:[0], ecx
-// 00814cba  59                   pop ecx
-// 00814cbb  5f                   pop edi
-// 00814cbc  5e                   pop esi
-// 00814cbd  5d                   pop ebp
-// 00814cbe  5b                   pop ebx
-// 00814cbf  83c450               add esp, 0x50
-// 00814cc2  c21800               ret 0x18
-// copied from an identical function in another client (function ?DrawEntry@CXTPToolTipContextToolTip@@MAEXPAVCDC@@PAUTOOLITEM@1@VCRect@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Common\XTPToolTipContext.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPToolTipContext.cpp: implementation of the CXTPToolTipContext class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#if _MSC_VER < 1200
+#define _XTP_EXCLUDE_HTML
+#else
+#include <mshtml.h>
+#include <mshtmhst.h>
+#endif // !_MSC_VER < 1200
+
+#include "XTPToolTipContext.h"
+#include "XTPVC80Helpers.h"
+#include "XTPDrawHelpers.h"
+#include "XTPColorManager.h"
+#include "XTPImageManager.h"
+#include "XTPOffice2007Image.h"
+#include "XTPSystemHelpers.h"
+#include "XTPRichRender.h"
+#include "XTPResourceManager.h"
+
+#ifdef _INC_COMDEF
+// Warning "ComDef.h" was included
+#endif
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+#pragma warning (disable : 4097) // typedef-name 'CXTPToolTipContextTipOfficeCtrl' used as synonym for class-name 'CRichEditToolTip'
+
+#define WM_SYSKEYFIRST WM_SYSKEYDOWN
+#define WM_SYSKEYLAST WM_SYSDEADCHAR
+
+#define VERSION_IE5             MAKELONG(80, 5)
+
+#define TTS_NOANIMATE           0x10
+#define TTS_NOFADE              0x20
+#define TTS_BALLOON             0x40
+
+
+#define CS_DROPSHADOW       0x00020000
+
+
+#ifndef TTM_SETTITLE
+
+#define TTM_SETTITLEA           (WM_USER + 32)  // wParam = TTI_*, lParam = char* szTitle
+#define TTM_SETTITLEW           (WM_USER + 33)  // wParam = TTI_*, lParam = wchar* szTitle
+
+#ifdef UNICODE
+#define TTM_SETTITLE            TTM_SETTITLEW
+#else
+#define TTM_SETTITLE            TTM_SETTITLEA
+#endif
+
+#endif
+
+#ifndef WF_TRACKINGTOOLTIPS
+#define WF_TRACKINGTOOLTIPS 0x0400
+#endif
+
+#define SAFE_DELETEWINDOW(ptr) \
+	if (ptr) { ptr->DestroyWindow(); delete ptr; ptr = NULL; }
+
+CXTPToolTipContext* CXTPToolTipContext::m_pModuleContext = 0;
+
+
+IMPLEMENT_DYNAMIC(CXTPToolTipContextToolTip, CWnd)
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContextToolTip
+
+CXTPToolTipContextToolTip::CXTPToolTipContextToolTip(CXTPToolTipContext* pContext)
+	: m_pContext(pContext)
+{
+	m_bActive = FALSE;
+	m_toolVisible.Reset();
+	m_toolDisabled.Reset();
+	m_toolDelay.Reset();
+
+	m_pIcon = NULL;
+
+	m_nDelayTimer = 0;
+	m_dwLastTip = 0;
+	m_nDelayInitial = 500;
+	m_nDelayReshow = 200;
+
+}
+
+void CXTPToolTipContext::SetFont(CFont* pFont)
+{
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+
+	SetFontIndirect(&lf);
+}
+
+void CXTPToolTipContext::SetFontIndirect(LOGFONT* lpLogFont)
+{
+	if (!lpLogFont)
+		return;
+
+	lpLogFont->lfWeight = FW_NORMAL;
+	m_fnt.DeleteObject();
+	m_fnt.CreateFontIndirect(lpLogFont);
+
+	lpLogFont->lfWeight = FW_BOLD;
+	m_fntTitle.DeleteObject();
+	m_fntTitle.CreateFontIndirect(lpLogFont);
+
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+
+CXTPToolTipContextToolTip::~CXTPToolTipContextToolTip()
+{
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
+	{
+		delete m_arrTools[i];
+	}
+	m_arrTools.RemoveAll();
+	HookMouseMove(FALSE);
+
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPToolTipContextToolTip, CWnd)
+	//{{AFX_MSG_MAP(CXTPToolTipContextToolTip)
+	ON_MESSAGE(TTM_ADDTOOL, OnAddTool)
+	ON_MESSAGE(TTM_ACTIVATE, OnActivate)
+	ON_MESSAGE(TTM_DELTOOL, OnDelTool)
+	ON_MESSAGE(TTM_RELAYEVENT, OnRelayEvent)
+	ON_MESSAGE(TTM_SETTITLE, OnSetTitle)
+	ON_MESSAGE(TTM_UPDATETIPTEXT, OnUpdateTipText)
+	ON_MESSAGE(TTM_SETDELAYTIME, OnSetDelayTime)
+	ON_MESSAGE(XTP_TTM_SETIMAGE, OnSetImage)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_MOUSEMOVE()
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
+	ON_MESSAGE(TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContextToolTip message handlers
+BOOL CXTPToolTipContextToolTip::Create(CWnd* pParentWnd, DWORD dwStyle)
+{
+	UINT nClassStyle = (dwStyle & XTP_TTS_NOSHADOW ? 0 : CS_DROPSHADOW) | CS_SAVEBITS | CS_OWNDC;
+
+	if ((nClassStyle & CS_DROPSHADOW) && !XTPSystemVersion()->IsWinXPOrGreater()) // Windows XP only
+	{
+		nClassStyle &= ~CS_DROPSHADOW;
+	}
+
+
+	BOOL bResult = CWnd::CreateEx(WS_EX_TOOLWINDOW, AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL,
+		WS_POPUP | dwStyle, // force WS_POPUP
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		pParentWnd->GetSafeHwnd(), NULL, NULL);
+
+	if (bResult)
+		SetOwner(pParentWnd);
+	return bResult;
+}
+
+void CXTPToolTipContextToolTip::OnDestroy()
+{
+	m_toolVisible.Reset();
+	m_toolDisabled.Reset();
+	m_toolDelay.Reset();
+
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
+	{
+		delete m_arrTools[i];
+	}
+	m_arrTools.RemoveAll();
+
+	m_strTitle.Empty();
+	m_pIcon = NULL;
+
+	Activate(FALSE);
+	HookMouseMove(FALSE);
+
+	CWnd::OnDestroy();
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetImage(WPARAM, LPARAM lParam)
+{
+	m_pIcon = (CXTPImageManagerIcon*)lParam;
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetTitle(WPARAM, LPARAM lParam)
+{
+	m_strTitle = (LPCTSTR)lParam;
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetDelayTime(WPARAM dwDuration, LPARAM lParam)
+{
+	UINT iTime = LOWORD(lParam);
+
+	switch (dwDuration)
+	{
+	case TTDT_RESHOW:
+		m_nDelayReshow = iTime;
+		break;
+
+	case TTDT_INITIAL:
+		m_nDelayInitial = iTime;
+		break;
+	}
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnUpdateTipText(WPARAM, LPARAM lParam)
+{
+	LPTOOLINFO lpToolInfo = LPTOOLINFO(lParam);
+
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
+	{
+		TOOLITEM* pItem = m_arrTools[i];
+
+		if ((pItem->uId == lpToolInfo->uId) && (pItem->hwnd == lpToolInfo->hwnd))
+		{
+			pItem->bAutoCaption = (lpToolInfo->lpszText == LPSTR_TEXTCALLBACK);
+			pItem->strCaption = pItem->bAutoCaption ? _T("") : lpToolInfo->lpszText;
+			break;
+		}
+	}
+
+	return 0;
+}
+
+
+LRESULT CXTPToolTipContextToolTip::OnAddTool(WPARAM, LPARAM lParam)
+{
+	return AddTool((LPTOOLINFO)lParam);
+}
+
+LRESULT CXTPToolTipContextToolTip::OnActivate(WPARAM wParam, LPARAM)
+{
+	Activate((BOOL)wParam);
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnDelTool(WPARAM, LPARAM lParam)
+{
+	DelTool((LPTOOLINFO)lParam);
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnRelayEvent(WPARAM, LPARAM lParam)
+{
+	RelayEvent((LPMSG)lParam);
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnWindowFromPoint(WPARAM, LPARAM lParam)
+{
+	LPPOINT lpPoint = (LPPOINT)lParam;
+	HWND hWnd = lpPoint ? ::WindowFromPoint(*lpPoint) : 0;
+
+	if ((hWnd != NULL) && (GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) && (::SendMessage(hWnd, XTP_TTM_WINDOWFROMPOINT, 0, 0) == 1))
+	{
+		return (LRESULT)::GetParent(hWnd);
+	}
+
+	return (LRESULT)hWnd;
+}
+
+BOOL CXTPToolTipContextToolTip::AddTool(LPTOOLINFO lpToolInfo)
+{
+	ASSERT(lpToolInfo);
+
+	if (!lpToolInfo)
+		return FALSE;
+
+	TOOLITEM* pti = new TOOLITEM;
+	pti->hwnd = lpToolInfo->hwnd;
+	pti->uFlags = lpToolInfo->uFlags;
+	pti->uId = lpToolInfo->uId;
+	pti->rect = lpToolInfo->rect;
+	pti->bAutoCaption = (lpToolInfo->lpszText == LPSTR_TEXTCALLBACK);
+	pti->strCaption = pti->bAutoCaption ? _T("") : lpToolInfo->lpszText;
+	pti->hinst = lpToolInfo->hinst;
+
+	pti->rectExclude.SetRectEmpty();
+
+	if (lpToolInfo->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		pti->rectExclude = ((XTP_TOOLTIP_TOOLINFO_EX*)lpToolInfo)->pToolInfo->rcExclude;
+	}
+
+
+	m_arrTools.Add(pti);
+
+	return TRUE;
+}
+
+void CXTPToolTipContextToolTip::Activate(BOOL bActivate)
+{
+	m_bActive = bActivate;
+
+	if (!bActivate && GetSafeHwnd() && m_nDelayTimer)
+	{
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+	if (!bActivate && GetSafeHwnd() && IsWindowVisible())
+	{
+		SetVisibleTool(NULL);
+	}
+}
+
+void CXTPToolTipContextToolTip::DelTool(LPTOOLINFO lpToolInfo)
+{
+	ASSERT(lpToolInfo);
+	if (!lpToolInfo)
+		return;
+
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
+	{
+		TOOLITEM* pItem = m_arrTools[i];
+
+		if ((pItem->uId == lpToolInfo->uId) && (pItem->hwnd == lpToolInfo->hwnd))
+		{
+
+			if (m_toolVisible.IsEqual(pItem))
+				SetVisibleTool(0);
+
+			if (m_toolDisabled.IsEqual(pItem)) m_toolDisabled.Reset();
+
+			if (m_toolDelay.IsEqual(pItem)) m_toolDelay.Reset();
+
+			m_arrTools.RemoveAt(i);
+			delete pItem;
+
+			break;
+		}
+	}
+
+}
+
+CXTPToolTipContextToolTip::TOOLITEM* CXTPToolTipContextToolTip::FindTool()
+{
+	if (!(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
+		GetKeyState(VK_MBUTTON) >= 0))
+	{
+		return NULL;
+	}
+
+	CPoint pt;
+	GetCursorPos(&pt);
+
+	for (int i = 0; i < m_arrTools.GetSize(); i++)
+	{
+		TOOLITEM* pItem = m_arrTools[i];
+
+		if (!::IsWindow(pItem->hwnd))
+			continue;
+
+		CWnd* pWnd = CWnd::FromHandle(pItem->hwnd);
+
+		CRect rcTool = pItem->rect;
+
+		if (pItem->uFlags & TTF_IDISHWND)
+		{
+			pWnd->GetWindowRect(rcTool);
+		}
+		else
+		{
+			pWnd->ClientToScreen(rcTool);
+		}
+
+		if (rcTool.PtInRect(pt) && ((pItem->uFlags & TTF_IDISHWND) || ((HWND)OnWindowFromPoint(0, (LRESULT)(LPPOINT)&pt) == pItem->hwnd)))
+			return pItem;
+	}
+	return NULL;
+}
+
+#ifndef IS_INTRESOURCE
+#define IS_INTRESOURCE(x) (((size_t)(x) >> 16) == 0)
+#endif
+
+CString CXTPToolTipContextToolTip::GetToolText(TOOLITEM* lpToolInfo)
+{
+	if (lpToolInfo->bAutoCaption)
+	{
+		UINT_PTR id = lpToolInfo->uId;
+		TOOLTIPTEXT tt = {0};
+		tt.hdr.hwndFrom = m_hWnd;
+		tt.hdr.idFrom = lpToolInfo->uId;
+		tt.hdr.code = TTN_NEEDTEXT;
+
+		tt.uFlags = lpToolInfo->uFlags;
+		tt.hinst = NULL;
+
+		tt.szText[0] = _T('\0');
+		tt.lpszText = tt.szText;
+
+		::SendMessage(lpToolInfo->hwnd, WM_NOTIFY, id, (LPARAM)&tt);
+
+		if (IS_INTRESOURCE(tt.lpszText))
+		{
+			XTPResourceManager()->LoadLocaleString(tt.hinst, (UINT)(UINT_PTR)tt.lpszText, lpToolInfo->strCaption);
+		}
+		else
+		{
+			lpToolInfo->strCaption = tt.lpszText;
+		}
+
+		if ((m_pContext->GetControlStyle() & TTS_NOPREFIX) == 0)
+		{
+			CXTPDrawHelpers::StripMnemonics(lpToolInfo->strCaption);
+		}
+
+		lpToolInfo->bAutoCaption = FALSE;
+	}
+
+	return lpToolInfo->strCaption;
+}
+
+int CXTPToolTipContextToolTip::GetMaxTipWidth() const
+{
+	const int nWidth = m_pContext->GetMaxTipWidth();
+
+	if (nWidth == -1)
+	{
+		return ::GetSystemMetrics(SM_CXSCREEN);
+	}
+	return nWidth;
+}
+
+CSize CXTPToolTipContextToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	CClientDC dc(this);
+
+	CFont* pOldFont = dc.SelectObject(&m_pContext->m_fnt);
+
+	CString str = GetToolText(lpToolInfo);
+
+	if (str.IsEmpty())
+		return CSize(0);
+
+	int nMaxTipWidth = GetMaxTipWidth();
+
+	CRect rcMargin = m_pContext->GetMargin();
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+
+	CRect rc(0, 0, nMaxTipWidth - szMargin.cx, 0);
+	dc.DrawText(str, rc, DT_NOPREFIX | DT_CALCRECT | DT_WORDBREAK);
+	CSize sz = rc.Size();
+
+	BOOL bDrawImage = m_pIcon != NULL;
+	BOOL bDrawTitle = !m_strTitle.IsEmpty();
+	BOOL bDrawImageTop = TRUE;
+	CSize szImage(0, 0);
+
+	if (bDrawImage)
+	{
+		szImage = CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
+		bDrawImageTop = (szImage.cy <= 16);
+
+		if (bDrawImageTop)
+		{
+			if (!bDrawTitle)
+			{
+				sz.cx += szImage.cx + 3;
+			}
+		}
+		else
+		{
+			sz.cx += szImage.cx + 5;
+		}
+		sz.cy = max(sz.cy, szImage.cy);
+	}
+
+	if (bDrawTitle)
+	{
+		CXTPFontDC fntTitle(&dc, &m_pContext->m_fntTitle);
+
+		CRect rcTitle(0, 0, nMaxTipWidth - szMargin.cx - 25, 0);
+		dc.DrawText(m_strTitle, rcTitle, DT_NOPREFIX | DT_CALCRECT | DT_SINGLELINE);
+
+		sz.cy += rcTitle.Height() + 10 + 10;
+		sz.cx = max(sz.cx + 10 + 15, min(nMaxTipWidth - szMargin.cx, rcTitle.Width() + 4) + (bDrawImage && bDrawImageTop ? szImage.cx + 1: 0));
+
+	}
+
+	dc.SelectObject(pOldFont);
+
+	sz += szMargin;
+
+	return sz;
+}
+
+HHOOK CXTPToolTipContextToolTip::m_hHookMouse = 0;
+CXTPToolTipContextToolTip* CXTPToolTipContextToolTip::m_pWndMonitor = 0;
+
+LRESULT CALLBACK CXTPToolTipContextToolTip::MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode != HC_ACTION || !m_pWndMonitor || m_pWndMonitor->m_toolVisible.IsEmpty())
+		return CallNextHookEx(m_hHookMouse, nCode, wParam, lParam);
+
+	POINT pt = ((PMOUSEHOOKSTRUCT)lParam)->pt;
+	HWND hWnd = (HWND)m_pWndMonitor->OnWindowFromPoint(0, (LPARAM)&pt);
+
+	if (hWnd != m_pWndMonitor->m_toolVisible.hwnd)
+	{
+		MSG msg;
+		msg.pt = pt;
+		msg.message = WM_MOUSEMOVE;
+		m_pWndMonitor->RelayEvent(&msg);
+	}
+
+	return CallNextHookEx(m_hHookMouse, nCode, wParam, lParam);
+}
+
+void CXTPToolTipContextToolTip::HookMouseMove(BOOL bSetupHook)
+{
+	if (bSetupHook && m_hHookMouse == 0 && (m_pWndMonitor == NULL))
+	{
+		m_hHookMouse = SetWindowsHookEx(WH_MOUSE, MouseProc, 0, GetCurrentThreadId ());
+		m_pWndMonitor = this;
+	}
+	else if (!bSetupHook && m_hHookMouse && (m_pWndMonitor == this))
+	{
+		UnhookWindowsHookEx(m_hHookMouse);
+		m_hHookMouse = 0;
+		m_pWndMonitor = NULL;
+	}
+}
+
+void CXTPToolTipContextToolTip::EnsureVisible(CRect& rcToolTip)
+{
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+	int nGap = 4;
+
+	if (rcWork.right - nGap < rcToolTip.right)
+	{
+		rcToolTip.OffsetRect(- rcToolTip.right + rcWork.right - nGap, 0);
+	}
+
+	if (rcWork.left > rcToolTip.left)
+	{
+		rcToolTip.OffsetRect(rcWork.left - rcToolTip.left, 0);
+	}
+
+	if (rcWork.bottom - nGap < rcToolTip.bottom)
+	{
+		CPoint pt;
+		GetCursorPos(&pt);
+		rcToolTip.OffsetRect(0, pt.y - rcToolTip.bottom - 3);
+	}
+}
+
+int CXTPToolTipContextToolTip::GetCursorHeight() const
+{
+	HCURSOR hCursor = GetCursor();
+
+	ICONINFO iconInfo;
+	if (!GetIconInfo(hCursor, &iconInfo))
+		return 21;
+
+	BITMAP bm;
+	if (!GetObject(iconInfo.hbmMask, sizeof(BITMAP), &bm))
+		return 21;
+
+	WORD curBits[16 * 8];
+	memset(&curBits, -1, sizeof(curBits));
+
+	if (!GetBitmapBits(iconInfo.hbmMask, sizeof(curBits), curBits))
+		return 21;
+
+	int nBitSize = sizeof(WORD) * 8;
+	int nCount = MulDiv(bm.bmWidth, bm.bmHeight, nBitSize);
+	int nXor = 0;
+
+	if (!iconInfo.hbmColor)
+	{
+		nXor = nCount - 1;
+		nCount = nCount / 2;
+	}
+
+	if (nCount >= sizeof(curBits)/sizeof(WORD)) nCount = sizeof(curBits)/sizeof(WORD) - 1;
+	if (nXor >= sizeof(curBits)/sizeof(WORD)) nXor = 0;
+
+	int i = nCount - 1;
+
+	for (; i >= 0; i--)
+	{
+		if (curBits[i] != 0xFFFF || (nXor && (curBits[nXor--] != 0)))
+			break;
+	}
+
+	if (iconInfo.hbmColor) DeleteObject(iconInfo.hbmColor);
+	if (iconInfo.hbmMask) DeleteObject(iconInfo.hbmMask);
+
+	return MulDiv(i + 1, nBitSize, (int)bm.bmWidth) - (int)iconInfo.yHotspot;
+}
+
+
+void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
+{
+	if (!m_toolVisible.IsEqual(pVisibleTool))
+	{
+		CSize sz(0);
+
+		if (pVisibleTool)
+		{
+			sz = GetToolSize(pVisibleTool);
+			if (sz == CSize(0)) pVisibleTool = 0;
+		}
+
+		if (m_hWnd)
+		{
+			SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+		}
+
+		if (pVisibleTool)
+		{
+			CRect rcToolTip(0, 0, 0, 0);
+
+			if (!pVisibleTool->rectExclude.IsRectEmpty())
+			{
+				CWnd* pWnd = CWnd::FromHandle(pVisibleTool->hwnd);
+				//CRect rcExclude = pVisibleTool->rectExclude;
+				//rcToolTip = pVisibleTool->rect;
+				rcToolTip.SetRect(pVisibleTool->rect.left, pVisibleTool->rectExclude.bottom,
+					pVisibleTool->rect.left + sz.cx, pVisibleTool->rectExclude.bottom + sz.cy);
+
+				pWnd->ClientToScreen(rcToolTip);
+
+			}
+			else
+			{
+				CPoint pt;
+				GetCursorPos(&pt);
+				int nCursorHeight = GetCursorHeight();
+
+				rcToolTip.SetRect(pt.x, pt.y + nCursorHeight, pt.x + sz.cx, pt.y + nCursorHeight + sz.cy);
+
+				if (GetWindowLong(pVisibleTool->hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL)
+				{
+					rcToolTip.OffsetRect(-sz.cx, 0);
+				}
+			}
+
+
+			EnsureVisible(rcToolTip);
+
+			SetWindowPos(&CWnd::wndTop, rcToolTip.left, rcToolTip.top,
+				rcToolTip.Width(), rcToolTip.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+			Invalidate(FALSE);
+
+			HookMouseMove(TRUE);
+
+			m_toolDisabled.Reset();
+		}
+		else
+		{
+			HookMouseMove(FALSE);
+			m_toolDelay.Reset();
+		}
+
+		m_toolVisible.Assign(pVisibleTool);
+
+		m_dwLastTip = GetTickCount();
+
+		OnVisibleChanged(pVisibleTool != NULL);
+	}
+}
+
+void CXTPToolTipContextToolTip::RelayEvent(LPMSG lpMsg)
+{
+	if (!m_bActive)
+		return;
+
+	if (!((lpMsg->message >= WM_MOUSEFIRST && lpMsg->message <= WM_MOUSELAST) ||
+		(lpMsg->message >= WM_NCMOUSEMOVE && lpMsg->message <= WM_NCMBUTTONDBLCLK)))
+		return;
+
+	TOOLITEM* pVisibleTool = FindTool();
+
+	if (lpMsg->message == WM_LBUTTONDOWN)
+	{
+		if (pVisibleTool)
+		{
+			m_toolDisabled = *pVisibleTool;
+			pVisibleTool = 0;
+		}
+	}
+	if (pVisibleTool && (m_toolDisabled.IsEqual(pVisibleTool)))
+	{
+		pVisibleTool = 0;
+	}
+
+	if (m_nDelayTimer && !m_toolDelay.IsEqual(pVisibleTool))
+	{
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+
+	if (pVisibleTool)
+	{
+		if (!m_toolVisible.IsEqual(pVisibleTool))
+		{
+			if (GetTickCount() - m_dwLastTip < m_nDelayReshow)
+			{
+				SetVisibleTool(pVisibleTool);
+			}
+			else if (!m_toolDelay.IsEqual(pVisibleTool))
+			{
+				m_toolDelay = *pVisibleTool;
+				m_nDelayTimer = SetTimer(1, m_nDelayInitial, NULL);
+			}
+		}
+	}
+	else
+	{
+		SetVisibleTool(0);
+	}
+
+
+}
+
+void CXTPToolTipContextToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc)
+{
+	CString str = lpToolInfo->strCaption;
+
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	DWORD dwFlags = DT_NOPREFIX;
+	BOOL bLayoutRTL = lpToolInfo->hwnd && GetWindowLong(lpToolInfo->hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL;
+
+	if (bLayoutRTL)
+	{
+		dwFlags |= DT_RTLREADING | DT_RIGHT;
+	}
+
+	CRect rcTitle(rc.left + 2, rc.top + 2, rc.right - 2, rc.bottom);
+
+	BOOL bDrawImage = m_pIcon != NULL;
+	BOOL bDrawTitle = !m_strTitle.IsEmpty();
+	BOOL bDrawImageTop = TRUE;
+	CSize szImage(0, 0);
+
+	if (bDrawImage)
+	{
+		szImage = CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
+		bDrawImageTop = (szImage.cy <= 16);
+
+		if (bDrawImageTop)
+		{
+			CPoint ptIcon = bLayoutRTL ? CPoint(rc.right - szImage.cx, rc.top) : rc.TopLeft();
+			m_pIcon->Draw(pDC, ptIcon);
+
+			if (bLayoutRTL)
+			{
+				if (bDrawTitle) rcTitle.right -= szImage.cx + 1; else rc.right -= szImage.cx + 3;
+			}
+			else
+			{
+				if (bDrawTitle) rcTitle.left += szImage.cx + 1; else rc.left += szImage.cx + 3;
+			}
+		}
+	}
+
+	if (bDrawTitle)
+	{
+		CXTPFontDC fnt(pDC, &m_pContext->m_fntTitle);
+		pDC->DrawText(m_strTitle, rcTitle, dwFlags | DT_SINGLELINE);
+
+		rc.top += pDC->GetTextExtent(m_strTitle).cy;
+
+		if (bLayoutRTL)
+		{
+			rc.DeflateRect(15, 12, 10, 0);
+		}
+		else
+		{
+			rc.DeflateRect(10, 12, 15, 0);
+		}
+	}
+
+	if (bDrawImage && !bDrawImageTop)
+	{
+		CPoint ptIcon = bLayoutRTL ? CPoint(rc.right - szImage.cx, rc.top) : rc.TopLeft();
+		m_pIcon->Draw(pDC, ptIcon);
+		if (bLayoutRTL) rc.right -= szImage.cx + 5; else rc.left += szImage.cx + 5;
+	}
+
+	pDC->DrawText(str, rc, dwFlags | DT_WORDBREAK);
+}
+
+void CXTPToolTipContextToolTip::DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+{
+	pDC->FillSolidRect(rc, m_pContext->GetTipBkColor());
+
+	if (GetStyle() & XTP_TTS_OFFICEFRAME)
+		pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
+	else
+		pDC->Draw3dRect(rc, 0, 0);
+}
+
+void CXTPToolTipContextToolTip::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	CXTPClientRect rc(this);
+
+	DrawBackground(&dc, &m_toolVisible, rc);
+
+	COLORREF clrTextColor = m_pContext->GetTipTextColor();
+	dc.SetBkMode(TRANSPARENT);
+	dc.SetTextColor(clrTextColor);
+	CXTPFontDC font(&dc, &m_pContext->m_fnt);
+
+	DrawEntry(&dc, &m_toolVisible, rc);
+}
+
+BOOL CXTPToolTipContextToolTip::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnNcHitTest(CPoint /*point*/)
+{
+	return (LRESULT)HTTRANSPARENT;
+}
+
+int CXTPToolTipContextToolTip::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPToolTipContextToolTip::OnMouseMove(UINT /*nFlags*/, CPoint /*point*/)
+{
+	SetVisibleTool(NULL);
+}
+
+void CXTPToolTipContextToolTip::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == m_nDelayTimer)
+	{
+		if (!m_toolDelay.IsEmpty())
+		{
+			TOOLITEM* pVisibleTool = FindTool();
+
+			if (m_toolDelay.IsEqual(pVisibleTool))
+			{
+				SetVisibleTool(pVisibleTool);
+			}
+		}
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+
+	CWnd::OnTimer(nIDEvent);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CStandardToolTip
+
+class CXTPToolTipContext::CStandardToolTip : public CToolTipCtrl
+{
+	DECLARE_MESSAGE_MAP()
+	LRESULT OnWindowFromPoint(WPARAM, LPARAM);
+};
+
+typedef CXTPToolTipContext::CStandardToolTip CXTPToolTipContextStandardTip;
+
+BEGIN_MESSAGE_MAP(CXTPToolTipContextStandardTip, CToolTipCtrl)
+	ON_MESSAGE(TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+END_MESSAGE_MAP()
+
+LRESULT CXTPToolTipContext::CStandardToolTip::OnWindowFromPoint(WPARAM, LPARAM)
+{
+	HWND hWnd = (HWND)Default();
+
+
+	if ((hWnd != NULL) && (GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) && (::SendMessage(hWnd, XTP_TTM_WINDOWFROMPOINT, 0, 0) == 1))
+	{
+		return (LRESULT)::GetParent(hWnd);
+	}
+
+	return (LRESULT)hWnd;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CLunaToolTip
+
+class CXTPToolTipContext::CLunaToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CLunaToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+	void DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+	{
+		switch (XTPColorManager()->GetCurrentSystemTheme())
+		{
+			case xtpSystemThemeBlue:
+			case xtpSystemThemeRoyale:
+			case xtpSystemThemeAero:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(0, 0, 128), RGB(0, 0, 128));
+				break;
+			case xtpSystemThemeOlive:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(63, 93, 56), RGB(63, 93, 56));
+				break;
+			case xtpSystemThemeSilver:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(75, 75, 111), RGB(75, 75, 111));
+				break;
+			default:
+				XTPDrawHelpers()->GradientFill(pDC, rc, m_pContext->GetTipBkColor(), RGB(255, 255, 255), FALSE);
+				pDC->Draw3dRect(rc, 0, 0);
+		}
+	}
+};
+
+class CXTPToolTipContext::COffice2007ToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	COffice2007ToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+	void DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+	{
+		COLORREF clrLight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipDark"));
+		COLORREF clrBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+
+		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
+		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
+		if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
+
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CRichEditToolTip
+
+class CXTPToolTipContext::CRichEditToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CRichEditToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+protected:
+	virtual void DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc);
+	virtual CSize GetToolSize(TOOLITEM* lpToolInfo);
+
+protected:
+	CXTPRichRender m_render;
+};
+
+CSize CXTPToolTipContext::CRichEditToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	if (!m_render.GetTextService())
+		return CSize(0);
+
+	CString sText = GetToolText(lpToolInfo);
+	if (sText.IsEmpty())
+		return CSize(0);
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, &m_pContext->m_fnt);
+
+	CHARFORMATW cf;
+	ZeroMemory(&cf, sizeof(CHARFORMATW));
+
+	cf.cbSize = sizeof(CHARFORMATW);
+	cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_PROTECTED | CFM_STRIKEOUT | CFM_UNDERLINE;
+	cf.crTextColor = m_pContext->GetTipTextColor();
+
+	LOGFONT lf;
+	if (m_pContext->GetFont()->GetLogFont(&lf))
+	{
+		cf.yHeight = -MulDiv(lf.lfHeight, 1440, ::GetDeviceCaps(dc, LOGPIXELSY));
+		WCSNCPY_S(cf.szFaceName, XTP_CT2CW(lf.lfFaceName), LF_FACESIZE);
+		cf.dwMask |= CFM_FACE | CFM_SIZE;
+	}
+
+	m_render.SetText(NULL);
+	m_render.SetDefaultCharFormat(&cf);
+	m_render.SetText(sText);
+
+	CRect rcMargin = m_pContext->GetMargin();
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+
+	CSize size = m_render.GetTextExtent(&dc, GetMaxTipWidth() - szMargin.cx);
+
+	size += szMargin;
+
+	return size;
+}
+
+void CXTPToolTipContext::CRichEditToolTip::DrawEntry(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+{
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	m_render.DrawText(pDC, rc);
+}
+
+#ifndef _XTP_EXCLUDE_HTML
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CHTMLToolTip
+
+class CXTPToolTipContext::CHTMLToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CHTMLToolTip(CXTPToolTipContext* pContext);
+	~CHTMLToolTip();
+
+protected:
+	virtual void DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc);
+	virtual CSize GetToolSize(TOOLITEM* lpToolInfo);
+	virtual void OnVisibleChanged(BOOL bVisble);
+
+protected:
+	DECLARE_INTERFACE_MAP()
+
+BEGIN_INTERFACE_PART(OleClientSite, IOleClientSite)
+	STDMETHOD(SaveObject)( void) { return E_NOTIMPL;}
+	STDMETHOD (GetMoniker)(
+		/* [in] */ DWORD /*dwAssign*/,
+		/* [in] */ DWORD /*dwWhichMoniker*/,
+		/* [out] */ IMoniker ** /*ppmk*/) { return E_NOTIMPL;}
+	STDMETHOD(GetContainer)(
+		/* [out] */ IOleContainer ** /*ppContainer*/) { return E_NOTIMPL;}
+	STDMETHOD(ShowObject)( void) { return E_NOTIMPL;}
+	STDMETHOD(OnShowWindow)(
+		/* [in] */ BOOL /*fShow*/) { return E_NOTIMPL;}
+	STDMETHOD(RequestNewObjectLayout)( void) { return E_NOTIMPL;}
+END_INTERFACE_PART(OleClientSite)
+
+BEGIN_INTERFACE_PART(DocHostUIHandler, IDocHostUIHandler)
+	STDMETHOD(ShowContextMenu)(/* [in] */ DWORD dwID,
+		/* [in] */ POINT __RPC_FAR *ppt,
+		/* [in] */ IUnknown __RPC_FAR *pcmdtReserved,
+		/* [in] */ IDispatch __RPC_FAR *pdispReserved);
+	STDMETHOD(GetHostInfo)(
+		/* [out][in] */ DOCHOSTUIINFO __RPC_FAR *pInfo);
+	STDMETHOD(ShowUI)(
+		/* [in] */ DWORD dwID,
+		/* [in] */ IOleInPlaceActiveObject __RPC_FAR *pActiveObject,
+		/* [in] */ IOleCommandTarget __RPC_FAR *pCommandTarget,
+		/* [in] */ IOleInPlaceFrame __RPC_FAR *pFrame,
+		/* [in] */ IOleInPlaceUIWindow __RPC_FAR *pDoc);
+	STDMETHOD(HideUI)(void);
+	STDMETHOD(UpdateUI)(void);
+	STDMETHOD(EnableModeless)(/* [in] */ BOOL fEnable);
+	STDMETHOD(OnDocWindowActivate)(/* [in] */ BOOL fEnable);
+	STDMETHOD(OnFrameWindowActivate)(/* [in] */ BOOL fEnable);
+	STDMETHOD(ResizeBorder)(
+		/* [in] */ LPCRECT prcBorder,
+		/* [in] */ IOleInPlaceUIWindow __RPC_FAR *pUIWindow,
+		/* [in] */ BOOL fRameWindow);
+	STDMETHOD(TranslateAccelerator)(
+		/* [in] */ LPMSG lpMsg,
+		/* [in] */ const GUID __RPC_FAR *pguidCmdGroup,
+		/* [in] */ DWORD nCmdID);
+	STDMETHOD(GetOptionKeyPath)(
+		/* [out] */ LPOLESTR __RPC_FAR *pchKey,
+		/* [in] */ DWORD dw);
+	STDMETHOD(GetDropTarget)(
+		/* [in] */ IDropTarget __RPC_FAR *pDropTarget,
+		/* [out] */ IDropTarget __RPC_FAR *__RPC_FAR *ppDropTarget);
+	STDMETHOD(GetExternal)(
+		/* [out] */ IDispatch __RPC_FAR *__RPC_FAR *ppDispatch);
+	STDMETHOD(TranslateUrl)(
+		/* [in] */ DWORD dwTranslate,
+		/* [in] */ OLECHAR __RPC_FAR *pchURLIn,
+		/* [out] */ OLECHAR __RPC_FAR *__RPC_FAR *ppchURLOut);
+	STDMETHOD(FilterDataObject)(
+		/* [in] */ IDataObject __RPC_FAR *pDO,
+		/* [out] */ IDataObject __RPC_FAR *__RPC_FAR *ppDORet);
+END_INTERFACE_PART(DocHostUIHandler)
+
+
+protected:
+	CBitmap m_bmpScreen;
+	CWnd m_wndBrowser;
+	IWebBrowser2* m_pBrowserApp;
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+// CWebBrowserSite
+
+BEGIN_INTERFACE_MAP(CXTPToolTipContext::CHTMLToolTip, CWnd)
+	INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, IID_IOleClientSite, OleClientSite)
+	INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, IID_IDocHostUIHandler, DocHostUIHandler)
+END_INTERFACE_MAP()
+
+#define IMPLEMENT_INTERFACE_PART(theClass, localClass)\
+STDMETHODIMP_(ULONG) theClass::X##localClass::AddRef()\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	return pThis->ExternalAddRef();\
+}\
+STDMETHODIMP_(ULONG) theClass::X##localClass::Release()\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	return pThis->ExternalRelease();\
+}\
+STDMETHODIMP theClass::X##localClass::QueryInterface(REFIID riid, void **ppvObj)\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	HRESULT hr = (HRESULT)pThis->ExternalQueryInterface(&riid, ppvObj);\
+	return hr;\
+}
+
+IMPLEMENT_INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, OleClientSite)
+
+IMPLEMENT_INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, DocHostUIHandler)
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetHostInfo( DOCHOSTUIINFO* pInfo )
+{
+	pInfo->dwFlags = 0x40000 | DOCHOSTUIFLAG_NO3DBORDER;
+	pInfo->dwFlags |= DOCHOSTUIFLAG_DIALOG;
+	pInfo->dwFlags |= DOCHOSTUIFLAG_SCROLL_NO;
+	pInfo->dwDoubleClick = DOCHOSTUIDBLCLK_DEFAULT;
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ShowUI(
+				DWORD /*dwID*/,
+				IOleInPlaceActiveObject * /*pActiveObject*/,
+				IOleCommandTarget * /*pCommandTarget*/,
+				IOleInPlaceFrame * /*pFrame*/,
+				IOleInPlaceUIWindow * /*pDoc*/)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::HideUI(void)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::UpdateUI(void)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::EnableModeless(BOOL /*fEnable*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::OnDocWindowActivate(BOOL /*fActivate*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::OnFrameWindowActivate(BOOL /*fActivate*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ResizeBorder(
+				LPCRECT /*prcBorder*/,
+				IOleInPlaceUIWindow* /*pUIWindow*/,
+				BOOL /*fRameWindow*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ShowContextMenu(
+				DWORD /*dwID*/,
+				POINT* /*pptPosition*/,
+				IUnknown* /*pCommandTarget*/,
+				IDispatch* /*pDispatchObjectHit*/)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::TranslateAccelerator(LPMSG /*lpMsg*/,
+			/* [in] */ const GUID __RPC_FAR* /*pguidCmdGroup*/,
+			/* [in] */ DWORD /*nCmdID*/)
+{
+	return S_FALSE;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetOptionKeyPath(BSTR* /*pbstrKey*/, DWORD)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetDropTarget(
+			/* [in] */ IDropTarget __RPC_FAR* /*pDropTarget*/,
+			/* [out] */ IDropTarget __RPC_FAR *__RPC_FAR* /*ppDropTarget*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetExternal(
+			/* [out] */ IDispatch __RPC_FAR *__RPC_FAR* /*ppDispatch*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::TranslateUrl(
+			/* [in] */ DWORD /*dwTranslate*/,
+			/* [in] */ OLECHAR __RPC_FAR* /*pchURLIn*/,
+			/* [out] */ OLECHAR __RPC_FAR *__RPC_FAR* /*ppchURLOut*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::FilterDataObject(
+			/* [in] */ IDataObject __RPC_FAR* /*pDO*/,
+			/* [out] */ IDataObject __RPC_FAR *__RPC_FAR* /*ppDORet*/)
+{
+	return E_NOTIMPL;
+}
+
+CXTPToolTipContext::CHTMLToolTip::CHTMLToolTip(CXTPToolTipContext* pContext)
+	: CXTPToolTipContextToolTip(pContext)
+{
+	AfxEnableControlContainer();
+	m_pBrowserApp = 0;
+}
+
+CXTPToolTipContext::CHTMLToolTip::~CHTMLToolTip()
+{
+	SAFE_RELEASE(m_pBrowserApp);
+}
+
+CSize CXTPToolTipContext::CHTMLToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	m_bmpScreen.DeleteObject();
+
+	if (m_wndBrowser.GetSafeHwnd() == 0)
+	{
+		// create the control window
+		// AFX_IDW_PANE_FIRST is a safe but arbitrary ID
+		if (!m_wndBrowser.CreateControl(CLSID_WebBrowser, 0,
+			WS_VISIBLE | WS_CHILD, CRect(0, 0, 200, 200), this, AFX_IDW_PANE_FIRST))
+		{
+			return 0;
+		}
+
+		LPUNKNOWN lpUnk = m_wndBrowser.GetControlUnknown();
+		HRESULT hr = lpUnk->QueryInterface(IID_IWebBrowser2, (void**) &m_pBrowserApp);
+		if (!SUCCEEDED(hr) || !m_pBrowserApp)
+		{
+			m_pBrowserApp = NULL;
+			m_wndBrowser.DestroyWindow();
+			return 0;
+		}
+
+		IOleObject* spOleObj = NULL;
+
+		m_pBrowserApp->QueryInterface(IID_IOleObject, (void**)&spOleObj);
+		if (spOleObj)
+		{
+			spOleObj->SetClientSite((IOleClientSite*)GetInterface(&IID_IOleClientSite));
+			spOleObj->Release();
+		}
+
+		CString strFaceName = _T("Arial");
+		int nFontSize = 11;
+
+		LOGFONT lf;
+		if (m_pContext->GetFont()->GetLogFont(&lf))
+		{
+			strFaceName = lf.lfFaceName;
+			nFontSize = lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight;
+		}
+
+		CString strBackColor; COLORREF clrBack = m_pContext->GetTipBkColor();
+		strBackColor.Format(_T("#%0.2x%0.2x%0.2x"), GetRValue(clrBack), GetGValue(clrBack), GetBValue(clrBack));
+
+		CString strBody;
+		strBody.Format(
+			_T("about:<head><style> body {font-family:%s; font-size:%i;}")
+			_T("table {font-family:%s; font-size:%i;}</style></head>")
+			_T("<body topmargin=0 leftmargin=0 bottommargin=0 rightmargin=0 bgColor=%s></body>"),
+			(LPCTSTR)strFaceName, nFontSize, (LPCTSTR)strFaceName, nFontSize, (LPCTSTR)strBackColor);
+
+		COleVariant varEmpty;
+		BSTR bstrBody = strBody.AllocSysString();
+		m_pBrowserApp->Navigate(bstrBody,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty);
+		SysFreeString(bstrBody);
+
+		READYSTATE rs;
+		do
+		{
+			AfxGetApp()->PumpMessage();
+			m_pBrowserApp->get_ReadyState (&rs);
+		}
+		while (rs != READYSTATE_COMPLETE);
+	}
+
+	CString strText = GetToolText(lpToolInfo);
+
+	if (strText.IsEmpty())
+		return CSize(0);
+
+	IDispatch* lpDocument = NULL;
+	m_pBrowserApp->get_Document(&lpDocument);
+
+	if (lpDocument == 0)
+		return 0;
+
+	// Verify that what we get is a pointer to a IHTMLDocument2
+	// interface. To be sure, let's query for
+	// the IHTMLDocument2 interface (through smart pointers)
+	IHTMLDocument2* lpHTML = NULL;
+	lpDocument->QueryInterface(IID_IHTMLDocument2, (void**)&lpHTML);
+	if (lpHTML == 0)
+	{
+		lpDocument->Release();
+		return 0;
+	}
+
+	// The previous step is sufficient to keep Explorer aside
+	// without an explicit check against the loader module
+
+	// Extract the source code of the document
+	IHTMLElement* lpBody = NULL;
+
+		// Get the BODY object
+	HRESULT hr = lpHTML->get_body(&lpBody);
+	if (FAILED(hr) || (lpBody == 0))
+	{
+		lpHTML->Release();
+		lpDocument->Release();
+		return 0;
+	}
+
+	BSTR bstrText = strText.AllocSysString();
+	lpBody->put_innerHTML(bstrText);
+	SysFreeString(bstrText);
+
+	m_wndBrowser.MoveWindow(0, 0, 650, 200);
+
+
+	IHTMLTextContainer* lpHTMLContainer = NULL;
+	lpBody->QueryInterface(IID_IHTMLTextContainer, (void**)&lpHTMLContainer);
+
+	if (lpHTMLContainer == 0)
+	{
+		lpBody->Release();
+		lpHTML->Release();
+		lpDocument->Release();
+		return 0;
+	}
+
+	long nScrollHeight, nScrollWidth;
+	lpHTMLContainer->get_scrollHeight(&nScrollHeight);
+
+	int nBestWidth = m_pContext->GetMaxTipWidth();
+	int nBestHeight = nScrollHeight;
+
+	int cxFirst = 0;
+	int cxLast = nBestWidth * 2;
+
+	do
+	{
+		// Taking a guess
+		int cx = (cxFirst + cxLast) / 2;
+
+		m_wndBrowser.MoveWindow(0, 0, cx, nScrollHeight);
+
+		lpHTMLContainer->get_scrollHeight(&nScrollHeight);
+		lpHTMLContainer->get_scrollWidth(&nScrollWidth);
+
+		if (nScrollWidth > cx && nScrollHeight <= nBestHeight)
+		{
+			nBestWidth = nScrollWidth;
+			break;
+		}
+
+		if (nScrollHeight > nBestHeight)
+		{
+			// If the control required a larger height, then
+			// it's too narrow.
+			cxFirst = cx + 1;
+		}
+		else
+		{
+			// If the control didn't required a larger height,
+			// then it's too wide.
+			cxLast = cx - 1;
+			nBestWidth = cx;
+		}
+	}
+	while (cxFirst <= cxLast);
+
+	m_wndBrowser.MoveWindow(0, 0, nBestWidth, nBestHeight);
+
+	CSize sz(nBestWidth, nBestHeight);
+	CRect rcMargin = m_pContext->GetMargin();
+
+#if 0
+	if (sz.cx > 0 && sz.cy > 0)
+	{
+		CWindowDC dcPaint(this);
+
+		CDC dc;
+		dc.CreateCompatibleDC(&dcPaint);
+		m_bmpScreen.CreateCompatibleBitmap(&dcPaint, sz.cx, sz.cy);
+
+		CBitmap* pOldBitmap = dc.SelectObject(&m_bmpScreen);
+
+		dc.FillSolidRect(0, 0, sz.cx, sz.cy, m_pContext->GetTipBkColor());
+		m_wndBrowser.SendMessage(WM_PRINT, (WPARAM)dc.GetSafeHdc(), PRF_CLIENT | PRF_CHILDREN);
+
+		dc.SelectObject(pOldBitmap);
+	}
+	m_wndBrowser.MoveWindow(0, 0, 0, 0);
+#else
+	m_wndBrowser.MoveWindow(3 + rcMargin.left, 3 + rcMargin.top, nBestWidth, nBestHeight);
+#endif
+
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+	sz += szMargin;
+
+
+	lpHTMLContainer->Release();
+	lpBody->Release();
+	lpHTML->Release();
+	lpDocument->Release();
+
+	return sz;
+}
+
+void CXTPToolTipContext::CHTMLToolTip::DrawEntry(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+{
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	if (m_bmpScreen.GetSafeHandle())
+	{
+		pDC->DrawState(rc.TopLeft(), CSize(0, 0), &m_bmpScreen, DSS_NORMAL, 0);
+	}
+}
+
+void CXTPToolTipContext::CHTMLToolTip::OnVisibleChanged(BOOL bVisble)
+{
+	if (!bVisble)
+	{
+		m_bmpScreen.DeleteObject();
+	}
+}
+
+#endif // _XTP_EXCLUDE_HTML
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPToolTipContext::CXTPToolTipContext()
+{
+	m_pToolTip = 0;
+	m_bShowTitleAndDescription = FALSE;
+	m_bShowImage = FALSE;
+	m_nImageSize = ICON_BIG;
+	m_nImageBase = 0;
+	m_toolStyle = xtpToolTipStandard;
+	m_nMaxTipWidth = ::GetSystemMetrics(SM_CXSCREEN) / 2;
+	ZeroMemory(&m_lastInfo, sizeof(m_lastInfo));
+
+	m_dwComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
+
+	m_clrTipTextColor = m_clrTipBkColor = COLORREF_NULL;
+	m_nIconTitle = TTI_INFO;
+	m_dwStyle = TTS_NOPREFIX;
+	m_rcMargin.SetRect(0, 0, 0, 0);
+
+	m_nDelayAutoPop = m_nDelayInitial = m_nDelayReshow = -1;
+
+
+	NONCLIENTMETRICS ncm;
+	::ZeroMemory(&ncm, sizeof(NONCLIENTMETRICS));
+
+	ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
+		sizeof(NONCLIENTMETRICS), &ncm, 0));
+
+	ncm.lfStatusFont.lfWeight = FW_NORMAL;
+	m_fnt.CreateFontIndirect(&ncm.lfStatusFont);
+
+	ncm.lfStatusFont.lfWeight = FW_BOLD;
+	m_fntTitle.CreateFontIndirect(&ncm.lfStatusFont);
+
+
+}
+
+CXTPToolTipContext::~CXTPToolTipContext()
+{
+	SAFE_DELETEWINDOW(m_pToolTip);
+
+	if (m_pModuleContext == this)
+	{
+		m_pModuleContext = 0;
+	}
+
+}
+
+BOOL CXTPToolTipContext::IsBalloonStyleSupported() const
+{
+	return m_dwComCtlVersion >= VERSION_IE5;
+}
+
+void CXTPToolTipContext::ShowTitleAndDescription(BOOL bShowTitleAndDescription, int nIconTitle)
+{
+	m_bShowTitleAndDescription = bShowTitleAndDescription;
+	m_nIconTitle = nIconTitle;
+}
+
+void CXTPToolTipContext::ShowImage(BOOL bShowImage, int nImageBase, int nImageSize)
+{
+	m_bShowImage = bShowImage;
+	m_nImageBase = nImageBase;
+	m_nImageSize = nImageSize;
+
+	SAFE_DELETEWINDOW(m_pToolTip);
+}
+
+void CXTPToolTipContext::FillInToolInfo(TOOLINFO* pTI, HWND hWnd, CRect rect, INT_PTR nHit, const CString& strToolTip)
+{
+#if _MSC_VER < 1200 // MFC 5.0
+	if (pTI != NULL && pTI->cbSize >= sizeof(TOOLINFO))
+#else
+	if (pTI != NULL && pTI->cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO))
+#endif
+	{
+		pTI->hwnd = hWnd;
+		pTI->rect = rect;
+		pTI->uId = nHit;
+		pTI->lpszText = (LPTSTR) ::calloc(strToolTip.GetLength() + 1, sizeof(TCHAR));
+		if (pTI->lpszText != NULL) STRCPY_S(pTI->lpszText, strToolTip.GetLength() + 1, (LPCTSTR)strToolTip);
+	}
+}
+
+void CXTPToolTipContext::FillInToolInfo(TOOLINFO* pTI, HWND hWnd, CRect rect, INT_PTR nHit,
+	const CString& strToolTip, const CString& strTitle, const CString& strDescription, CXTPImageManager* pImageManager)
+{
+	FillInToolInfo(pTI, hWnd, rect, nHit, strToolTip);
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		XTP_TOOLTIP_CONTEXT* ptc = ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo;
+		if (!ptc)
+			return;
+
+		if (!strDescription.IsEmpty() && !strTitle.IsEmpty())
+		{
+			ptc->lpszDescription = (LPTSTR)::calloc(strDescription.GetLength() + 1, sizeof(TCHAR));
+			if (ptc->lpszDescription != NULL) STRCPY_S(ptc->lpszDescription, strDescription.GetLength() + 1, (LPCTSTR)strDescription);
+
+			ptc->lpszTitle = (LPTSTR)::calloc(strTitle.GetLength() + 1, sizeof(TCHAR));
+			if (ptc->lpszTitle != NULL) STRCPY_S(ptc->lpszTitle, strTitle.GetLength() + 1, (LPCTSTR)strTitle);
+		}
+
+		ptc->pImageManager = pImageManager;
+	}
+}
+
+
+void CXTPToolTipContext::SetMargin(LPCRECT lprc)
+{
+	if (lprc)
+	{
+		m_rcMargin = *lprc;
+		if (m_pToolTip) m_pToolTip->DestroyWindow();
+	}
+}
+
+void CXTPToolTipContext::SetStyle(XTPToolTipStyle toolStyle)
+{
+	if (m_toolStyle != toolStyle && (toolStyle != xtpToolTipBalloon || IsBalloonStyleSupported()))
+	{
+		m_toolStyle = toolStyle;
+		SAFE_DELETEWINDOW(m_pToolTip);
+
+		ModifyToolTipStyle(m_toolStyle == xtpToolTipOffice ? 0: XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW, m_toolStyle == xtpToolTipOffice ? XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW : 0);
+	}
+}
+
+XTPToolTipStyle CXTPToolTipContext::GetStyle() const
+{
+	return m_toolStyle;
+}
+
+
+void CXTPToolTipContext::SetMaxTipWidth(int iWidth)
+{
+	m_nMaxTipWidth = iWidth;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+int CXTPToolTipContext::GetMaxTipWidth() const
+{
+	return m_nMaxTipWidth;
+}
+
+COLORREF CXTPToolTipContext::GetTipBkColor() const
+{
+	return m_clrTipBkColor != COLORREF_NULL ? m_clrTipBkColor :GetXtremeColor(COLOR_INFOBK);
+}
+
+void CXTPToolTipContext::SetTipBkColor(COLORREF clr)
+{
+	m_clrTipBkColor = clr;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+
+void CXTPToolTipContext::ModifyToolTipStyle(DWORD dwRemove, DWORD dwAdd)
+{
+	DWORD dwStyle = (m_dwStyle | dwAdd) & ~dwRemove;
+
+	if (m_dwStyle != dwStyle)
+	{
+		m_dwStyle = dwStyle;
+		SAFE_DELETEWINDOW(m_pToolTip);
+	}
+}
+
+COLORREF CXTPToolTipContext::GetTipTextColor() const
+{
+	return m_clrTipTextColor != COLORREF_NULL ? m_clrTipTextColor :
+		m_toolStyle == xtpToolTipOffice2007 ?  RGB(76, 76, 76) : GetXtremeColor(COLOR_INFOTEXT);
+}
+
+void CXTPToolTipContext::SetTipTextColor(COLORREF clr)
+{
+	m_clrTipTextColor = clr;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+void CXTPToolTipContext::SetDelayTime(DWORD dwDuration, int iTime)
+{
+	switch (dwDuration)
+	{
+	case TTDT_RESHOW:
+		m_nDelayReshow = iTime;
+		break;
+
+	case TTDT_INITIAL:
+		m_nDelayInitial = iTime;
+		break;
+
+	case TTDT_AUTOPOP:
+		m_nDelayAutoPop = iTime;
+		break;
+
+	default:
+		ASSERT(FALSE);
+
+	}
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+
+void CXTPToolTipContext::RelayToolTipMessage(CWnd* pToolTip, MSG* pMsg)
+{
+	// transate the message based on TTM_WINDOWFROMPOINT
+	MSG msg = *pMsg;
+	msg.hwnd = (HWND)pToolTip->SendMessage(TTM_WINDOWFROMPOINT, 0, (LPARAM)&msg.pt);
+	CPoint pt = pMsg->pt;
+	if (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST)
+		::ScreenToClient(msg.hwnd, &pt);
+	msg.lParam = MAKELONG(pt.x, pt.y);
+
+	// relay mouse event before deleting old tool
+	pToolTip->SendMessage(TTM_RELAYEVENT, 0, (LPARAM)&msg);
+}
+
+
+void CXTPToolTipContext::FilterToolTipMessage(CWnd* pWndHost, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	MSG msg;
+	msg.wParam = wParam;
+	msg.lParam = lParam;
+	msg.message = message;
+	msg.hwnd = pWndHost->m_hWnd;
+	GetCursorPos(&msg.pt);
+
+	FilterToolTipMessage(pWndHost, &msg);
+}
+
+void CXTPToolTipContext::FilterToolTipMessage(CWnd* pWndHost, MSG* pMsg)
+{
+	FilterToolTipMessageHelper(pWndHost, pMsg, TRUE);
+}
+
+
+void PASCAL CXTPToolTipContext::FilterToolTipMessageStatic(MSG* pMsg, CWnd* pWnd)
+{
+	if (m_pModuleContext)
+	{
+		m_pModuleContext->FilterToolTipMessageHelper(pWnd, pMsg, FALSE);
+	}
+	else
+	{
+		pWnd->FilterToolTipMessage(pMsg);
+	}
+}
+
+void CXTPToolTipContext::SetModuleToolTipContext()
+{
+	AFX_MODULE_STATE* pModuleState = _AFX_CMDTARGET_GETSTATE();
+	pModuleState->m_pfnFilterToolTipMessage = &CXTPToolTipContext::FilterToolTipMessageStatic;
+	m_pModuleContext = this;
+}
+
+CWnd* CXTPToolTipContext::CreateToolTip(CWnd* /*pOwner*/)
+{
+	switch (m_toolStyle)
+	{
+	case xtpToolTipOffice:
+		return new CXTPToolTipContextToolTip(this);
+
+	case xtpToolTipRTF:
+		return new CRichEditToolTip(this);
+
+	case xtpToolTipLuna:
+		return new CLunaToolTip(this);
+
+	case xtpToolTipOffice2007:
+		return new COffice2007ToolTip(this);
+
+#ifndef _XTP_EXCLUDE_HTML
+	case xtpToolTipHTML:
+		return new CHTMLToolTip(this);
+#endif
+	}
+
+	return new CStandardToolTip();
+}
+
+void CXTPToolTipContext::SetToolTipCtrl(CXTPToolTipContextToolTip* pToolTipCtrl)
+{
+	SAFE_DELETEWINDOW(m_pToolTip);
+	m_pToolTip = pToolTipCtrl;
+}
+
+void CXTPToolTipContext::CancelToolTips()
+{
+	if (m_pToolTip->GetSafeHwnd() != NULL)
+		m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+}
+
+void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, BOOL bIgnoreFlags)
+{
+	// this CWnd has tooltips enabled
+	UINT message = pMsg->message;
+	if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE ||
+		message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
+		message == WM_MBUTTONUP) &&
+		(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
+		GetKeyState(VK_MBUTTON) >= 0))
+	{
+		if (!bIgnoreFlags)
+		{
+			// make sure that tooltips are not already being handled
+			CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+			while (pWnd != NULL && !(pWnd->m_nFlags & (WF_TOOLTIPS | WF_TRACKINGTOOLTIPS)))
+			{
+				pWnd = pWnd->GetParent();
+			}
+			if (pWnd != pWndHost)
+			{
+				return;
+			}
+		}
+
+		BOOL bTopParentActive = CXTPDrawHelpers::IsTopParentActive(pWndHost->GetSafeHwnd());
+
+		if (m_pToolTip->GetSafeHwnd() && m_pToolTip->IsWindowVisible() && !bTopParentActive)
+		{
+			m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+			return;
+		}
+
+
+		CWnd* pOwner = pWndHost->GetParentOwner();
+
+		if (m_pToolTip != NULL && m_pToolTip->GetOwner() != pOwner)
+		{
+			m_pToolTip->DestroyWindow();
+		}
+
+		if (m_pToolTip == NULL || m_pToolTip->GetSafeHwnd() == NULL)
+		{
+			if (m_pToolTip == NULL)
+			{
+				m_pToolTip = CreateToolTip(pOwner);
+			}
+
+			if (!m_pToolTip)
+				return;
+
+			if (!m_pToolTip->GetSafeHwnd())
+			{
+				if (DYNAMIC_DOWNCAST(CXTPToolTipContextToolTip, m_pToolTip))
+				{
+					((CXTPToolTipContextToolTip*)m_pToolTip)->Create(pOwner, m_dwStyle | TTS_ALWAYSTIP | TTS_NOPREFIX);
+				}
+				else if (DYNAMIC_DOWNCAST(CToolTipCtrl, m_pToolTip))
+				{
+					((CToolTipCtrl*)m_pToolTip)->Create(pOwner, m_dwStyle | TTS_ALWAYSTIP | TTS_NOPREFIX | (m_toolStyle == xtpToolTipBalloon ? TTS_BALLOON : 0));
+				}
+				else
+				{
+					ASSERT(FALSE);
+					return;
+				}
+			}
+
+			if (!m_pToolTip->GetSafeHwnd())
+				return;
+
+			m_pToolTip->SetFont(&m_fnt);
+
+			m_pToolTip->SendMessage(TTM_SETMAXTIPWIDTH, 0, m_nMaxTipWidth);
+			m_pToolTip->SendMessage(TTM_SETMARGIN, 0, (LPARAM)(LPRECT)&m_rcMargin);
+
+			if (m_clrTipBkColor != COLORREF_NULL)
+				m_pToolTip->SendMessage(TTM_SETTIPBKCOLOR, m_clrTipBkColor);
+
+			if (m_clrTipTextColor != COLORREF_NULL)
+				m_pToolTip->SendMessage(TTM_SETTIPTEXTCOLOR, m_clrTipTextColor);
+
+			if (m_nDelayReshow != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_RESHOW, MAKELPARAM(m_nDelayReshow, 0));
+
+			if (m_nDelayInitial != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_INITIAL, MAKELPARAM(m_nDelayInitial, 0));
+
+			if (m_nDelayAutoPop != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_AUTOPOP, MAKELPARAM(m_nDelayAutoPop, 0));
+
+			m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+		}
+
+		CWnd* pToolTip = m_pToolTip;
+
+		ASSERT_VALID(pToolTip);
+		ASSERT(::IsWindow(pToolTip->m_hWnd));
+
+		XTP_TOOLTIP_CONTEXT tc;
+		ZeroMemory(&tc, sizeof(tc));
+
+		// determine which tool was hit
+		CPoint point = pMsg->pt;
+		::ScreenToClient(pWndHost->m_hWnd, &point);
+
+		XTP_TOOLTIP_TOOLINFO_EX tiHit;
+		memset(&tiHit, 0, sizeof(XTP_TOOLTIP_TOOLINFO_EX));
+
+		tiHit.cbSize = m_bShowTitleAndDescription || m_bShowImage ? sizeof(XTP_TOOLTIP_TOOLINFO_EX) : sizeof(XTP_TOOLTIP_TOOLINFO);
+		tiHit.pToolInfo = &tc;
+		INT_PTR nHit = pWndHost->OnToolHitTest(point, (TOOLINFO*)&tiHit);
+
+		if (m_bShowTitleAndDescription && tc.lpszDescription &&
+			tc.lpszTitle && (_tcscmp(tc.lpszDescription, tc.lpszTitle) == 0))
+		{
+			free(tc.lpszDescription);
+			tc.lpszDescription = 0;
+		}
+
+		if ((m_dwStyle & TTS_NOPREFIX) == 0)
+		{
+			CXTPDrawHelpers::StripMnemonics(tiHit.lpszText);
+			CXTPDrawHelpers::StripMnemonics(tiHit.pToolInfo->lpszTitle);
+		}
+
+
+		// build new toolinfo and if different than current, register it
+		BOOL bTipInfoChanged = m_lastInfo.uId != tiHit.uId || m_lastInfo.hwnd != tiHit.hwnd;
+
+		if (bTipInfoChanged || CRect(m_lastInfo.rect) != CRect(tiHit.rect))
+		{
+			if (m_lastInfo.cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO) && !bTipInfoChanged)
+				pToolTip->SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_lastInfo);
+
+			if (nHit != -1)
+			{
+				// add new tool and activate the tip
+				XTP_TOOLTIP_TOOLINFO_EX ti = tiHit;
+				ti.uFlags &= ~(TTF_NOTBUTTON | TTF_ALWAYSTIP);
+
+				VERIFY(pToolTip->SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti));
+
+				if ((m_toolStyle != xtpToolTipRTF && m_toolStyle != xtpToolTipHTML) && ((m_dwComCtlVersion >= VERSION_IE5) || (m_toolStyle != xtpToolTipStandard)))
+				{
+					if (m_bShowTitleAndDescription && tc.lpszDescription && tc.lpszTitle)
+					{
+						pToolTip->SendMessage(TTM_SETTITLE, m_nIconTitle, (LPARAM)(LPCTSTR)tc.lpszTitle);
+
+						ti.lpszText = tc.lpszDescription;
+						pToolTip->SendMessage(TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+					}
+					else
+					{
+						pToolTip->SendMessage(TTM_SETTITLE, 0, 0);
+					}
+				}
+
+				if (m_bShowImage)
+				{
+					CXTPImageManagerIcon* pIcon = NULL;
+					pIcon =  tc.pImageManager ? tc.pImageManager->GetImage(UINT(m_nImageBase + nHit), m_nImageSize) : 0;
+					if (pIcon)
+					{
+						pToolTip->SendMessage(XTP_TTM_SETIMAGE, 0, (LPARAM)pIcon);
+					}
+					else
+					{
+						pToolTip->SendMessage(XTP_TTM_SETIMAGE, 0, NULL);
+					}
+				}
+
+				if ((tiHit.uFlags & TTF_ALWAYSTIP) || bTopParentActive)
+				{
+					// allow the tooltip to popup when it should
+					pToolTip->SendMessage(TTM_ACTIVATE, TRUE);
+
+					// bring the tooltip window above other popup windows
+					::SetWindowPos(pToolTip->m_hWnd, HWND_TOP, 0, 0, 0, 0,
+						SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+				}
+			}
+			else
+			{
+				pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+			}
+
+			// relay mouse event before deleting old tool
+			RelayToolTipMessage(pToolTip, pMsg);
+
+			//// now safe to delete the old tool
+			if (m_lastInfo.cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO) && bTipInfoChanged)
+				pToolTip->SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_lastInfo);
+
+			m_lastInfo = tiHit;
+		}
+		else
+		{
+			// relay mouse events through the tooltip
+			if (nHit != -1)
+				RelayToolTipMessage(pToolTip, pMsg);
+		}
+
+		if ((tiHit.lpszText != LPSTR_TEXTCALLBACK) && (tiHit.hinst == 0))
+			free(tiHit.lpszText);
+
+		if (tc.lpszDescription  != 0)
+			free(tc.lpszDescription);
+
+		if (tc.lpszTitle != 0)
+			free(tc.lpszTitle);
+	}
+	else
+	{
+		if (!bIgnoreFlags)
+		{
+			// make sure that tooltips are not already being handled
+			CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+			while (pWnd != NULL && pWnd != pWndHost && !(pWnd->m_nFlags & (WF_TOOLTIPS | WF_TRACKINGTOOLTIPS)))
+			{
+				pWnd = pWnd->GetParent();
+			}
+			if (pWnd != pWndHost)
+				return;
+		}
+
+		BOOL bKeys = (message >= WM_KEYFIRST && message <= WM_KEYLAST) ||
+			(message >= WM_SYSKEYFIRST && message <= WM_SYSKEYLAST);
+		if ((bKeys ||
+			(message == WM_LBUTTONDOWN || message == WM_LBUTTONDBLCLK) ||
+			(message == WM_RBUTTONDOWN || message == WM_RBUTTONDBLCLK) ||
+			(message == WM_MBUTTONDOWN || message == WM_MBUTTONDBLCLK) ||
+			(message == WM_NCLBUTTONDOWN || message == WM_NCLBUTTONDBLCLK) ||
+			(message == WM_NCRBUTTONDOWN || message == WM_NCRBUTTONDBLCLK) ||
+			(message == WM_NCMBUTTONDOWN || message == WM_NCMBUTTONDBLCLK)))
+		{
+			CancelToolTips();
+		}
+	}
+}
+

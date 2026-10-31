@@ -1,5 +1,5 @@
-// from server: 98% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPMenuBar.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_17eac8360258c7e8.cpp

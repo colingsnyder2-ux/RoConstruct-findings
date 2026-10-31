@@ -1,34 +1,5 @@
-// from server: 74% by colin
-// roc 2007-08 00643980  unit: CXTPCommandBar  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00643980
-//
-// 00643980  83b90001000000       cmp dword ptr [ecx + 0x100], 0
-// 00643987  7511                 jne 0x64399a
-// 00643989  8b01                 mov eax, dword ptr [ecx]
-// 0064398b  8b9084010000         mov edx, dword ptr [eax + 0x184]
-// 00643991  ffd2                 call edx
-// 00643993  8bc8                 mov ecx, eax
-// 00643995  85c9                 test ecx, ecx
-// 00643997  75e7                 jne 0x643980
-// 00643999  c3                   ret 
-// 0064399a  8b8100010000         mov eax, dword ptr [ecx + 0x100]
-// 006439a0  c3                   ret 
-
-struct CXTPCommandBar
-{
-    char pad[0x100];
-    int field_0x100;
-    int GetSomething();
-};
-
-int CXTPCommandBar::GetSomething()
-{
-    CXTPCommandBar* p = this;
-    while (p->field_0x100 == 0)
-    {
-        p = (CXTPCommandBar*)(*(int (__thiscall**)(CXTPCommandBar*))(*(int*)p + 0x184))(p);
-        if (p == 0)
-            break;
-    }
-    return p->field_0x100;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_2f00fc77ed03e102.cpp

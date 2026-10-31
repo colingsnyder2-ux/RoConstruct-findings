@@ -1,26 +1,45 @@
-// roc 2007-03 00431720  unit: seg_00430000  size: 42 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00431720
-//
-// 00431720  56                   push esi
-// 00431721  8bf1                 mov esi, ecx
-// 00431723  8b8ed8000000         mov ecx, dword ptr [esi + 0xd8]
-// 00431729  85c9                 test ecx, ecx
-// 0043172b  57                   push edi
-// 0043172c  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 00431730  7406                 je 0x431738
-// 00431732  57                   push edi
-// 00431733  e8e8ab1f00           call 0x62c320
-// 00431738  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0043173c  50                   push eax
-// 0043173d  57                   push edi
-// 0043173e  8bce                 mov ecx, esi
-// 00431740  e8b9d01e00           call 0x61e7fe
-// 00431745  5f                   pop edi
-// 00431746  5e                   pop esi
-// 00431747  c20800               ret 8
-// library xtp-11.2.2-vc8/Source\CommandBars\XTPFrameWnd.cpp (function ?OnSetPreviewMode@?$CXTPFrameWndBase@VCMDIFrameWnd@@@@UAEXHPAUCPrintPreviewState@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPFrameWnd.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPFrameWnd.cpp : implementation for the CXTPFrameWnd and CXTPMDIFrameWnd classes.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPFrameWnd.h"
+
+
+IMPLEMENT_DYNAMIC(CXTPFrameWnd, CFrameWnd)
+
+CXTPFrameWnd::CXTPFrameWnd()
+{
+
+}
+
+
+IMPLEMENT_DYNAMIC(CXTPMDIFrameWnd, CMDIFrameWnd)
+
+CXTPMDIFrameWnd::CXTPMDIFrameWnd()
+{
+
+}

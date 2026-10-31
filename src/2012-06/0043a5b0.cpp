@@ -1,10 +1,10 @@
-// from server: 92% by atomic.potato
-extern "C" void __cdecl func_00A951CE(int);
+// from server: 100% by Intel
+extern "C" void __stdcall func_00A951CE(int);
 extern "C" void __cdecl func_00982114(void*);
 
 struct CSelectionPropGrid
 {
-    void __cdecl f(void*);
+    static void __cdecl f(void* p);
 };
 
 void __cdecl CSelectionPropGrid::f(void* p)

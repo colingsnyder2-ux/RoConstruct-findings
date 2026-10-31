@@ -1,184 +1,563 @@
-// roc 2009-06 005933f0  unit: seg_00590000  size: 548 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 005933f0
-//
-// 005933f0  56                   push esi
-// 005933f1  8b742408             mov esi, dword ptr [esp + 8]
-// 005933f5  817e14ca000000       cmp dword ptr [esi + 0x14], 0xca
-// 005933fc  741b                 je 0x593419
-// 005933fe  8b06                 mov eax, dword ptr [esi]
-// 00593400  c7401414000000       mov dword ptr [eax + 0x14], 0x14
-// 00593407  8b0e                 mov ecx, dword ptr [esi]
-// 00593409  8b5614               mov edx, dword ptr [esi + 0x14]
-// 0059340c  895118               mov dword ptr [ecx + 0x18], edx
-// 0059340f  8b06                 mov eax, dword ptr [esi]
-// 00593411  8b08                 mov ecx, dword ptr [eax]
-// 00593413  56                   push esi
-// 00593414  ffd1                 call ecx
-// 00593416  83c404               add esp, 4
-// 00593419  8b4630               mov eax, dword ptr [esi + 0x30]
-// 0059341c  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 0059341f  8d14c500000000       lea edx, [eax*8]
-// 00593426  3bd1                 cmp edx, ecx
-// 00593428  7728                 ja 0x593452
-// 0059342a  8b461c               mov eax, dword ptr [esi + 0x1c]
-// 0059342d  6a08                 push 8
-// 0059342f  50                   push eax
-// 00593430  e8db69ffff           call 0x589e10
-// 00593435  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 00593438  6a08                 push 8
-// 0059343a  51                   push ecx
-// 0059343b  89465c               mov dword ptr [esi + 0x5c], eax
-// 0059343e  e8cd69ffff           call 0x589e10
-// 00593443  83c410               add esp, 0x10
-// 00593446  c7861801000001000000 mov dword ptr [esi + 0x118], 1
-// 00593450  eb75                 jmp 0x5934c7
-// 00593452  8d148500000000       lea edx, [eax*4]
-// 00593459  3bd1                 cmp edx, ecx
-// 0059345b  7728                 ja 0x593485
-// 0059345d  8b461c               mov eax, dword ptr [esi + 0x1c]
-// 00593460  6a04                 push 4
-// 00593462  50                   push eax
-// 00593463  e8a869ffff           call 0x589e10
-// 00593468  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 0059346b  6a04                 push 4
-// 0059346d  51                   push ecx
-// 0059346e  89465c               mov dword ptr [esi + 0x5c], eax
-// 00593471  e89a69ffff           call 0x589e10
-// 00593476  83c410               add esp, 0x10
-// 00593479  c7861801000002000000 mov dword ptr [esi + 0x118], 2
-// 00593483  eb42                 jmp 0x5934c7
-// 00593485  8d1400               lea edx, [eax + eax]
-// 00593488  3bd1                 cmp edx, ecx
-// 0059348a  7728                 ja 0x5934b4
-// 0059348c  8b461c               mov eax, dword ptr [esi + 0x1c]
-// 0059348f  6a02                 push 2
-// 00593491  50                   push eax
-// 00593492  e87969ffff           call 0x589e10
-// 00593497  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 0059349a  6a02                 push 2
-// 0059349c  51                   push ecx
-// 0059349d  89465c               mov dword ptr [esi + 0x5c], eax
-// 005934a0  e86b69ffff           call 0x589e10
-// 005934a5  83c410               add esp, 0x10
-// 005934a8  c7861801000004000000 mov dword ptr [esi + 0x118], 4
-// 005934b2  eb13                 jmp 0x5934c7
-// 005934b4  8b561c               mov edx, dword ptr [esi + 0x1c]
-// 005934b7  8b4620               mov eax, dword ptr [esi + 0x20]
-// 005934ba  89565c               mov dword ptr [esi + 0x5c], edx
-// 005934bd  c7861801000008000000 mov dword ptr [esi + 0x118], 8
-// 005934c7  837e2400             cmp dword ptr [esi + 0x24], 0
-// 005934cb  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
-// 005934d1  53                   push ebx
-// 005934d2  894660               mov dword ptr [esi + 0x60], eax
-// 005934d5  57                   push edi
-// 005934d6  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005934de  7e5c                 jle 0x59353c
-// 005934e0  83c10c               add ecx, 0xc
-// 005934e3  55                   push ebp
-// 005934e4  8b9618010000         mov edx, dword ptr [esi + 0x118]
-// 005934ea  8bc2                 mov eax, edx
-// 005934ec  83f808               cmp eax, 8
-// 005934ef  7d36                 jge 0x593527
-// 005934f1  8bbe10010000         mov edi, dword ptr [esi + 0x110]
-// 005934f7  0faffa               imul edi, edx
-// 005934fa  8d9b00000000         lea ebx, [ebx]
-// 00593500  8b59fc               mov ebx, dword ptr [ecx - 4]
-// 00593503  0fafd8               imul ebx, eax
-// 00593506  03db                 add ebx, ebx
-// 00593508  3bdf                 cmp ebx, edi
-// 0059350a  7f1b                 jg 0x593527
-// 0059350c  8b29                 mov ebp, dword ptr [ecx]
-// 0059350e  8b9e14010000         mov ebx, dword ptr [esi + 0x114]
-// 00593514  0fafe8               imul ebp, eax
-// 00593517  0fafda               imul ebx, edx
-// 0059351a  03ed                 add ebp, ebp
-// 0059351c  3beb                 cmp ebp, ebx
-// 0059351e  7f07                 jg 0x593527
-// 00593520  03c0                 add eax, eax
-// 00593522  83f808               cmp eax, 8
-// 00593525  7cd9                 jl 0x593500
-// 00593527  894118               mov dword ptr [ecx + 0x18], eax
-// 0059352a  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0059352e  40                   inc eax
-// 0059352f  83c154               add ecx, 0x54
-// 00593532  3b4624               cmp eax, dword ptr [esi + 0x24]
-// 00593535  89442414             mov dword ptr [esp + 0x14], eax
-// 00593539  7ca9                 jl 0x5934e4
-// 0059353b  5d                   pop ebp
-// 0059353c  8bbec4000000         mov edi, dword ptr [esi + 0xc4]
-// 00593542  33db                 xor ebx, ebx
-// 00593544  395e24               cmp dword ptr [esi + 0x24], ebx
-// 00593547  7e53                 jle 0x59359c
-// 00593549  83c724               add edi, 0x24
-// 0059354c  8d642400             lea esp, [esp]
-// 00593550  8b57e4               mov edx, dword ptr [edi - 0x1c]
-// 00593553  0faf17               imul edx, dword ptr [edi]
-// 00593556  0faf561c             imul edx, dword ptr [esi + 0x1c]
-// 0059355a  8b8e10010000         mov ecx, dword ptr [esi + 0x110]
-// 00593560  03c9                 add ecx, ecx
-// 00593562  03c9                 add ecx, ecx
-// 00593564  03c9                 add ecx, ecx
-// 00593566  51                   push ecx
-// 00593567  52                   push edx
-// 00593568  e8a368ffff           call 0x589e10
-// 0059356d  8b4fe8               mov ecx, dword ptr [edi - 0x18]
-// 00593570  894704               mov dword ptr [edi + 4], eax
-// 00593573  0faf4e20             imul ecx, dword ptr [esi + 0x20]
-// 00593577  0faf0f               imul ecx, dword ptr [edi]
-// 0059357a  8b8614010000         mov eax, dword ptr [esi + 0x114]
-// 00593580  03c0                 add eax, eax
-// 00593582  03c0                 add eax, eax
-// 00593584  03c0                 add eax, eax
-// 00593586  50                   push eax
-// 00593587  51                   push ecx
-// 00593588  e88368ffff           call 0x589e10
-// 0059358d  894708               mov dword ptr [edi + 8], eax
-// 00593590  43                   inc ebx
-// 00593591  83c410               add esp, 0x10
-// 00593594  83c754               add edi, 0x54
-// 00593597  3b5e24               cmp ebx, dword ptr [esi + 0x24]
-// 0059359a  7cb4                 jl 0x593550
-// 0059359c  8b462c               mov eax, dword ptr [esi + 0x2c]
-// 0059359f  48                   dec eax
-// 005935a0  5f                   pop edi
-// 005935a1  5b                   pop ebx
-// 005935a2  83f804               cmp eax, 4
-// 005935a5  7722                 ja 0x5935c9
-// 005935a7  ff248500365900       jmp dword ptr [eax*4 + 0x593600]
-// 005935ae  c7466401000000       mov dword ptr [esi + 0x64], 1
-// 005935b5  eb18                 jmp 0x5935cf
-// 005935b7  c7466403000000       mov dword ptr [esi + 0x64], 3
-// 005935be  eb0f                 jmp 0x5935cf
-// 005935c0  c7466404000000       mov dword ptr [esi + 0x64], 4
-// 005935c7  eb06                 jmp 0x5935cf
-// 005935c9  8b5624               mov edx, dword ptr [esi + 0x24]
-// 005935cc  895664               mov dword ptr [esi + 0x64], edx
-// 005935cf  807e4a00             cmp byte ptr [esi + 0x4a], 0
-// 005935d3  b801000000           mov eax, 1
-// 005935d8  7503                 jne 0x5935dd
-// 005935da  8b4664               mov eax, dword ptr [esi + 0x64]
-// 005935dd  8bd6                 mov edx, esi
-// 005935df  894668               mov dword ptr [esi + 0x68], eax
-// 005935e2  e889fdffff           call 0x593370
-// 005935e7  84c0                 test al, al
-// 005935e9  740b                 je 0x5935f6
-// 005935eb  8b8614010000         mov eax, dword ptr [esi + 0x114]
-// 005935f1  89466c               mov dword ptr [esi + 0x6c], eax
-// 005935f4  5e                   pop esi
-// 005935f5  c3                   ret 
-// 005935f6  c7466c01000000       mov dword ptr [esi + 0x6c], 1
-// 005935fd  5e                   pop esi
-// 005935fe  c3                   ret 
-// 005935ff  90                   nop 
-// 00593600  ae                   scasb al, byte ptr es:[edi]
-// 00593601  355900b735           xor eax, 0x35b70059
-// 00593606  59                   pop ecx
-// 00593607  00b7355900c0         add byte ptr [edi - 0x3fffa6cb], dh
-// 0059360d  355900c035           xor eax, 0x35c00059
-// 00593612  59                   pop ecx
-// library jpeg-6b/jdmaster.c (function _jpeg_calc_output_dimensions)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdmaster.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jdmaster.c
+ *
+ * Copyright (C) 1991-1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains master control logic for the JPEG decompressor.
+ * These routines are concerned with selecting the modules to be executed
+ * and with determining the number of passes and the work to be done in each
+ * pass.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Private state */
+
+typedef struct {
+  struct jpeg_decomp_master pub; /* public fields */
+
+  int pass_number;		/* # of passes completed */
+
+  boolean using_merged_upsample; /* TRUE if using merged upsample/cconvert */
+
+  /* Saved references to initialized quantizer modules,
+   * in case we need to switch modes.
+   */
+  struct jpeg_color_quantizer * quantizer_1pass;
+  struct jpeg_color_quantizer * quantizer_2pass;
+} my_decomp_master;
+
+typedef my_decomp_master * my_master_ptr;
+
+
+/*
+ * Determine whether merged upsample/color conversion should be used.
+ * CRUCIAL: this must match the actual capabilities of jdmerge.c!
+ */
+
+LOCAL(boolean)
+use_merged_upsample (j_decompress_ptr cinfo)
+{
+#ifdef UPSAMPLE_MERGING_SUPPORTED
+  /* Merging is the equivalent of plain box-filter upsampling */
+  if (cinfo->do_fancy_upsampling || cinfo->CCIR601_sampling)
+    return FALSE;
+  /* jdmerge.c only supports YCC=>RGB color conversion */
+  if (cinfo->jpeg_color_space != JCS_YCbCr || cinfo->num_components != 3 ||
+      cinfo->out_color_space != JCS_RGB ||
+      cinfo->out_color_components != RGB_PIXELSIZE)
+    return FALSE;
+  /* and it only handles 2h1v or 2h2v sampling ratios */
+  if (cinfo->comp_info[0].h_samp_factor != 2 ||
+      cinfo->comp_info[1].h_samp_factor != 1 ||
+      cinfo->comp_info[2].h_samp_factor != 1 ||
+      cinfo->comp_info[0].v_samp_factor >  2 ||
+      cinfo->comp_info[1].v_samp_factor != 1 ||
+      cinfo->comp_info[2].v_samp_factor != 1)
+    return FALSE;
+  /* furthermore, it doesn't work if we've scaled the IDCTs differently */
+  if (cinfo->comp_info[0].DCT_scaled_size != cinfo->min_DCT_scaled_size ||
+      cinfo->comp_info[1].DCT_scaled_size != cinfo->min_DCT_scaled_size ||
+      cinfo->comp_info[2].DCT_scaled_size != cinfo->min_DCT_scaled_size)
+    return FALSE;
+  /* ??? also need to test for upsample-time rescaling, when & if supported */
+  return TRUE;			/* by golly, it'll work... */
+#else
+  return FALSE;
+#endif
+}
+
+
+/*
+ * Compute output image dimensions and related values.
+ * NOTE: this is exported for possible use by application.
+ * Hence it mustn't do anything that can't be done twice.
+ * Also note that it may be called before the master module is initialized!
+ */
+
+GLOBAL(void)
+jpeg_calc_output_dimensions (j_decompress_ptr cinfo)
+/* Do computations that are needed before master selection phase */
+{
+#ifdef IDCT_SCALING_SUPPORTED
+  int ci;
+  jpeg_component_info *compptr;
+#endif
+
+  /* Prevent application from calling me at wrong times */
+  if (cinfo->global_state != DSTATE_READY)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+#ifdef IDCT_SCALING_SUPPORTED
+
+  /* Compute actual output image dimensions and DCT scaling choices. */
+  if (cinfo->scale_num * 8 <= cinfo->scale_denom) {
+    /* Provide 1/8 scaling */
+    cinfo->output_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 8L);
+    cinfo->output_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 8L);
+    cinfo->min_DCT_scaled_size = 1;
+  } else if (cinfo->scale_num * 4 <= cinfo->scale_denom) {
+    /* Provide 1/4 scaling */
+    cinfo->output_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 4L);
+    cinfo->output_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 4L);
+    cinfo->min_DCT_scaled_size = 2;
+  } else if (cinfo->scale_num * 2 <= cinfo->scale_denom) {
+    /* Provide 1/2 scaling */
+    cinfo->output_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width, 2L);
+    cinfo->output_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height, 2L);
+    cinfo->min_DCT_scaled_size = 4;
+  } else {
+    /* Provide 1/1 scaling */
+    cinfo->output_width = cinfo->image_width;
+    cinfo->output_height = cinfo->image_height;
+    cinfo->min_DCT_scaled_size = DCTSIZE;
+  }
+  /* In selecting the actual DCT scaling for each component, we try to
+   * scale up the chroma components via IDCT scaling rather than upsampling.
+   * This saves time if the upsampler gets to use 1:1 scaling.
+   * Note this code assumes that the supported DCT scalings are powers of 2.
+   */
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    int ssize = cinfo->min_DCT_scaled_size;
+    while (ssize < DCTSIZE &&
+	   (compptr->h_samp_factor * ssize * 2 <=
+	    cinfo->max_h_samp_factor * cinfo->min_DCT_scaled_size) &&
+	   (compptr->v_samp_factor * ssize * 2 <=
+	    cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size)) {
+      ssize = ssize * 2;
+    }
+    compptr->DCT_scaled_size = ssize;
+  }
+
+  /* Recompute downsampled dimensions of components;
+   * application needs to know these if using raw downsampled data.
+   */
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    /* Size in samples, after IDCT scaling */
+    compptr->downsampled_width = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_width *
+		    (long) (compptr->h_samp_factor * compptr->DCT_scaled_size),
+		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
+    compptr->downsampled_height = (JDIMENSION)
+      jdiv_round_up((long) cinfo->image_height *
+		    (long) (compptr->v_samp_factor * compptr->DCT_scaled_size),
+		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
+  }
+
+#else /* !IDCT_SCALING_SUPPORTED */
+
+  /* Hardwire it to "no scaling" */
+  cinfo->output_width = cinfo->image_width;
+  cinfo->output_height = cinfo->image_height;
+  /* jdinput.c has already initialized DCT_scaled_size to DCTSIZE,
+   * and has computed unscaled downsampled_width and downsampled_height.
+   */
+
+#endif /* IDCT_SCALING_SUPPORTED */
+
+  /* Report number of components in selected colorspace. */
+  /* Probably this should be in the color conversion module... */
+  switch (cinfo->out_color_space) {
+  case JCS_GRAYSCALE:
+    cinfo->out_color_components = 1;
+    break;
+  case JCS_RGB:
+#if RGB_PIXELSIZE != 3
+    cinfo->out_color_components = RGB_PIXELSIZE;
+    break;
+#endif /* else share code with YCbCr */
+  case JCS_YCbCr:
+    cinfo->out_color_components = 3;
+    break;
+  case JCS_CMYK:
+  case JCS_YCCK:
+    cinfo->out_color_components = 4;
+    break;
+  default:			/* else must be same colorspace as in file */
+    cinfo->out_color_components = cinfo->num_components;
+    break;
+  }
+  cinfo->output_components = (cinfo->quantize_colors ? 1 :
+			      cinfo->out_color_components);
+
+  /* See if upsampler will want to emit more than one row at a time */
+  if (use_merged_upsample(cinfo))
+    cinfo->rec_outbuf_height = cinfo->max_v_samp_factor;
+  else
+    cinfo->rec_outbuf_height = 1;
+}
+
+
+/*
+ * Several decompression processes need to range-limit values to the range
+ * 0..MAXJSAMPLE; the input value may fall somewhat outside this range
+ * due to noise introduced by quantization, roundoff error, etc.  These
+ * processes are inner loops and need to be as fast as possible.  On most
+ * machines, particularly CPUs with pipelines or instruction prefetch,
+ * a (subscript-check-less) C table lookup
+ *		x = sample_range_limit[x];
+ * is faster than explicit tests
+ *		if (x < 0)  x = 0;
+ *		else if (x > MAXJSAMPLE)  x = MAXJSAMPLE;
+ * These processes all use a common table prepared by the routine below.
+ *
+ * For most steps we can mathematically guarantee that the initial value
+ * of x is within MAXJSAMPLE+1 of the legal range, so a table running from
+ * -(MAXJSAMPLE+1) to 2*MAXJSAMPLE+1 is sufficient.  But for the initial
+ * limiting step (just after the IDCT), a wildly out-of-range value is 
+ * possible if the input data is corrupt.  To avoid any chance of indexing
+ * off the end of memory and getting a bad-pointer trap, we perform the
+ * post-IDCT limiting thus:
+ *		x = range_limit[x & MASK];
+ * where MASK is 2 bits wider than legal sample data, ie 10 bits for 8-bit
+ * samples.  Under normal circumstances this is more than enough range and
+ * a correct output will be generated; with bogus input data the mask will
+ * cause wraparound, and we will safely generate a bogus-but-in-range output.
+ * For the post-IDCT step, we want to convert the data from signed to unsigned
+ * representation by adding CENTERJSAMPLE at the same time that we limit it.
+ * So the post-IDCT limiting table ends up looking like this:
+ *   CENTERJSAMPLE,CENTERJSAMPLE+1,...,MAXJSAMPLE,
+ *   MAXJSAMPLE (repeat 2*(MAXJSAMPLE+1)-CENTERJSAMPLE times),
+ *   0          (repeat 2*(MAXJSAMPLE+1)-CENTERJSAMPLE times),
+ *   0,1,...,CENTERJSAMPLE-1
+ * Negative inputs select values from the upper half of the table after
+ * masking.
+ *
+ * We can save some space by overlapping the start of the post-IDCT table
+ * with the simpler range limiting table.  The post-IDCT table begins at
+ * sample_range_limit + CENTERJSAMPLE.
+ *
+ * Note that the table is allocated in near data space on PCs; it's small
+ * enough and used often enough to justify this.
+ */
+
+LOCAL(void)
+prepare_range_limit_table (j_decompress_ptr cinfo)
+/* Allocate and fill in the sample_range_limit table */
+{
+  JSAMPLE * table;
+  int i;
+
+  table = (JSAMPLE *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+		(5 * (MAXJSAMPLE+1) + CENTERJSAMPLE) * SIZEOF(JSAMPLE));
+  table += (MAXJSAMPLE+1);	/* allow negative subscripts of simple table */
+  cinfo->sample_range_limit = table;
+  /* First segment of "simple" table: limit[x] = 0 for x < 0 */
+  MEMZERO(table - (MAXJSAMPLE+1), (MAXJSAMPLE+1) * SIZEOF(JSAMPLE));
+  /* Main part of "simple" table: limit[x] = x */
+  for (i = 0; i <= MAXJSAMPLE; i++)
+    table[i] = (JSAMPLE) i;
+  table += CENTERJSAMPLE;	/* Point to where post-IDCT table starts */
+  /* End of simple table, rest of first half of post-IDCT table */
+  for (i = CENTERJSAMPLE; i < 2*(MAXJSAMPLE+1); i++)
+    table[i] = MAXJSAMPLE;
+  /* Second half of post-IDCT table */
+  MEMZERO(table + (2 * (MAXJSAMPLE+1)),
+	  (2 * (MAXJSAMPLE+1) - CENTERJSAMPLE) * SIZEOF(JSAMPLE));
+  MEMCOPY(table + (4 * (MAXJSAMPLE+1) - CENTERJSAMPLE),
+	  cinfo->sample_range_limit, CENTERJSAMPLE * SIZEOF(JSAMPLE));
+}
+
+
+/*
+ * Master selection of decompression modules.
+ * This is done once at jpeg_start_decompress time.  We determine
+ * which modules will be used and give them appropriate initialization calls.
+ * We also initialize the decompressor input side to begin consuming data.
+ *
+ * Since jpeg_read_header has finished, we know what is in the SOF
+ * and (first) SOS markers.  We also have all the application parameter
+ * settings.
+ */
+
+LOCAL(void)
+master_selection (j_decompress_ptr cinfo)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+  boolean use_c_buffer;
+  long samplesperrow;
+  JDIMENSION jd_samplesperrow;
+
+  /* Initialize dimensions and other stuff */
+  jpeg_calc_output_dimensions(cinfo);
+  prepare_range_limit_table(cinfo);
+
+  /* Width of an output scanline must be representable as JDIMENSION. */
+  samplesperrow = (long) cinfo->output_width * (long) cinfo->out_color_components;
+  jd_samplesperrow = (JDIMENSION) samplesperrow;
+  if ((long) jd_samplesperrow != samplesperrow)
+    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
+
+  /* Initialize my private state */
+  master->pass_number = 0;
+  master->using_merged_upsample = use_merged_upsample(cinfo);
+
+  /* Color quantizer selection */
+  master->quantizer_1pass = NULL;
+  master->quantizer_2pass = NULL;
+  /* No mode changes if not using buffered-image mode. */
+  if (! cinfo->quantize_colors || ! cinfo->buffered_image) {
+    cinfo->enable_1pass_quant = FALSE;
+    cinfo->enable_external_quant = FALSE;
+    cinfo->enable_2pass_quant = FALSE;
+  }
+  if (cinfo->quantize_colors) {
+    if (cinfo->raw_data_out)
+      ERREXIT(cinfo, JERR_NOTIMPL);
+    /* 2-pass quantizer only works in 3-component color space. */
+    if (cinfo->out_color_components != 3) {
+      cinfo->enable_1pass_quant = TRUE;
+      cinfo->enable_external_quant = FALSE;
+      cinfo->enable_2pass_quant = FALSE;
+      cinfo->colormap = NULL;
+    } else if (cinfo->colormap != NULL) {
+      cinfo->enable_external_quant = TRUE;
+    } else if (cinfo->two_pass_quantize) {
+      cinfo->enable_2pass_quant = TRUE;
+    } else {
+      cinfo->enable_1pass_quant = TRUE;
+    }
+
+    if (cinfo->enable_1pass_quant) {
+#ifdef QUANT_1PASS_SUPPORTED
+      jinit_1pass_quantizer(cinfo);
+      master->quantizer_1pass = cinfo->cquantize;
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+    }
+
+    /* We use the 2-pass code to map to external colormaps. */
+    if (cinfo->enable_2pass_quant || cinfo->enable_external_quant) {
+#ifdef QUANT_2PASS_SUPPORTED
+      jinit_2pass_quantizer(cinfo);
+      master->quantizer_2pass = cinfo->cquantize;
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+    }
+    /* If both quantizers are initialized, the 2-pass one is left active;
+     * this is necessary for starting with quantization to an external map.
+     */
+  }
+
+  /* Post-processing: in particular, color conversion first */
+  if (! cinfo->raw_data_out) {
+    if (master->using_merged_upsample) {
+#ifdef UPSAMPLE_MERGING_SUPPORTED
+      jinit_merged_upsampler(cinfo); /* does color conversion too */
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+    } else {
+      jinit_color_deconverter(cinfo);
+      jinit_upsampler(cinfo);
+    }
+    jinit_d_post_controller(cinfo, cinfo->enable_2pass_quant);
+  }
+  /* Inverse DCT */
+  jinit_inverse_dct(cinfo);
+  /* Entropy decoding: either Huffman or arithmetic coding. */
+  if (cinfo->arith_code) {
+    ERREXIT(cinfo, JERR_ARITH_NOTIMPL);
+  } else {
+    if (cinfo->progressive_mode) {
+#ifdef D_PROGRESSIVE_SUPPORTED
+      jinit_phuff_decoder(cinfo);
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+    } else
+      jinit_huff_decoder(cinfo);
+  }
+
+  /* Initialize principal buffer controllers. */
+  use_c_buffer = cinfo->inputctl->has_multiple_scans || cinfo->buffered_image;
+  jinit_d_coef_controller(cinfo, use_c_buffer);
+
+  if (! cinfo->raw_data_out)
+    jinit_d_main_controller(cinfo, FALSE /* never need full buffer here */);
+
+  /* We can now tell the memory manager to allocate virtual arrays. */
+  (*cinfo->mem->realize_virt_arrays) ((j_common_ptr) cinfo);
+
+  /* Initialize input side of decompressor to consume first scan. */
+  (*cinfo->inputctl->start_input_pass) (cinfo);
+
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+  /* If jpeg_start_decompress will read the whole file, initialize
+   * progress monitoring appropriately.  The input step is counted
+   * as one pass.
+   */
+  if (cinfo->progress != NULL && ! cinfo->buffered_image &&
+      cinfo->inputctl->has_multiple_scans) {
+    int nscans;
+    /* Estimate number of scans to set pass_limit. */
+    if (cinfo->progressive_mode) {
+      /* Arbitrarily estimate 2 interleaved DC scans + 3 AC scans/component. */
+      nscans = 2 + 3 * cinfo->num_components;
+    } else {
+      /* For a nonprogressive multiscan file, estimate 1 scan per component. */
+      nscans = cinfo->num_components;
+    }
+    cinfo->progress->pass_counter = 0L;
+    cinfo->progress->pass_limit = (long) cinfo->total_iMCU_rows * nscans;
+    cinfo->progress->completed_passes = 0;
+    cinfo->progress->total_passes = (cinfo->enable_2pass_quant ? 3 : 2);
+    /* Count the input pass as done */
+    master->pass_number++;
+  }
+#endif /* D_MULTISCAN_FILES_SUPPORTED */
+}
+
+
+/*
+ * Per-pass setup.
+ * This is called at the beginning of each output pass.  We determine which
+ * modules will be active during this pass and give them appropriate
+ * start_pass calls.  We also set is_dummy_pass to indicate whether this
+ * is a "real" output pass or a dummy pass for color quantization.
+ * (In the latter case, jdapistd.c will crank the pass to completion.)
+ */
+
+METHODDEF(void)
+prepare_for_output_pass (j_decompress_ptr cinfo)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+
+  if (master->pub.is_dummy_pass) {
+#ifdef QUANT_2PASS_SUPPORTED
+    /* Final pass of 2-pass quantization */
+    master->pub.is_dummy_pass = FALSE;
+    (*cinfo->cquantize->start_pass) (cinfo, FALSE);
+    (*cinfo->post->start_pass) (cinfo, JBUF_CRANK_DEST);
+    (*cinfo->main->start_pass) (cinfo, JBUF_CRANK_DEST);
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif /* QUANT_2PASS_SUPPORTED */
+  } else {
+    if (cinfo->quantize_colors && cinfo->colormap == NULL) {
+      /* Select new quantization method */
+      if (cinfo->two_pass_quantize && cinfo->enable_2pass_quant) {
+	cinfo->cquantize = master->quantizer_2pass;
+	master->pub.is_dummy_pass = TRUE;
+      } else if (cinfo->enable_1pass_quant) {
+	cinfo->cquantize = master->quantizer_1pass;
+      } else {
+	ERREXIT(cinfo, JERR_MODE_CHANGE);
+      }
+    }
+    (*cinfo->idct->start_pass) (cinfo);
+    (*cinfo->coef->start_output_pass) (cinfo);
+    if (! cinfo->raw_data_out) {
+      if (! master->using_merged_upsample)
+	(*cinfo->cconvert->start_pass) (cinfo);
+      (*cinfo->upsample->start_pass) (cinfo);
+      if (cinfo->quantize_colors)
+	(*cinfo->cquantize->start_pass) (cinfo, master->pub.is_dummy_pass);
+      (*cinfo->post->start_pass) (cinfo,
+	    (master->pub.is_dummy_pass ? JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
+      (*cinfo->main->start_pass) (cinfo, JBUF_PASS_THRU);
+    }
+  }
+
+  /* Set up progress monitor's pass info if present */
+  if (cinfo->progress != NULL) {
+    cinfo->progress->completed_passes = master->pass_number;
+    cinfo->progress->total_passes = master->pass_number +
+				    (master->pub.is_dummy_pass ? 2 : 1);
+    /* In buffered-image mode, we assume one more output pass if EOI not
+     * yet reached, but no more passes if EOI has been reached.
+     */
+    if (cinfo->buffered_image && ! cinfo->inputctl->eoi_reached) {
+      cinfo->progress->total_passes += (cinfo->enable_2pass_quant ? 2 : 1);
+    }
+  }
+}
+
+
+/*
+ * Finish up at end of an output pass.
+ */
+
+METHODDEF(void)
+finish_output_pass (j_decompress_ptr cinfo)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+
+  if (cinfo->quantize_colors)
+    (*cinfo->cquantize->finish_pass) (cinfo);
+  master->pass_number++;
+}
+
+
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+
+/*
+ * Switch to a new external colormap between output passes.
+ */
+
+GLOBAL(void)
+jpeg_new_colormap (j_decompress_ptr cinfo)
+{
+  my_master_ptr master = (my_master_ptr) cinfo->master;
+
+  /* Prevent application from calling me at wrong times */
+  if (cinfo->global_state != DSTATE_BUFIMAGE)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  if (cinfo->quantize_colors && cinfo->enable_external_quant &&
+      cinfo->colormap != NULL) {
+    /* Select 2-pass quantizer for external colormap use */
+    cinfo->cquantize = master->quantizer_2pass;
+    /* Notify quantizer of colormap change */
+    (*cinfo->cquantize->new_color_map) (cinfo);
+    master->pub.is_dummy_pass = FALSE; /* just in case */
+  } else
+    ERREXIT(cinfo, JERR_MODE_CHANGE);
+}
+
+#endif /* D_MULTISCAN_FILES_SUPPORTED */
+
+
+/*
+ * Initialize master decompression control and select active modules.
+ * This is performed at the start of jpeg_start_decompress.
+ */
+
+GLOBAL(void)
+jinit_master_decompress (j_decompress_ptr cinfo)
+{
+  my_master_ptr master;
+
+  master = (my_master_ptr)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				  SIZEOF(my_decomp_master));
+  cinfo->master = (struct jpeg_decomp_master *) master;
+  master->pub.prepare_for_output_pass = prepare_for_output_pass;
+  master->pub.finish_output_pass = finish_output_pass;
+
+  master->pub.is_dummy_pass = FALSE;
+
+  master_selection(cinfo);
+}

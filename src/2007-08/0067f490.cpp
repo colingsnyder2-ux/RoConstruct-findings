@@ -1,22 +1,5 @@
-// from server: 75% by colin
-struct CXTPControlSelector {
-    int GetCount();
-    char GetCharAt(int index);
-    void SetSelected(int index, int selected);
-};
-
-void ProcessAccelerators(CXTPControlSelector* self)
-{
-    int i = 0;
-    while (i < self->GetCount())
-    {
-        if (self->GetCharAt(i) == '&')
-        {
-            if (i == self->GetCount() - 1 || self->GetCharAt(i + 1) != '&')
-            {
-                self->SetSelected(i, 1);
-            }
-        }
-        i++;
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_24b68a0edbb3becd.cpp

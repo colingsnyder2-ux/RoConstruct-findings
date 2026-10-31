@@ -1,17 +1,5 @@
-// from server: 40% by colin
-struct CComboBox {
-    void sub_6305DA();
-    void sub_69E7A0();
-    void sub_69ED50(const char*, int);
-    void* f();
-};
-
-void* CComboBox::f()
-{
-    sub_6305DA();
-    *(void**)((char*)this + 0x54) = 0;
-    *(void**)this = (void*)0x7cc914;
-    sub_69E7A0();
-    sub_69ED50((const char*)0x7c652c, 0);
-    return this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_451189c7baf25f62.cpp

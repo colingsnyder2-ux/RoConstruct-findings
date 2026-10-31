@@ -1,187 +1,870 @@
 // from server: 100% by king_originala
-// roc 2008-06 0074d870  unit: CXTPReportInplaceEdit  size: 579 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0074d870
-//
-// 0074d870  6aff                 push -1
-// 0074d872  686b867e00           push 0x7e866b
-// 0074d877  64a100000000         mov eax, dword ptr fs:[0]
-// 0074d87d  50                   push eax
-// 0074d87e  83ec18               sub esp, 0x18
-// 0074d881  53                   push ebx
-// 0074d882  55                   push ebp
-// 0074d883  56                   push esi
-// 0074d884  57                   push edi
-// 0074d885  a1c05c9600           mov eax, dword ptr [0x965cc0]
-// 0074d88a  33c4                 xor eax, esp
-// 0074d88c  50                   push eax
-// 0074d88d  8d44242c             lea eax, [esp + 0x2c]
-// 0074d891  64a300000000         mov dword ptr fs:[0], eax
-// 0074d897  8be9                 mov ebp, ecx
-// 0074d899  8b4d58               mov ecx, dword ptr [ebp + 0x58]
-// 0074d89c  85c9                 test ecx, ecx
-// 0074d89e  0f84f9010000         je 0x74da9d
-// 0074d8a4  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 0074d8a8  83f809               cmp eax, 9
-// 0074d8ab  0f84ec010000         je 0x74da9d
-// 0074d8b1  83f81b               cmp eax, 0x1b
-// 0074d8b4  0f84dc010000         je 0x74da96
-// 0074d8ba  83f80d               cmp eax, 0xd
-// 0074d8bd  0f84d3010000         je 0x74da96
-// 0074d8c3  8b4d64               mov ecx, dword ptr [ebp + 0x64]
-// 0074d8c6  85c9                 test ecx, ecx
-// 0074d8c8  0f84bf010000         je 0x74da8d
-// 0074d8ce  8b4560               mov eax, dword ptr [ebp + 0x60]
-// 0074d8d1  85c0                 test eax, eax
-// 0074d8d3  0f84b4010000         je 0x74da8d
-// 0074d8d9  50                   push eax
-// 0074d8da  e821a7f7ff           call 0x6c8000
-// 0074d8df  83782400             cmp dword ptr [eax + 0x24], 0
-// 0074d8e3  0f84a4010000         je 0x74da8d
-// 0074d8e9  8b4560               mov eax, dword ptr [ebp + 0x60]
-// 0074d8ec  8b4d64               mov ecx, dword ptr [ebp + 0x64]
-// 0074d8ef  50                   push eax
-// 0074d8f0  e80ba7f7ff           call 0x6c8000
-// 0074d8f5  8bf0                 mov esi, eax
-// 0074d8f7  8b5e28               mov ebx, dword ptr [esi + 0x28]
-// 0074d8fa  8bcb                 mov ecx, ebx
-// 0074d8fc  895c2428             mov dword ptr [esp + 0x28], ebx
-// 0074d900  e89bccfaff           call 0x6fa5a0
-// 0074d905  8bf8                 mov edi, eax
-// 0074d907  85ff                 test edi, edi
-// 0074d909  0f8e7e010000         jle 0x74da8d
-// 0074d90f  8d4c2414             lea ecx, [esp + 0x14]
-// 0074d913  ff15043f8000         call dword ptr [0x803f04]
-// 0074d919  8d4c2418             lea ecx, [esp + 0x18]
-// 0074d91d  c744243400000000     mov dword ptr [esp + 0x34], 0
-// 0074d925  ff15043f8000         call dword ptr [0x803f04]
-// 0074d92b  8d4c2414             lea ecx, [esp + 0x14]
-// 0074d92f  51                   push ecx
-// 0074d930  8bcd                 mov ecx, ebp
-// 0074d932  c644243801           mov byte ptr [esp + 0x38], 1
-// 0074d937  e83e33f5ff           call 0x6a0c7a
-// 0074d93c  8d542414             lea edx, [esp + 0x14]
-// 0074d940  52                   push edx
-// 0074d941  8d4c241c             lea ecx, [esp + 0x1c]
-// 0074d945  ff1544318000         call dword ptr [0x803144]
-// 0074d94b  8b8588000000         mov eax, dword ptr [ebp + 0x88]
-// 0074d951  85c0                 test eax, eax
-// 0074d953  751b                 jne 0x74d970
-// 0074d955  8d4c2414             lea ecx, [esp + 0x14]
-// 0074d959  ff15e03e8000         call dword ptr [0x803ee0]
-// 0074d95f  50                   push eax
-// 0074d960  8bce                 mov ecx, esi
-// 0074d962  e88999f7ff           call 0x6c72f0
-// 0074d967  85c0                 test eax, eax
-// 0074d969  7505                 jne 0x74d970
-// 0074d96b  8d77ff               lea esi, [edi - 1]
-// 0074d96e  eb09                 jmp 0x74d979
-// 0074d970  8bc8                 mov ecx, eax
-// 0074d972  e829ccfaff           call 0x6fa5a0
-// 0074d977  8bf0                 mov esi, eax
-// 0074d979  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 0074d97d  6a01                 push 1
-// 0074d97f  50                   push eax
-// 0074d980  8d4c2424             lea ecx, [esp + 0x24]
-// 0074d984  8974242c             mov dword ptr [esp + 0x2c], esi
-// 0074d988  ff156c378000         call dword ptr [0x80376c]
-// 0074d98e  4f                   dec edi
-// 0074d98f  c644243402           mov byte ptr [esp + 0x34], 2
-// 0074d994  897c243c             mov dword ptr [esp + 0x3c], edi
-// 0074d998  3b74243c             cmp esi, dword ptr [esp + 0x3c]
-// 0074d99c  7d03                 jge 0x74d9a1
-// 0074d99e  46                   inc esi
-// 0074d99f  eb02                 jmp 0x74d9a3
-// 0074d9a1  33f6                 xor esi, esi
-// 0074d9a3  56                   push esi
-// 0074d9a4  8bcb                 mov ecx, ebx
-// 0074d9a6  e8954cfcff           call 0x712640
-// 0074d9ab  8bf8                 mov edi, eax
-// 0074d9ad  8d4f20               lea ecx, [edi + 0x20]
-// 0074d9b0  51                   push ecx
-// 0074d9b1  8d4c2418             lea ecx, [esp + 0x18]
-// 0074d9b5  ff1544318000         call dword ptr [0x803144]
-// 0074d9bb  6a01                 push 1
-// 0074d9bd  8d542424             lea edx, [esp + 0x24]
-// 0074d9c1  52                   push edx
-// 0074d9c2  8d4c241c             lea ecx, [esp + 0x1c]
-// 0074d9c6  ff1580368000         call dword ptr [0x803680]
-// 0074d9cc  8bc8                 mov ecx, eax
-// 0074d9ce  ff15e03e8000         call dword ptr [0x803ee0]
-// 0074d9d4  50                   push eax
-// 0074d9d5  8d4c2420             lea ecx, [esp + 0x20]
-// 0074d9d9  ff1528368000         call dword ptr [0x803628]
-// 0074d9df  85c0                 test eax, eax
-// 0074d9e1  8d4c2420             lea ecx, [esp + 0x20]
-// 0074d9e5  0f94c3               sete bl
-// 0074d9e8  ff15143f8000         call dword ptr [0x803f14]
-// 0074d9ee  84db                 test bl, bl
-// 0074d9f0  750c                 jne 0x74d9fe
-// 0074d9f2  3b742424             cmp esi, dword ptr [esp + 0x24]
-// 0074d9f6  7475                 je 0x74da6d
-// 0074d9f8  8b5c2428             mov ebx, dword ptr [esp + 0x28]
-// 0074d9fc  eb9a                 jmp 0x74d998
-// 0074d9fe  8d4c2414             lea ecx, [esp + 0x14]
-// 0074da02  89bd88000000         mov dword ptr [ebp + 0x88], edi
-// 0074da08  ff15e03e8000         call dword ptr [0x803ee0]
-// 0074da0e  50                   push eax
-// 0074da0f  8bcd                 mov ecx, ebp
-// 0074da11  e87af8ffff           call 0x74d290
-// 0074da16  8b4520               mov eax, dword ptr [ebp + 0x20]
-// 0074da19  8b35142e8000         mov esi, dword ptr [0x802e14]
-// 0074da1f  6aff                 push -1
-// 0074da21  6a00                 push 0
-// 0074da23  68b1000000           push 0xb1
-// 0074da28  50                   push eax
-// 0074da29  ffd6                 call esi
-// 0074da2b  8b4d20               mov ecx, dword ptr [ebp + 0x20]
-// 0074da2e  6a00                 push 0
-// 0074da30  6a00                 push 0
-// 0074da32  68b7000000           push 0xb7
-// 0074da37  51                   push ecx
-// 0074da38  ffd6                 call esi
-// 0074da3a  8d4c2414             lea ecx, [esp + 0x14]
-// 0074da3e  ff15e03e8000         call dword ptr [0x803ee0]
-// 0074da44  50                   push eax
-// 0074da45  8d4c241c             lea ecx, [esp + 0x1c]
-// 0074da49  ff1528368000         call dword ptr [0x803628]
-// 0074da4f  85c0                 test eax, eax
-// 0074da51  741a                 je 0x74da6d
-// 0074da53  8b4560               mov eax, dword ptr [ebp + 0x60]
-// 0074da56  8b4d58               mov ecx, dword ptr [ebp + 0x58]
-// 0074da59  8b11                 mov edx, dword ptr [ecx]
-// 0074da5b  8b9234020000         mov edx, dword ptr [edx + 0x234]
-// 0074da61  57                   push edi
-// 0074da62  50                   push eax
-// 0074da63  8b4564               mov eax, dword ptr [ebp + 0x64]
-// 0074da66  50                   push eax
-// 0074da67  8b455c               mov eax, dword ptr [ebp + 0x5c]
-// 0074da6a  50                   push eax
-// 0074da6b  ffd2                 call edx
-// 0074da6d  8d4c241c             lea ecx, [esp + 0x1c]
-// 0074da71  ff15143f8000         call dword ptr [0x803f14]
-// 0074da77  8d4c2418             lea ecx, [esp + 0x18]
-// 0074da7b  ff15143f8000         call dword ptr [0x803f14]
-// 0074da81  8d4c2414             lea ecx, [esp + 0x14]
-// 0074da85  ff15143f8000         call dword ptr [0x803f14]
-// 0074da8b  eb10                 jmp 0x74da9d
-// 0074da8d  8bcd                 mov ecx, ebp
-// 0074da8f  e8d431f5ff           call 0x6a0c68
-// 0074da94  eb07                 jmp 0x74da9d
-// 0074da96  6a00                 push 0
-// 0074da98  e8433bf8ff           call 0x6d15e0
-// 0074da9d  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 0074daa1  64890d00000000       mov dword ptr fs:[0], ecx
-// 0074daa8  59                   pop ecx
-// 0074daa9  5f                   pop edi
-// 0074daaa  5e                   pop esi
-// 0074daab  5d                   pop ebp
-// 0074daac  5b                   pop ebx
-// 0074daad  83c424               add esp, 0x24
-// 0074dab0  c20c00               ret 0xc
-
 // from server: 91% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-imports-rtm Source\ReportControl\XTPReportInplaceControls.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportInplaceEdit.cpp : implementation of the CXTPReportInplaceEdit class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "XTPReportControl.h"
+#include "XTPReportDefines.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportColumn.h"
+#include "XTPReportRecordItemText.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+CXTPReportInplaceControl::CXTPReportInplaceControl()
+{
+}
+
+CXTPReportInplaceControl::~CXTPReportInplaceControl()
+{
+	SetItemArgs(0);
+}
+
+void CXTPReportInplaceControl::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	if (pItemArgs)
+	{
+		pItemArgs->AddRef();
+		Release();
+
+		pItem = pItemArgs->pItem;
+		pControl = pItemArgs->pControl;
+		pRow = pItemArgs->pRow;
+		pColumn = pItemArgs->pColumn;
+		rcItem = pItemArgs->rcItem;
+	}
+	else
+	{
+		Release();
+
+		pItem = 0;
+		pControl = 0;
+		pRow = 0;
+		pColumn = 0;
+	}
+}
+
+IMPLEMENT_DYNAMIC(CXTPReportInplaceEdit, CEdit)
+
+CXTPReportInplaceEdit::CXTPReportInplaceEdit()
+{
+	m_pSelectedConstraint = NULL;
+	m_clrText = 0;
+	m_bSetWindowText = FALSE;
+}
+
+CXTPReportInplaceEdit::~CXTPReportInplaceEdit()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPReportInplaceEdit, CEdit)
+	//{{AFX_MSG_MAP(CXTPReportInplaceEdit)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_CONTROL_REFLECT(EN_KILLFOCUS, OnEnKillfocus)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEnChange)
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_GETDLGCODE()
+	ON_WM_CHAR()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+void CXTPReportInplaceEdit::HideWindow()
+{
+	if (m_hWnd)
+	{
+		ShowWindow(SW_HIDE);
+		SetItemArgs(0);
+	}
+}
+
+void CXTPReportInplaceEdit::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	SetItemArgs(pItemArgs);
+	m_pSelectedConstraint = NULL;
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS;
+
+	//pMetrics->strText = pItem->GetCaption(pColumn);
+	CXTPReportRecordItemText* pTextItem = DYNAMIC_DOWNCAST(CXTPReportRecordItemText, pItem);
+
+	if(pTextItem != NULL)
+		pMetrics->strText = pTextItem->GetValue();
+	else
+		pMetrics->strText = pItem->GetCaption(pColumn);
+
+	pItemArgs->pRow->FillMetrics(pColumn, pItem, pMetrics);
+
+	CRect rect = pItemArgs->rcItem;
+	pItem->GetCaptionRect(pItemArgs, rect);
+	rect.DeflateRect(2, 1, 2, 2);
+
+	CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+	ASSERT(pEditOptions);
+	if (!pEditOptions)
+		return;
+
+	m_clrText = pMetrics->clrForeground;
+	m_strValue = pMetrics->strText;
+	m_strText_prev = pMetrics->strText;
+
+	DWORD dwEditStyle = WS_CHILD | pEditOptions->m_dwEditStyle;
+
+	if (m_hWnd)
+	{
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_LEFT | ES_RIGHT | ES_CENTER | ES_READONLY;
+
+		if ((GetStyle() & dwStyle) != (dwEditStyle & dwStyle))
+			DestroyWindow();
+	}
+
+	if (!m_hWnd)
+	{
+		CEdit::Create(dwEditStyle, rect, pControl, 0);
+	}
+
+	if (pControl->GetExStyle() & WS_EX_RTLREADING)
+	{
+		ModifyStyleEx(0, WS_EX_RTLREADING);
+	}
+
+	ModifyStyle(ES_LEFT | ES_RIGHT | ES_CENTER, 0);
+
+	if (pControl->GetPaintManager()->m_bUseEditTextAlignment)
+	{
+		if (pMetrics->nColumnAlignment & DT_RIGHT)
+		{
+			ModifyStyle(0, ES_RIGHT);
+		}
+		else if (pMetrics->nColumnAlignment & DT_CENTER)
+		{
+			ModifyStyle(0, ES_CENTER);
+		}
+	}
+
+	SetLimitText(pEditOptions->m_nMaxLength);
+
+	SetFocus();
+	SetFont(pMetrics->pFont);
+	SetWindowText(m_strValue);
+
+	pMetrics->InternalRelease();
+
+
+	if (rect.right > rect.left)
+	{
+		SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+	}
+	else
+	{
+		HideWindow();
+	}
+
+	SetMargins(0, 0);
+}
+
+void CXTPReportInplaceEdit::SetWindowText(LPCTSTR lpszString)
+{
+	m_bSetWindowText = TRUE;
+
+	CWnd::SetWindowText(lpszString);
+	m_strText_prev = lpszString;
+
+	m_bSetWindowText = FALSE;
+}
+
+void CXTPReportInplaceEdit::SetFont(CFont* pFont)
+{
+	m_fntEdit.DeleteObject();
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+	m_fntEdit.CreateFontIndirect(&lf);
+
+	CEdit::SetFont(&m_fntEdit);
+}
+
+void CXTPReportInplaceEdit::OnEnKillfocus()
+{
+	if (pControl && pItem)
+	{
+		pItem->OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)this);
+		HideWindow();
+
+	}
+}
+
+void CXTPReportInplaceEdit::OnEnChange()
+{
+	if(m_bSetWindowText || !pControl || !pItem)
+		return;
+
+	CString strValue, strValNew;
+	GetWindowText(strValue);
+	strValNew = strValue;
+
+	BOOL bCommit = pItem->OnEditChanging((XTP_REPORTRECORDITEM_ARGS*)this, strValNew);
+	if (!bCommit || strValNew != strValue)
+	{
+		int nSelStart = 0, nSelEnd = 0;
+		GetSel(nSelStart, nSelEnd);
+
+		SetWindowText(bCommit ? strValNew : m_strText_prev);
+
+		SetSel(nSelStart, nSelEnd);
+	}
+	else
+	{
+		m_strText_prev = strValue;
+	}
+}
+
+int CXTPReportInplaceEdit::OnMouseActivate(CWnd* , UINT , UINT ) //(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	return MA_NOACTIVATE;
+}
+
+UINT CXTPReportInplaceEdit::OnGetDlgCode()
+{
+	return DLGC_WANTALLKEYS;
+}
+
+void CXTPReportInplaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+//  TRACE(_T("ReportControl, OnChar('%d') \n"), nChar);
+
+	if (!pControl)
+		return;
+
+	// Moved to PreTranslateMessage
+//  if (!pControl->OnPreviewKeyDown(nChar, nRepCnt, nFlags))
+//  {
+//      return;
+//  }
+
+	if (nChar == VK_TAB) return;
+	if (nChar == VK_ESCAPE || nChar == VK_RETURN)
+	{
+		pControl->EditItem(NULL);
+		return;
+	}
+	if (pItem && pColumn && pItem->GetEditOptions(pColumn)->m_bConstraintEdit)
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+
+		CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+		int nCount = pConstraints->GetCount();
+		if (nCount > 0)
+		{
+
+			CString str, strActual;
+			GetWindowText(str);
+			strActual = str;
+
+			CXTPReportRecordItemConstraint* pConstraint = (m_pSelectedConstraint == NULL) ?
+				pEditOptions->FindConstraint(str): m_pSelectedConstraint;
+
+			int nIndexStart, nIndex;
+			nIndexStart = nIndex = (pConstraint == NULL ? nCount - 1 : pConstraint->GetIndex());
+
+			CString strSeach ((TCHAR)nChar);
+
+			do
+			{
+
+				nIndex = nIndex < nCount - 1 ? nIndex + 1 : 0;
+
+				pConstraint = pConstraints->GetAt(nIndex);
+				str = pConstraint->m_strConstraint;
+
+				if (strSeach.CompareNoCase(str.Left(1)) == 0)
+				{
+					m_pSelectedConstraint = pConstraint;
+					SetWindowText(str);
+					SetSel(0, -1);
+
+					if(strActual.CompareNoCase(str) != 0)
+						((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
+
+					return;
+				}
+
+			} while (nIndex != nIndexStart);
+
+			return;
+		}
+	}
+
+	CEdit::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CXTPReportInplaceEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CXTPReportControl* _pControl = pControl;
+	ASSERT(_pControl);
+
+	if (!_pControl)
+	{
+		return;
+	}
+
+	//-----------------------------------------------------------------------
+
+	if (nChar == VK_TAB && _pControl)
+	{
+		_pControl->SetFocus();
+		_pControl->SendMessage(WM_CHAR, nChar);
+		return;
+
+	}
+	if (nChar == VK_ESCAPE)
+	{
+		SetWindowText(m_strValue);
+		return;
+	}
+	else if (nChar == VK_RETURN)
+	{
+		return;
+	}
+	else if (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT)
+	{
+		if (pItem && pColumn && pItem->GetEditOptions(pColumn)->m_bConstraintEdit)
+		{
+			CXTPReportRecordItemConstraint* pConstraint;
+			CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+			CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+
+			int nCount = pConstraints->GetCount();
+			if (nCount > 1)
+			{
+				CString strActual, str;
+				GetWindowText(strActual);
+
+				int nIndex = 0;          // the first item
+
+				if(nChar == VK_NEXT)
+				{
+					nIndex = nCount - 1; // the last item
+				}
+				else if (nChar != VK_PRIOR)
+				{
+					// look for the actually selected item
+					for(int i = 0; i < nCount; i++)
+					{
+						pConstraint = pConstraints->GetAt(i);
+
+						if (strActual.CompareNoCase(pConstraint->m_strConstraint) == 0)
+						{
+							if(nChar == VK_UP)
+								nIndex = max(0, i - 1);
+							else if(nChar == VK_DOWN)
+								nIndex = min(nCount-1, i + 1);
+
+							break;
+						}
+					}
+				}
+
+				pConstraint = pConstraints->GetAt(max(0, min(nIndex, nCount-1)));
+				str = pConstraint->m_strConstraint;
+				m_pSelectedConstraint = pConstraint;
+
+				// set the default font, because user could change the font (for ex. to striked one)
+				SetFont(pControl->GetPaintManager()->GetTextFont());
+				SetWindowText(str);
+				SetSel(0, -1);
+
+				if(strActual.CompareNoCase(str) != 0)
+					((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
+
+				return;
+			}
+		}
+	}
+
+	CEdit::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPReportInplaceEdit::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if ((nChar == VK_UP || nChar == VK_DOWN) && pControl)
+	{
+		if (pControl->GetInplaceButtons()->GetSize() > 0)
+		{
+			CXTPReportInplaceButton* pButton = pControl->GetInplaceButtons()->GetAt(0);
+
+			if (pButton->GetItem() == pItem)
+			{
+				pItem->OnInplaceButtonDown(pButton);
+			}
+		}
+	}
+
+	CEdit::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPReportInplaceEdit::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pControl)
+	{
+		if (!pControl->OnPreviewKeyDown((UINT&)pMsg->wParam, LOWORD(pMsg->lParam), HIWORD(pMsg->lParam)) )
+		{
+			// TRACE(_T("InplaceEdit, PreTranslateMessagem-OnPreviewKeyDown('%d') = CANCEL  \n"), pMsg->wParam);
+			return TRUE;
+		}
+	}
+
+	if (pMsg->message == WM_KEYDOWN && IsDialogMessage(pMsg))
+		return TRUE;
+
+	return CEdit::PreTranslateMessage(pMsg);
+}
+
+void CXTPReportInplaceEdit::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (pRow && pItem)
+	{
+		MapWindowPoints(pControl, &point, 1);
+		pRow->OnDblClick(point);
+	}
+
+	if (pItem)
+	{
+		CEdit::OnLButtonDblClk(nFlags, point);
+	}
+}
+
+HBRUSH CXTPReportInplaceEdit::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	pDC->SetTextColor(m_clrText);
+
+	return GetSysColorBrush(COLOR_WINDOW);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportInplaceButton
+
+CXTPReportInplaceButton::CXTPReportInplaceButton(UINT nID)
+{
+	m_nID = nID;
+	m_nWidth = 17;
+	m_nFixedHeight = 19;
+	m_bInsideCell = FALSE;
+
+	m_bPressed = m_bOver = FALSE;
+
+}
+
+void CXTPReportInplaceButton::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CRect& rcButtons)
+{
+	m_bPressed = m_bOver = FALSE;
+	SetItemArgs(pItemArgs);
+
+	CRect rect(rcButtons);
+	if (pControl->GetPaintManager()->IsFixedInplaceButtonHeight())
+		rect.bottom = rect.top + m_nFixedHeight;
+
+	if (m_bInsideCell)
+	{
+		rect.right = rcButtons.left;
+		rect.left = rect.right - m_nWidth;
+
+		rcButtons.left = rect.left;
+	}
+	else
+	{
+		rect.left = rcButtons.right;
+		rect.right = rect.left + m_nWidth;
+
+		rcButtons.right = rect.right;
+	}
+
+	if (!m_hWnd)
+	{
+		CStatic::Create(NULL, SS_NOTIFY | WS_CHILD, rect, pItemArgs->pControl);
+	}
+
+	SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+BEGIN_MESSAGE_MAP(CXTPReportInplaceButton, CStatic)
+	//{{AFX_MSG_MAP(CXTPReportInplaceButton)
+	ON_WM_PAINT()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CAPTURECHANGED()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPReportInplaceButton::OnPaint()
+{
+	CPaintDC dc(this);
+
+	if (pControl)
+	{
+		pControl->GetPaintManager()->DrawInplaceButton(&dc, this);
+	}
+}
+
+void CXTPReportInplaceButton::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
+
+void CXTPReportInplaceButton::OnLButtonDown(UINT, CPoint)
+{
+	m_bOver = m_bPressed = TRUE;
+	Invalidate(FALSE);
+	SetCapture();
+}
+
+void CXTPReportInplaceButton::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_bPressed && pItem)
+	{
+		m_bPressed = FALSE;
+		Invalidate(FALSE);
+		ReleaseCapture();
+		if (m_bOver)
+		{
+			pItem->OnInplaceButtonDown(this);
+		}
+	}
+	CStatic::OnLButtonUp(nFlags, point);
+}
+
+void CXTPReportInplaceButton::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bPressed)
+	{
+		CXTPClientRect rect(this);
+		if ((rect.PtInRect(point) && !m_bOver) ||
+			(!rect.PtInRect(point) && m_bOver))
+		{
+			m_bOver = rect.PtInRect(point);
+			Invalidate(FALSE);
+		}
+	}
+
+	CStatic::OnMouseMove(nFlags, point);
+}
+
+void CXTPReportInplaceButton::OnCaptureChanged(CWnd* pWnd)
+{
+	m_bPressed = FALSE;
+	Invalidate(FALSE);
+
+	CStatic::OnCaptureChanged(pWnd);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportInplaceList
+
+CXTPReportInplaceList::CXTPReportInplaceList()
+{
+	m_bApply = FALSE;
+	m_dwLastKeyDownTime = 0;
+}
+
+
+void CXTPReportInplaceList::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraints* pConstaints)
+{
+	SetItemArgs(pItemArgs);
+
+	CRect rect(pItemArgs->rcItem);
+
+	if (!m_hWnd)
+	{
+		CListBox::CreateEx(WS_EX_TOOLWINDOW | (pControl->GetExStyle() & WS_EX_LAYOUTRTL), _T("LISTBOX"), _T(""), LBS_NOTIFY | WS_CHILD | WS_BORDER | WS_VSCROLL, CRect(0, 0, 0, 0), pControl, 0);
+		SetOwner(pControl);
+	}
+
+	SetFont(pControl->GetPaintManager()->GetTextFont());
+	ResetContent();
+
+	int dx = rect.right - rect.left + 1;
+
+	CWindowDC dc(pControl);
+	CXTPFontDC font(&dc, GetFont());
+	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
+
+	CString strCaption = pItem->GetCaption(pColumn);
+	DWORD dwData = pItem->GetSelectedConstraintData(pItemArgs);
+
+	for (int i = 0; i < pConstaints->GetCount(); i++)
+	{
+		CXTPReportRecordItemConstraint* pConstaint = pConstaints->GetAt(i);
+		CString str = pConstaint->m_strConstraint;
+		int nIndex = AddString(str);
+		SetItemDataPtr(nIndex, pConstaint);
+
+		dx = max(dx, dc.GetTextExtent(str).cx + nThumbLength);
+
+		if ((dwData == (DWORD)-1 && strCaption == str) || (dwData == pConstaint->m_dwData))
+			SetCurSel(nIndex);
+	}
+
+	int nHeight = GetItemHeight(0);
+	rect.top = rect.bottom;
+	rect.bottom += nHeight * min(10, GetCount()) + 2;
+	rect.left = rect.right - dx;
+
+	pControl->ClientToScreen(&rect);
+
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rect);
+	if (rect.bottom > rcWork.bottom && rect.top > rcWork.CenterPoint().y)
+	{
+		rect.OffsetRect(0, - rect.Height() - pItemArgs->rcItem.Height());
+	}
+
+	if (rect.left < rcWork.left) rect.OffsetRect(rcWork.left - rect.left, 0);
+	if (rect.right > rcWork.right) rect.OffsetRect(rcWork.right - rect.right, 0);
+
+
+	SetFocus();
+
+	if (!m_hWnd) // Can be destroyed after focus set
+		return;
+
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+	ModifyStyle(WS_CHILD, WS_POPUP);
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pControl->m_hWnd);
+
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+	CXTPMouseMonitor::SetupHook(this);
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPReportInplaceList, CListBox)
+	//{{AFX_MSG_MAP(CXTPReportInplaceList)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONUP()
+	ON_WM_CHAR()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+int CXTPReportInplaceList::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPReportInplaceList::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	m_bApply = FALSE;
+	CXTPReportInplaceControl::SetItemArgs(pItemArgs);
+
+	m_dwLastKeyDownTime = 0;
+	m_strHotSearchContext.Empty();
+}
+
+void CXTPReportInplaceList::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+	SetItemArgs(NULL);
+
+	CListBox::PostNcDestroy();
+}
+
+
+void CXTPReportInplaceList::OnKillFocus(CWnd* pNewWnd)
+{
+	//ASSERT(pItem || m_bApply);
+
+	if (pItem && !m_bApply)
+		pItem->OnEditCanceled(this);
+
+	CListBox::OnKillFocus(pNewWnd);
+	DestroyWindow();
+}
+
+void CXTPReportInplaceList::OnLButtonUp(UINT, CPoint point)
+{
+	CXTPClientRect rc(this);
+
+	if (rc.PtInRect(point))
+		Apply();
+	else
+		Cancel();
+}
+
+
+void CXTPReportInplaceList::Cancel()
+{
+	m_bApply = FALSE;
+
+	GetOwner()->SetFocus();
+}
+
+void CXTPReportInplaceList::Apply()
+{
+	if (!pControl)
+		return;
+
+	CXTPReportControl* pReportControl = pControl;
+
+	int nIndex = GetCurSel();
+	if (nIndex != LB_ERR)
+	{
+		m_bApply = TRUE;
+
+		CXTPReportRecordItemConstraint* pConstraint = (CXTPReportRecordItemConstraint*)GetItemDataPtr(nIndex);
+
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *((XTP_REPORTRECORDITEM_ARGS*)this);
+		itemArgs.AddRef();
+
+		pItem->OnConstraintChanged(&itemArgs, pConstraint);
+		pReportControl->RedrawControl();
+
+		pReportControl->SendMessageToParent(itemArgs.pRow, itemArgs.pItem, itemArgs.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
+
+		itemArgs.Release();
+	}
+
+	pReportControl->SetFocus();
+}
+
+void CXTPReportInplaceList::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	UNREFERENCED_PARAMETER(nRepCnt); UNREFERENCED_PARAMETER(nFlags);
+
+	const DWORD cwdHotSearchTomeOut_ms = 1300;
+
+	DWORD dwTime = GetTickCount();
+
+	if (dwTime - m_dwLastKeyDownTime > cwdHotSearchTomeOut_ms)
+		m_strHotSearchContext.Empty();
+
+	m_dwLastKeyDownTime = dwTime;
+
+	//----------------------------------------------
+	m_strHotSearchContext += (TCHAR)nChar;
+
+	int nIndex = GetCurSel();
+	if (nIndex == LB_ERR)
+		nIndex = 0;
+
+	int nFindIdx = FindString(nIndex, m_strHotSearchContext);
+
+	if(nFindIdx == LB_ERR && nIndex > 0)
+		nFindIdx = FindString(0, m_strHotSearchContext);
+
+	if(nFindIdx != LB_ERR)
+	{
+		SetCurSel(nFindIdx);
+
+		if(nIndex != nFindIdx)
+			OnSelectionChanged(nFindIdx);
+	}
+}
+
+void CXTPReportInplaceList::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	switch(nChar)
+	{
+	case VK_UP:
+	case VK_DOWN:
+	case VK_PRIOR:
+	case VK_NEXT:
+	case VK_HOME:
+	case VK_END:
+		m_strHotSearchContext.Empty();
+	}
+
+	//----------------------------------------------
+	if (nChar == VK_ESCAPE)
+	{
+		Cancel();
+	}
+	else if (nChar == VK_RETURN || nChar == VK_F4)
+	{
+		 Apply();
+	}
+	else
+	{
+		int nPrevSel = CListBox::GetCurSel();
+		CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
+		int nActualSel = CListBox::GetCurSel();
+
+		if(nPrevSel != nActualSel)
+			OnSelectionChanged(nActualSel);
+	}
+}
+
+void CXTPReportInplaceList::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		Apply();
+		return;
+	}
+
+	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPReportInplaceList::OnSelectionChanged(int nLBIndex)
+{
+	CString strActual, str;
+	CListBox::GetText(nLBIndex,strActual);
+
+	CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+	CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+
+	int nCount = pConstraints->GetCount();
+	for(int nIndex = 0; nIndex < nCount; nIndex++)
+	{
+		CXTPReportRecordItemConstraint* pConstraint = pConstraints->GetAt(nIndex);
+		str = pConstraint->m_strConstraint;
+
+		if(strActual.CompareNoCase(str) == 0)
+		{
+			((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
+			break;
+		}
+	}
+}
+
 

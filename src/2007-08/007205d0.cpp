@@ -1,45 +1,5 @@
-// from server: 48% by colin
-extern "C" __declspec(dllimport) long __stdcall SetWindowLongA(void*, int, long);
-
-struct Node
-{
-    Node* next;
-    Node* prev;
-    int   data;
-};
-
-struct CXTWindowMap
-{
-    Node* find(Node*);
-    Node* erase(Node*);
-    Node* insert(Node*, Node*);
-    Node* remove(Node*);
-};
-
-Node* CXTWindowMap::remove(Node* p)
-{
-    Node* n = find(p);
-    if (n == p)
-    {
-        Node* q = n->next;
-        if (q != 0)
-        {
-            Node* r = erase(p);
-            r->next = q;
-            return r;
-        }
-        else
-        {
-            Node* r = insert(p, p->prev);
-            SetWindowLongA((void*)p->prev, -4, (long)p->data);
-            return r;
-        }
-    }
-    else
-    {
-        while (n->next != p)
-            n = n->next;
-        n->next = p->next;
-        return n;
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_b0f6d0757ac19e87.cpp

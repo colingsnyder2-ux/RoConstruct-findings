@@ -1,160 +1,485 @@
 // from server: 100% by auto
-// roc 2009-06 0059e550  unit: seg_00590000  size: 492 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0059e550
-//
-// 0059e550  83ec10               sub esp, 0x10
-// 0059e553  53                   push ebx
-// 0059e554  55                   push ebp
-// 0059e555  56                   push esi
-// 0059e556  8b742420             mov esi, dword ptr [esp + 0x20]
-// 0059e55a  8b4604               mov eax, dword ptr [esi + 4]
-// 0059e55d  8b08                 mov ecx, dword ptr [eax]
-// 0059e55f  68a0000000           push 0xa0
-// 0059e564  6a01                 push 1
-// 0059e566  56                   push esi
-// 0059e567  ffd1                 call ecx
-// 0059e569  8be8                 mov ebp, eax
-// 0059e56b  89aea0010000         mov dword ptr [esi + 0x1a0], ebp
-// 0059e571  83c40c               add esp, 0xc
-// 0059e574  c74500a0e05900       mov dword ptr [ebp], 0x59e0a0
-// 0059e57b  c74504c0e05900       mov dword ptr [ebp + 4], 0x59e0c0
-// 0059e582  c6450800             mov byte ptr [ebp + 8], 0
-// 0059e586  80be0a01000000       cmp byte ptr [esi + 0x10a], 0
-// 0059e58d  896c2418             mov dword ptr [esp + 0x18], ebp
-// 0059e591  7413                 je 0x59e5a6
-// 0059e593  8b16                 mov edx, dword ptr [esi]
-// 0059e595  c7421419000000       mov dword ptr [edx + 0x14], 0x19
-// 0059e59c  8b06                 mov eax, dword ptr [esi]
-// 0059e59e  8b08                 mov ecx, dword ptr [eax]
-// 0059e5a0  56                   push esi
-// 0059e5a1  ffd1                 call ecx
-// 0059e5a3  83c404               add esp, 4
-// 0059e5a6  807e4800             cmp byte ptr [esi + 0x48], 0
-// 0059e5aa  740e                 je 0x59e5ba
-// 0059e5ac  83be1801000001       cmp dword ptr [esi + 0x118], 1
-// 0059e5b3  c644242001           mov byte ptr [esp + 0x20], 1
-// 0059e5b8  7f05                 jg 0x59e5bf
-// 0059e5ba  c644242000           mov byte ptr [esp + 0x20], 0
-// 0059e5bf  837e2400             cmp dword ptr [esi + 0x24], 0
-// 0059e5c3  8b9ec4000000         mov ebx, dword ptr [esi + 0xc4]
-// 0059e5c9  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 0059e5d1  0f8e5e010000         jle 0x59e735
-// 0059e5d7  83c324               add ebx, 0x24
-// 0059e5da  83c534               add ebp, 0x34
-// 0059e5dd  57                   push edi
-// 0059e5de  8bff                 mov edi, edi
-// 0059e5e0  8b0b                 mov ecx, dword ptr [ebx]
-// 0059e5e2  8b43e4               mov eax, dword ptr [ebx - 0x1c]
-// 0059e5e5  8bbe18010000         mov edi, dword ptr [esi + 0x118]
-// 0059e5eb  0fafc1               imul eax, ecx
-// 0059e5ee  99                   cdq 
-// 0059e5ef  f7ff                 idiv edi
-// 0059e5f1  89442414             mov dword ptr [esp + 0x14], eax
-// 0059e5f5  8b43e8               mov eax, dword ptr [ebx - 0x18]
-// 0059e5f8  0fafc1               imul eax, ecx
-// 0059e5fb  99                   cdq 
-// 0059e5fc  f7ff                 idiv edi
-// 0059e5fe  8b9614010000         mov edx, dword ptr [esi + 0x114]
-// 0059e604  89542418             mov dword ptr [esp + 0x18], edx
-// 0059e608  8bc8                 mov ecx, eax
-// 0059e60a  8b8610010000         mov eax, dword ptr [esi + 0x110]
-// 0059e610  894d30               mov dword ptr [ebp + 0x30], ecx
-// 0059e613  807b0c00             cmp byte ptr [ebx + 0xc], 0
-// 0059e617  750c                 jne 0x59e625
-// 0059e619  c74500a0e15900       mov dword ptr [ebp], 0x59e1a0
-// 0059e620  e9f7000000           jmp 0x59e71c
-// 0059e625  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 0059e629  3bf8                 cmp edi, eax
-// 0059e62b  7510                 jne 0x59e63d
-// 0059e62d  3bca                 cmp ecx, edx
-// 0059e62f  750c                 jne 0x59e63d
-// 0059e631  c7450090e15900       mov dword ptr [ebp], 0x59e190
-// 0059e638  e9df000000           jmp 0x59e71c
-// 0059e63d  03ff                 add edi, edi
-// 0059e63f  3bf8                 cmp edi, eax
-// 0059e641  755d                 jne 0x59e6a0
-// 0059e643  3bca                 cmp ecx, edx
-// 0059e645  7525                 jne 0x59e66c
-// 0059e647  807c242400           cmp byte ptr [esp + 0x24], 0
-// 0059e64c  7412                 je 0x59e660
-// 0059e64e  837b0402             cmp dword ptr [ebx + 4], 2
-// 0059e652  760c                 jbe 0x59e660
-// 0059e654  c7450060e35900       mov dword ptr [ebp], 0x59e360
-// 0059e65b  e98e000000           jmp 0x59e6ee
-// 0059e660  c7450090e25900       mov dword ptr [ebp], 0x59e290
-// 0059e667  e982000000           jmp 0x59e6ee
-// 0059e66c  3bf8                 cmp edi, eax
-// 0059e66e  7530                 jne 0x59e6a0
-// 0059e670  8d1409               lea edx, [ecx + ecx]
-// 0059e673  3b542418             cmp edx, dword ptr [esp + 0x18]
-// 0059e677  7527                 jne 0x59e6a0
-// 0059e679  807c242400           cmp byte ptr [esp + 0x24], 0
-// 0059e67e  7417                 je 0x59e697
-// 0059e680  837b0402             cmp dword ptr [ebx + 4], 2
-// 0059e684  7611                 jbe 0x59e697
-// 0059e686  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0059e68a  c7450020e45900       mov dword ptr [ebp], 0x59e420
-// 0059e691  c6400801             mov byte ptr [eax + 8], 1
-// 0059e695  eb57                 jmp 0x59e6ee
-// 0059e697  c74500f0e25900       mov dword ptr [ebp], 0x59e2f0
-// 0059e69e  eb4e                 jmp 0x59e6ee
-// 0059e6a0  99                   cdq 
-// 0059e6a1  f77c2414             idiv dword ptr [esp + 0x14]
-// 0059e6a5  89442414             mov dword ptr [esp + 0x14], eax
-// 0059e6a9  85d2                 test edx, edx
-// 0059e6ab  752e                 jne 0x59e6db
-// 0059e6ad  8b442418             mov eax, dword ptr [esp + 0x18]
-// 0059e6b1  99                   cdq 
-// 0059e6b2  f7f9                 idiv ecx
-// 0059e6b4  85d2                 test edx, edx
-// 0059e6b6  7523                 jne 0x59e6db
-// 0059e6b8  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0059e6bc  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 0059e6c0  8a542414             mov dl, byte ptr [esp + 0x14]
-// 0059e6c4  c74500b0e15900       mov dword ptr [ebp], 0x59e1b0
-// 0059e6cb  88940f8c000000       mov byte ptr [edi + ecx + 0x8c], dl
-// 0059e6d2  88840f96000000       mov byte ptr [edi + ecx + 0x96], al
-// 0059e6d9  eb13                 jmp 0x59e6ee
-// 0059e6db  8b06                 mov eax, dword ptr [esi]
-// 0059e6dd  c7401426000000       mov dword ptr [eax + 0x14], 0x26
-// 0059e6e4  8b0e                 mov ecx, dword ptr [esi]
-// 0059e6e6  8b11                 mov edx, dword ptr [ecx]
-// 0059e6e8  56                   push esi
-// 0059e6e9  ffd2                 call edx
-// 0059e6eb  83c404               add esp, 4
-// 0059e6ee  8b8614010000         mov eax, dword ptr [esi + 0x114]
-// 0059e6f4  8b8e10010000         mov ecx, dword ptr [esi + 0x110]
-// 0059e6fa  8b565c               mov edx, dword ptr [esi + 0x5c]
-// 0059e6fd  8b7e04               mov edi, dword ptr [esi + 4]
-// 0059e700  50                   push eax
-// 0059e701  51                   push ecx
-// 0059e702  52                   push edx
-// 0059e703  83c708               add edi, 8
-// 0059e706  e815b7feff           call 0x589e20
-// 0059e70b  83c408               add esp, 8
-// 0059e70e  50                   push eax
-// 0059e70f  8b07                 mov eax, dword ptr [edi]
-// 0059e711  6a01                 push 1
-// 0059e713  56                   push esi
-// 0059e714  ffd0                 call eax
-// 0059e716  83c410               add esp, 0x10
-// 0059e719  8945d8               mov dword ptr [ebp - 0x28], eax
-// 0059e71c  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0059e720  40                   inc eax
-// 0059e721  83c504               add ebp, 4
-// 0059e724  83c354               add ebx, 0x54
-// 0059e727  3b4624               cmp eax, dword ptr [esi + 0x24]
-// 0059e72a  89442410             mov dword ptr [esp + 0x10], eax
-// 0059e72e  0f8cacfeffff         jl 0x59e5e0
-// 0059e734  5f                   pop edi
-// 0059e735  5e                   pop esi
-// 0059e736  5d                   pop ebp
-// 0059e737  5b                   pop ebx
-// 0059e738  83c410               add esp, 0x10
-// 0059e73b  c3                   ret 
-// library jpeg-6b/jdsample.c (function _jinit_upsampler)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdsample.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jdsample.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains upsampling routines.
+ *
+ * Upsampling input data is counted in "row groups".  A row group
+ * is defined to be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size)
+ * sample rows of each component.  Upsampling will normally produce
+ * max_v_samp_factor pixel rows from each row group (but this could vary
+ * if the upsampler is applying a scale factor of its own).
+ *
+ * An excellent reference for image resampling is
+ *   Digital Image Warping, George Wolberg, 1990.
+ *   Pub. by IEEE Computer Society Press, Los Alamitos, CA. ISBN 0-8186-8944-7.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Pointer to routine to upsample a single component */
+typedef JMETHOD(void, upsample1_ptr,
+		(j_decompress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr));
+
+/* Private subobject */
+
+typedef struct {
+  struct jpeg_upsampler pub;	/* public fields */
+
+  /* Color conversion buffer.  When using separate upsampling and color
+   * conversion steps, this buffer holds one upsampled row group until it
+   * has been color converted and output.
+   * Note: we do not allocate any storage for component(s) which are full-size,
+   * ie do not need rescaling.  The corresponding entry of color_buf[] is
+   * simply set to point to the input data array, thereby avoiding copying.
+   */
+  JSAMPARRAY color_buf[MAX_COMPONENTS];
+
+  /* Per-component upsampling method pointers */
+  upsample1_ptr methods[MAX_COMPONENTS];
+
+  int next_row_out;		/* counts rows emitted from color_buf */
+  JDIMENSION rows_to_go;	/* counts rows remaining in image */
+
+  /* Height of an input row group for each component. */
+  int rowgroup_height[MAX_COMPONENTS];
+
+  /* These arrays save pixel expansion factors so that int_expand need not
+   * recompute them each time.  They are unused for other upsampling methods.
+   */
+  UINT8 h_expand[MAX_COMPONENTS];
+  UINT8 v_expand[MAX_COMPONENTS];
+} my_upsampler;
+
+typedef my_upsampler * my_upsample_ptr;
+
+
+/*
+ * Initialize for an upsampling pass.
+ */
+
+METHODDEF(void)
+start_pass_upsample (j_decompress_ptr cinfo)
+{
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+
+  /* Mark the conversion buffer empty */
+  upsample->next_row_out = cinfo->max_v_samp_factor;
+  /* Initialize total-height counter for detecting bottom of image */
+  upsample->rows_to_go = cinfo->output_height;
+}
+
+
+/*
+ * Control routine to do upsampling (and color conversion).
+ *
+ * In this version we upsample each component independently.
+ * We upsample one row group into the conversion buffer, then apply
+ * color conversion a row at a time.
+ */
+
+METHODDEF(void)
+sep_upsample (j_decompress_ptr cinfo,
+	      JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+	      JDIMENSION in_row_groups_avail,
+	      JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+	      JDIMENSION out_rows_avail)
+{
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  int ci;
+  jpeg_component_info * compptr;
+  JDIMENSION num_rows;
+
+  /* Fill the conversion buffer, if it's empty */
+  if (upsample->next_row_out >= cinfo->max_v_samp_factor) {
+    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+	 ci++, compptr++) {
+      /* Invoke per-component upsample method.  Notice we pass a POINTER
+       * to color_buf[ci], so that fullsize_upsample can change it.
+       */
+      (*upsample->methods[ci]) (cinfo, compptr,
+	input_buf[ci] + (*in_row_group_ctr * upsample->rowgroup_height[ci]),
+	upsample->color_buf + ci);
+    }
+    upsample->next_row_out = 0;
+  }
+
+  /* Color-convert and emit rows */
+
+  /* How many we have in the buffer: */
+  num_rows = (JDIMENSION) (cinfo->max_v_samp_factor - upsample->next_row_out);
+  /* Not more than the distance to the end of the image.  Need this test
+   * in case the image height is not a multiple of max_v_samp_factor:
+   */
+  if (num_rows > upsample->rows_to_go) 
+    num_rows = upsample->rows_to_go;
+  /* And not more than what the client can accept: */
+  out_rows_avail -= *out_row_ctr;
+  if (num_rows > out_rows_avail)
+    num_rows = out_rows_avail;
+
+  (*cinfo->cconvert->color_convert) (cinfo, upsample->color_buf,
+				     (JDIMENSION) upsample->next_row_out,
+				     output_buf + *out_row_ctr,
+				     (int) num_rows);
+
+  /* Adjust counts */
+  *out_row_ctr += num_rows;
+  upsample->rows_to_go -= num_rows;
+  upsample->next_row_out += num_rows;
+  /* When the buffer is emptied, declare this input row group consumed */
+  if (upsample->next_row_out >= cinfo->max_v_samp_factor)
+    (*in_row_group_ctr)++;
+}
+
+
+/*
+ * These are the routines invoked by sep_upsample to upsample pixel values
+ * of a single component.  One row group is processed per call.
+ */
+
+
+/*
+ * For full-size components, we just make color_buf[ci] point at the
+ * input buffer, and thus avoid copying any data.  Note that this is
+ * safe only because sep_upsample doesn't declare the input row group
+ * "consumed" until we are done color converting and emitting it.
+ */
+
+METHODDEF(void)
+fullsize_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+		   JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  *output_data_ptr = input_data;
+}
+
+
+/*
+ * This is a no-op version used for "uninteresting" components.
+ * These components will not be referenced by color conversion.
+ */
+
+METHODDEF(void)
+noop_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+	       JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  *output_data_ptr = NULL;	/* safety check */
+}
+
+
+/*
+ * This version handles any integral sampling ratios.
+ * This is not used for typical JPEG files, so it need not be fast.
+ * Nor, for that matter, is it particularly accurate: the algorithm is
+ * simple replication of the input pixel onto the corresponding output
+ * pixels.  The hi-falutin sampling literature refers to this as a
+ * "box filter".  A box filter tends to introduce visible artifacts,
+ * so if you are actually going to use 3:1 or 4:1 sampling ratios
+ * you would be well advised to improve this code.
+ */
+
+METHODDEF(void)
+int_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+	      JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr, outptr;
+  register JSAMPLE invalue;
+  register int h;
+  JSAMPROW outend;
+  int h_expand, v_expand;
+  int inrow, outrow;
+
+  h_expand = upsample->h_expand[compptr->component_index];
+  v_expand = upsample->v_expand[compptr->component_index];
+
+  inrow = outrow = 0;
+  while (outrow < cinfo->max_v_samp_factor) {
+    /* Generate one output row with proper horizontal expansion */
+    inptr = input_data[inrow];
+    outptr = output_data[outrow];
+    outend = outptr + cinfo->output_width;
+    while (outptr < outend) {
+      invalue = *inptr++;	/* don't need GETJSAMPLE() here */
+      for (h = h_expand; h > 0; h--) {
+	*outptr++ = invalue;
+      }
+    }
+    /* Generate any additional output rows by duplicating the first one */
+    if (v_expand > 1) {
+      jcopy_sample_rows(output_data, outrow, output_data, outrow+1,
+			v_expand-1, cinfo->output_width);
+    }
+    inrow++;
+    outrow += v_expand;
+  }
+}
+
+
+/*
+ * Fast processing for the common case of 2:1 horizontal and 1:1 vertical.
+ * It's still a box filter.
+ */
+
+METHODDEF(void)
+h2v1_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+	       JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr, outptr;
+  register JSAMPLE invalue;
+  JSAMPROW outend;
+  int inrow;
+
+  for (inrow = 0; inrow < cinfo->max_v_samp_factor; inrow++) {
+    inptr = input_data[inrow];
+    outptr = output_data[inrow];
+    outend = outptr + cinfo->output_width;
+    while (outptr < outend) {
+      invalue = *inptr++;	/* don't need GETJSAMPLE() here */
+      *outptr++ = invalue;
+      *outptr++ = invalue;
+    }
+  }
+}
+
+
+/*
+ * Fast processing for the common case of 2:1 horizontal and 2:1 vertical.
+ * It's still a box filter.
+ */
+
+METHODDEF(void)
+h2v2_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+	       JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr, outptr;
+  register JSAMPLE invalue;
+  JSAMPROW outend;
+  int inrow, outrow;
+
+  inrow = outrow = 0;
+  while (outrow < cinfo->max_v_samp_factor) {
+    inptr = input_data[inrow];
+    outptr = output_data[outrow];
+    outend = outptr + cinfo->output_width;
+    while (outptr < outend) {
+      invalue = *inptr++;	/* don't need GETJSAMPLE() here */
+      *outptr++ = invalue;
+      *outptr++ = invalue;
+    }
+    jcopy_sample_rows(output_data, outrow, output_data, outrow+1,
+		      1, cinfo->output_width);
+    inrow++;
+    outrow += 2;
+  }
+}
+
+
+/*
+ * Fancy processing for the common case of 2:1 horizontal and 1:1 vertical.
+ *
+ * The upsampling algorithm is linear interpolation between pixel centers,
+ * also known as a "triangle filter".  This is a good compromise between
+ * speed and visual quality.  The centers of the output pixels are 1/4 and 3/4
+ * of the way between input pixel centers.
+ *
+ * A note about the "bias" calculations: when rounding fractional values to
+ * integer, we do not want to always round 0.5 up to the next integer.
+ * If we did that, we'd introduce a noticeable bias towards larger values.
+ * Instead, this code is arranged so that 0.5 will be rounded up or down at
+ * alternate pixel locations (a simple ordered dither pattern).
+ */
+
+METHODDEF(void)
+h2v1_fancy_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+		     JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr, outptr;
+  register int invalue;
+  register JDIMENSION colctr;
+  int inrow;
+
+  for (inrow = 0; inrow < cinfo->max_v_samp_factor; inrow++) {
+    inptr = input_data[inrow];
+    outptr = output_data[inrow];
+    /* Special case for first column */
+    invalue = GETJSAMPLE(*inptr++);
+    *outptr++ = (JSAMPLE) invalue;
+    *outptr++ = (JSAMPLE) ((invalue * 3 + GETJSAMPLE(*inptr) + 2) >> 2);
+
+    for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
+      /* General case: 3/4 * nearer pixel + 1/4 * further pixel */
+      invalue = GETJSAMPLE(*inptr++) * 3;
+      *outptr++ = (JSAMPLE) ((invalue + GETJSAMPLE(inptr[-2]) + 1) >> 2);
+      *outptr++ = (JSAMPLE) ((invalue + GETJSAMPLE(*inptr) + 2) >> 2);
+    }
+
+    /* Special case for last column */
+    invalue = GETJSAMPLE(*inptr);
+    *outptr++ = (JSAMPLE) ((invalue * 3 + GETJSAMPLE(inptr[-1]) + 1) >> 2);
+    *outptr++ = (JSAMPLE) invalue;
+  }
+}
+
+
+/*
+ * Fancy processing for the common case of 2:1 horizontal and 2:1 vertical.
+ * Again a triangle filter; see comments for h2v1 case, above.
+ *
+ * It is OK for us to reference the adjacent input rows because we demanded
+ * context from the main buffer controller (see initialization code).
+ */
+
+METHODDEF(void)
+h2v2_fancy_upsample (j_decompress_ptr cinfo, jpeg_component_info * compptr,
+		     JSAMPARRAY input_data, JSAMPARRAY * output_data_ptr)
+{
+  JSAMPARRAY output_data = *output_data_ptr;
+  register JSAMPROW inptr0, inptr1, outptr;
+#if BITS_IN_JSAMPLE == 8
+  register int thiscolsum, lastcolsum, nextcolsum;
+#else
+  register INT32 thiscolsum, lastcolsum, nextcolsum;
+#endif
+  register JDIMENSION colctr;
+  int inrow, outrow, v;
+
+  inrow = outrow = 0;
+  while (outrow < cinfo->max_v_samp_factor) {
+    for (v = 0; v < 2; v++) {
+      /* inptr0 points to nearest input row, inptr1 points to next nearest */
+      inptr0 = input_data[inrow];
+      if (v == 0)		/* next nearest is row above */
+	inptr1 = input_data[inrow-1];
+      else			/* next nearest is row below */
+	inptr1 = input_data[inrow+1];
+      outptr = output_data[outrow++];
+
+      /* Special case for first column */
+      thiscolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+      nextcolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+      *outptr++ = (JSAMPLE) ((thiscolsum * 4 + 8) >> 4);
+      *outptr++ = (JSAMPLE) ((thiscolsum * 3 + nextcolsum + 7) >> 4);
+      lastcolsum = thiscolsum; thiscolsum = nextcolsum;
+
+      for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
+	/* General case: 3/4 * nearer pixel + 1/4 * further pixel in each */
+	/* dimension, thus 9/16, 3/16, 3/16, 1/16 overall */
+	nextcolsum = GETJSAMPLE(*inptr0++) * 3 + GETJSAMPLE(*inptr1++);
+	*outptr++ = (JSAMPLE) ((thiscolsum * 3 + lastcolsum + 8) >> 4);
+	*outptr++ = (JSAMPLE) ((thiscolsum * 3 + nextcolsum + 7) >> 4);
+	lastcolsum = thiscolsum; thiscolsum = nextcolsum;
+      }
+
+      /* Special case for last column */
+      *outptr++ = (JSAMPLE) ((thiscolsum * 3 + lastcolsum + 8) >> 4);
+      *outptr++ = (JSAMPLE) ((thiscolsum * 4 + 7) >> 4);
+    }
+    inrow++;
+  }
+}
+
+
+/*
+ * Module initialization routine for upsampling.
+ */
+
+GLOBAL(void)
+jinit_upsampler (j_decompress_ptr cinfo)
+{
+  my_upsample_ptr upsample;
+  int ci;
+  jpeg_component_info * compptr;
+  boolean need_buffer, do_fancy;
+  int h_in_group, v_in_group, h_out_group, v_out_group;
+
+  upsample = (my_upsample_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_upsampler));
+  cinfo->upsample = (struct jpeg_upsampler *) upsample;
+  upsample->pub.start_pass = start_pass_upsample;
+  upsample->pub.upsample = sep_upsample;
+  upsample->pub.need_context_rows = FALSE; /* until we find out differently */
+
+  if (cinfo->CCIR601_sampling)	/* this isn't supported */
+    ERREXIT(cinfo, JERR_CCIR601_NOTIMPL);
+
+  /* jdmainct.c doesn't support context rows when min_DCT_scaled_size = 1,
+   * so don't ask for it.
+   */
+  do_fancy = cinfo->do_fancy_upsampling && cinfo->min_DCT_scaled_size > 1;
+
+  /* Verify we can handle the sampling factors, select per-component methods,
+   * and create storage as needed.
+   */
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    /* Compute size of an "input group" after IDCT scaling.  This many samples
+     * are to be converted to max_h_samp_factor * max_v_samp_factor pixels.
+     */
+    h_in_group = (compptr->h_samp_factor * compptr->DCT_scaled_size) /
+		 cinfo->min_DCT_scaled_size;
+    v_in_group = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+		 cinfo->min_DCT_scaled_size;
+    h_out_group = cinfo->max_h_samp_factor;
+    v_out_group = cinfo->max_v_samp_factor;
+    upsample->rowgroup_height[ci] = v_in_group; /* save for use later */
+    need_buffer = TRUE;
+    if (! compptr->component_needed) {
+      /* Don't bother to upsample an uninteresting component. */
+      upsample->methods[ci] = noop_upsample;
+      need_buffer = FALSE;
+    } else if (h_in_group == h_out_group && v_in_group == v_out_group) {
+      /* Fullsize components can be processed without any work. */
+      upsample->methods[ci] = fullsize_upsample;
+      need_buffer = FALSE;
+    } else if (h_in_group * 2 == h_out_group &&
+	       v_in_group == v_out_group) {
+      /* Special cases for 2h1v upsampling */
+      if (do_fancy && compptr->downsampled_width > 2)
+	upsample->methods[ci] = h2v1_fancy_upsample;
+      else
+	upsample->methods[ci] = h2v1_upsample;
+    } else if (h_in_group * 2 == h_out_group &&
+	       v_in_group * 2 == v_out_group) {
+      /* Special cases for 2h2v upsampling */
+      if (do_fancy && compptr->downsampled_width > 2) {
+	upsample->methods[ci] = h2v2_fancy_upsample;
+	upsample->pub.need_context_rows = TRUE;
+      } else
+	upsample->methods[ci] = h2v2_upsample;
+    } else if ((h_out_group % h_in_group) == 0 &&
+	       (v_out_group % v_in_group) == 0) {
+      /* Generic integral-factors upsampling method */
+      upsample->methods[ci] = int_upsample;
+      upsample->h_expand[ci] = (UINT8) (h_out_group / h_in_group);
+      upsample->v_expand[ci] = (UINT8) (v_out_group / v_in_group);
+    } else
+      ERREXIT(cinfo, JERR_FRACT_SAMPLE_NOTIMPL);
+    if (need_buffer) {
+      upsample->color_buf[ci] = (*cinfo->mem->alloc_sarray)
+	((j_common_ptr) cinfo, JPOOL_IMAGE,
+	 (JDIMENSION) jround_up((long) cinfo->output_width,
+				(long) cinfo->max_h_samp_factor),
+	 (JDIMENSION) cinfo->max_v_samp_factor);
+    }
+  }
+}

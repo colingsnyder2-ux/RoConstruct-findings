@@ -1,136 +1,402 @@
-// roc 2009-06 0059eba0  unit: seg_00590000  size: 388 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0059eba0
-//
-// 0059eba0  56                   push esi
-// 0059eba1  8b742408             mov esi, dword ptr [esp + 8]
-// 0059eba5  8b4604               mov eax, dword ptr [esi + 4]
-// 0059eba8  8b08                 mov ecx, dword ptr [eax]
-// 0059ebaa  57                   push edi
-// 0059ebab  6a18                 push 0x18
-// 0059ebad  6a01                 push 1
-// 0059ebaf  56                   push esi
-// 0059ebb0  ffd1                 call ecx
-// 0059ebb2  8bf8                 mov edi, eax
-// 0059ebb4  89bea4010000         mov dword ptr [esi + 0x1a4], edi
-// 0059ebba  c707e0496700         mov dword ptr [edi], 0x6749e0
-// 0059ebc0  8b4628               mov eax, dword ptr [esi + 0x28]
-// 0059ebc3  48                   dec eax
-// 0059ebc4  83c40c               add esp, 0xc
-// 0059ebc7  83f804               cmp eax, 4
-// 0059ebca  771f                 ja 0x59ebeb
-// 0059ebcc  ff248510ed5900       jmp dword ptr [eax*4 + 0x59ed10]
-// 0059ebd3  837e2401             cmp dword ptr [esi + 0x24], 1
-// 0059ebd7  742b                 je 0x59ec04
-// 0059ebd9  eb16                 jmp 0x59ebf1
-// 0059ebdb  837e2403             cmp dword ptr [esi + 0x24], 3
-// 0059ebdf  7423                 je 0x59ec04
-// 0059ebe1  eb0e                 jmp 0x59ebf1
-// 0059ebe3  837e2404             cmp dword ptr [esi + 0x24], 4
-// 0059ebe7  741b                 je 0x59ec04
-// 0059ebe9  eb06                 jmp 0x59ebf1
-// 0059ebeb  837e2401             cmp dword ptr [esi + 0x24], 1
-// 0059ebef  7d13                 jge 0x59ec04
-// 0059ebf1  8b16                 mov edx, dword ptr [esi]
-// 0059ebf3  c742140a000000       mov dword ptr [edx + 0x14], 0xa
-// 0059ebfa  8b06                 mov eax, dword ptr [esi]
-// 0059ebfc  8b08                 mov ecx, dword ptr [eax]
-// 0059ebfe  56                   push esi
-// 0059ebff  ffd1                 call ecx
-// 0059ec01  83c404               add esp, 4
-// 0059ec04  8b4e2c               mov ecx, dword ptr [esi + 0x2c]
-// 0059ec07  8bc1                 mov eax, ecx
-// 0059ec09  ba01000000           mov edx, 1
-// 0059ec0e  2bc2                 sub eax, edx
-// 0059ec10  0f8491000000         je 0x59eca7
-// 0059ec16  2bc2                 sub eax, edx
-// 0059ec18  7453                 je 0x59ec6d
-// 0059ec1a  83e802               sub eax, 2
-// 0059ec1d  741b                 je 0x59ec3a
-// 0059ec1f  3b4e28               cmp ecx, dword ptr [esi + 0x28]
-// 0059ec22  0f858e000000         jne 0x59ecb6
-// 0059ec28  8b5624               mov edx, dword ptr [esi + 0x24]
-// 0059ec2b  895664               mov dword ptr [esi + 0x64], edx
-// 0059ec2e  c7470430e95900       mov dword ptr [edi + 4], 0x59e930
-// 0059ec35  e9bb000000           jmp 0x59ecf5
-// 0059ec3a  8b4628               mov eax, dword ptr [esi + 0x28]
-// 0059ec3d  c7466404000000       mov dword ptr [esi + 0x64], 4
-// 0059ec44  83f805               cmp eax, 5
-// 0059ec47  7513                 jne 0x59ec5c
-// 0059ec49  8bc6                 mov eax, esi
-// 0059ec4b  c7470450ea5900       mov dword ptr [edi + 4], 0x59ea50
-// 0059ec52  e8e9faffff           call 0x59e740
-// 0059ec57  e999000000           jmp 0x59ecf5
-// 0059ec5c  83f804               cmp eax, 4
-// 0059ec5f  7555                 jne 0x59ecb6
-// 0059ec61  c7470430e95900       mov dword ptr [edi + 4], 0x59e930
-// 0059ec68  e988000000           jmp 0x59ecf5
-// 0059ec6d  8b4628               mov eax, dword ptr [esi + 0x28]
-// 0059ec70  c7466403000000       mov dword ptr [esi + 0x64], 3
-// 0059ec77  83f803               cmp eax, 3
-// 0059ec7a  7510                 jne 0x59ec8c
-// 0059ec7c  8bc6                 mov eax, esi
-// 0059ec7e  c7470410e85900       mov dword ptr [edi + 4], 0x59e810
-// 0059ec85  e8b6faffff           call 0x59e740
-// 0059ec8a  eb69                 jmp 0x59ecf5
-// 0059ec8c  3bc2                 cmp eax, edx
-// 0059ec8e  7509                 jne 0x59ec99
-// 0059ec90  c74704f0e95900       mov dword ptr [edi + 4], 0x59e9f0
-// 0059ec97  eb5c                 jmp 0x59ecf5
-// 0059ec99  83f802               cmp eax, 2
-// 0059ec9c  7518                 jne 0x59ecb6
-// 0059ec9e  c7470430e95900       mov dword ptr [edi + 4], 0x59e930
-// 0059eca5  eb4e                 jmp 0x59ecf5
-// 0059eca7  8b4628               mov eax, dword ptr [esi + 0x28]
-// 0059ecaa  895664               mov dword ptr [esi + 0x64], edx
-// 0059ecad  3bc2                 cmp eax, edx
-// 0059ecaf  741a                 je 0x59eccb
-// 0059ecb1  83f803               cmp eax, 3
-// 0059ecb4  7415                 je 0x59eccb
-// 0059ecb6  8b06                 mov eax, dword ptr [esi]
-// 0059ecb8  c740141b000000       mov dword ptr [eax + 0x14], 0x1b
-// 0059ecbf  8b0e                 mov ecx, dword ptr [esi]
-// 0059ecc1  8b11                 mov edx, dword ptr [ecx]
-// 0059ecc3  56                   push esi
-// 0059ecc4  ffd2                 call edx
-// 0059ecc6  83c404               add esp, 4
-// 0059ecc9  eb2a                 jmp 0x59ecf5
-// 0059eccb  c74704c0e95900       mov dword ptr [edi + 4], 0x59e9c0
-// 0059ecd2  395624               cmp dword ptr [esi + 0x24], edx
-// 0059ecd5  8bc2                 mov eax, edx
-// 0059ecd7  7e1c                 jle 0x59ecf5
-// 0059ecd9  b954000000           mov ecx, 0x54
-// 0059ecde  8bff                 mov edi, edi
-// 0059ece0  8bbec4000000         mov edi, dword ptr [esi + 0xc4]
-// 0059ece6  c6440f3000           mov byte ptr [edi + ecx + 0x30], 0
-// 0059eceb  03c2                 add eax, edx
-// 0059eced  83c154               add ecx, 0x54
-// 0059ecf0  3b4624               cmp eax, dword ptr [esi + 0x24]
-// 0059ecf3  7ceb                 jl 0x59ece0
-// 0059ecf5  807e4a00             cmp byte ptr [esi + 0x4a], 0
-// 0059ecf9  740a                 je 0x59ed05
-// 0059ecfb  5f                   pop edi
-// 0059ecfc  c7466801000000       mov dword ptr [esi + 0x68], 1
-// 0059ed03  5e                   pop esi
-// 0059ed04  c3                   ret 
-// 0059ed05  8b4664               mov eax, dword ptr [esi + 0x64]
-// 0059ed08  5f                   pop edi
-// 0059ed09  894668               mov dword ptr [esi + 0x68], eax
-// 0059ed0c  5e                   pop esi
-// 0059ed0d  c3                   ret 
-// 0059ed0e  8bff                 mov edi, edi
-// 0059ed10  d3eb                 shr ebx, cl
-// 0059ed12  59                   pop ecx
-// 0059ed13  00db                 add bl, bl
-// 0059ed15  eb59                 jmp 0x59ed70
-// 0059ed17  00db                 add bl, bl
-// 0059ed19  eb59                 jmp 0x59ed74
-// 0059ed1b  00e3                 add bl, ah
-// 0059ed1d  eb59                 jmp 0x59ed78
-// 0059ed1f  00e3                 add bl, ah
-// 0059ed21  eb59                 jmp 0x59ed7c
-// library jpeg-6b/jdcolor.c (function _jinit_color_deconverter)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdcolor.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jdcolor.c
+ *
+ * Copyright (C) 1991-1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains output colorspace conversion routines.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Private subobject */
+
+typedef struct {
+  struct jpeg_color_deconverter pub; /* public fields */
+
+  /* Private state for YCC->RGB conversion */
+  int * Cr_r_tab;		/* => table for Cr to R conversion */
+  int * Cb_b_tab;		/* => table for Cb to B conversion */
+  INT32 * Cr_g_tab;		/* => table for Cr to G conversion */
+  INT32 * Cb_g_tab;		/* => table for Cb to G conversion */
+} my_color_deconverter;
+
+typedef my_color_deconverter * my_cconvert_ptr;
+
+
+/**************** YCbCr -> RGB conversion: most common case **************/
+
+/*
+ * YCbCr is defined per CCIR 601-1, except that Cb and Cr are
+ * normalized to the range 0..MAXJSAMPLE rather than -0.5 .. 0.5.
+ * The conversion equations to be implemented are therefore
+ *	R = Y                + 1.40200 * Cr
+ *	G = Y - 0.34414 * Cb - 0.71414 * Cr
+ *	B = Y + 1.77200 * Cb
+ * where Cb and Cr represent the incoming values less CENTERJSAMPLE.
+ * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
+ *
+ * To avoid floating-point arithmetic, we represent the fractional constants
+ * as integers scaled up by 2^16 (about 4 digits precision); we have to divide
+ * the products by 2^16, with appropriate rounding, to get the correct answer.
+ * Notice that Y, being an integral input, does not contribute any fraction
+ * so it need not participate in the rounding.
+ *
+ * For even more speed, we avoid doing any multiplications in the inner loop
+ * by precalculating the constants times Cb and Cr for all possible values.
+ * For 8-bit JSAMPLEs this is very reasonable (only 256 entries per table);
+ * for 12-bit samples it is still acceptable.  It's not very reasonable for
+ * 16-bit samples, but if you want lossless storage you shouldn't be changing
+ * colorspace anyway.
+ * The Cr=>R and Cb=>B values can be rounded to integers in advance; the
+ * values for the G calculation are left scaled up, since we must add them
+ * together before rounding.
+ */
+
+#define SCALEBITS	16	/* speediest right-shift on some machines */
+#define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
+#define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
+
+
+/*
+ * Initialize tables for YCC->RGB colorspace conversion.
+ */
+
+LOCAL(void)
+build_ycc_rgb_table (j_decompress_ptr cinfo)
+{
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  int i;
+  INT32 x;
+  SHIFT_TEMPS
+
+  cconvert->Cr_r_tab = (int *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(MAXJSAMPLE+1) * SIZEOF(int));
+  cconvert->Cb_b_tab = (int *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(MAXJSAMPLE+1) * SIZEOF(int));
+  cconvert->Cr_g_tab = (INT32 *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(MAXJSAMPLE+1) * SIZEOF(INT32));
+  cconvert->Cb_g_tab = (INT32 *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				(MAXJSAMPLE+1) * SIZEOF(INT32));
+
+  for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
+    /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
+    /* The Cb or Cr value we are thinking of is x = i - CENTERJSAMPLE */
+    /* Cr=>R value is nearest int to 1.40200 * x */
+    cconvert->Cr_r_tab[i] = (int)
+		    RIGHT_SHIFT(FIX(1.40200) * x + ONE_HALF, SCALEBITS);
+    /* Cb=>B value is nearest int to 1.77200 * x */
+    cconvert->Cb_b_tab[i] = (int)
+		    RIGHT_SHIFT(FIX(1.77200) * x + ONE_HALF, SCALEBITS);
+    /* Cr=>G value is scaled-up -0.71414 * x */
+    cconvert->Cr_g_tab[i] = (- FIX(0.71414)) * x;
+    /* Cb=>G value is scaled-up -0.34414 * x */
+    /* We also add in ONE_HALF so that need not do it in inner loop */
+    cconvert->Cb_g_tab[i] = (- FIX(0.34414)) * x + ONE_HALF;
+  }
+}
+
+
+/*
+ * Convert some rows of samples to the output colorspace.
+ *
+ * Note that we change from noninterleaved, one-plane-per-component format
+ * to interleaved-pixel format.  The output buffer is therefore three times
+ * as wide as the input buffer.
+ * A starting row offset is provided only for the input buffer.  The caller
+ * can easily adjust the passed output_buf value to accommodate any row
+ * offset required on that side.
+ */
+
+METHODDEF(void)
+ycc_rgb_convert (j_decompress_ptr cinfo,
+		 JSAMPIMAGE input_buf, JDIMENSION input_row,
+		 JSAMPARRAY output_buf, int num_rows)
+{
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  register int y, cb, cr;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr0, inptr1, inptr2;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+  /* copy these pointers into registers if possible */
+  register JSAMPLE * range_limit = cinfo->sample_range_limit;
+  register int * Crrtab = cconvert->Cr_r_tab;
+  register int * Cbbtab = cconvert->Cb_b_tab;
+  register INT32 * Crgtab = cconvert->Cr_g_tab;
+  register INT32 * Cbgtab = cconvert->Cb_g_tab;
+  SHIFT_TEMPS
+
+  while (--num_rows >= 0) {
+    inptr0 = input_buf[0][input_row];
+    inptr1 = input_buf[1][input_row];
+    inptr2 = input_buf[2][input_row];
+    input_row++;
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      y  = GETJSAMPLE(inptr0[col]);
+      cb = GETJSAMPLE(inptr1[col]);
+      cr = GETJSAMPLE(inptr2[col]);
+      /* Range-limiting is essential due to noise introduced by DCT losses. */
+      outptr[RGB_RED] =   range_limit[y + Crrtab[cr]];
+      outptr[RGB_GREEN] = range_limit[y +
+			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
+						 SCALEBITS))];
+      outptr[RGB_BLUE] =  range_limit[y + Cbbtab[cb]];
+      outptr += RGB_PIXELSIZE;
+    }
+  }
+}
+
+
+/**************** Cases other than YCbCr -> RGB **************/
+
+
+/*
+ * Color conversion for no colorspace change: just copy the data,
+ * converting from separate-planes to interleaved representation.
+ */
+
+METHODDEF(void)
+null_convert (j_decompress_ptr cinfo,
+	      JSAMPIMAGE input_buf, JDIMENSION input_row,
+	      JSAMPARRAY output_buf, int num_rows)
+{
+  register JSAMPROW inptr, outptr;
+  register JDIMENSION count;
+  register int num_components = cinfo->num_components;
+  JDIMENSION num_cols = cinfo->output_width;
+  int ci;
+
+  while (--num_rows >= 0) {
+    for (ci = 0; ci < num_components; ci++) {
+      inptr = input_buf[ci][input_row];
+      outptr = output_buf[0] + ci;
+      for (count = num_cols; count > 0; count--) {
+	*outptr = *inptr++;	/* needn't bother with GETJSAMPLE() here */
+	outptr += num_components;
+      }
+    }
+    input_row++;
+    output_buf++;
+  }
+}
+
+
+/*
+ * Color conversion for grayscale: just copy the data.
+ * This also works for YCbCr -> grayscale conversion, in which
+ * we just copy the Y (luminance) component and ignore chrominance.
+ */
+
+METHODDEF(void)
+grayscale_convert (j_decompress_ptr cinfo,
+		   JSAMPIMAGE input_buf, JDIMENSION input_row,
+		   JSAMPARRAY output_buf, int num_rows)
+{
+  jcopy_sample_rows(input_buf[0], (int) input_row, output_buf, 0,
+		    num_rows, cinfo->output_width);
+}
+
+
+/*
+ * Convert grayscale to RGB: just duplicate the graylevel three times.
+ * This is provided to support applications that don't want to cope
+ * with grayscale as a separate case.
+ */
+
+METHODDEF(void)
+gray_rgb_convert (j_decompress_ptr cinfo,
+		  JSAMPIMAGE input_buf, JDIMENSION input_row,
+		  JSAMPARRAY output_buf, int num_rows)
+{
+  register JSAMPROW inptr, outptr;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+
+  while (--num_rows >= 0) {
+    inptr = input_buf[0][input_row++];
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      /* We can dispense with GETJSAMPLE() here */
+      outptr[RGB_RED] = outptr[RGB_GREEN] = outptr[RGB_BLUE] = inptr[col];
+      outptr += RGB_PIXELSIZE;
+    }
+  }
+}
+
+
+/*
+ * Adobe-style YCCK->CMYK conversion.
+ * We convert YCbCr to R=1-C, G=1-M, and B=1-Y using the same
+ * conversion as above, while passing K (black) unchanged.
+ * We assume build_ycc_rgb_table has been called.
+ */
+
+METHODDEF(void)
+ycck_cmyk_convert (j_decompress_ptr cinfo,
+		   JSAMPIMAGE input_buf, JDIMENSION input_row,
+		   JSAMPARRAY output_buf, int num_rows)
+{
+  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
+  register int y, cb, cr;
+  register JSAMPROW outptr;
+  register JSAMPROW inptr0, inptr1, inptr2, inptr3;
+  register JDIMENSION col;
+  JDIMENSION num_cols = cinfo->output_width;
+  /* copy these pointers into registers if possible */
+  register JSAMPLE * range_limit = cinfo->sample_range_limit;
+  register int * Crrtab = cconvert->Cr_r_tab;
+  register int * Cbbtab = cconvert->Cb_b_tab;
+  register INT32 * Crgtab = cconvert->Cr_g_tab;
+  register INT32 * Cbgtab = cconvert->Cb_g_tab;
+  SHIFT_TEMPS
+
+  while (--num_rows >= 0) {
+    inptr0 = input_buf[0][input_row];
+    inptr1 = input_buf[1][input_row];
+    inptr2 = input_buf[2][input_row];
+    inptr3 = input_buf[3][input_row];
+    input_row++;
+    outptr = *output_buf++;
+    for (col = 0; col < num_cols; col++) {
+      y  = GETJSAMPLE(inptr0[col]);
+      cb = GETJSAMPLE(inptr1[col]);
+      cr = GETJSAMPLE(inptr2[col]);
+      /* Range-limiting is essential due to noise introduced by DCT losses. */
+      outptr[0] = range_limit[MAXJSAMPLE - (y + Crrtab[cr])];	/* red */
+      outptr[1] = range_limit[MAXJSAMPLE - (y +			/* green */
+			      ((int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr],
+						 SCALEBITS)))];
+      outptr[2] = range_limit[MAXJSAMPLE - (y + Cbbtab[cb])];	/* blue */
+      /* K passes through unchanged */
+      outptr[3] = inptr3[col];	/* don't need GETJSAMPLE here */
+      outptr += 4;
+    }
+  }
+}
+
+
+/*
+ * Empty method for start_pass.
+ */
+
+METHODDEF(void)
+start_pass_dcolor (j_decompress_ptr cinfo)
+{
+  /* no work needed */
+}
+
+
+/*
+ * Module initialization routine for output colorspace conversion.
+ */
+
+GLOBAL(void)
+jinit_color_deconverter (j_decompress_ptr cinfo)
+{
+  my_cconvert_ptr cconvert;
+  int ci;
+
+  cconvert = (my_cconvert_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_color_deconverter));
+  cinfo->cconvert = (struct jpeg_color_deconverter *) cconvert;
+  cconvert->pub.start_pass = start_pass_dcolor;
+
+  /* Make sure num_components agrees with jpeg_color_space */
+  switch (cinfo->jpeg_color_space) {
+  case JCS_GRAYSCALE:
+    if (cinfo->num_components != 1)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    break;
+
+  case JCS_RGB:
+  case JCS_YCbCr:
+    if (cinfo->num_components != 3)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    break;
+
+  case JCS_CMYK:
+  case JCS_YCCK:
+    if (cinfo->num_components != 4)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    break;
+
+  default:			/* JCS_UNKNOWN can be anything */
+    if (cinfo->num_components < 1)
+      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+    break;
+  }
+
+  /* Set out_color_components and conversion method based on requested space.
+   * Also clear the component_needed flags for any unused components,
+   * so that earlier pipeline stages can avoid useless computation.
+   */
+
+  switch (cinfo->out_color_space) {
+  case JCS_GRAYSCALE:
+    cinfo->out_color_components = 1;
+    if (cinfo->jpeg_color_space == JCS_GRAYSCALE ||
+	cinfo->jpeg_color_space == JCS_YCbCr) {
+      cconvert->pub.color_convert = grayscale_convert;
+      /* For color->grayscale conversion, only the Y (0) component is needed */
+      for (ci = 1; ci < cinfo->num_components; ci++)
+	cinfo->comp_info[ci].component_needed = FALSE;
+    } else
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  case JCS_RGB:
+    cinfo->out_color_components = RGB_PIXELSIZE;
+    if (cinfo->jpeg_color_space == JCS_YCbCr) {
+      cconvert->pub.color_convert = ycc_rgb_convert;
+      build_ycc_rgb_table(cinfo);
+    } else if (cinfo->jpeg_color_space == JCS_GRAYSCALE) {
+      cconvert->pub.color_convert = gray_rgb_convert;
+    } else if (cinfo->jpeg_color_space == JCS_RGB && RGB_PIXELSIZE == 3) {
+      cconvert->pub.color_convert = null_convert;
+    } else
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  case JCS_CMYK:
+    cinfo->out_color_components = 4;
+    if (cinfo->jpeg_color_space == JCS_YCCK) {
+      cconvert->pub.color_convert = ycck_cmyk_convert;
+      build_ycc_rgb_table(cinfo);
+    } else if (cinfo->jpeg_color_space == JCS_CMYK) {
+      cconvert->pub.color_convert = null_convert;
+    } else
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+
+  default:
+    /* Permit null conversion to same output space */
+    if (cinfo->out_color_space == cinfo->jpeg_color_space) {
+      cinfo->out_color_components = cinfo->num_components;
+      cconvert->pub.color_convert = null_convert;
+    } else			/* unsupported non-null conversion */
+      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
+    break;
+  }
+
+  if (cinfo->quantize_colors)
+    cinfo->output_components = 1; /* single colormapped output component */
+  else
+    cinfo->output_components = cinfo->out_color_components;
+}

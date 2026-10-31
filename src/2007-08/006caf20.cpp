@@ -1,147 +1,406 @@
 // from server: 100% by auto
-// roc 2007-08 006caf20  unit: CXTPDockContext  size: 408 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006caf20
-//
-// 006caf20  83ec20               sub esp, 0x20
-// 006caf23  53                   push ebx
-// 006caf24  55                   push ebp
-// 006caf25  56                   push esi
-// 006caf26  57                   push edi
-// 006caf27  8b3d44ec7700         mov edi, dword ptr [0x77ec44]
-// 006caf2d  8bf1                 mov esi, ecx
-// 006caf2f  ffd7                 call edi
-// 006caf31  85c0                 test eax, eax
-// 006caf33  0f8577010000         jne 0x6cb0b0
-// 006caf39  8b4604               mov eax, dword ptr [esi + 4]
-// 006caf3c  8b4020               mov eax, dword ptr [eax + 0x20]
-// 006caf3f  50                   push eax
-// 006caf40  ff1548ec7700         call dword ptr [0x77ec48]
-// 006caf46  50                   push eax
-// 006caf47  e87452f6ff           call 0x6301c0
-// 006caf4c  8b4e04               mov ecx, dword ptr [esi + 4]
-// 006caf4f  e82c8af7ff           call 0x643980
-// 006caf54  85c0                 test eax, eax
-// 006caf56  89442410             mov dword ptr [esp + 0x10], eax
-// 006caf5a  0f8450010000         je 0x6cb0b0
-// 006caf60  33db                 xor ebx, ebx
-// 006caf62  33ed                 xor ebp, ebp
-// 006caf64  ffd7                 call edi
-// 006caf66  50                   push eax
-// 006caf67  e85452f6ff           call 0x6301c0
-// 006caf6c  3b4604               cmp eax, dword ptr [esi + 4]
-// 006caf6f  0f8527010000         jne 0x6cb09c
-// 006caf75  8b3d40ec7700         mov edi, dword ptr [0x77ec40]
-// 006caf7b  eb03                 jmp 0x6caf80
-// 006caf7d  8d4900               lea ecx, [ecx]
-// 006caf80  6a00                 push 0
-// 006caf82  6a0f                 push 0xf
-// 006caf84  6a0f                 push 0xf
-// 006caf86  6a00                 push 0
-// 006caf88  8d4c2424             lea ecx, [esp + 0x24]
-// 006caf8c  51                   push ecx
-// 006caf8d  ffd7                 call edi
-// 006caf8f  85c0                 test eax, eax
-// 006caf91  7433                 je 0x6cafc6
-// 006caf93  6a0f                 push 0xf
-// 006caf95  6a0f                 push 0xf
-// 006caf97  6a00                 push 0
-// 006caf99  8d542420             lea edx, [esp + 0x20]
-// 006caf9d  52                   push edx
-// 006caf9e  ff1510ee7700         call dword ptr [0x77ee10]
-// 006cafa4  85c0                 test eax, eax
-// 006cafa6  741e                 je 0x6cafc6
-// 006cafa8  8d442414             lea eax, [esp + 0x14]
-// 006cafac  50                   push eax
-// 006cafad  ff152ced7700         call dword ptr [0x77ed2c]
-// 006cafb3  6a00                 push 0
-// 006cafb5  6a0f                 push 0xf
-// 006cafb7  6a0f                 push 0xf
-// 006cafb9  6a00                 push 0
-// 006cafbb  8d4c2424             lea ecx, [esp + 0x24]
-// 006cafbf  51                   push ecx
-// 006cafc0  ffd7                 call edi
-// 006cafc2  85c0                 test eax, eax
-// 006cafc4  75cd                 jne 0x6caf93
-// 006cafc6  6a00                 push 0
-// 006cafc8  6a00                 push 0
-// 006cafca  6a00                 push 0
-// 006cafcc  8d542420             lea edx, [esp + 0x20]
-// 006cafd0  52                   push edx
-// 006cafd1  ff1510ee7700         call dword ptr [0x77ee10]
-// 006cafd7  85c0                 test eax, eax
-// 006cafd9  0f84b3000000         je 0x6cb092
-// 006cafdf  8b442418             mov eax, dword ptr [esp + 0x18]
-// 006cafe3  3d02020000           cmp eax, 0x202
-// 006cafe8  0f84ae000000         je 0x6cb09c
-// 006cafee  3d00020000           cmp eax, 0x200
-// 006caff3  7562                 jne 0x6cb057
-// 006caff5  8b442428             mov eax, dword ptr [esp + 0x28]
-// 006caff9  3bd8                 cmp ebx, eax
-// 006caffb  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 006cafff  7504                 jne 0x6cb005
-// 006cb001  3be9                 cmp ebp, ecx
-// 006cb003  7462                 je 0x6cb067
-// 006cb005  837e0801             cmp dword ptr [esi + 8], 1
-// 006cb009  8bd8                 mov ebx, eax
-// 006cb00b  8be9                 mov ebp, ecx
-// 006cb00d  7515                 jne 0x6cb024
-// 006cb00f  8bd0                 mov edx, eax
-// 006cb011  83ec08               sub esp, 8
-// 006cb014  8bc4                 mov eax, esp
-// 006cb016  894804               mov dword ptr [eax + 4], ecx
-// 006cb019  8bce                 mov ecx, esi
-// 006cb01b  8910                 mov dword ptr [eax], edx
-// 006cb01d  e8eef7ffff           call 0x6ca810
-// 006cb022  eb4e                 jmp 0x6cb072
-// 006cb024  8b4e04               mov ecx, dword ptr [esi + 4]
-// 006cb027  8b01                 mov eax, dword ptr [ecx]
-// 006cb029  8b9088010000         mov edx, dword ptr [eax + 0x188]
-// 006cb02f  ffd2                 call edx
-// 006cb031  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 006cb035  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 006cb039  83ec08               sub esp, 8
-// 006cb03c  85c0                 test eax, eax
-// 006cb03e  8bc4                 mov eax, esp
-// 006cb040  8908                 mov dword ptr [eax], ecx
-// 006cb042  895004               mov dword ptr [eax + 4], edx
-// 006cb045  8bce                 mov ecx, esi
-// 006cb047  7407                 je 0x6cb050
-// 006cb049  e862f9ffff           call 0x6ca9b0
-// 006cb04e  eb22                 jmp 0x6cb072
-// 006cb050  e87bfaffff           call 0x6caad0
-// 006cb055  eb1b                 jmp 0x6cb072
-// 006cb057  3d00010000           cmp eax, 0x100
-// 006cb05c  7509                 jne 0x6cb067
-// 006cb05e  837c241c1b           cmp dword ptr [esp + 0x1c], 0x1b
-// 006cb063  7437                 je 0x6cb09c
-// 006cb065  eb0b                 jmp 0x6cb072
-// 006cb067  8d442414             lea eax, [esp + 0x14]
-// 006cb06b  50                   push eax
-// 006cb06c  ff152ced7700         call dword ptr [0x77ed2c]
-// 006cb072  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 006cb076  e8d56bf6ff           call 0x631c50
-// 006cb07b  ff1544ec7700         call dword ptr [0x77ec44]
-// 006cb081  50                   push eax
-// 006cb082  e83951f6ff           call 0x6301c0
-// 006cb087  3b4604               cmp eax, dword ptr [esi + 4]
-// 006cb08a  0f84f0feffff         je 0x6caf80
-// 006cb090  eb0a                 jmp 0x6cb09c
-// 006cb092  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 006cb096  51                   push ecx
-// 006cb097  e81656f6ff           call 0x6306b2
-// 006cb09c  ff153cec7700         call dword ptr [0x77ec3c]
-// 006cb0a2  8b542410             mov edx, dword ptr [esp + 0x10]
-// 006cb0a6  8b4274               mov eax, dword ptr [edx + 0x74]
-// 006cb0a9  c7404c01000000       mov dword ptr [eax + 0x4c], 1
-// 006cb0b0  5f                   pop edi
-// 006cb0b1  5e                   pop esi
-// 006cb0b2  5d                   pop ebp
-// 006cb0b3  5b                   pop ebx
-// 006cb0b4  83c420               add esp, 0x20
-// 006cb0b7  c3                   ret 
-// library xtp-11.2.2-vc8/Source\CommandBars\XTPDockContext.cpp (function ?Track@CXTPDockContext@@MAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPDockContext.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockContext.cpp : implementation of the CXTPDockContext class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPDockContext.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPMouseManager.h"
+#include "XTPDockBar.h"
+#include "XTPDialogBar.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+void CXTPDockContext::AdjustRectangle(CRect& rect, CPoint pt)
+{
+	int nXOffset = (pt.x < rect.left) ? (pt.x - rect.left) :
+					(pt.x > rect.right) ? (pt.x - rect.right) : 0;
+	int nYOffset = (pt.y < rect.top) ? (pt.y - rect.top) :
+					(pt.y > rect.bottom) ? (pt.y - rect.bottom) : 0;
+	rect.OffsetRect(nXOffset, nYOffset);
+}
+
+
+CXTPDockContext::CXTPDockContext(CXTPToolBar* pBar)
+{
+	m_pBar = pBar;
+
+	m_uMRUDockPosition = xtpBarTop;
+	m_rectMRUDockPos.SetRectEmpty();
+	m_ptMRUFloatPos.y = m_ptMRUFloatPos.x = 0;
+	m_nHitTest = 0;
+}
+
+CXTPDockContext::~CXTPDockContext()
+{
+}
+
+void CXTPDockContext::StartDrag(CPoint pt)
+{
+	m_nHitTest = HTCLIENT;
+
+	CRect rectMRUDockPos = m_rectMRUDockPos;
+	XTPBarPosition uMRUDockPosition = m_uMRUDockPosition;
+	BOOL bFloating = m_pBar->m_barPosition == xtpBarFloating;
+
+	CXTPWindowRect rect(m_pBar);
+	m_ptLast = pt;
+
+	AdjustRectangle(rect, pt);
+	m_rectDragFrame = m_rectDragDock = rect;
+
+	SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
+
+	XTPMouseManager()->LockMouseMove();
+
+	Track();
+
+	XTPMouseManager()->UnlockMouseMove();
+
+	if (m_pBar->m_barPosition == xtpBarFloating)
+	{
+		m_ptMRUFloatPos = m_rectDragFrame.TopLeft();
+
+		if (!bFloating)
+		{
+			m_rectMRUDockPos = rectMRUDockPos;
+			m_uMRUDockPosition = uMRUDockPosition;
+		}
+	}
+}
+
+void CXTPDockContext::StartResize(int nHitTest, CPoint pt)
+{
+	m_nHitTest = nHitTest;
+	m_ptLast = pt;
+
+	m_pBar->GetWindowRect(m_rectDragFrame);
+
+	Track();
+
+	m_pBar->GetWindowRect(m_rectDragFrame);
+
+	if (m_pBar->m_barPosition == xtpBarFloating)
+		m_ptMRUFloatPos = m_rectDragFrame.TopLeft();
+
+	m_pBar->m_nMRUWidth = m_rectDragFrame.Width();
+
+}
+
+
+void CXTPDockContext::Track()
+{
+	// don't handle if capture already set
+	if (::GetCapture() != NULL)
+		return;
+
+	// set capture to the window which received this message
+	m_pBar->SetCapture();
+	ASSERT(m_pBar == CWnd::GetCapture());
+
+	CXTPCommandBars* pCommandBars = m_pBar->GetCommandBars();
+	ASSERT(pCommandBars);
+	if (!pCommandBars)
+		return;
+
+	CPoint pt(0, 0);
+	// get messages until capture lost or cancelled/accepted
+	while (CWnd::GetCapture() == m_pBar)
+	{
+		MSG msg;
+
+		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+		{
+			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+				break;
+			DispatchMessage(&msg);
+		}
+
+		if (!::GetMessage(&msg, NULL, 0, 0))
+		{
+			AfxPostQuitMessage((int)msg.wParam);
+			break;
+		}
+
+		if (msg.message == WM_LBUTTONUP)
+			break;
+		else if (msg.message == WM_MOUSEMOVE && pt != msg.pt)
+		{
+			pt = msg.pt;
+			if (m_nHitTest == HTCLIENT)
+				Move(msg.pt);
+			else if (m_pBar->IsDialogBar())
+				Resize(msg.pt);
+			else
+				Stretch(msg.pt);
+		}
+		else if (msg.message == WM_KEYDOWN)
+		{
+			if (msg.wParam == VK_ESCAPE)
+			{
+				break;
+			}
+		}
+		else
+			DispatchMessage(&msg);
+
+
+		pCommandBars->IdleRecalcLayout();
+	}
+
+	ReleaseCapture();
+
+	pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+}
+
+void CXTPDockContext::EnsureVisible(CRect& rectDragFrame)
+{
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+	int nGap = 10;
+
+	if (rcWork.bottom - rectDragFrame.top < nGap)
+	{
+		rectDragFrame.OffsetRect(0, rcWork.bottom - rectDragFrame.top - nGap);
+	}
+	if (rectDragFrame.bottom - rcWork.top < nGap)
+	{
+		rectDragFrame.OffsetRect(0, rcWork.top - rectDragFrame.bottom + nGap);
+	}
+	if (rcWork.right - rectDragFrame.left < nGap)
+	{
+		rectDragFrame.OffsetRect(rcWork.right - rectDragFrame.left - nGap, 0);
+	}
+	if (rectDragFrame.right - rcWork.left < nGap)
+	{
+		rectDragFrame.OffsetRect(rcWork.left - rectDragFrame.right + nGap, 0);
+	}
+}
+
+void CXTPDockContext::Move(CPoint pt)
+{
+	CPoint ptOffset = pt - m_ptLast;
+	CXTPCommandBars* pCommandBars = m_pBar->GetCommandBars();
+	ASSERT(pCommandBars);
+	if (!pCommandBars)
+		return;
+
+	m_rectDragFrame.OffsetRect(ptOffset);
+	m_rectDragDock.OffsetRect(ptOffset);
+
+	DWORD dwFlags = m_pBar->GetFlags();
+
+	BOOL bDocked = FALSE;
+
+	CXTPDockBar* pDockBar = pCommandBars->CanDock(pt, m_pBar->m_pDockBar);
+	if (pDockBar)
+	{
+		XTPBarPosition position = pDockBar->GetPosition();
+		if ((position == xtpBarTop && dwFlags & xtpFlagAlignTop) ||
+			(position == xtpBarLeft && dwFlags & xtpFlagAlignLeft) ||
+			(position == xtpBarRight && dwFlags & xtpFlagAlignRight) ||
+			(position == xtpBarBottom && dwFlags & xtpFlagAlignBottom))
+		{
+			CXTPDockBar* pOldDockBar = m_pBar->m_pDockBar;
+			pCommandBars->DockCommandBar(m_pBar, &m_rectDragDock, pDockBar);
+
+			if (pDockBar != pOldDockBar || m_pBar->GetPosition() == xtpBarFloating)
+			{
+				pCommandBars->RecalcFrameLayout();
+				m_pBar->GetWindowRect(m_rectDragDock);
+			}
+
+			bDocked = TRUE;
+		}
+	}
+
+	if (!bDocked && (dwFlags & xtpFlagFloating))
+	{
+		if (m_pBar->GetPosition() != xtpBarFloating)
+		{
+			pCommandBars->FloatCommandBar(m_pBar);
+			CSize sz = m_pBar->CalcDynamicLayout(0, LM_HORZ | LM_MRUWIDTH | LM_COMMIT);
+			m_rectDragFrame = CRect(m_rectDragFrame.TopLeft(), sz);
+			AdjustRectangle(m_rectDragFrame, pt);
+		}
+		EnsureVisible(m_rectDragFrame);
+		m_pBar->MoveWindow(m_rectDragFrame);
+	}
+
+	m_ptLast = pt;
+
+
+}
+
+void CXTPDockContext::Resize(CPoint pt)
+{
+	CPoint ptOffset = pt - m_ptLast;
+	ASSERT(m_pBar->IsDialogBar());
+
+	if (m_nHitTest == HTLEFT || m_nHitTest == HTTOPLEFT || m_nHitTest == HTBOTTOMLEFT)
+		m_rectDragFrame.left += ptOffset.x;
+
+	if (m_nHitTest == HTRIGHT || m_nHitTest == HTTOPRIGHT || m_nHitTest == HTBOTTOMRIGHT)
+		m_rectDragFrame.right += ptOffset.x;
+
+	if (m_nHitTest == HTTOP || m_nHitTest == HTTOPRIGHT || m_nHitTest == HTTOPLEFT)
+		m_rectDragFrame.top += ptOffset.y;
+
+	if (m_nHitTest == HTBOTTOM || m_nHitTest == HTBOTTOMRIGHT || m_nHitTest == HTBOTTOMLEFT)
+		m_rectDragFrame.bottom += ptOffset.y;
+
+	CRect rectTemp;
+	m_pBar->GetWindowRect(rectTemp);
+
+	if (rectTemp.Size() != m_rectDragFrame.Size())
+	{
+		if (CRect().IntersectRect(XTPMultiMonitor()->GetWorkArea(m_pBar), m_rectDragFrame))
+		{
+			((CXTPDialogBar*)m_pBar)->OnResize(m_rectDragFrame, m_nHitTest);
+			m_pBar->Redraw();
+		}
+	}
+
+
+	m_ptLast = pt;
+}
+
+void CXTPDockContext::Stretch(CPoint pt)
+{
+	CPoint ptOffset = pt - m_ptLast;
+
+	DWORD dwMode = LM_HORZ | LM_COMMIT;
+	int nLength = 0;
+
+	if (m_nHitTest == HTLEFT || m_nHitTest == HTRIGHT)
+	{
+		if (m_nHitTest == HTLEFT)
+			m_rectDragFrame.left += ptOffset.x;
+		else
+			m_rectDragFrame.right += ptOffset.x;
+
+		nLength = m_rectDragFrame.Width();
+	}
+	else
+	{
+		dwMode |= LM_LENGTHY;
+		if (m_nHitTest == HTTOP)
+			m_rectDragFrame.top += ptOffset.y;
+		else
+			m_rectDragFrame.bottom += ptOffset.y;
+
+		nLength = m_rectDragFrame.Height();
+	}
+	nLength = (nLength >= 0) ? nLength : 0;
+
+	CSize size = m_pBar->CalcDynamicLayout(nLength, dwMode);
+
+	CRect rectTemp;
+	m_pBar->GetWindowRect(rectTemp);
+
+	if (rectTemp.Size() != size)
+	{
+		if (m_nHitTest == HTRIGHT || m_nHitTest == HTBOTTOM)
+		{
+			rectTemp.BottomRight() = rectTemp.TopLeft() + size;
+		}
+		else if (m_nHitTest == HTLEFT)
+		{
+			rectTemp.bottom = rectTemp.top + size.cy;
+			rectTemp.left = rectTemp.right - size.cx;
+
+		}
+		else if (m_nHitTest == HTTOP)
+		{
+			rectTemp.top = rectTemp.bottom - size.cy;
+			rectTemp.right = rectTemp.left + size.cx;
+		}
+
+		CRect rcWork = XTPMultiMonitor()->GetWorkArea(m_pBar);
+		if (!CRect().IntersectRect(rcWork, rectTemp))
+		{
+			if (rectTemp.right < rcWork.left) rectTemp.OffsetRect(rcWork.left - rectTemp.left, 0);
+			else if (rectTemp.left > rcWork.right) rectTemp.OffsetRect(rcWork.right - rectTemp.right, 0);
+
+			if (rectTemp.bottom < rcWork.top) rectTemp.OffsetRect(0, rcWork.top - rectTemp.top);
+			else if (rectTemp.top > rcWork.bottom) rectTemp.OffsetRect(0, rcWork.bottom - rectTemp.bottom);
+		}
+
+		m_pBar->MoveWindow(rectTemp);
+		m_pBar->Redraw();
+	}
+	m_ptLast = pt;
+}
+
+
+BOOL CXTPDockContext::ToggleDocking()
+{
+	CXTPCommandBars* pCommandBars = m_pBar->GetCommandBars();
+
+	if (m_pBar->GetPosition() == xtpBarFloating)
+	{
+		// Dock it only if is allowed to be docked
+		if (!(m_pBar->m_dwFlags & xtpFlagAlignAny))
+			return FALSE;
+
+		CRect rect = m_rectMRUDockPos;
+		CXTPDockBar* pDockBar = pCommandBars->GetDockBar(m_uMRUDockPosition);
+		pDockBar->ClientToScreen(&rect);
+
+		// dock it at the specified position, RecalcLayout will snap
+		pCommandBars->DockCommandBar(m_pBar, &rect, pDockBar);
+		pCommandBars->RecalcFrameLayout();
+
+	}
+	else
+	{
+		if (!(m_pBar->m_dwFlags & xtpFlagFloating))
+			return FALSE;
+
+		if (!pCommandBars->GetCommandBarsOptions()->bDblClickFloat)
+			return FALSE;
+
+		CPoint ptFloat = m_ptMRUFloatPos;
+		if (ptFloat.x <= 0 || ptFloat.y <= 0)
+		{
+			ptFloat = m_rectMRUDockPos.TopLeft();
+			m_pBar->GetParent()->ClientToScreen(&ptFloat);
+		}
+		pCommandBars->FloatCommandBar(m_pBar);
+		CSize sz = m_pBar->CalcDynamicLayout(0, LM_HORZ | LM_MRUWIDTH | LM_COMMIT);
+		m_pBar->MoveWindow(CRect(ptFloat, sz));
+	}
+
+	pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+	return TRUE;
+}

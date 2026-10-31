@@ -7916,5 +7916,472 @@
     "unit": "RBX::KeyButton",
     "updated": 1793356219.9777966,
     "user": "colin"
+  },
+  {
+    "created": 1793365537.4688752,
+    "id": "a991f7f3b0724c498450d5ea4926198b",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8datamodel/DebrisService.cpp": [
+        [
+          "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", RBX::Reflection::FunctionDescriptor::AnyCaller);",
+          "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", 10.0, RBX::Reflection::FunctionDescriptor::AnyCaller);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::DebrisService",
+    "updated": 1793365909.5848675,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793368656.9390955,
+    "id": "58cca36a66e54cc79b7791c853c8d7c2",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8world/Primitive.cpp": [
+        [
+          "\tvoid Primitive::setCanCollide(bool value)\n\t{\n\t\tbool oldDrag = !dragging && canCollide;\n\n\t\tif (canCollide != value)\n\t\t{\n\t\t\tcanCollide = value;\n\t\t\tif (world)\n\t\t\t{\n\t\t\t\tbool newDrag = !dragging && value;\n\t\t\t\tif (oldDrag != newDrag)\n\t\t\t\t\tworld->onPrimitiveCanCollideChanged(this);\n\t\t\t}\n\t\t}\n\t}\n\n\tvoid Primitive::setCanSleep(bool _canSleep)\n\t{\n\t\tif (_canSleep != canSleep)\n\t\t{\n\t\t\tcanSleep = _canSleep;\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveCanSleepChanged(this);\n\t\t}\n\t}",
+          "\tvoid Primitive::setCanCollide(bool value)\n\t{\n\t\tif (value != canCollide)\n\t\t{\n\t\t\tcanCollide = value;\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveCanCollideChanged(this);\n\t\t}\n\t}\n\n\tvoid Primitive::setCanSleep(bool _canSleep)\n\t{\n\t\tif (_canSleep != canSleep)\n\t\t\tcanSleep = _canSleep;\n\t}"
+        ],
+        [
+          "\t\tcanCollide(true),\n\t\tcanSleep(true),\n\t\tJointK(this, &Primitive::computeJointK),",
+          "\t\tcanCollide(true),\n\t\tcanSleep(false),\n\t\tJointK(this, &Primitive::computeJointK),"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "1a05d9e8887dbe845f6593b3f7a6e04631ca308b3600f9e9398e7ac206bf60e6",
+      "credits": 3,
+      "distinct_after": 9804,
+      "distinct_before": 9801,
+      "gains": [
+        "005e75b0",
+        "005e75e0",
+        "005e8770"
+      ],
+      "input_hash": "c115f8de0e82bb258c9cd5e2102b0abe60808c240a8a214914dc12c13a05b861",
+      "losses": [],
+      "new_distinct": [
+        "005e75b0",
+        "005e75e0",
+        "005e8770"
+      ],
+      "overlay_hash": "607e340fb51db372adbc12aafed6942d6dae4b96eae8b31e3ca1df6fcb9ed9cc",
+      "owned_after": 3330,
+      "owned_before": 3327,
+      "rebased": false,
+      "submitted_revision": "1a05d9e8887dbe845f6593b3f7a6e04631ca308b3600f9e9398e7ac206bf60e6"
+    },
+    "state": "accepted",
+    "unit": "RBX::Primitive, RBX::Ball",
+    "updated": 1793369583.1779041,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793379495.3043654,
+    "id": "79f1e1c7e9014b6f8f437df3a921ee20",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8datamodel/DebrisService.cpp": [
+        [
+          "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", RBX::Reflection::FunctionDescriptor::AnyCaller);",
+          "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", 10.0, RBX::Reflection::FunctionDescriptor::AnyCaller);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "f1c4c2ecf7223ff5cd4d3ee1b590b2dc75945d28b7ed81f6b0fd1606dc1d7678",
+      "credits": 2,
+      "distinct_after": 9806,
+      "distinct_before": 9804,
+      "gains": [
+        "0063c070",
+        "007f8ba0"
+      ],
+      "input_hash": "dccadb00bbb336a23fa4aaa1a9260cdc5c96678057a080598e1ff04c60f68438",
+      "losses": [],
+      "new_distinct": [
+        "0063c070",
+        "007f8ba0"
+      ],
+      "overlay_hash": "1f9ce2d6ae596f281920ea17177fa5e863f2a2a623cdf4ec09fadfd53c6cf5cd",
+      "owned_after": 3332,
+      "owned_before": 3330,
+      "rebased": false,
+      "submitted_revision": "f1c4c2ecf7223ff5cd4d3ee1b590b2dc75945d28b7ed81f6b0fd1606dc1d7678"
+    },
+    "state": "accepted",
+    "unit": "RBX::DebrisService",
+    "updated": 1793379705.1391451,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793382931.7517729,
+    "id": "0137b9f994044e48b9744b3c24e78cc0",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/include/v8kernel/Body.h": [
+        [
+          "\t\t\tconst RBX::PV& getPV() const\n",
+          "\t\t\tconst RBX::PV& getPvUnsafe() const {return pv;}\n\t\t\tconst RBX::PV& getPV() const\n"
+        ]
+      ],
+      "App/v8kernel/Point.cpp": [
+        [
+          "\tthis->worldPos = this->body->getPV().position.pointToWorldSpace(this->localPos);",
+          "\tthis->worldPos = this->body->getPvUnsafe().position.pointToWorldSpace(this->localPos);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "cbf95d59d6d5ec140421bc2b313c25c5574719d3d4f5ce4862d8deb63fa44ab6",
+      "credits": 1,
+      "distinct_after": 9807,
+      "distinct_before": 9806,
+      "gains": [
+        "0064dc90"
+      ],
+      "input_hash": "19f87219809648d992d7522b8ce47eb39981f1a3cf75824a8096f29ef0e0e8fb",
+      "losses": [],
+      "new_distinct": [
+        "0064dc90"
+      ],
+      "overlay_hash": "a26fff2c58818138f9ca9375778c615157eae1d10b0b4b19a7a323cc92c8b9c4",
+      "owned_after": 3333,
+      "owned_before": 3332,
+      "rebased": false,
+      "submitted_revision": "cbf95d59d6d5ec140421bc2b313c25c5574719d3d4f5ce4862d8deb63fa44ab6"
+    },
+    "state": "accepted",
+    "unit": "RBX::Point",
+    "updated": 1793383358.3759398,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793383385.297361,
+    "id": "3520e34f5e82483fa2b22e6d460c67bd",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/util/RunningAverage.cpp": [
+        [
+          "#include \"util/RunningAverage.h\"",
+          "#pragma float_control(precise,off,push)\n#include \"util/RunningAverage.h\""
+        ],
+        [
+          "\t\tthis->position = this->position * 0.75f + cofm.translation * 0.25f;\n\t\tthis->angles = this->angles * 0.75f + Quaternion(cofm.rotation) * (radius * 0.25f);",
+          "\t\tconst float weightNew = 1.0f - 0.75f;\n\t\tposition = 0.75f * position + weightNew * cofm.translation;\n\t\tangles = (angles * 0.75f) + (Quaternion(cofm.rotation) * (weightNew * radius));"
+        ],
+        [
+          "",
+          "\n#pragma float_control(pop)\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "c3865a602a08fee5068a17a15c5eb4f520109dabf724691277c27bbf7d9e79f6",
+      "credits": 1,
+      "distinct_after": 9808,
+      "distinct_before": 9807,
+      "gains": [
+        "00668a20"
+      ],
+      "input_hash": "b005518222914d1ca3e5f7407bcce8d7422521c1e5e86558edcca6d486d03058",
+      "losses": [],
+      "new_distinct": [
+        "00668a20"
+      ],
+      "overlay_hash": "d4992a7dbb5381753f3250a86f60e4d5de47b915b29cabe666788c4bf3cf0bb5",
+      "owned_after": 3334,
+      "owned_before": 3333,
+      "rebased": false,
+      "submitted_revision": "c3865a602a08fee5068a17a15c5eb4f520109dabf724691277c27bbf7d9e79f6"
+    },
+    "state": "accepted",
+    "unit": "RBX::JointStage",
+    "updated": 1793383570.0052223,
+    "user": "colin"
+  },
+  {
+    "created": 1793402185.1253269,
+    "id": "1eabb1cc173b4fb68233b518ce22a78b",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "Network/Players.cpp": [
+        [
+          "\t\tbool Players::backendProcessing(const Instance* context, bool testInDatamodel)",
+          "\t\tbool Players::superSafeOn() const\n\t\t{\n\t\t\tif (localPlayer)\n\t\t\t\treturn Player::prop_SuperSafeChat.getValue(localPlayer.get());\n\n\t\t\treturn false;\n\t\t}\n\n\t\tbool Players::backendProcessing(const Instance* context, bool testInDatamodel)"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "a7757d354e4128821061de400ed69b32e5358e64580eb16cd90d25cee550ce6b",
+      "credits": 1,
+      "distinct_after": 9809,
+      "distinct_before": 9808,
+      "gains": [
+        "00497600"
+      ],
+      "input_hash": "9dc245aad894211ec6e9ca8d16fd1920dfc4ed0d3f7c8e56de3794c1a1324cf7",
+      "losses": [],
+      "new_distinct": [
+        "00497600"
+      ],
+      "overlay_hash": "e026d266b45d625b18b46142f8906b1609a509e4489a84f148b22fdc923cdd14",
+      "owned_after": 3335,
+      "owned_before": 3334,
+      "rebased": false,
+      "submitted_revision": "a7757d354e4128821061de400ed69b32e5358e64580eb16cd90d25cee550ce6b"
+    },
+    "state": "accepted",
+    "unit": "RBX::Network::Players",
+    "updated": 1793402436.2360384,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793405228.1659312,
+    "id": "3ff280eb25544ffeb23346a506763f1d",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "Rendering/AppDraw/HitTest.cpp": [
+        [
+          "#include \"AppDraw/HitTest.h\"",
+          "// 2008 rbxgs-appdraw was compiled with /fp:fast\n#pragma float_control(precise, off)\n#include \"AppDraw/HitTest.h\""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "7bd14fe31e1061befcf22efeb1f3b761e7389b057a997fe459ecc8db0fe2f142",
+      "credits": 3,
+      "distinct_after": 9812,
+      "distinct_before": 9809,
+      "gains": [
+        "00677190",
+        "00677260",
+        "00677300"
+      ],
+      "input_hash": "6b54b49bfc09ff54321fdc06934e58d63da8ac63acb64f59d2a7c449818c897e",
+      "losses": [],
+      "new_distinct": [
+        "00677190",
+        "00677260",
+        "00677300"
+      ],
+      "overlay_hash": "e4e296b09469e61b803b644d384e05f8e77329cb686c203206ca9d9cba0d19fe",
+      "owned_after": 3338,
+      "owned_before": 3335,
+      "rebased": false,
+      "submitted_revision": "7bd14fe31e1061befcf22efeb1f3b761e7389b057a997fe459ecc8db0fe2f142"
+    },
+    "state": "accepted",
+    "unit": "RBX::AdornG3D",
+    "updated": 1793405503.4116092,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793450492.2030916,
+    "id": "d2b2a3e541984a338c5bed81ad7406dc",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8datamodel/Workspace.cpp": [
+        [
+          "\tvoid Workspace::zoomToExtents()\n\t{\n\t\tgetCamera()->zoomExtents(viewPort);\n\t}",
+          "\tvoid Workspace::zoomToExtents()\n\t{\n\t\tgetCamera()->zoomExtents(viewPort);\n\t}\n\n\tvoid Workspace::onWrapMouse(const G3D::Vector2& wrapMouseDelta)\n\t{\n\t\tgetCamera()->onWrapMouse(wrapMouseDelta);\n\t}\n\n\t// Camera.h declares Camera::onWrapMouse but no unit defines it; define it beside its\n\t// only caller, kept out of line as in the 2008 binary (thiscall at 005cce40).\n\t__declspec(noinline) void Camera::onWrapMouse(const G3D::Vector2& wrapMouseDelta)\n\t{\n\t\ttiltRadians(wrapMouseDelta.y * (-0.3f * Math::pi() / 180.0f));\n\t\tpanRadians(wrapMouseDelta.x * (-0.4f * Math::pi() / 180.0f));\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "b27dbcc04d4bafcb12bdd372f1006ea61014e6ab94080a3ee7afc1cca3534ea6",
+      "credits": 1,
+      "distinct_after": 9813,
+      "distinct_before": 9812,
+      "gains": [
+        "005a0220"
+      ],
+      "input_hash": "fde206bdd2c1e414a0bf959ebf4e5bfe7d974d2c0b0397c5737cdabb477460d5",
+      "losses": [],
+      "new_distinct": [
+        "005a0220"
+      ],
+      "overlay_hash": "d6b6d32f5fd34f20480498f407b05fac3a24f65f8e1336c459061cac23f53da2",
+      "owned_after": 3339,
+      "owned_before": 3338,
+      "rebased": false,
+      "submitted_revision": "b27dbcc04d4bafcb12bdd372f1006ea61014e6ab94080a3ee7afc1cca3534ea6"
+    },
+    "state": "accepted",
+    "unit": "RBX::JointInstance",
+    "updated": 1793450690.440491,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793465334.934689,
+    "id": "7774bf722f9848e2971c2116a6956d78",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "\t\tModelInstance* character = Network::Players::findLocalCharacter(context);\n\t\treturn character ? character->findFirstChildOfType<Humanoid>() : NULL;",
+          "\t\treturn modelIsCharacter(Network::Players::findLocalCharacter(context));"
+        ],
+        [
+          "\tvoid Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)",
+          "\tvoid Humanoid::getPrimitives(std::vector<Primitive*>& primitives)\n\t{\n\t\tif (ModelInstance* character = getCharacterFromHumanoid(this))\n\t\t\tcharacter->visitDescendents(boost::bind(&collectAllDescendantCharacterPrims, _1, boost::ref(primitives)));\n\t}\n\n\tvoid Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)"
+        ],
+        [
+          "\t\tModelInstance* character = getCharacterFromHumanoid(this);\n\t\tRBXASSERT(character);\n\n\t\tif (!character)",
+          "\t\tModelInstance* character = getCharacterFromHumanoid(this);\n\n\t\tif (!character)"
+        ],
+        [
+          "\t\tRBXASSERT(head && torso && rightArm && leftArm && rightLeg && leftLeg);\n\n\t\tif (!torso)\n\t\t\treturn;\n\n\t\thead->getPrimitive()->getBody()->setCanThrottle(false);\n\t\ttorso->getPrimitive()->getBody()->setCanThrottle(false);\n\t\trightArm->getPrimitive()->getBody()->setCanThrottle(false);\n\t\tleftArm->getPrimitive()->getBody()->setCanThrottle(false);\n\t\trightLeg->getPrimitive()->getBody()->setCanThrottle(false);\n\t\tleftLeg->getPrimitive()->getBody()->setCanThrottle(false);\n",
+          "\t\tif (!torso)\n\t\t\treturn;\n"
+        ]
+      ],
+      "Rendering/RenderLib/EffectSettings.cpp": [
+        [
+          "#include \"RenderLib/EffectSettings.h\"\n\nnamespace RBX\n{\n\tnamespace Render\n\t{\n\t}\n}",
+          "#pragma float_control(precise, off)\n#include \"RenderLib/EffectSettings.h\"\n\n#include <GLG3D/glcalls.h>\n#include <algorithm>\n#include <memory>\n\nnamespace RBX\n{\n\tnamespace Render\n\t{\n\t\tstatic bool brighter(const G3D::GLight& A, const G3D::GLight& B)\n\t\t{\n\t\t\treturn (A.color.r + A.color.g + A.color.b) / 3.0 * (1.2 - A.position.w) >\n\t\t\t\t   (B.color.r + B.color.g + B.color.b) / 3.0 * (1.2 - B.position.w);\n\t\t}\n\n\t\tG3D::ToneMap* EffectSettings::getToneMap()\n\t\t{\n\t\t\tstatic std::auto_ptr<G3D::ToneMap> toneMap(new G3D::ToneMap());\n\t\t\treturn toneMap.get();\n\t\t}\n\n\t\tDepthBlur* EffectSettings::getDepthBlur()\n\t\t{\n\t\t\tstatic std::auto_ptr<DepthBlur> depthBlur(new DepthBlur());\n\t\t\treturn depthBlur.get();\n\t\t}\n\n\t\tG3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(\n\t\t\tfloat shadingDetail,\n\t\t\tfloat meshDetail,\n\t\t\tbool shadows,\n\t\t\tfloat cameraDistanceFromCharacters,\n\t\t\tconst G3D::ReferenceCountedPointer<G3D::Lighting>& desiredLighting,\n\t\t\tconst G3D::LightingParameters& desiredSkyParameters,\n\t\t\tG3D::LightingParameters& outSkyParameters)\n\t\t{\n\t\t\tint lightCount = desiredLighting->lightArray.size();\n\t\t\tint shadowLightCount = desiredLighting->shadowedLightArray.size();\n\t\t\tint numShadowLights = shadowLightCount >= 8 ? 8 : shadowLightCount;\n\t\t\tint maxLights = G3D::glGetInteger(GL_MAX_LIGHTS) - 3;\n\t\t\tint numNonShadowLights = lightCount >= maxLights ? maxLights : lightCount;\n\t\t\tnumNonShadowLights = numNonShadowLights > 0 ? numNonShadowLights : 0;\n\n\t\t\t_groundLOD = 1.0f;\n\t\t\t_LODShift = 0.0f;\n\t\t\t_skyBox = false;\n\t\t\t_alphaBlendShadowLights = true;\n\t\t\t_stencilShadows = false;\n\t\t\t_useAllLightsInUnshadowedPass = false;\n\t\t\t_toneMap = false;\n\t\t\t_hemisphereLighting = false;\n\t\t\t_depthBlur = false;\n\t\t\t_farCullZ = -G3D::inf();\n\n\t\t\tG3D::ReferenceCountedPointer<G3D::Lighting> lighting = G3D::Lighting::create();\n\t\t\t*lighting = *desiredLighting;\n\n\t\t\tG3D::glGetInteger(GL_STENCIL_BITS);\n\n\t\t\tif (shadingDetail >= 10)\n\t\t\t{\n\t\t\t\t_skyBox = true;\n\t\t\t}\n\n\t\t\t_groundLOD = meshDetail * 0.01f;\n\n\t\t\tif (shadingDetail >= 30.0f)\n\t\t\t{\n\t\t\t\t_hemisphereLighting = true;\n\t\t\t}\n\n\t\t\t_LODShift = meshDetail * 0.02f - 1.0f;\n\n\t\t\tif (shadows && numShadowLights > 0)\n\t\t\t{\n\t\t\t\t_stencilShadows = true;\n\t\t\t\tnumShadowLights = 1;\n\n\t\t\t\tif (numNonShadowLights == 0)\n\t\t\t\t{\n\t\t\t\t\t_alphaBlendShadowLights = false;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tlighting->shadowedLightArray.sort(brighter);\n\n\t\t\tint excessShadowLights = lighting->shadowedLightArray.size() - numShadowLights;\n\n\t\t\tif (excessShadowLights > 0)\n\t\t\t{\n\t\t\t\tfor (int i = 0; i < excessShadowLights; i++)\n\t\t\t\t{\n\t\t\t\t\tlighting->lightArray.append(\n\t\t\t\t\t\tlighting->shadowedLightArray[lighting->shadowedLightArray.size() - excessShadowLights + i]);\n\t\t\t\t}\n\n\t\t\t\tlighting->shadowedLightArray.resize(lighting->shadowedLightArray.size() - excessShadowLights, true);\n\t\t\t}\n\n\t\t\tlighting->lightArray.sort(brighter);\n\n\t\t\tint excessLights = lighting->lightArray.size() - numNonShadowLights;\n\n\t\t\tif (excessLights > 0)\n\t\t\t{\n\t\t\t\tlighting->lightArray.resize(lighting->lightArray.size() - excessLights, true);\n\t\t\t}\n\n\t\t\t_useAllLightsInUnshadowedPass = _stencilShadows == false;\n\n\t\t\tfor (int i = 0; i < lighting->lightArray.size(); i++)\n\t\t\t{\n\t\t\t\tG3D::GLight& l = lighting->lightArray[i];\n\t\t\t\tl.color *= 1.0f;\n\t\t\t}\n\t\t\tfor (int i = 0; i < lighting->shadowedLightArray.size(); i++)\n\t\t\t{\n\t\t\t\tG3D::GLight& l = lighting->shadowedLightArray[i];\n\t\t\t\tl.color *= 1.0f;\n\t\t\t}\n\n\t\t\tif (_toneMap)\n\t\t\t{\n\t\t\t\tgetToneMap()->setEnabled(true);\n\t\t\t\tlighting = getToneMap()->prepareLighting(lighting);\n\t\t\t\toutSkyParameters = getToneMap()->prepareLightingParameters(desiredSkyParameters);\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\toutSkyParameters = desiredSkyParameters;\n\t\t\t}\n\n\t\t\treturn lighting;\n\t\t}\n\t}\n}"
+        ],
+        [
+          "\t\tstatic bool brighter(const G3D::GLight& A, const G3D::GLight& B)\n\t\t{\n\t\t\treturn (A.color.r + A.color.g + A.color.b) / 3.0 * (1.2 - A.position.w) >\n\t\t\t\t   (B.color.r + B.color.g + B.color.b) / 3.0 * (1.2 - B.position.w);\n\t\t}",
+          "\t\tstatic bool brighter(const G3D::GLight& A, const G3D::GLight& B)\n\t\t{\n\t\t\treturn A.color.average() * (1.2 - A.position.w) > B.color.average() * (1.2 - B.position.w);\n\t\t}\n\n\t\tDepthBlur::~DepthBlur()\n\t\t{\n\t\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6e5085ffa0d65b2fea17b1b3fd1134022b23bbf76a1d454b3d016cee3ccc1c2f",
+      "credits": 18,
+      "distinct_after": 9831,
+      "distinct_before": 9813,
+      "gains": [
+        "005026d0",
+        "005058f0",
+        "00505940",
+        "00505a20",
+        "00505ad0",
+        "00505b90",
+        "00505c70",
+        "00505d20",
+        "00505e30",
+        "00505ee0",
+        "00505f40",
+        "00505ff0",
+        "00506890",
+        "00506a60",
+        "00506ae0",
+        "00506c00",
+        "00506c80",
+        "005d9340",
+        "005d9bb0",
+        "005d9db0"
+      ],
+      "input_hash": "ffd015b42a57666f5e2affaa82027702e0cae6c6c81afcbdd9513183ef96fd85",
+      "losses": [],
+      "new_distinct": [
+        "005026d0",
+        "005058f0",
+        "00505940",
+        "00505a20",
+        "00505ad0",
+        "00505b90",
+        "00505c70",
+        "00505d20",
+        "00505e30",
+        "00505ee0",
+        "00505ff0",
+        "00506890",
+        "00506ae0",
+        "00506c00",
+        "00506c80",
+        "005d9340",
+        "005d9bb0",
+        "005d9db0"
+      ],
+      "overlay_hash": "23d66b3e0fc18d4770dbc0e36e6b3445a625e527b68f9aa26d3500e0e1201ecc",
+      "owned_after": 3359,
+      "owned_before": 3339,
+      "rebased": false,
+      "submitted_revision": "6e5085ffa0d65b2fea17b1b3fd1134022b23bbf76a1d454b3d016cee3ccc1c2f"
+    },
+    "state": "accepted",
+    "unit": "RBX::Render::RenderScene, RBX::Humanoid",
+    "updated": 1793466220.3158622,
+    "user": "EspClaude"
+  },
+  {
+    "created": 1793466117.521453,
+    "id": "bc06e52f7970494682e9ab8e6e95486b",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8datamodel/Workspace.cpp": [
+        [
+          "\tCamera* Workspace::getCamera() const\n\t{\n\t\tif (!currentCamera || !currentCamera->isDescendentOf(this))\n\t\t{\n\t\t\tboost::shared_ptr<Camera> newCamera = Creatable::create<Camera>();\n\t\t\tnewCamera->setParent(const_cast<Workspace*>(this));\n\t\t\tcurrentCamera = newCamera;\n\t\t}\n\n\t\tRBXASSERT(currentCamera->isDescendentOf(this));\n\t\treturn currentCamera.get();\n\t}",
+          "\tCamera* Workspace::getCamera() const\n\t{\n\t\treturn currentCamera ? currentCamera.get() : cameraTemplate.get();\n\t}"
+        ],
+        [
+          "\tWorld* Workspace::getMyWorldFast(const Instance* context)",
+          "\tInstance* Workspace::findTopInstance(Instance* context)\n\t{\n\t\tWorkspace* workspace = getMyWorkspaceFast(context);\n\t\twhile (context->getParent() != workspace)\n\t\t\tcontext = context->getParent();\n\t\treturn context;\n\t}\n\n\tWorld* Workspace::getMyWorldFast(const Instance* context)"
+        ]
+      ],
+      "Rendering/AppDraw/Draw.cpp": [
+        [
+          "#include \"AppDraw/Draw.h\"\n#include \"util/Math.h\"",
+          "// 2008 rbxgs-appdraw was compiled with /fp:fast\n#pragma float_control(precise, off)\n#include \"AppDraw/Draw.h\"\n#include \"util/Math.h\""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "25b001c0270861bb3142e5d51fc4a7d86283773079d01d90c36a4d9a123b91f9",
+      "credits": 5,
+      "distinct_after": 9836,
+      "distinct_before": 9831,
+      "gains": [
+        "005a05a0",
+        "005a0d90",
+        "00676b20",
+        "00676e00",
+        "006770f0"
+      ],
+      "input_hash": "e81b12228aab38ae711e0b0192f574a836cdac08ef2b7c468845e1dfb4b6e315",
+      "losses": [],
+      "new_distinct": [
+        "005a05a0",
+        "005a0d90",
+        "00676b20",
+        "00676e00",
+        "006770f0"
+      ],
+      "overlay_hash": "9a23f14ae66f08966bccdcdd7e310fa24ae510f5f6cd887bc7e28368eb541004",
+      "owned_after": 3364,
+      "owned_before": 3359,
+      "rebased": true,
+      "submitted_revision": "6e5085ffa0d65b2fea17b1b3fd1134022b23bbf76a1d454b3d016cee3ccc1c2f"
+    },
+    "state": "accepted",
+    "unit": "RBX::AdornG3D",
+    "updated": 1793466416.2500527,
+    "user": "EspClaude"
   }
 ]

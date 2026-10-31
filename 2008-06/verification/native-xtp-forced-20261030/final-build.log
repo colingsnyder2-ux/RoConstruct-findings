@@ -1,4 +1,0 @@
-layer upstream: 0 compile errors
-layer internals: 0 compile errors
-verified layer: 422 exact symbols swapped in
-XTP: linked=True test_exit=0; 59479 object functions, 4818 byte-identical to unique 2008 functions (4475 of >=16 bytes)

@@ -1,4 +1,4 @@
-// from server: 71% by tester
+// from server: 77% by Intel
 struct DescribedBase;
 struct PropertyDescriptor;
 
@@ -37,14 +37,14 @@ void BoundPropGetSet::setValue(DescribedBase* object, const void* value) const
     if (sub_743730(m + base, val))
     {
         int target = *(int*)((char*)this + 8) + base;
-        sub_b22658(target);
+        int vtable_func = *(int*)target;
+        ((void (__thiscall*)(int))vtable_func)(target);
         *(int*)(target + 0x1c) = *(int*)(val + 0x1c);
 
         int ch = *(int*)((char*)this + 0x10);
         if (ch != 0)
         {
             int d = *(int*)((char*)this + 4);
-            int c = *(int*)((char*)this + 0x14);
             ((void (__stdcall*)(int))ch)(d);
         }
         sub_414da0(*(int*)((char*)this + 4));

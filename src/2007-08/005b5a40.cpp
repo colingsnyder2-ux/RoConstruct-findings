@@ -1,23 +1,5 @@
-// from server: 71% by colin
-struct T_func_005b5a40 {
-    char pad[8];
-    int field8;
-    int m(int, int);
-};
-
-struct T_copy {
-    void copy(const void*);
-};
-
-int T_func_005b5a40::m(int a, int b)
-{
-    int* p = (int*)a;
-    if (p != 0)
-        p = (int*)((char*)p - 4);
-    else
-        p = 0;
-    int* q = (int*)((char*)this->field8 + (int)p);
-    ((T_copy*)b)->copy(q);
-    *(int*)(b + 0x1c) = *(int*)((char*)q + 0x1c);
-    return b;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_appearance_script_properties_009caff6fc1bd219.cpp

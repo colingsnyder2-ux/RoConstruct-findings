@@ -1,378 +1,228 @@
-// from server: 66% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/thread/src/thread.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_support_native_40d4958f041290e4.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright (C) 2001-2003
-// William E. Kempf
-//
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#pragma include_alias("v8datamodel/JointsService.h", "../roc_espeon_aug2007_joints_service_header_70eae11bae482e15.cpp")
+#pragma include_alias("v8datamodel/DebrisService.h", "../roc_espeon_aug2007_debris_pinned_header_2c0ad23d27535ab8.cpp")
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_flags_header_a6acc69782cd7c29.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-#include <boost/thread/detail/config.hpp>
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#pragma include_alias("util/UIEvent.h", "../roc_espeon_aug2007_uievent_viewport_header_04331f71cbc5bc08.cpp")
+#pragma include_alias(<util/UIEvent.h>, <../roc_espeon_aug2007_uievent_viewport_header_04331f71cbc5bc08.cpp>)
+#pragma include_alias("v8datamodel/Workspace.h", "../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp")
+#pragma include_alias(<v8datamodel/Workspace.h>, <../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp>)
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/xtime.hpp>
-#include <boost/thread/condition.hpp>
-#include <cassert>
+#include "util/boost.hpp"
+#include "util/standardout.h"
+#include "util/Debug.h"
+#include <boost/bind.hpp>
+#include <windows.h>
+#include <boost/thread/tss.hpp>
+#include <boost/thread/once.hpp>
 
-#if defined(BOOST_HAS_WINTHREADS)
-#   include <windows.h>
-#   if !defined(BOOST_NO_THREADEX)
-#      include <process.h>
-#   endif
-#elif defined(BOOST_HAS_MPTASKS)
-#   include <DriverServices.h>
-
-#   include "init.hpp"
-#   include "safe.hpp"
-#   include <boost/thread/tss.hpp>
-#endif
-
-#include "timeconv.inl"
-
-#if defined(BOOST_HAS_WINTHREADS)
-#   include "boost/thread/detail/tss_hooks.hpp"
-#endif
-
-namespace {
-
-#if defined(BOOST_HAS_WINTHREADS) && defined(BOOST_NO_THREADEX)
-// Windows CE doesn't define _beginthreadex
-
-struct ThreadProxyData
+namespace RBX
 {
-    typedef unsigned (__stdcall* func)(void*);
-    func start_address_;
-    void* arglist_;
-    ThreadProxyData(func start_address,void* arglist) : start_address_(start_address), arglist_(arglist) {}
-};
+	namespace boost_detail
+	{
+		boost::thread_specific_ptr<std::string>* foo;
+		
+		boost::once_flag once_init_foo = BOOST_ONCE_INIT;
+		void init_foo()
+		{
+			static boost::thread_specific_ptr<std::string> value;
+			foo = &value;
+		}
 
-DWORD WINAPI ThreadProxy(LPVOID args)
-{
-    ThreadProxyData* data=reinterpret_cast<ThreadProxyData*>(args);
-    DWORD ret=data->start_address_(data->arglist_);
-    delete data;
-    return ret;
+		void set_foo(std::string* value)
+		{
+			boost::call_once(&boost_detail::init_foo, boost_detail::once_init_foo);
+			boost_detail::foo->reset(value);
+		}
+	}
+
+	// Thread name stuff based on https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/xcb2z8hs(v=vs.90)
+	static bool nameThreads = true;
+
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType;
+		LPCSTR szName;
+		DWORD dwThreadID;
+		DWORD dwFlags;
+	} THREADNAME_INFO;
+
+	void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName)
+	{
+		THREADNAME_INFO info;
+		info.dwType = 0x1000;
+		info.szName = szThreadName;
+		info.dwThreadID = dwThreadID;
+		info.dwFlags = 0;
+
+		__try
+		{
+			if (nameThreads)
+				RaiseException(0x406D1388, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+		}
+		__except (EXCEPTION_CONTINUE_EXECUTION)
+		{
+		}
+	}
+
+	void set_thread_name(const char* name)
+	{
+		boost_detail::set_foo(new std::string(name));
+		SetThreadName(GetCurrentThreadId(), name);
+	}
+
+	class ThreadPrioritySetter
+	{
+	private:
+		const int old;
+		bool success;
+	  
+	public:
+		ThreadPrioritySetter(int priority)
+			: old(GetThreadPriority(GetCurrentThread())),
+			  success(SetThreadPriority(GetCurrentThread(), priority) == TRUE)
+		{
+		}
+		~ThreadPrioritySetter()
+		{
+			if (success)
+				SetThreadPriority(GetCurrentThread(), old);
+		}
+	};
+
+	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
+	{
+		try
+		{
+			set_thread_name(name.c_str());
+
+			{
+				ThreadPrioritySetter set(THREAD_PRIORITY_BELOW_NORMAL);
+				threadfunc();
+			}
+		}
+		catch (std::exception& ex)
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in run_in_background:", ex.what());
+			RBXASSERT(false);
+		}
+	}
+
+	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
+	{
+		return boost::bind(&run_in_background, threadfunc, std::string(name));
+	}
+
+	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)
+		: _data(new data()),
+		  thread(background_function(boost::bind(&threadProc, _data, work_function), name))
+	{
+	}
+
+	worker_thread::~worker_thread()
+	{
+		boost::mutex::scoped_lock scoped_lock(_data->sync);
+		_data->endRequest = true;
+		_data->wakeCondition.notify_all();
+	}
+
+	void worker_thread::join()
+	{
+		{
+			boost::mutex::scoped_lock scoped_lock(_data->sync);
+			_data->endRequest = true;
+			_data->wakeCondition.notify_all();
+		}
+
+		thread.join();
+	}
+
+	void worker_thread::wake()
+	{
+		boost::mutex::scoped_lock scoped_lock(_data->sync);
+		_data->wakeCondition.notify_all();
+	}
+
+	void worker_thread::threadProc(boost::shared_ptr<data> data, const boost::function0<enum work_result>& work_function)
+	{
+		while (!data->endRequest)
+		{
+			if (work_function() != more)
+			{
+				boost::mutex::scoped_lock scoped_lock(data->sync);
+				data->wakeCondition.wait(scoped_lock);	
+			}
+		}
+	}
 }
-
-inline unsigned _beginthreadex(void* security, unsigned stack_size, unsigned (__stdcall* start_address)(void*),
-void* arglist, unsigned initflag,unsigned* thrdaddr)
-{
-    DWORD threadID;
-    HANDLE hthread=CreateThread(static_cast<LPSECURITY_ATTRIBUTES>(security),stack_size,ThreadProxy,
-        new ThreadProxyData(start_address,arglist),initflag,&threadID);
-    if (hthread!=0)
-        *thrdaddr=threadID;
-    return reinterpret_cast<unsigned>(hthread);
-}
-#endif
-
-class thread_param
-{
-public:
-    thread_param(const boost::function0<void>& threadfunc)
-        : m_threadfunc(threadfunc), m_started(false)
-    {
-    }
-    void wait()
-    {
-        boost::mutex::scoped_lock scoped_lock(m_mutex);
-        while (!m_started)
-            m_condition.wait(scoped_lock);
-    }
-    void started()
-    {
-        boost::mutex::scoped_lock scoped_lock(m_mutex);
-        m_started = true;
-        m_condition.notify_one();
-    }
-
-    boost::mutex m_mutex;
-    boost::condition m_condition;
-    const boost::function0<void>& m_threadfunc;
-    bool m_started;
-};
-
-} // unnamed namespace
-
-extern "C" {
-#if defined(BOOST_HAS_WINTHREADS)
-    unsigned __stdcall thread_proxy(void* param)
-#elif defined(BOOST_HAS_PTHREADS)
-        static void* thread_proxy(void* param)
-#elif defined(BOOST_HAS_MPTASKS)
-        static OSStatus thread_proxy(void* param)
-#endif
-    {
-        //try
-        //{
-            thread_param* p = static_cast<thread_param*>(param);
-            boost::function0<void> threadfunc = p->m_threadfunc;
-            p->started();
-            threadfunc();
-#if defined(BOOST_HAS_WINTHREADS)
-            on_thread_exit();
-#endif
-        //}
-        //catch (...)
-        //{
-#if defined(BOOST_HAS_WINTHREADS)
-        //    on_thread_exit();
-#endif
-        //}
-#if defined(BOOST_HAS_MPTASKS)
-        ::boost::detail::thread_cleanup();
-#endif
-        return 0;
-    }
-
-}
-
-namespace boost {
-
-thread::thread()
-    : m_joinable(false)
-{
-#if defined(BOOST_HAS_WINTHREADS)
-    m_thread = reinterpret_cast<void*>(GetCurrentThread());
-    m_id = GetCurrentThreadId();
-#elif defined(BOOST_HAS_PTHREADS)
-    m_thread = pthread_self();
-#elif defined(BOOST_HAS_MPTASKS)
-    threads::mac::detail::thread_init();
-    threads::mac::detail::create_singletons();
-    m_pTaskID = MPCurrentTaskID();
-    m_pJoinQueueID = kInvalidID;
-#endif
-}
-
-thread::thread(const function0<void>& threadfunc)
-    : m_joinable(true)
-{
-    thread_param param(threadfunc);
-#if defined(BOOST_HAS_WINTHREADS)
-    m_thread = reinterpret_cast<void*>(_beginthreadex(0, 0, &thread_proxy,
-                                           &param, 0, &m_id));
-    if (!m_thread)
-        throw thread_resource_error();
-#elif defined(BOOST_HAS_PTHREADS)
-    int res = 0;
-    res = pthread_create(&m_thread, 0, &thread_proxy, &param);
-    if (res != 0)
-        throw thread_resource_error();
-#elif defined(BOOST_HAS_MPTASKS)
-    threads::mac::detail::thread_init();
-    threads::mac::detail::create_singletons();
-    OSStatus lStatus = noErr;
-
-    m_pJoinQueueID = kInvalidID;
-    m_pTaskID = kInvalidID;
-
-    lStatus = MPCreateQueue(&m_pJoinQueueID);
-    if (lStatus != noErr) throw thread_resource_error();
-
-    lStatus = MPCreateTask(&thread_proxy, &param, 0UL, m_pJoinQueueID, NULL,
-        NULL, 0UL, &m_pTaskID);
-    if (lStatus != noErr)
-    {
-        lStatus = MPDeleteQueue(m_pJoinQueueID);
-        assert(lStatus == noErr);
-        throw thread_resource_error();
-    }
-#endif
-    param.wait();
-}
-
-thread::~thread()
-{
-    if (m_joinable)
-    {
-#if defined(BOOST_HAS_WINTHREADS)
-        int res = 0;
-        res = CloseHandle(reinterpret_cast<HANDLE>(m_thread));
-        assert(res);
-#elif defined(BOOST_HAS_PTHREADS)
-        pthread_detach(m_thread);
-#elif defined(BOOST_HAS_MPTASKS)
-        assert(m_pJoinQueueID != kInvalidID);
-        OSStatus lStatus = MPDeleteQueue(m_pJoinQueueID);
-        assert(lStatus == noErr);
-#endif
-    }
-}
-
-bool thread::operator==(const thread& other) const
-{
-#if defined(BOOST_HAS_WINTHREADS)
-    return other.m_id == m_id;
-#elif defined(BOOST_HAS_PTHREADS)
-    return pthread_equal(m_thread, other.m_thread) != 0;
-#elif defined(BOOST_HAS_MPTASKS)
-    return other.m_pTaskID == m_pTaskID;
-#endif
-}
-
-bool thread::operator!=(const thread& other) const
-{
-    return !operator==(other);
-}
-
-void thread::join()
-{
-    assert(m_joinable); //See race condition comment below
-    int res = 0;
-#if defined(BOOST_HAS_WINTHREADS)
-    res = WaitForSingleObject(reinterpret_cast<HANDLE>(m_thread), INFINITE);
-    assert(res == WAIT_OBJECT_0);
-    res = CloseHandle(reinterpret_cast<HANDLE>(m_thread));
-    assert(res);
-#elif defined(BOOST_HAS_PTHREADS)
-    res = pthread_join(m_thread, 0);
-    assert(res == 0);
-#elif defined(BOOST_HAS_MPTASKS)
-    OSStatus lStatus = threads::mac::detail::safe_wait_on_queue(
-        m_pJoinQueueID, NULL, NULL, NULL, kDurationForever);
-    assert(lStatus == noErr);
-#endif
-    // This isn't a race condition since any race that could occur would
-    // have us in undefined behavior territory any way.
-    m_joinable = false;
-}
-
-void thread::sleep(const xtime& xt)
-{
-    for (int foo=0; foo < 5; ++foo)
-    {
-#if defined(BOOST_HAS_WINTHREADS)
-        int milliseconds;
-        to_duration(xt, milliseconds);
-        Sleep(milliseconds);
-#elif defined(BOOST_HAS_PTHREADS)
-#   if defined(BOOST_HAS_PTHREAD_DELAY_NP)
-        timespec ts;
-        to_timespec_duration(xt, ts);
-        int res = 0;
-        res = pthread_delay_np(&ts);
-        assert(res == 0);
-#   elif defined(BOOST_HAS_NANOSLEEP)
-        timespec ts;
-        to_timespec_duration(xt, ts);
-
-        //  nanosleep takes a timespec that is an offset, not
-        //  an absolute time.
-        nanosleep(&ts, 0);
-#   else
-        mutex mx;
-        mutex::scoped_lock lock(mx);
-        condition cond;
-        cond.timed_wait(lock, xt);
-#   endif
-#elif defined(BOOST_HAS_MPTASKS)
-        int microseconds;
-        to_microduration(xt, microseconds);
-        Duration lMicroseconds(kDurationMicrosecond * microseconds);
-        AbsoluteTime sWakeTime(DurationToAbsolute(lMicroseconds));
-        threads::mac::detail::safe_delay_until(&sWakeTime);
-#endif
-        xtime cur;
-        xtime_get(&cur, TIME_UTC);
-        if (xtime_cmp(xt, cur) <= 0)
-            return;
-    }
-}
-
-void thread::yield()
-{
-#if defined(BOOST_HAS_WINTHREADS)
-    Sleep(0);
-#elif defined(BOOST_HAS_PTHREADS)
-#   if defined(BOOST_HAS_SCHED_YIELD)
-    int res = 0;
-    res = sched_yield();
-    assert(res == 0);
-#   elif defined(BOOST_HAS_PTHREAD_YIELD)
-    int res = 0;
-    res = pthread_yield();
-    assert(res == 0);
-#   else
-    xtime xt;
-    xtime_get(&xt, TIME_UTC);
-    sleep(xt);
-#   endif
-#elif defined(BOOST_HAS_MPTASKS)
-    MPYield();
-#endif
-}
-
-thread_group::thread_group()
-{
-}
-
-thread_group::~thread_group()
-{
-    // We shouldn't have to scoped_lock here, since referencing this object
-    // from another thread while we're deleting it in the current thread is
-    // going to lead to undefined behavior any way.
-    for (std::list<thread*>::iterator it = m_threads.begin();
-         it != m_threads.end(); ++it)
-    {
-        delete (*it);
-    }
-}
-
-thread* thread_group::create_thread(const function0<void>& threadfunc)
-{
-    // No scoped_lock required here since the only "shared data" that's
-    // modified here occurs inside add_thread which does scoped_lock.
-    std::auto_ptr<thread> thrd(new thread(threadfunc));
-    add_thread(thrd.get());
-    return thrd.release();
-}
-
-void thread_group::add_thread(thread* thrd)
-{
-    mutex::scoped_lock scoped_lock(m_mutex);
-
-    // For now we'll simply ignore requests to add a thread object multiple
-    // times. Should we consider this an error and either throw or return an
-    // error value?
-    std::list<thread*>::iterator it = std::find(m_threads.begin(),
-        m_threads.end(), thrd);
-    assert(it == m_threads.end());
-    if (it == m_threads.end())
-        m_threads.push_back(thrd);
-}
-
-void thread_group::remove_thread(thread* thrd)
-{
-    mutex::scoped_lock scoped_lock(m_mutex);
-
-    // For now we'll simply ignore requests to remove a thread object that's
-    // not in the group. Should we consider this an error and either throw or
-    // return an error value?
-    std::list<thread*>::iterator it = std::find(m_threads.begin(),
-        m_threads.end(), thrd);
-    assert(it != m_threads.end());
-    if (it != m_threads.end())
-        m_threads.erase(it);
-}
-
-void thread_group::join_all()
-{
-    mutex::scoped_lock scoped_lock(m_mutex);
-    for (std::list<thread*>::iterator it = m_threads.begin();
-         it != m_threads.end(); ++it)
-    {
-        (*it)->join();
-    }
-}
-
-int thread_group::size()
-{
-        return m_threads.size();
-}
-
-} // namespace boost

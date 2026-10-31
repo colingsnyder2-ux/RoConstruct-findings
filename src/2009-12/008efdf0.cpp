@@ -1,142 +1,730 @@
-// roc 2009-12 008efdf0  unit: CXTPRibbonScrollableBar::CControlGroupsScroll  size: 427 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 008efdf0
-//
-// 008efdf0  83ec1c               sub esp, 0x1c
-// 008efdf3  55                   push ebp
-// 008efdf4  56                   push esi
-// 008efdf5  bd01000000           mov ebp, 1
-// 008efdfa  55                   push ebp
-// 008efdfb  8bf1                 mov esi, ecx
-// 008efdfd  ff1530cc9800         call dword ptr [0x98cc30]
-// 008efe03  6685c0               test ax, ax
-// 008efe06  0f8d87010000         jge 0x8eff93
-// 008efe0c  8b8600010000         mov eax, dword ptr [esi + 0x100]
-// 008efe12  57                   push edi
-// 008efe13  50                   push eax
-// 008efe14  89aea8000000         mov dword ptr [esi + 0xa8], ebp
-// 008efe1a  e891faffff           call 0x8ef8b0
-// 008efe1f  8bf8                 mov edi, eax
-// 008efe21  8b17                 mov edx, dword ptr [edi]
-// 008efe23  8b8674010000         mov eax, dword ptr [esi + 0x174]
-// 008efe29  8b12                 mov edx, dword ptr [edx]
-// 008efe2b  83c404               add esp, 4
-// 008efe2e  50                   push eax
-// 008efe2f  8bcf                 mov ecx, edi
-// 008efe31  ffd2                 call edx
-// 008efe33  ff158cca9800         call dword ptr [0x98ca8c]
-// 008efe39  8bc8                 mov ecx, eax
-// 008efe3b  03c9                 add ecx, ecx
-// 008efe3d  03c9                 add ecx, ecx
-// 008efe3f  b8cdcccccc           mov eax, 0xcccccccd
-// 008efe44  f7e1                 mul ecx
-// 008efe46  6a00                 push 0
-// 008efe48  c1ea02               shr edx, 2
-// 008efe4b  52                   push edx
-// 008efe4c  8b9600010000         mov edx, dword ptr [esi + 0x100]
-// 008efe52  8b4220               mov eax, dword ptr [edx + 0x20]
-// 008efe55  689d450000           push 0x459d
-// 008efe5a  50                   push eax
-// 008efe5b  ff1558cc9800         call dword ptr [0x98cc58]
-// 008efe61  8b8600010000         mov eax, dword ptr [esi + 0x100]
-// 008efe67  8b4820               mov ecx, dword ptr [eax + 0x20]
-// 008efe6a  51                   push ecx
-// 008efe6b  ff152ccc9800         call dword ptr [0x98cc2c]
-// 008efe71  50                   push eax
-// 008efe72  e8b33cf0ff           call 0x7f3b2a
-// 008efe77  53                   push ebx
-// 008efe78  eb06                 jmp 0x8efe80
-// 008efe7a  8d9b00000000         lea ebx, [ebx]
-// 008efe80  8b8600010000         mov eax, dword ptr [esi + 0x100]
-// 008efe86  85c0                 test eax, eax
-// 008efe88  7504                 jne 0x8efe8e
-// 008efe8a  33db                 xor ebx, ebx
-// 008efe8c  eb03                 jmp 0x8efe91
-// 008efe8e  8b5820               mov ebx, dword ptr [eax + 0x20]
-// 008efe91  ff1528cc9800         call dword ptr [0x98cc28]
-// 008efe97  3bc3                 cmp eax, ebx
-// 008efe99  0f85b0000000         jne 0x8eff4f
-// 008efe9f  8b16                 mov edx, dword ptr [esi]
-// 008efea1  8b8280000000         mov eax, dword ptr [edx + 0x80]
-// 008efea7  6a00                 push 0
-// 008efea9  8bce                 mov ecx, esi
-// 008efeab  ffd0                 call eax
-// 008efead  85c0                 test eax, eax
-// 008efeaf  0f849a000000         je 0x8eff4f
-// 008efeb5  6a00                 push 0
-// 008efeb7  6a00                 push 0
-// 008efeb9  6a00                 push 0
-// 008efebb  8d4c241c             lea ecx, [esp + 0x1c]
-// 008efebf  51                   push ecx
-// 008efec0  ff15b0ca9800         call dword ptr [0x98cab0]
-// 008efec6  85c0                 test eax, eax
-// 008efec8  747b                 je 0x8eff45
-// 008efeca  8b442414             mov eax, dword ptr [esp + 0x14]
-// 008efece  3d13010000           cmp eax, 0x113
-// 008efed3  754e                 jne 0x8eff23
-// 008efed5  817c24189d450000     cmp dword ptr [esp + 0x18], 0x459d
-// 008efedd  754b                 jne 0x8eff2a
-// 008efedf  8b17                 mov edx, dword ptr [edi]
-// 008efee1  8b8674010000         mov eax, dword ptr [esi + 0x174]
-// 008efee7  8b12                 mov edx, dword ptr [edx]
-// 008efee9  50                   push eax
-// 008efeea  8bcf                 mov ecx, edi
-// 008efeec  ffd2                 call edx
-// 008efeee  85ed                 test ebp, ebp
-// 008efef0  742a                 je 0x8eff1c
-// 008efef2  ff158cca9800         call dword ptr [0x98ca8c]
-// 008efef8  8bc8                 mov ecx, eax
-// 008efefa  b8cdcccccc           mov eax, 0xcccccccd
-// 008efeff  f7e1                 mul ecx
-// 008eff01  6a00                 push 0
-// 008eff03  c1ea03               shr edx, 3
-// 008eff06  52                   push edx
-// 008eff07  8b9600010000         mov edx, dword ptr [esi + 0x100]
-// 008eff0d  8b4220               mov eax, dword ptr [edx + 0x20]
-// 008eff10  689d450000           push 0x459d
-// 008eff15  50                   push eax
-// 008eff16  ff1558cc9800         call dword ptr [0x98cc58]
-// 008eff1c  33ed                 xor ebp, ebp
-// 008eff1e  e95dffffff           jmp 0x8efe80
-// 008eff23  3d02020000           cmp eax, 0x202
-// 008eff28  7425                 je 0x8eff4f
-// 008eff2a  8d4c2410             lea ecx, [esp + 0x10]
-// 008eff2e  51                   push ecx
-// 008eff2f  ff15d0c99800         call dword ptr [0x98c9d0]
-// 008eff35  8d542410             lea edx, [esp + 0x10]
-// 008eff39  52                   push edx
-// 008eff3a  ff1594ca9800         call dword ptr [0x98ca94]
-// 008eff40  e93bffffff           jmp 0x8efe80
-// 008eff45  8b442418             mov eax, dword ptr [esp + 0x18]
-// 008eff49  50                   push eax
-// 008eff4a  e8ab47f0ff           call 0x7f46fa
-// 008eff4f  ff1520cc9800         call dword ptr [0x98cc20]
-// 008eff55  8b8e00010000         mov ecx, dword ptr [esi + 0x100]
-// 008eff5b  8b5120               mov edx, dword ptr [ecx + 0x20]
-// 008eff5e  689d450000           push 0x459d
-// 008eff63  52                   push edx
-// 008eff64  ff15d0cb9800         call dword ptr [0x98cbd0]
-// 008eff6a  8b06                 mov eax, dword ptr [esi]
-// 008eff6c  8b9080000000         mov edx, dword ptr [eax + 0x80]
-// 008eff72  33ff                 xor edi, edi
-// 008eff74  57                   push edi
-// 008eff75  8bce                 mov ecx, esi
-// 008eff77  89bea8000000         mov dword ptr [esi + 0xa8], edi
-// 008eff7d  ffd2                 call edx
-// 008eff7f  5b                   pop ebx
-// 008eff80  85c0                 test eax, eax
-// 008eff82  7506                 jne 0x8eff8a
-// 008eff84  89bea4000000         mov dword ptr [esi + 0xa4], edi
-// 008eff8a  57                   push edi
-// 008eff8b  8bce                 mov ecx, esi
-// 008eff8d  e82e67f0ff           call 0x7f66c0
-// 008eff92  5f                   pop edi
-// 008eff93  5e                   pop esi
-// 008eff94  5d                   pop ebp
-// 008eff95  83c41c               add esp, 0x1c
-// 008eff98  c20c00               ret 0xc
-// copied from an identical function in another client (function ?OnClick@CControlGroupsScroll@CXTPRibbonScrollableBar@@UAEXHVCPoint@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonPopups.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPRibbonPopups.cpp : implementation file
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPImageManager.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "CommandBars/resource.h"
+#include "CommandBars/XTPShortcutManager.h"
+#include "CommandBars/XTPCommandBars.h"
+#include "CommandBars/XTPPopupBar.h"
+#include "CommandBars/XTPControlExt.h"
+#include "CommandBars/XTPMouseManager.h"
+#include "CommandBars/XTPControlPopup.h"
+#include "CommandBars/XTPControlButton.h"
+#include "CommandBars/XTPOffice2007FrameHook.h"
+#include "CommandBars/XTPCustomizeTools.h"
+
+#include "XTPRibbonTab.h"
+#include "XTPRibbonTheme.h"
+#include "XTPRibbonQuickAccessControls.h"
+#include "XTPRibbonGroups.h"
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonControlTab.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonSystemButton.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define IDSYS_SCROLL 17821
+
+
+class CXTPRibbonScrollableBar::CControlGroupsScroll : public CXTPControlButton
+{
+public:
+	CControlGroupsScroll(BOOL bScrollLeft)
+	{
+		SetFlags(xtpFlagSkipFocus | xtpFlagNoMovable);
+		m_bScrollLeft = bScrollLeft;
+	}
+
+	void Draw(CDC* pDC)
+	{
+		((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawRibbonScrollButton(pDC, this, m_bScrollLeft);
+	}
+
+	virtual void OnClick(BOOL /*bKeyboard  = FALSE */, CPoint /*pt  = CPoint */)
+	{
+		if (GetKeyState(VK_LBUTTON) >= 0)
+			return;
+
+		m_bPressed = TRUE;
+
+		CXTPRibbonScrollableBar* pScrollableBar = GetScrollableBar(m_pParent);
+
+		pScrollableBar->OnGroupsScroll(m_bScrollLeft);
+
+		int cmsTimer = GetDoubleClickTime() * 4 / 5;
+		m_pParent->SetTimer(IDSYS_SCROLL, cmsTimer, NULL);
+		BOOL bFirst = TRUE;
+
+		m_pParent->SetCapture();
+
+		while (::GetCapture() == m_pParent->GetSafeHwnd() && IsVisible())
+		{
+			MSG msg;
+
+			if (!::GetMessage(&msg, NULL, 0, 0))
+			{
+				AfxPostQuitMessage((int)msg.wParam);
+				break;
+			}
+
+			if (msg.message == WM_TIMER && msg.wParam == IDSYS_SCROLL)
+			{
+				pScrollableBar->OnGroupsScroll(m_bScrollLeft);
+
+				if (bFirst)
+				{
+					cmsTimer = GetDoubleClickTime() / 10;
+					m_pParent->SetTimer(IDSYS_SCROLL, cmsTimer, NULL);
+				}
+				bFirst = FALSE;
+			}
+			else if (msg.message == WM_LBUTTONUP)
+			{
+				break;
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+
+		ReleaseCapture();
+		m_pParent->KillTimer(IDSYS_SCROLL);
+
+		m_bPressed = FALSE;
+		if (!IsVisible()) m_bSelected = FALSE;
+		RedrawParent(FALSE);
+	}
+
+protected:
+	BOOL m_bScrollLeft;
+};
+
+CXTPRibbonBarMorePopupToolBar::CXTPRibbonBarMorePopupToolBar(CXTPRibbonBar* pRibbonBar)
+{
+	m_bTrackOnHover = FALSE;
+	m_rcBorders = CRect(3, 3, 3, 3);
+	m_pRibbonBar = pRibbonBar;
+}
+
+IMPLEMENT_DYNAMIC(CXTPRibbonBarMorePopupToolBar, CXTPPopupToolBar)
+
+void CXTPRibbonBarMorePopupToolBar::FillCommandBarEntry(CDC* pDC)
+{
+	CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)GetPaintManager();
+	pPaintManager->FillMorePopupToolBarEntry(pDC, this);
+}
+
+CSize CXTPRibbonBarMorePopupToolBar::GetIconSize() const
+{
+	return m_pRibbonBar->GetIconSize();
+}
+CSize CXTPRibbonBarMorePopupToolBar::GetButtonSize() const
+{
+	return m_pRibbonBar->GetButtonSize();
+}
+
+CXTPRibbonScrollableBar::CXTPRibbonScrollableBar()
+{
+	m_pParent = NULL;
+	m_pControlScrollGroupsLeft = NULL;
+	m_pControlScrollGroupsRight = NULL;
+	m_pHighlightedGroup = NULL;
+
+	m_nGroupsScrollPos = 0;
+}
+
+void CXTPRibbonScrollableBar::InitScrollableBar(CXTPCommandBar* pParent)
+{
+	m_pControlScrollGroupsRight = pParent->GetControls()->Add(new CControlGroupsScroll(FALSE));
+	m_pControlScrollGroupsLeft = pParent->GetControls()->Add(new CControlGroupsScroll(TRUE));
+	m_nGroupsScrollPos = 0;
+	m_pParent = pParent;
+}
+
+void CXTPRibbonScrollableBar::ShowScrollableRect(CXTPRibbonGroups* pGroups, CRect rc)
+{
+	int nGroupsScrollPos = pGroups->GetScrollPos();
+	CRect rcGroups(GetGroupsRect());
+
+	if (rc.left < 12 && m_pControlScrollGroupsLeft->IsVisible())
+	{
+		nGroupsScrollPos = nGroupsScrollPos + rc.left - 12;
+		if (nGroupsScrollPos < 0) nGroupsScrollPos = 0;
+	}
+	else if (rc.right > rcGroups.right && m_pControlScrollGroupsRight->IsVisible())
+	{
+		nGroupsScrollPos = nGroupsScrollPos + rc.right - rcGroups.Width() + 12;
+		if (nGroupsScrollPos < 0) nGroupsScrollPos = 0;
+	}
+
+	if (nGroupsScrollPos != m_nGroupsScrollPos)
+	{
+		m_nGroupsScrollPos = nGroupsScrollPos;
+		pGroups->GetParentTab()->GetParent()->OnRecalcLayout();
+	}
+}
+
+void CXTPRibbonScrollableBar::EnableGroupsScroll(BOOL bScrollLeft, BOOL bScrollRight)
+{
+	ASSERT(m_pControlScrollGroupsRight);
+	ASSERT(m_pControlScrollGroupsLeft);
+	if (!m_pControlScrollGroupsRight || !m_pControlScrollGroupsLeft)
+		return;
+
+	CRect rcGroups(GetGroupsRect());
+
+	if (bScrollLeft)
+	{
+		m_pControlScrollGroupsLeft->SetHideFlag(xtpHideScroll, FALSE);
+		m_pControlScrollGroupsLeft->SetRect(CRect(rcGroups.left - 1, rcGroups.top, rcGroups.left + 12, rcGroups.bottom));
+	}
+	else
+	{
+		m_pControlScrollGroupsLeft->SetHideFlag(xtpHideScroll, TRUE);
+	}
+
+	if (bScrollRight)
+	{
+		m_pControlScrollGroupsRight->SetHideFlag(xtpHideScroll, FALSE);
+		m_pControlScrollGroupsRight->SetRect(CRect(rcGroups.right - 12, rcGroups.top, rcGroups.right + 1, rcGroups.bottom));
+	}
+	else
+	{
+		m_pControlScrollGroupsRight->SetHideFlag(xtpHideScroll, TRUE);
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonTabPopupToolBar
+
+CXTPRibbonTabPopupToolBar::CXTPRibbonTabPopupToolBar(CXTPRibbonTab* pRibbonTab)
+{
+
+	InitScrollableBar(this);
+
+	m_pRibbonBar = pRibbonTab->GetRibbonBar();
+	m_pRibbonTab = (CXTPRibbonTab*)pRibbonTab->GetRuntimeClass()->CreateObject();
+
+	m_pRibbonTab->m_pParent = this;
+	m_pRibbonTab->m_pRibbonBar = m_pRibbonBar;
+
+	m_pRibbonTab->Copy(pRibbonTab);
+
+	m_pRibbonTab->SetRect(pRibbonTab->GetRect());
+
+	m_bTrackOnHover = FALSE;
+	SetFlags(xtpFlagSmartLayout);
+
+	EnableAnimation(m_pRibbonBar->IsAnimationEnabled());
+}
+
+CXTPRibbonTabPopupToolBar::~CXTPRibbonTabPopupToolBar()
+{
+	m_pRibbonTab->OnRemoved();
+	m_pRibbonTab->InternalRelease();
+}
+
+CRect CXTPRibbonTabPopupToolBar::GetGroupsRect() const
+{
+	return m_rcGroups;
+}
+
+void CXTPRibbonTabPopupToolBar::OnGroupsScroll(BOOL bScrollLeft)
+{
+	int nGroupsScrollPos = m_pRibbonTab->GetGroups()->GetScrollPos();
+
+	SetPopuped(-1);
+	HideKeyboardTips();
+
+	if (bScrollLeft)
+	{
+		nGroupsScrollPos -= 40;
+		if (nGroupsScrollPos < 0)
+			nGroupsScrollPos = 0;
+	}
+	else
+	{
+		nGroupsScrollPos += 40;
+	}
+
+	if (nGroupsScrollPos != m_nGroupsScrollPos)
+	{
+		m_nGroupsScrollPos = nGroupsScrollPos;
+		OnRecalcLayout();
+	}
+}
+
+void CXTPRibbonTabPopupToolBar::EnsureVisible(CXTPControl* pControl)
+{
+	if (pControl->GetRibbonGroup() &&
+		(m_pControlScrollGroupsLeft->IsVisible() || m_pControlScrollGroupsRight->IsVisible()))
+	{
+		ShowScrollableRect(m_pRibbonTab->GetGroups(), pControl->GetRect());
+	}
+}
+
+void CXTPRibbonTabPopupToolBar::CreateKeyboardTips()
+{
+	CreateGroupKeyboardTips(m_pRibbonTab);
+}
+
+CSize CXTPRibbonTabPopupToolBar::CalcDynamicLayout(int, DWORD /*nMode*/)
+{
+	CRect rcRibbonBar;
+	m_pRibbonBar->GetWindowRect(rcRibbonBar);
+
+	CRect rcRibbonTab = m_pRibbonTab->GetRect();
+	m_pRibbonBar->ClientToScreen(rcRibbonTab);
+
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rcRibbonTab);
+
+	int nHeight = m_pRibbonBar->CalcGroupsHeight();
+	int nWidth = rcRibbonBar.Width();
+
+	m_ptPopup.y = m_rcExclude.bottom;
+	m_ptPopup.x = rcRibbonBar.left;
+
+	if (m_ptPopup.x < rcWork.left)
+	{
+		nWidth -= rcWork.left - m_ptPopup.x;
+		m_ptPopup.x = rcWork.left;
+	}
+
+	if (m_ptPopup.x + nWidth > rcWork.right)
+	{
+		nWidth = rcWork.right - m_ptPopup.x - 4;
+	}
+
+	if (m_ptPopup.y + nHeight > rcWork.bottom)
+	{
+		m_ptPopup.y = m_rcExclude.top - nHeight;
+	}
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	UpdateShortcuts();
+
+	m_rcGroups.SetRect(0, 0, nWidth, nHeight);
+	m_pRibbonTab->GetGroups()->CalcDynamicSize(&dc, m_rcGroups.Width(), LM_COMMIT,
+		CRect(m_rcGroups.left + 4, m_rcGroups.top + 3, 6, 3));
+
+	m_rcTearOffGripper.SetRectEmpty();
+
+
+	return CSize(nWidth, nHeight);
+}
+
+void CXTPRibbonTabPopupToolBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
+{
+	CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)GetPaintManager();
+
+	pPaintManager->FillTabPopupToolBar(pDC, this);
+	pPaintManager->FillGroupRect(pDC, m_pRibbonTab, m_rcGroups);
+	pDC->SetBkMode(TRANSPARENT);
+
+	CXTPRibbonGroups* pGroups = m_pRibbonTab->GetGroups();
+	for (int i = 0; i < pGroups->GetCount(); i++)
+	{
+		CXTPRibbonGroup* pGroup = pGroups->GetAt(i);
+
+		if (pGroup->IsVisible() && CRect().IntersectRect(rcClipBox, pGroup->GetRect()))
+		{
+			pGroup->Draw(pDC, rcClipBox);
+		}
+	}
+
+	if (m_pControlScrollGroupsLeft->IsVisible())
+	{
+		m_pControlScrollGroupsLeft->Draw(pDC);
+	}
+
+	if (m_pControlScrollGroupsRight->IsVisible())
+	{
+		m_pControlScrollGroupsRight->Draw(pDC);
+	}
+}
+
+CSize CXTPRibbonTabPopupToolBar::GetButtonSize() const
+{
+	return m_pRibbonBar->GetButtonSize();
+}
+
+CSize CXTPRibbonTabPopupToolBar::GetIconSize() const
+{
+	return m_pRibbonBar->GetIconSize();
+
+}
+
+CRect CXTPRibbonTabPopupToolBar::CalculatePopupRect(CSize sz)
+{
+	return CRect(m_ptPopup, sz);
+}
+
+CXTPRibbonGroup* CXTPRibbonTabPopupToolBar::HitTestGroup(CPoint point) const
+{
+	if (!m_rcGroups.PtInRect(point))
+		return NULL;
+
+	return m_pRibbonTab->GetGroups()->HitTest(point);
+}
+
+BOOL CXTPRibbonTabPopupToolBar::IsKeyboardCuesVisible() const
+{
+	return m_pRibbonBar->IsKeyboardCuesVisible();
+}
+
+void CXTPRibbonTabPopupToolBar::OnKeyboardTip(CXTPCommandBarKeyboardTip* pTip)
+{
+	CXTPControl* pControl = DYNAMIC_DOWNCAST(CXTPControl, pTip->m_pOwner);
+	if (pControl)
+	{
+
+		if (pTip->m_bVisible == FALSE && pControl->GetHideFlags() == xtpHideWrap)
+		{
+			CXTPRibbonGroup* pGroup = pControl->GetRibbonGroup();
+			if (pGroup && pGroup->GetControlGroupPopup())
+			{
+				EnsureVisible(pGroup->GetControlGroupPopup());
+				pGroup->GetControlGroupPopup()->OnUnderlineActivate();
+
+				int nIndex = pGroup->IndexOf(pControl);
+
+				CXTPCommandBar* pPopupToolBar = pGroup->GetControlGroupPopup()->GetCommandBar();
+				if (pPopupToolBar && pPopupToolBar->IsTrackingMode() && nIndex >= 0 &&
+					nIndex < pPopupToolBar->GetControlCount())
+				{
+					pPopupToolBar->GetControl(nIndex)->OnUnderlineActivate();
+
+				}
+			}
+
+			return;
+		}
+
+		if (pControl->IsVisible())
+		{
+			pControl->OnUnderlineActivate();
+		}
+
+		return;
+	}
+}
+
+BEGIN_MESSAGE_MAP(CXTPRibbonTabPopupToolBar, CXTPPopupToolBar)
+	//{{AFX_MSG_MAP(CXTPRibbonBar)
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPRibbonScrollableBar::HighlightGroup(CXTPRibbonGroup* pHighlightedGroup)
+{
+	if (m_pHighlightedGroup)
+	{
+		CRect rcRedraw(m_pHighlightedGroup->GetRect());
+		m_pHighlightedGroup = NULL;
+
+		m_pParent->Redraw(rcRedraw);
+	}
+
+	m_pHighlightedGroup = pHighlightedGroup;
+
+	if (m_pHighlightedGroup)
+	{
+		m_pParent->Redraw(m_pHighlightedGroup->GetRect());
+	}
+}
+
+void CXTPRibbonTabPopupToolBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars ();
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+
+	BOOL bMouseLocked = pMouseManager->IsMouseLocked() || !pMouseManager->IsTopParentActive(m_hWnd)
+		|| pMouseManager->IsTrackedLock(this) || m_nPopuped != -1;
+
+	CXTPRibbonGroup* pHighlightedGroup = bMouseLocked || !m_pRibbonBar->GetRibbonPaintManager()->m_bHotTrackingGroups ?
+		NULL : HitTestGroup(point);
+
+	if (pHighlightedGroup != m_pHighlightedGroup)
+	{
+		HighlightGroup(pHighlightedGroup);
+
+		if (m_pHighlightedGroup)
+		{
+			pMouseManager->TrackMouseLeave(*this);
+		}
+	}
+
+	CXTPPopupToolBar::OnMouseMove(nFlags, point);
+}
+
+BOOL CXTPRibbonTabPopupToolBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	HighlightGroup(NULL);
+
+	return CXTPPopupToolBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard);
+}
+
+void CXTPRibbonTabPopupToolBar::OnMouseLeave()
+{
+	HighlightGroup(NULL);
+
+	CXTPPopupToolBar::OnMouseLeave();
+}
+
+INT_PTR CXTPRibbonTabPopupToolBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	INT_PTR nHit = CXTPPopupToolBar::OnToolHitTest(point, pTI);
+	if (nHit == -1)
+		return -1;
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX) && m_pToolTipContext
+		&& m_pToolTipContext->IsShowTitleAndDescription())
+	{
+		XTP_TOOLTIP_CONTEXT* tc = ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo;
+		if (tc && tc->pObject && ((CXTPControl*)tc->pObject)->GetRibbonGroup())
+		{
+			tc->rcExclude = m_rcGroups;
+		}
+	}
+
+	return nHit;
+}
+
+IMPLEMENT_DYNAMIC(CXTPRibbonTabPopupToolBar, CXTPPopupToolBar)
+
+CXTPRibbonScrollableBar* AFX_CDECL GetScrollableBar(CXTPCommandBar* pCommandBar)
+{
+	if (pCommandBar->IsRibbonBar())
+		return (CXTPRibbonScrollableBar*)(CXTPRibbonBar*)(pCommandBar);
+
+	if (pCommandBar->IsKindOf(RUNTIME_CLASS(CXTPRibbonTabPopupToolBar)))
+		return (CXTPRibbonScrollableBar*)(CXTPRibbonTabPopupToolBar*)(pCommandBar);
+
+	if (pCommandBar->IsKindOf(RUNTIME_CLASS(CXTPRibbonGroupPopupToolBar)))
+		return (CXTPRibbonScrollableBar*)(CXTPRibbonGroupPopupToolBar*)(pCommandBar);
+
+	return 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonGroupPopupToolBar
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPRibbonGroupPopupToolBar, CXTPPopupToolBar)
+
+CXTPRibbonGroupPopupToolBar::CXTPRibbonGroupPopupToolBar(CXTPRibbonGroup* pRibbonGroup /*= NULL*/)
+{
+	if (!pRibbonGroup)
+	{
+		m_pRibbonBar = NULL;
+		m_pRibbonGroup = NULL;
+		m_pParentGroup = NULL;
+		return;
+	}
+	m_pParent = this;
+	m_pRibbonBar = pRibbonGroup->GetRibbonBar();
+	m_pRibbonGroup = (CXTPRibbonGroup*)pRibbonGroup->GetRuntimeClass()->CreateObject();
+	m_pRibbonGroup->m_pParent = this;
+	m_pRibbonGroup->m_pRibbonBar = m_pRibbonBar;
+	m_pParentGroup = pRibbonGroup;
+
+	m_pRibbonGroup->OnGroupAdded();
+	m_pRibbonGroup->Copy(pRibbonGroup);
+
+	int nHeight = m_pRibbonBar->GetRibbonPaintManager()->GetGroupCaptionHeight();
+	m_rcBorders.SetRect(2, 2, 3, nHeight + 1);
+
+	m_bTrackOnHover = FALSE;
+	SetFlags(xtpFlagSmartLayout);
+
+	EnableAnimation(m_pRibbonBar->IsAnimationEnabled());
+}
+
+CXTPRibbonGroupPopupToolBar::~CXTPRibbonGroupPopupToolBar()
+{
+	m_pRibbonGroup->OnGroupRemoved();
+	m_pRibbonGroup->InternalRelease();
+}
+
+CSize CXTPRibbonGroupPopupToolBar::CalcDynamicLayout(int, DWORD /*nMode*/)
+{
+	m_bDynamicLayout = TRUE;
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	UpdateShortcuts();
+
+	int nGroupHeight = m_pRibbonBar->CalcGroupsHeight();
+
+	m_pRibbonGroup->OnBeforeCalcSize(&dc);
+	int nWidth = m_pRibbonGroup->OnCalcDynamicSize(&dc);
+	m_pRibbonGroup->OnAdjustBorders(nWidth, CRect(0, 0, 0, 0));
+	m_pRibbonGroup->OnAfterCalcSize();
+
+	m_rcTearOffGripper.SetRectEmpty();
+
+	m_bDynamicLayout = FALSE;
+
+	return CSize(nWidth + m_rcBorders.left + m_rcBorders.right, nGroupHeight - 7);
+}
+
+void CXTPRibbonGroupPopupToolBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
+{
+	m_pRibbonBar->GetRibbonPaintManager()->FillGroupPopupToolBar(pDC, m_pRibbonGroup, this);
+
+	m_pRibbonGroup->Draw(pDC, rcClipBox);
+}
+
+void CXTPRibbonGroupPopupToolBar::CreateKeyboardTips()
+{
+	if (!m_pParentGroup)
+		return;
+
+	CXTPRibbonTab* pSelectedTab = m_pParentGroup->GetParentTab();
+
+	for (int i = 0; i < pSelectedTab->GetGroups()->GetCount(); i++)
+	{
+		CXTPRibbonGroup* pGroup = pSelectedTab->GetGroups()->GetAt(i);
+		BOOL bVisible = pGroup->IsVisible() && m_pParentGroup == pGroup;
+
+		if (bVisible)
+		{
+			pGroup = m_pRibbonGroup;
+		}
+
+		for (int j = 0; j < pGroup->GetCount(); j++)
+		{
+			CXTPControl* pControl = pGroup->GetAt(j);
+			CreateControlKeyboardTips(pControl, NULL, bVisible);
+		}
+
+		if ((pGroup->GetControlGroupOption()->GetHideFlags() & xtpHideGeneric) == 0)
+		{
+			CreateControlKeyboardTips(pGroup->GetControlGroupOption(), NULL, bVisible);
+		}
+
+		CreateControlKeyboardTips(pGroup->GetControlGroupPopup(), _T("Z"), bVisible);
+	}
+}
+
+CXTPRibbonGroup* CXTPRibbonGroupPopupToolBar::HitTestGroup(CPoint point) const
+{
+	if (m_pRibbonGroup && m_pRibbonGroup->GetRect().PtInRect(point))
+		return m_pRibbonGroup;
+
+	return NULL;
+}
+
+
+CSize CXTPRibbonGroupPopupToolBar::GetIconSize() const
+{
+	return m_pRibbonBar->GetIconSize();
+}
+
+CSize CXTPRibbonGroupPopupToolBar::GetButtonSize() const
+{
+	return m_pRibbonBar->GetButtonSize();
+}
+
+void CXTPRibbonGroupPopupToolBar::OnGroupsScroll(BOOL /*bScrollLeft*/)
+{
+}
+
+CRect CXTPRibbonGroupPopupToolBar::GetGroupsRect() const
+{
+	return CXTPClientRect(this);
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPRibbonGroupPopupToolBar, CXTPPopupToolBar)
+	//{{AFX_MSG_MAP(CXTPRibbonBar)
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPRibbonGroupPopupToolBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars ();
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+
+	BOOL bMouseLocked = pMouseManager->IsMouseLocked() || !pMouseManager->IsTopParentActive(m_hWnd)
+		|| pMouseManager->IsTrackedLock(this) || m_nPopuped != -1;
+
+	CXTPRibbonGroup* pHighlightedGroup = bMouseLocked || !m_pRibbonBar->GetRibbonPaintManager()->m_bHotTrackingGroups ?
+		NULL : m_pRibbonGroup;
+
+	if (pHighlightedGroup != m_pHighlightedGroup)
+	{
+		HighlightGroup(pHighlightedGroup);
+
+		if (m_pHighlightedGroup)
+		{
+			pMouseManager->TrackMouseLeave(*this);
+		}
+	}
+
+	CXTPPopupToolBar::OnMouseMove(nFlags, point);
+}
+
+BOOL CXTPRibbonGroupPopupToolBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	HighlightGroup(NULL);
+
+	return CXTPPopupToolBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard);
+}
+
+void CXTPRibbonGroupPopupToolBar::OnMouseLeave()
+{
+	HighlightGroup(NULL);
+
+	CXTPPopupToolBar::OnMouseLeave();
+}
+
+BOOL CXTPRibbonGroupPopupToolBar::IsKeyboardCuesVisible() const
+{
+	return m_pRibbonBar->IsKeyboardCuesVisible();
+}

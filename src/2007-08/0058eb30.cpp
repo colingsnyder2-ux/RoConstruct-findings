@@ -1,23 +1,5 @@
-// from server: 36% by colin
-extern "C" void* __cdecl malloc(unsigned int);
-
-struct Creator {
-    void construct();
-};
-
-struct FactoryProduct {
-    void* creator;
-    void init(void* a, int b);
-};
-
-void FactoryProduct::init(void* a, int b) {
-    void* mem = malloc(0x2b4);
-    if (mem) {
-        Creator* c = (Creator*)mem;
-        c->construct();
-        creator = c;
-    } else {
-        creator = 0;
-    }
-    ((FactoryProduct*)a)->init(creator, b);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_factory_family_a46a0bdcbc5a22de.cpp

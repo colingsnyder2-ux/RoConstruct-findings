@@ -1,17 +1,5 @@
-// from server: 38% by colin
-struct CXTPReportRows {
-    void Destruct();
-};
-
-extern "C" void __cdecl sub_666df0(void*);
-extern "C" void __cdecl sub_7385f8(void*);
-
-void CXTPReportRows::Destruct()
-{
-    void* p = this;
-    if (p != 0)
-        sub_666df0((char*)p + 0x54);
-    else
-        sub_666df0(0);
-    sub_7385f8(p);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_31cf577a0120c737.cpp

@@ -1,485 +1,1343 @@
-// roc 2012-06 00a5a000  unit: CXTPPropertyGridPaintManager  size: 1667 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a5a000
-//
-// 00a5a000  6aff                 push -1
-// 00a5a002  688677ae00           push 0xae7786
-// 00a5a007  64a100000000         mov eax, dword ptr fs:[0]
-// 00a5a00d  50                   push eax
-// 00a5a00e  81ec80000000         sub esp, 0x80
-// 00a5a014  53                   push ebx
-// 00a5a015  55                   push ebp
-// 00a5a016  56                   push esi
-// 00a5a017  57                   push edi
-// 00a5a018  a1d027e000           mov eax, dword ptr [0xe027d0]
-// 00a5a01d  33c4                 xor eax, esp
-// 00a5a01f  50                   push eax
-// 00a5a020  8d842494000000       lea eax, [esp + 0x94]
-// 00a5a027  64a300000000         mov dword ptr fs:[0], eax
-// 00a5a02d  8bf9                 mov edi, ecx
-// 00a5a02f  897c2424             mov dword ptr [esp + 0x24], edi
-// 00a5a033  33db                 xor ebx, ebx
-// 00a5a035  399c24b8000000       cmp dword ptr [esp + 0xb8], ebx
-// 00a5a03c  7511                 jne 0xa5a04f
-// 00a5a03e  c744242801000000     mov dword ptr [esp + 0x28], 1
-// 00a5a046  399c24bc000000       cmp dword ptr [esp + 0xbc], ebx
-// 00a5a04d  7404                 je 0xa5a053
-// 00a5a04f  895c2428             mov dword ptr [esp + 0x28], ebx
-// 00a5a053  8bb424a4000000       mov esi, dword ptr [esp + 0xa4]
-// 00a5a05a  8d4764               lea eax, [edi + 0x64]
-// 00a5a05d  50                   push eax
-// 00a5a05e  56                   push esi
-// 00a5a05f  8d4c247c             lea ecx, [esp + 0x7c]
-// 00a5a063  e8c8b4f7ff           call 0x9d5530
-// 00a5a068  6afc                 push -4
-// 00a5a06a  6afa                 push -6
-// 00a5a06c  8d8424b0000000       lea eax, [esp + 0xb0]
-// 00a5a073  50                   push eax
-// 00a5a074  899c24a8000000       mov dword ptr [esp + 0xa8], ebx
-// 00a5a07b  ff154c3bb200         call dword ptr [0xb23b4c]
-// 00a5a081  8b4f60               mov ecx, dword ptr [edi + 0x60]
-// 00a5a084  8b8938010000         mov ecx, dword ptr [ecx + 0x138]
-// 00a5a08a  e8d115fdff           call 0xa2b660
-// 00a5a08f  8bac24a8000000       mov ebp, dword ptr [esp + 0xa8]
-// 00a5a096  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00a5a099  8b9424ac000000       mov edx, dword ptr [esp + 0xac]
-// 00a5a0a0  8bd8                 mov ebx, eax
-// 00a5a0a2  8b8424b0000000       mov eax, dword ptr [esp + 0xb0]
-// 00a5a0a9  2bc5                 sub eax, ebp
-// 00a5a0ab  89442434             mov dword ptr [esp + 0x34], eax
-// 00a5a0af  8d44243c             lea eax, [esp + 0x3c]
-// 00a5a0b3  50                   push eax
-// 00a5a0b4  6a03                 push 3
-// 00a5a0b6  68d4b1c100           push 0xc1b1d4
-// 00a5a0bb  51                   push ecx
-// 00a5a0bc  895c243c             mov dword ptr [esp + 0x3c], ebx
-// 00a5a0c0  89542428             mov dword ptr [esp + 0x28], edx
-// 00a5a0c4  ff154021b200         call dword ptr [0xb22140]
-// 00a5a0ca  33c0                 xor eax, eax
-// 00a5a0cc  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00a5a0d0  85db                 test ebx, ebx
-// 00a5a0d2  7f40                 jg 0xa5a114
-// 00a5a0d4  8d4c2474             lea ecx, [esp + 0x74]
-// 00a5a0d8  c784249c000000ffffffff mov dword ptr [esp + 0x9c], 0xffffffff
-// 00a5a0e3  e8c8b4f7ff           call 0x9d55b0
-// 00a5a0e8  83c8ff               or eax, 0xffffffff
-// 00a5a0eb  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
-// 00a5a0f2  64890d00000000       mov dword ptr fs:[0], ecx
-// 00a5a0f9  59                   pop ecx
-// 00a5a0fa  5f                   pop edi
-// 00a5a0fb  5e                   pop esi
-// 00a5a0fc  5d                   pop ebp
-// 00a5a0fd  5b                   pop ebx
-// 00a5a0fe  81c48c000000         add esp, 0x8c
-// 00a5a104  c21c00               ret 0x1c
-// 00a5a107  eb07                 jmp 0xa5a110
-// 00a5a109  8da42400000000       lea esp, [esp]
-// 00a5a110  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00a5a114  8b5760               mov edx, dword ptr [edi + 0x60]
-// 00a5a117  8b8a38010000         mov ecx, dword ptr [edx + 0x138]
-// 00a5a11d  85c0                 test eax, eax
-// 00a5a11f  0f8c59050000         jl 0xa5a67e
-// 00a5a125  3b4128               cmp eax, dword ptr [ecx + 0x28]
-// 00a5a128  0f8d50050000         jge 0xa5a67e
-// 00a5a12e  8b4924               mov ecx, dword ptr [ecx + 0x24]
-// 00a5a131  8b1c81               mov ebx, dword ptr [ecx + eax*4]
-// 00a5a134  8d0481               lea eax, [ecx + eax*4]
-// 00a5a137  8d542414             lea edx, [esp + 0x14]
-// 00a5a13b  52                   push edx
-// 00a5a13c  8bcb                 mov ecx, ebx
-// 00a5a13e  e81df6ffff           call 0xa59760
-// 00a5a143  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a147  c684249c00000001     mov byte ptr [esp + 0x9c], 1
-// 00a5a14f  ff156046b200         call dword ptr [0xb24660]
-// 00a5a155  84c0                 test al, al
-// 00a5a157  0f8531040000         jne 0xa5a58e
-// 00a5a15d  8d442444             lea eax, [esp + 0x44]
-// 00a5a161  50                   push eax
-// 00a5a162  8d4c2418             lea ecx, [esp + 0x18]
-// 00a5a166  ff155846b200         call dword ptr [0xb24658]
-// 00a5a16c  50                   push eax
-// 00a5a16d  8d4c241c             lea ecx, [esp + 0x1c]
-// 00a5a171  ff159847b200         call dword ptr [0xb24798]
-// 00a5a177  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00a5a17a  50                   push eax
-// 00a5a17b  51                   push ecx
-// 00a5a17c  ff154021b200         call dword ptr [0xb22140]
-// 00a5a182  8b7c2444             mov edi, dword ptr [esp + 0x44]
-// 00a5a186  8d142f               lea edx, [edi + ebp]
-// 00a5a189  3b542434             cmp edx, dword ptr [esp + 0x34]
-// 00a5a18d  0f8cb6020000         jl 0xa5a449
-// 00a5a193  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a197  ff155846b200         call dword ptr [0xb24658]
-// 00a5a19d  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 00a5a1a1  48                   dec eax
-// 00a5a1a2  2bcd                 sub ecx, ebp
-// 00a5a1a4  0fafc1               imul eax, ecx
-// 00a5a1a7  99                   cdq 
-// 00a5a1a8  f7ff                 idiv edi
-// 00a5a1aa  8b8c24a8000000       mov ecx, dword ptr [esp + 0xa8]
-// 00a5a1b1  83f801               cmp eax, 1
-// 00a5a1b4  89442438             mov dword ptr [esp + 0x38], eax
-// 00a5a1b8  8bf8                 mov edi, eax
-// 00a5a1ba  7d08                 jge 0xa5a1c4
-// 00a5a1bc  3be9                 cmp ebp, ecx
-// 00a5a1be  0f84bd030000         je 0xa5a581
-// 00a5a1c4  85c0                 test eax, eax
-// 00a5a1c6  7c45                 jl 0xa5a20d
-// 00a5a1c8  eb06                 jmp 0xa5a1d0
-// 00a5a1ca  8d9b00000000         lea ebx, [ebx]
-// 00a5a1d0  57                   push edi
-// 00a5a1d1  8d4c2418             lea ecx, [esp + 0x18]
-// 00a5a1d5  ff15e844b200         call dword ptr [0xb244e8]
-// 00a5a1db  3c20                 cmp al, 0x20
-// 00a5a1dd  7423                 je 0xa5a202
-// 00a5a1df  57                   push edi
-// 00a5a1e0  8d4c2418             lea ecx, [esp + 0x18]
-// 00a5a1e4  ff15e844b200         call dword ptr [0xb244e8]
-// 00a5a1ea  3c2c                 cmp al, 0x2c
-// 00a5a1ec  7414                 je 0xa5a202
-// 00a5a1ee  57                   push edi
-// 00a5a1ef  8d4c2418             lea ecx, [esp + 0x18]
-// 00a5a1f3  ff15e844b200         call dword ptr [0xb244e8]
-// 00a5a1f9  3c2d                 cmp al, 0x2d
-// 00a5a1fb  7405                 je 0xa5a202
-// 00a5a1fd  83ef01               sub edi, 1
-// 00a5a200  79ce                 jns 0xa5a1d0
-// 00a5a202  8b8c24a8000000       mov ecx, dword ptr [esp + 0xa8]
-// 00a5a209  8b442438             mov eax, dword ptr [esp + 0x38]
-// 00a5a20d  85ff                 test edi, edi
-// 00a5a20f  7f15                 jg 0xa5a226
-// 00a5a211  3be9                 cmp ebp, ecx
-// 00a5a213  740f                 je 0xa5a224
-// 00a5a215  8b542440             mov edx, dword ptr [esp + 0x40]
-// 00a5a219  01542418             add dword ptr [esp + 0x18], edx
-// 00a5a21d  8be9                 mov ebp, ecx
-// 00a5a21f  e9a3010000           jmp 0xa5a3c7
-// 00a5a224  8bf8                 mov edi, eax
-// 00a5a226  47                   inc edi
-// 00a5a227  57                   push edi
-// 00a5a228  8d442424             lea eax, [esp + 0x24]
-// 00a5a22c  50                   push eax
-// 00a5a22d  8d4c241c             lea ecx, [esp + 0x1c]
-// 00a5a231  ff152850b200         call dword ptr [0xb25028]
-// 00a5a237  57                   push edi
-// 00a5a238  8d4c2434             lea ecx, [esp + 0x34]
-// 00a5a23c  51                   push ecx
-// 00a5a23d  8d4c241c             lea ecx, [esp + 0x1c]
-// 00a5a241  c68424a400000002     mov byte ptr [esp + 0xa4], 2
-// 00a5a249  ff15f047b200         call dword ptr [0xb247f0]
-// 00a5a24f  8d54244c             lea edx, [esp + 0x4c]
-// 00a5a253  52                   push edx
-// 00a5a254  8d4c2424             lea ecx, [esp + 0x24]
-// 00a5a258  c68424a000000003     mov byte ptr [esp + 0xa0], 3
-// 00a5a260  ff155846b200         call dword ptr [0xb24658]
-// 00a5a266  50                   push eax
-// 00a5a267  8d4c2428             lea ecx, [esp + 0x28]
-// 00a5a26b  ff159847b200         call dword ptr [0xb24798]
-// 00a5a271  50                   push eax
-// 00a5a272  8b4608               mov eax, dword ptr [esi + 8]
-// 00a5a275  50                   push eax
-// 00a5a276  ff154021b200         call dword ptr [0xb22140]
-// 00a5a27c  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00a5a280  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00a5a284  8d3c01               lea edi, [ecx + eax]
-// 00a5a287  8b8c24b4000000       mov ecx, dword ptr [esp + 0xb4]
-// 00a5a28e  3bf9                 cmp edi, ecx
-// 00a5a290  897c2418             mov dword ptr [esp + 0x18], edi
-// 00a5a294  8bd7                 mov edx, edi
-// 00a5a296  7c02                 jl 0xa5a29a
-// 00a5a298  8bd1                 mov edx, ecx
-// 00a5a29a  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 00a5a29e  03cd                 add ecx, ebp
-// 00a5a2a0  3b8c24b0000000       cmp ecx, dword ptr [esp + 0xb0]
-// 00a5a2a7  7c07                 jl 0xa5a2b0
-// 00a5a2a9  8b8c24b0000000       mov ecx, dword ptr [esp + 0xb0]
-// 00a5a2b0  837c242800           cmp dword ptr [esp + 0x28], 0
-// 00a5a2b5  896c2454             mov dword ptr [esp + 0x54], ebp
-// 00a5a2b9  89442458             mov dword ptr [esp + 0x58], eax
-// 00a5a2bd  894c245c             mov dword ptr [esp + 0x5c], ecx
-// 00a5a2c1  89542460             mov dword ptr [esp + 0x60], edx
-// 00a5a2c5  0f8424010000         je 0xa5a3ef
-// 00a5a2cb  896b2c               mov dword ptr [ebx + 0x2c], ebp
-// 00a5a2ce  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 00a5a2d2  894330               mov dword ptr [ebx + 0x30], eax
-// 00a5a2d5  894b34               mov dword ptr [ebx + 0x34], ecx
-// 00a5a2d8  895338               mov dword ptr [ebx + 0x38], edx
-// 00a5a2db  8b4574               mov eax, dword ptr [ebp + 0x74]
-// 00a5a2de  8b8890000000         mov ecx, dword ptr [eax + 0x90]
-// 00a5a2e4  0588000000           add eax, 0x88
-// 00a5a2e9  83f9ff               cmp ecx, -1
-// 00a5a2ec  7505                 jne 0xa5a2f3
-// 00a5a2ee  8b4004               mov eax, dword ptr [eax + 4]
-// 00a5a2f1  eb02                 jmp 0xa5a2f5
-// 00a5a2f3  8bc1                 mov eax, ecx
-// 00a5a2f5  8b16                 mov edx, dword ptr [esi]
-// 00a5a2f7  50                   push eax
-// 00a5a2f8  8b4238               mov eax, dword ptr [edx + 0x38]
-// 00a5a2fb  8bce                 mov ecx, esi
-// 00a5a2fd  ffd0                 call eax
-// 00a5a2ff  8b3e                 mov edi, dword ptr [esi]
-// 00a5a301  6820080000           push 0x820
-// 00a5a306  8d4c2458             lea ecx, [esp + 0x58]
-// 00a5a30a  51                   push ecx
-// 00a5a30b  8d4c2428             lea ecx, [esp + 0x28]
-// 00a5a30f  83c770               add edi, 0x70
-// 00a5a312  ff155846b200         call dword ptr [0xb24658]
-// 00a5a318  50                   push eax
-// 00a5a319  8d4c242c             lea ecx, [esp + 0x2c]
-// 00a5a31d  ff159847b200         call dword ptr [0xb24798]
-// 00a5a323  8b17                 mov edx, dword ptr [edi]
-// 00a5a325  50                   push eax
-// 00a5a326  8bce                 mov ecx, esi
-// 00a5a328  ffd2                 call edx
-// 00a5a32a  8b4344               mov eax, dword ptr [ebx + 0x44]
-// 00a5a32d  8b4034               mov eax, dword ptr [eax + 0x34]
-// 00a5a330  8b4b28               mov ecx, dword ptr [ebx + 0x28]
-// 00a5a333  3b8848010000         cmp ecx, dword ptr [eax + 0x148]
-// 00a5a339  7552                 jne 0xa5a38d
-// 00a5a33b  85c0                 test eax, eax
-// 00a5a33d  7504                 jne 0xa5a343
-// 00a5a33f  33ff                 xor edi, edi
-// 00a5a341  eb03                 jmp 0xa5a346
-// 00a5a343  8b7820               mov edi, dword ptr [eax + 0x20]
-// 00a5a346  ff15e83bb200         call dword ptr [0xb23be8]
-// 00a5a34c  3bc7                 cmp eax, edi
-// 00a5a34e  753d                 jne 0xa5a38d
-// 00a5a350  8b4574               mov eax, dword ptr [ebp + 0x74]
-// 00a5a353  8b483c               mov ecx, dword ptr [eax + 0x3c]
-// 00a5a356  83c034               add eax, 0x34
-// 00a5a359  83f9ff               cmp ecx, -1
-// 00a5a35c  7505                 jne 0xa5a363
-// 00a5a35e  8b4004               mov eax, dword ptr [eax + 4]
-// 00a5a361  eb02                 jmp 0xa5a365
-// 00a5a363  8bc1                 mov eax, ecx
-// 00a5a365  8b16                 mov edx, dword ptr [esi]
-// 00a5a367  50                   push eax
-// 00a5a368  8b4238               mov eax, dword ptr [edx + 0x38]
-// 00a5a36b  8bce                 mov ecx, esi
-// 00a5a36d  ffd0                 call eax
-// 00a5a36f  8b16                 mov edx, dword ptr [esi]
-// 00a5a371  8b4234               mov eax, dword ptr [edx + 0x34]
-// 00a5a374  6a00                 push 0
-// 00a5a376  8bce                 mov ecx, esi
-// 00a5a378  ffd0                 call eax
-// 00a5a37a  8b5604               mov edx, dword ptr [esi + 4]
-// 00a5a37d  ff442460             inc dword ptr [esp + 0x60]
-// 00a5a381  8d4c2454             lea ecx, [esp + 0x54]
-// 00a5a385  51                   push ecx
-// 00a5a386  52                   push edx
-// 00a5a387  ff15d43cb200         call dword ptr [0xb23cd4]
-// 00a5a38d  8b7c2418             mov edi, dword ptr [esp + 0x18]
-// 00a5a391  8bac24a8000000       mov ebp, dword ptr [esp + 0xa8]
-// 00a5a398  8d442430             lea eax, [esp + 0x30]
-// 00a5a39c  50                   push eax
-// 00a5a39d  8d4c2418             lea ecx, [esp + 0x18]
-// 00a5a3a1  897c241c             mov dword ptr [esp + 0x1c], edi
-// 00a5a3a5  ff152045b200         call dword ptr [0xb24520]
-// 00a5a3ab  8d4c2430             lea ecx, [esp + 0x30]
-// 00a5a3af  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a3b5  8d4c2420             lea ecx, [esp + 0x20]
-// 00a5a3b9  c684249c00000001     mov byte ptr [esp + 0x9c], 1
-// 00a5a3c1  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a3c7  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00a5a3cb  3b8c24b4000000       cmp ecx, dword ptr [esp + 0xb4]
-// 00a5a3d2  0f8d97020000         jge 0xa5a66f
-// 00a5a3d8  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a3dc  ff156046b200         call dword ptr [0xb24660]
-// 00a5a3e2  84c0                 test al, al
-// 00a5a3e4  0f8473fdffff         je 0xa5a15d
-// 00a5a3ea  e99b010000           jmp 0xa5a58a
-// 00a5a3ef  8b8424bc000000       mov eax, dword ptr [esp + 0xbc]
-// 00a5a3f6  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00a5a3fd  50                   push eax
-// 00a5a3fe  51                   push ecx
-// 00a5a3ff  8d54245c             lea edx, [esp + 0x5c]
-// 00a5a403  52                   push edx
-// 00a5a404  ff15483bb200         call dword ptr [0xb23b48]
-// 00a5a40a  85c0                 test eax, eax
-// 00a5a40c  7483                 je 0xa5a391
-// 00a5a40e  8d4c2430             lea ecx, [esp + 0x30]
-// 00a5a412  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a418  8d4c2420             lea ecx, [esp + 0x20]
-// 00a5a41c  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a422  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a426  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a42c  8d4c2474             lea ecx, [esp + 0x74]
-// 00a5a430  c784249c000000ffffffff mov dword ptr [esp + 0x9c], 0xffffffff
-// 00a5a43b  e870b1f7ff           call 0x9d55b0
-// 00a5a440  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00a5a444  e9a2fcffff           jmp 0xa5a0eb
-// 00a5a449  8b542440             mov edx, dword ptr [esp + 0x40]
-// 00a5a44d  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00a5a451  8d0c02               lea ecx, [edx + eax]
-// 00a5a454  8b9424b4000000       mov edx, dword ptr [esp + 0xb4]
-// 00a5a45b  3bca                 cmp ecx, edx
-// 00a5a45d  7d02                 jge 0xa5a461
-// 00a5a45f  8bd1                 mov edx, ecx
-// 00a5a461  8b8c24b0000000       mov ecx, dword ptr [esp + 0xb0]
-// 00a5a468  03fd                 add edi, ebp
-// 00a5a46a  3bf9                 cmp edi, ecx
-// 00a5a46c  897c2438             mov dword ptr [esp + 0x38], edi
-// 00a5a470  7d02                 jge 0xa5a474
-// 00a5a472  8bcf                 mov ecx, edi
-// 00a5a474  837c242800           cmp dword ptr [esp + 0x28], 0
-// 00a5a479  896c2464             mov dword ptr [esp + 0x64], ebp
-// 00a5a47d  89442468             mov dword ptr [esp + 0x68], eax
-// 00a5a481  894c246c             mov dword ptr [esp + 0x6c], ecx
-// 00a5a485  89542470             mov dword ptr [esp + 0x70], edx
-// 00a5a489  0f84cb000000         je 0xa5a55a
-// 00a5a48f  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 00a5a493  896b2c               mov dword ptr [ebx + 0x2c], ebp
-// 00a5a496  894330               mov dword ptr [ebx + 0x30], eax
-// 00a5a499  894b34               mov dword ptr [ebx + 0x34], ecx
-// 00a5a49c  895338               mov dword ptr [ebx + 0x38], edx
-// 00a5a49f  8b4774               mov eax, dword ptr [edi + 0x74]
-// 00a5a4a2  8b8890000000         mov ecx, dword ptr [eax + 0x90]
-// 00a5a4a8  0588000000           add eax, 0x88
-// 00a5a4ad  83f9ff               cmp ecx, -1
-// 00a5a4b0  7505                 jne 0xa5a4b7
-// 00a5a4b2  8b4004               mov eax, dword ptr [eax + 4]
-// 00a5a4b5  eb02                 jmp 0xa5a4b9
-// 00a5a4b7  8bc1                 mov eax, ecx
-// 00a5a4b9  8b16                 mov edx, dword ptr [esi]
-// 00a5a4bb  50                   push eax
-// 00a5a4bc  8b4238               mov eax, dword ptr [edx + 0x38]
-// 00a5a4bf  8bce                 mov ecx, esi
-// 00a5a4c1  ffd0                 call eax
-// 00a5a4c3  8b2e                 mov ebp, dword ptr [esi]
-// 00a5a4c5  6820080000           push 0x820
-// 00a5a4ca  8d4c2468             lea ecx, [esp + 0x68]
-// 00a5a4ce  51                   push ecx
-// 00a5a4cf  8d4c241c             lea ecx, [esp + 0x1c]
-// 00a5a4d3  83c570               add ebp, 0x70
-// 00a5a4d6  ff155846b200         call dword ptr [0xb24658]
-// 00a5a4dc  50                   push eax
-// 00a5a4dd  8d4c2420             lea ecx, [esp + 0x20]
-// 00a5a4e1  ff159847b200         call dword ptr [0xb24798]
-// 00a5a4e7  8b5500               mov edx, dword ptr [ebp]
-// 00a5a4ea  50                   push eax
-// 00a5a4eb  8bce                 mov ecx, esi
-// 00a5a4ed  ffd2                 call edx
-// 00a5a4ef  8b4344               mov eax, dword ptr [ebx + 0x44]
-// 00a5a4f2  8b4034               mov eax, dword ptr [eax + 0x34]
-// 00a5a4f5  8b4b28               mov ecx, dword ptr [ebx + 0x28]
-// 00a5a4f8  3b8848010000         cmp ecx, dword ptr [eax + 0x148]
-// 00a5a4fe  7552                 jne 0xa5a552
-// 00a5a500  85c0                 test eax, eax
-// 00a5a502  7504                 jne 0xa5a508
-// 00a5a504  33db                 xor ebx, ebx
-// 00a5a506  eb03                 jmp 0xa5a50b
-// 00a5a508  8b5820               mov ebx, dword ptr [eax + 0x20]
-// 00a5a50b  ff15e83bb200         call dword ptr [0xb23be8]
-// 00a5a511  3bc3                 cmp eax, ebx
-// 00a5a513  753d                 jne 0xa5a552
-// 00a5a515  8b4774               mov eax, dword ptr [edi + 0x74]
-// 00a5a518  8b483c               mov ecx, dword ptr [eax + 0x3c]
-// 00a5a51b  83c034               add eax, 0x34
-// 00a5a51e  83f9ff               cmp ecx, -1
-// 00a5a521  7505                 jne 0xa5a528
-// 00a5a523  8b4004               mov eax, dword ptr [eax + 4]
-// 00a5a526  eb02                 jmp 0xa5a52a
-// 00a5a528  8bc1                 mov eax, ecx
-// 00a5a52a  8b16                 mov edx, dword ptr [esi]
-// 00a5a52c  50                   push eax
-// 00a5a52d  8b4238               mov eax, dword ptr [edx + 0x38]
-// 00a5a530  8bce                 mov ecx, esi
-// 00a5a532  ffd0                 call eax
-// 00a5a534  8b16                 mov edx, dword ptr [esi]
-// 00a5a536  8b4234               mov eax, dword ptr [edx + 0x34]
-// 00a5a539  6a00                 push 0
-// 00a5a53b  8bce                 mov ecx, esi
-// 00a5a53d  ffd0                 call eax
-// 00a5a53f  8b5604               mov edx, dword ptr [esi + 4]
-// 00a5a542  ff442470             inc dword ptr [esp + 0x70]
-// 00a5a546  8d4c2464             lea ecx, [esp + 0x64]
-// 00a5a54a  51                   push ecx
-// 00a5a54b  52                   push edx
-// 00a5a54c  ff15d43cb200         call dword ptr [0xb23cd4]
-// 00a5a552  8b7c2438             mov edi, dword ptr [esp + 0x38]
-// 00a5a556  8bef                 mov ebp, edi
-// 00a5a558  eb30                 jmp 0xa5a58a
-// 00a5a55a  8b8424bc000000       mov eax, dword ptr [esp + 0xbc]
-// 00a5a561  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 00a5a568  50                   push eax
-// 00a5a569  51                   push ecx
-// 00a5a56a  8d54246c             lea edx, [esp + 0x6c]
-// 00a5a56e  52                   push edx
-// 00a5a56f  ff15483bb200         call dword ptr [0xb23b48]
-// 00a5a575  85c0                 test eax, eax
-// 00a5a577  0f85a5feffff         jne 0xa5a422
-// 00a5a57d  8bef                 mov ebp, edi
-// 00a5a57f  eb09                 jmp 0xa5a58a
-// 00a5a581  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00a5a585  48                   dec eax
-// 00a5a586  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00a5a58a  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 00a5a58e  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 00a5a592  3b9c24b4000000       cmp ebx, dword ptr [esp + 0xb4]
-// 00a5a599  0f8dd0000000         jge 0xa5a66f
-// 00a5a59f  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00a5a5a3  49                   dec ecx
-// 00a5a5a4  394c241c             cmp dword ptr [esp + 0x1c], ecx
-// 00a5a5a8  0f84c1000000         je 0xa5a66f
-// 00a5a5ae  837c242800           cmp dword ptr [esp + 0x28], 0
-// 00a5a5b3  0f8489000000         je 0xa5a642
-// 00a5a5b9  8d576c               lea edx, [edi + 0x6c]
-// 00a5a5bc  52                   push edx
-// 00a5a5bd  8d4c2478             lea ecx, [esp + 0x78]
-// 00a5a5c1  e84a9af7ff           call 0x9d4010
-// 00a5a5c6  8b4774               mov eax, dword ptr [edi + 0x74]
-// 00a5a5c9  8b4848               mov ecx, dword ptr [eax + 0x48]
-// 00a5a5cc  83c040               add eax, 0x40
-// 00a5a5cf  83f9ff               cmp ecx, -1
-// 00a5a5d2  7505                 jne 0xa5a5d9
-// 00a5a5d4  8b4004               mov eax, dword ptr [eax + 4]
-// 00a5a5d7  eb02                 jmp 0xa5a5db
-// 00a5a5d9  8bc1                 mov eax, ecx
-// 00a5a5db  8b16                 mov edx, dword ptr [esi]
-// 00a5a5dd  50                   push eax
-// 00a5a5de  8b4238               mov eax, dword ptr [edx + 0x38]
-// 00a5a5e1  8bce                 mov ecx, esi
-// 00a5a5e3  ffd0                 call eax
-// 00a5a5e5  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00a5a5e9  8d0419               lea eax, [ecx + ebx]
-// 00a5a5ec  8b8c24b4000000       mov ecx, dword ptr [esp + 0xb4]
-// 00a5a5f3  3bc1                 cmp eax, ecx
-// 00a5a5f5  7c02                 jl 0xa5a5f9
-// 00a5a5f7  8bc1                 mov eax, ecx
-// 00a5a5f9  6820080000           push 0x820
-// 00a5a5fe  8d8c2488000000       lea ecx, [esp + 0x88]
-// 00a5a605  51                   push ecx
-// 00a5a606  8d5508               lea edx, [ebp + 8]
-// 00a5a609  89842498000000       mov dword ptr [esp + 0x98], eax
-// 00a5a610  8b06                 mov eax, dword ptr [esi]
-// 00a5a612  6a01                 push 1
-// 00a5a614  89942498000000       mov dword ptr [esp + 0x98], edx
-// 00a5a61b  8b5070               mov edx, dword ptr [eax + 0x70]
-// 00a5a61e  68ec98b500           push 0xb598ec
-// 00a5a623  8bce                 mov ecx, esi
-// 00a5a625  89ac2494000000       mov dword ptr [esp + 0x94], ebp
-// 00a5a62c  899c2498000000       mov dword ptr [esp + 0x98], ebx
-// 00a5a633  ffd2                 call edx
-// 00a5a635  8d4764               lea eax, [edi + 0x64]
-// 00a5a638  50                   push eax
-// 00a5a639  8d4c2478             lea ecx, [esp + 0x78]
-// 00a5a63d  e8ce99f7ff           call 0x9d4010
-// 00a5a642  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a646  83c508               add ebp, 8
-// 00a5a649  c684249c00000000     mov byte ptr [esp + 0x9c], 0
-// 00a5a651  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a657  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00a5a65b  40                   inc eax
-// 00a5a65c  3b44242c             cmp eax, dword ptr [esp + 0x2c]
-// 00a5a660  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00a5a664  0f8ca6faffff         jl 0xa5a110
-// 00a5a66a  e965faffff           jmp 0xa5a0d4
-// 00a5a66f  8d4c2414             lea ecx, [esp + 0x14]
-// 00a5a673  ff15d047b200         call dword ptr [0xb247d0]
-// 00a5a679  e956faffff           jmp 0xa5a0d4
-// 00a5a67e  e83d7df2ff           call 0x9823c0
-// copied from an identical function in another client (function ?HitTestVerbs@CXTPPropertyGridPaintManager@@QAEHPAVCDC@@VCRect@@VCPoint@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridPaintManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPropertyGridPaintManager.cpp : implementation of the CXTPPropertyGridPaintManager class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPOffice2007Image.h"
+
+#include "XTPPropertyGridPaintManager.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+
+#include "XTPPropertyGridItemBool.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+CXTPPropertyGridItemMetrics::CXTPPropertyGridItemMetrics(CXTPPropertyGridPaintManager* pPaintManager)
+	: m_pPaintManager(pPaintManager)
+{
+	m_nImage = -1;
+	m_uDrawTextFormat = DT_VCENTER | DT_SINGLELINE;
+	m_nMaxLength = 0;
+
+}
+void CXTPPropertyGridItemMetrics::SetDefaultValues()
+{
+	m_clrHelpBack.SetDefaultValue();
+	m_clrHelpFore.SetDefaultValue();
+	m_clrLine.SetDefaultValue();
+	m_clrBack.SetDefaultValue();
+	m_clrFore.SetDefaultValue();
+	m_clrReadOnlyFore.SetDefaultValue();
+	m_clrCategoryFore.SetDefaultValue();
+	m_clrVerbFace.SetDefaultValue();
+}
+
+COLORREF CXTPPropertyGridPaintManager::GetItemTextColor(CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return m_pMetrics->m_clrFore;
+
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(bValuePart, FALSE);
+	if (pMetrics && !pMetrics->m_clrFore.IsDefaultValue())
+		return pMetrics->m_clrFore;
+
+	return pItem->IsCategory() ? m_pMetrics->m_clrCategoryFore :
+		pItem->GetReadOnly() ? m_pMetrics->m_clrReadOnlyFore : m_pMetrics->m_clrFore;
+}
+
+COLORREF CXTPPropertyGridPaintManager::GetItemBackColor(CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return m_pMetrics->m_clrBack;
+
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(bValuePart, FALSE);
+	if (pMetrics && !pMetrics->m_clrBack.IsDefaultValue())
+		return pMetrics->m_clrBack;
+
+	return m_pMetrics->m_clrBack;
+}
+
+CFont* CXTPPropertyGridPaintManager::GetItemFont(CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return &m_pMetrics->m_fontNormal;
+
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(bValuePart, FALSE);
+	if (pMetrics && pMetrics->m_fontNormal.GetSafeHandle())
+		return &pMetrics->m_fontNormal;
+
+	if (pItem->IsCategory())
+		return &m_pMetrics->m_fontBold;
+
+	if (bValuePart && m_pGrid->IsHighlightChangedItems() && pItem->IsValueChanged())
+		return &m_pMetrics->m_fontBold;
+
+	return &m_pMetrics->m_fontNormal;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPPropertyGridPaintManager::CXTPPropertyGridPaintManager(CXTPPropertyGrid* pGrid)
+	: m_pGrid(pGrid)
+{
+	m_buttonsStyle = xtpGridButtonsDefault;
+
+	LOGFONT lfIcon;
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+	lfIcon.lfWeight = FW_NORMAL;
+	lfIcon.lfItalic = FALSE;
+
+	VERIFY(m_fntVerbNormal.CreateFontIndirect(&lfIcon));
+	lfIcon.lfUnderline = TRUE;
+	VERIFY(m_fntVerbUnderline.CreateFontIndirect(&lfIcon));
+
+	m_pMetrics = new CXTPPropertyGridItemMetrics(this);
+
+	m_bTransparent = FALSE;
+}
+
+CXTPPropertyGridPaintManager::~CXTPPropertyGridPaintManager()
+{
+	CMDTARGET_RELEASE(m_pMetrics);
+}
+
+void CXTPPropertyGridPaintManager::RefreshMetrics()
+{
+	RefreshXtremeColors();
+
+	m_clrHighlight.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHT));
+	m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHTTEXT));
+
+	m_clrFace.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_clrShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+
+	m_pMetrics->m_clrVerbFace.SetStandardValue(GetXtremeColor(COLOR_ACTIVECAPTION));
+	m_pMetrics->m_clrHelpBack.SetStandardValue(m_clrFace);
+	m_pMetrics->m_clrHelpFore.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_pMetrics->m_clrLine.SetStandardValue(GetSysColor(COLOR_SCROLLBAR));
+	m_pMetrics->m_clrCategoryFore.SetStandardValue(GetXtremeColor(COLOR_GRAYTEXT));
+	m_pMetrics->m_clrBack.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
+	m_pMetrics->m_clrFore.SetStandardValue(GetXtremeColor(COLOR_WINDOWTEXT));
+	m_pMetrics->m_clrReadOnlyFore.SetStandardValue(GetXtremeColor(COLOR_GRAYTEXT));
+
+	HWND hWnd = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : 0;
+	m_themeTree.OpenThemeData(hWnd, L"TREEVIEW");
+	m_themeButton.OpenThemeData(hWnd, L"BUTTON");
+	m_themeCombo.OpenThemeData(hWnd, L"COMBOBOX");
+}
+
+void CXTPPropertyGridPaintManager::FillPropertyGrid(CDC* pDC)
+{
+	CXTPClientRect rc(m_pGrid);
+
+	HBRUSH hBrush = NULL;
+
+	if (m_bTransparent || m_clrFace == GetXtremeColor(COLOR_3DFACE))
+	{
+		hBrush = (HBRUSH)m_pGrid->GetParent()->SendMessage(WM_CTLCOLORSTATIC, (WPARAM)pDC->GetSafeHdc(), (LPARAM)m_pGrid->m_hWnd);
+	}
+	if (hBrush)
+	{
+		::FillRect(pDC->GetSafeHdc(), rc, hBrush);
+	}
+	else
+	{
+		pDC->FillSolidRect(rc, m_clrFace);
+	}
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	if (m_pGrid->IsHelpVisible())
+	{
+		CXTPPropertyGridItem* pItem = m_pGrid->GetSelectedItem();
+
+		CRect rcHelp(rc);
+		rcHelp.top = rc.bottom - m_pGrid->m_nHelpHeight;
+
+		if (!hBrush || !m_bTransparent) pDC->FillSolidRect(rcHelp, m_pMetrics->m_clrHelpBack);
+		DrawPropertyGridBorder(pDC, rcHelp, FALSE);
+
+
+		CXTPFontDC fontCaption(pDC, &m_pMetrics->m_fontBold);
+
+		if (pItem)
+		{
+			pDC->SetTextColor(m_pMetrics->m_clrHelpFore);
+
+			pDC->SetBkMode(TRANSPARENT);
+			CRect rcCaption(rcHelp);
+			rcCaption.DeflateRect(6, 3);
+			pDC->DrawText(pItem->GetCaption(), rcCaption, DT_SINGLELINE | DT_NOPREFIX);
+
+			CString strDesc = pItem->GetDescription();
+			if (!strDesc.IsEmpty())
+			{
+				CXTPFontDC fontDescription(pDC, &m_pMetrics->m_fontNormal);
+				CXTPEmptyRect rcCaptionHeight;
+				pDC->DrawText(pItem->GetCaption(), rcCaptionHeight, DT_SINGLELINE | DT_NOPREFIX | DT_CALCRECT);
+				CRect rcDesc(rcHelp);
+				rcDesc.DeflateRect(6, 3 + rcCaptionHeight.Height() + 3, 6, 3);
+				pDC->DrawText(strDesc, rcDesc, DT_WORDBREAK | DT_NOPREFIX);
+			}
+		}
+
+		rc.bottom -= m_pGrid->m_nHelpHeight + 3;
+	}
+
+	if (m_pGrid->IsVerbsVisible())
+	{
+		CRect rcVerbs(rc);
+		rcVerbs.top = rc.bottom - m_pGrid->m_nVerbsHeight;
+
+		if (!hBrush || !m_bTransparent) pDC->FillSolidRect(rcVerbs, m_pMetrics->m_clrHelpBack);
+		DrawPropertyGridBorder(pDC, rcVerbs, FALSE);
+
+		HitTestVerbs(pDC, rcVerbs, CPoint(0));
+	}
+}
+
+int CXTPPropertyGridPaintManager::HitTestVerbs(CDC* pDC, CRect rcVerbs, CPoint pt)
+{
+	#define DRAWTEXTPART(strCaption)\
+		CRect rcText(CRect(x, y, min(x + nTextWidth, rcVerbs.right), min(y + nTextHeight, rcVerbs.bottom)));\
+		if (bDraw)\
+		{\
+			pVerb->SetPart(rcText);\
+			pDC->SetTextColor(m_pMetrics->m_clrVerbFace);\
+			pDC->DrawText(strCaption, rcText, DT_SINGLELINE | DT_NOPREFIX);\
+			if (pVerb->IsFocused())\
+			{\
+				pDC->SetTextColor(m_pMetrics->m_clrHelpBack);\
+				pDC->SetBkColor(0);\
+				rcText.bottom++;\
+				pDC->DrawFocusRect(rcText);\
+			}\
+		}\
+		else if (rcText.PtInRect(pt)) return i;
+
+	BOOL bDraw = (pt == CPoint(0));
+
+	CXTPFontDC font(pDC, &m_fntVerbUnderline);
+
+	rcVerbs.DeflateRect(6, 4);
+
+	int nCount = m_pGrid->GetVerbs()->GetCount();
+
+	int x = rcVerbs.left, y = rcVerbs.top, nWidth = rcVerbs.Width();
+	int nTextHeight = pDC->GetTextExtent(_T("XXX"), 3).cy;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPPropertyGridVerb* pVerb = m_pGrid->GetVerbs()->GetAt(i);
+		CString strCaption = pVerb->GetCaption();
+
+		for (;;)
+		{
+			if (strCaption.IsEmpty())
+				break;
+
+			int nTextWidth = pDC->GetTextExtent(strCaption).cx;
+
+			if (x + nTextWidth < nWidth)
+			{
+				DRAWTEXTPART(strCaption);
+				x += nTextWidth;
+				break;
+			}
+			else
+			{
+				int nStartIndex = (strCaption.GetLength() - 1) * (nWidth - x) / nTextWidth;
+				int nIndex = nStartIndex;
+
+				if ((nStartIndex < 1) && (x == rcVerbs.left))
+				{
+					i = nCount - 1;
+					break;
+				}
+
+				for (; nIndex >= 0; nIndex--)
+				{
+					if (strCaption[nIndex] == _T(' ') || strCaption[nIndex] == _T(',') || strCaption[nIndex] == _T('-'))
+						break;
+				}
+
+				if (nIndex > 0 || (x == rcVerbs.left))
+				{
+					if (nIndex <= 0) nIndex = nStartIndex;
+
+					CString strLeft = strCaption.Left(nIndex + 1);
+					CString strRight = strCaption.Mid(nIndex + 1);
+
+					nTextWidth = pDC->GetTextExtent(strLeft).cx;
+					DRAWTEXTPART(strLeft);
+
+					x = rcVerbs.left;
+					y += nTextHeight;
+					strCaption = strRight;
+				}
+				else
+				{
+					y += nTextHeight;
+					x = rcVerbs.left;
+				}
+			}
+			if (y >= rcVerbs.bottom)
+				break;
+		}
+
+		if ((y >= rcVerbs.bottom) || (i == nCount - 1))
+			break;
+
+		if (bDraw)
+		{
+			font.SetFont(&m_fntVerbNormal);
+			pDC->SetTextColor(m_pMetrics->m_clrHelpFore);
+			pDC->DrawText(_T(","), 1, CRect(x, y, x + 8, min(y + nTextHeight, rcVerbs.bottom)), DT_SINGLELINE | DT_NOPREFIX);
+			font.SetFont(&m_fntVerbUnderline);
+		}
+		x += 8;
+	}
+	return -1;
+}
+
+void CXTPPropertyGridPaintManager::DrawPropertyGridBorder(CDC* pDC, RECT& rc, BOOL bAdjustRect)
+{
+	XTPPropertyGridBorderStyle borderStyle = m_pGrid->GetBorderStyle();
+
+	if (pDC)
+	{
+		switch (borderStyle)
+		{
+		case xtpGridBorderStaticEdge:
+			pDC->Draw3dRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+				m_clrShadow, m_clrShadow);
+			break;
+
+		case xtpGridBorderFlat:
+			pDC->Draw3dRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+				GetXtremeColor(COLOR_WINDOWFRAME), GetXtremeColor(COLOR_WINDOWFRAME));
+			break;
+
+		case xtpGridBorderClientEdge:
+			pDC->Draw3dRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+				GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+			pDC->Draw3dRect(rc.left + 1, rc.top + 1, rc.right - rc.left - 2, rc.bottom - rc.top - 2,
+				GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_3DFACE));
+			break;
+		}
+	}
+
+	if (bAdjustRect)
+	{
+		int nSize = borderStyle == xtpGridBorderClientEdge ? 2 :
+			borderStyle == xtpGridBorderStaticEdge || borderStyle == xtpGridBorderFlat ? 1 : 0;
+
+		rc.left   += nSize;
+		rc.top    += nSize;
+		rc.right  -= nSize;
+		rc.bottom -= nSize;
+	}
+}
+
+void CXTPPropertyGridPaintManager::FillPropertyGridView(CDC* pDC)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+
+	CXTPClientRect rc(pView);
+	pDC->FillSolidRect(rc, m_pMetrics->m_clrBack);
+
+}
+
+void CXTPPropertyGridPaintManager::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+	if (pView->GetStyle() & LBS_OWNERDRAWVARIABLE)
+	{
+		CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpMeasureItemStruct->itemData;
+		pItem->MeasureItem(lpMeasureItemStruct);
+	}
+}
+
+void CXTPPropertyGridPaintManager::DrawCategoryCaptionBackground(CDC* pDC, CRect rc)
+{
+	pDC->FillSolidRect(rc, m_pMetrics->m_clrLine);
+}
+
+void CXTPPropertyGridPaintManager::DrawInplaceListItem(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint, CRect rc, BOOL bSelected)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	if (bSelected)
+	{
+		pDC->SetTextColor(m_clrHighlightText);
+		pDC->FillSolidRect(rc, m_clrHighlight);
+	}
+	else
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_WINDOW));
+	}
+
+	CRect rcText(rc.left + 2, rc.top, rc.right - 2, rc.bottom);
+
+	CXTPImageManagerIcon* pImage = pConstraint->GetImage();
+
+	if (pImage)
+	{
+		int nHeight = min(pImage->GetHeight(), rc.Height());
+		int nWidth = pImage->GetWidth();
+
+		CPoint pt(rcText.left, rcText.CenterPoint().y - nHeight/2);
+		pImage->Draw(pDC, pt, CSize(nWidth, nHeight));
+
+		rcText.left += nWidth + 5;
+	}
+
+	// Draw the text.
+	pDC->DrawText(pConstraint->m_strConstraint, rcText, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+}
+
+
+void CXTPPropertyGridPaintManager::AdjustItemValueRect(CXTPPropertyGridItem* pItem, CRect& rcValue)
+{
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(TRUE, FALSE);
+	if (pMetrics && pMetrics->m_nImage != -1)
+	{
+		CXTPImageManagerIcon* pImage = m_pGrid->GetImageManager()->GetImage(pMetrics->m_nImage, 0);
+
+		if (pImage)
+		{
+			int nWidth = pImage->GetWidth();
+			rcValue.left += nWidth + 5;
+		}
+	}
+}
+
+void CXTPPropertyGridPaintManager::AdjustItemCaptionRect(CXTPPropertyGridItem* pItem, CRect& rcCaption)
+{
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(FALSE, FALSE);
+	if (pMetrics && pMetrics->m_nImage != -1)
+	{
+		CXTPImageManagerIcon* pImage = m_pGrid->GetImageManager()->GetImage(pMetrics->m_nImage, 0);
+
+		if (pImage)
+		{
+			int nWidth = pImage->GetWidth();
+			rcCaption.left += nWidth + 5;
+		}
+	}
+}
+
+void CXTPPropertyGridPaintManager::DrawItemValue(CDC* pDC, CXTPPropertyGridItem* pItem, CRect rcValue)
+{
+	pDC->SetTextColor(GetItemTextColor(pItem, TRUE));
+	pDC->FillSolidRect(rcValue, GetItemBackColor(pItem, TRUE));
+
+	rcValue.left += 4;
+
+	if (pItem->OnDrawItemValue(*pDC, rcValue))
+		return;
+
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(TRUE, FALSE);
+	if (pMetrics && pMetrics->m_nImage != -1)
+	{
+		CXTPImageManagerIcon* pImage = m_pGrid->GetImageManager()->GetImage(pMetrics->m_nImage, 0);
+
+		if (pImage)
+		{
+			int nHeight = min(pImage->GetHeight(), rcValue.Height());
+			int nWidth = pImage->GetWidth();
+
+			CPoint pt(rcValue.left - 2, rcValue.CenterPoint().y - nHeight/2);
+			pImage->Draw(pDC, pt, CSize(nWidth, nHeight));
+
+			rcValue.left += nWidth + 5;
+
+		}
+
+	}
+	rcValue.DeflateRect(0, 1);
+
+	UINT nFormat = pMetrics ? pMetrics->m_uDrawTextFormat : DT_VCENTER | DT_SINGLELINE;
+
+	if (pItem->IsMultiLine()) nFormat = (nFormat | DT_WORDBREAK) & ~DT_SINGLELINE;
+
+	pDC->DrawText(pItem->GetViewValue(), rcValue, DT_NOPREFIX | nFormat);
+}
+
+void CXTPPropertyGridPaintManager::DrawItemCaption(CDC* pDC, CXTPPropertyGridItem* pItem, CRect rcCaption)
+{
+	CRect rcText(rcCaption);
+	rcText.left = (pItem->GetIndent() + (pItem->IsCategory() ? 1 : 0)) * XTP_PGI_EXPAND_BORDER + 3;
+
+	rcText.right = rcCaption.right - 1;
+	rcText.bottom -= 1;
+
+	CXTPPropertyGridItemMetrics* pMetrics = pItem->GetMetrics(FALSE, FALSE);
+	if (pMetrics && pMetrics->m_nImage != -1)
+	{
+		CXTPImageManagerIcon* pImage = m_pGrid->GetImageManager()->GetImage(pMetrics->m_nImage, 0);
+
+		if (pImage)
+		{
+			int nHeight = min(pImage->GetHeight(), rcText.Height());
+			int nWidth = pImage->GetWidth();
+
+			CPoint pt(rcText.left - 2, rcText.CenterPoint().y - nHeight/2);
+			pImage->Draw(pDC, pt, CSize(nWidth, nHeight));
+
+			rcText.left += nWidth + 5;
+
+		}
+
+	}
+
+	UINT nFormat = pMetrics ? pMetrics->m_uDrawTextFormat : DT_VCENTER | DT_SINGLELINE;
+
+	pDC->DrawText(pItem->GetCaption(), rcText, DT_NOPREFIX | nFormat);
+}
+
+void CXTPPropertyGridPaintManager::DrawInplaceButtons(CDC* pDC, CXTPPropertyGridItem* pItem, CRect rcValue)
+{
+	if (!pItem->IsInplaceButtonsVisible())
+		return;
+
+	int nRight = rcValue.right;
+	for (int i = pItem->GetInplaceButtons()->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceButton* pButton = pItem->GetInplaceButtons()->GetAt(i);
+
+		int nWidth = pButton->GetWidth();
+		CRect rcButton(nRight - nWidth, rcValue.top, nRight, rcValue.bottom);
+		pButton->OnDraw(pDC, rcButton);
+
+		nRight -= nWidth;
+	}
+}
+
+void CXTPPropertyGridPaintManager::DrawItem(PDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+
+	CXTPWindowRect rcWindow(pView);
+	CRect rc = lpDrawItemStruct->rcItem;
+
+	CXTPBufferDC dc(lpDrawItemStruct->hDC, rc);
+	CXTPFontDC font(&dc, GetItemFont(pItem, TRUE));
+
+	dc.FillSolidRect(rc, GetItemBackColor(pItem, FALSE));
+	dc.SetBkMode(TRANSPARENT);
+
+
+	CRect rcCaption(rc.left, rc.top, rc.left + pView->GetDividerPos(), rc.bottom);
+
+	if (pItem->IsCategory())
+	{
+		DrawCategoryCaptionBackground(&dc, rc);
+
+		font.SetFont(GetItemFont(pItem, FALSE));
+
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+		CXTPEmptyRect rcDrawText;
+		dc.DrawText(pItem->GetCaption(), rcDrawText, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER | DT_CALCRECT);
+
+		CRect rcText(CPoint(((pItem->GetIndent() + 1) * XTP_PGI_EXPAND_BORDER) - 1, rc.top + 1) , CSize(rcDrawText.Width() + 4, rc.Height() - 3));
+
+		dc.DrawText(pItem->GetCaption(), rcText, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER | DT_RIGHT);
+
+		if (lpDrawItemStruct->itemState & ODS_FOCUS)
+		{
+			dc.SetTextColor(0);
+			dc.DrawFocusRect(rcText);
+		}
+	}
+	else
+	{
+
+		CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+		DrawItemValue(&dc, pItem, rcValue);
+
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+		font.SetFont(GetItemFont(pItem, FALSE));
+
+
+		BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+		BOOL bFocused = bSelected && CWnd::GetFocus() && ((CWnd::GetFocus() == pView) || (CWnd::GetFocus()->GetParent() == pView) || (CWnd::GetFocus()->GetOwner() == pView));
+		if (bFocused)
+		{
+			dc.SetTextColor(m_clrHighlightText);
+			dc.FillSolidRect(rcCaption, m_clrHighlight);
+		}
+		else if (bSelected && !m_pGrid->m_bHideSelection)
+		{
+			dc.FillSolidRect(rcCaption, m_pMetrics->m_clrLine);
+		}
+
+		CXTPPropertyGridItem* pCategory = pItem->GetParentItem();
+		while (pCategory != NULL)
+		{
+			if (pCategory->IsCategory())
+				dc.FillSolidRect(rc.left + pCategory->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.top, XTP_PGI_EXPAND_BORDER, rc.Height(), m_pMetrics->m_clrLine);
+
+			pCategory = pCategory->GetParentItem();
+		}
+
+		CXTPPenDC pen(dc, m_pMetrics->m_clrLine);
+		dc.MoveTo(0, rc.bottom - 1); dc.LineTo(rc.right, rc.bottom - 1);
+		dc.MoveTo(rcCaption.right, rc.top); dc.LineTo(rcCaption.right, rc.bottom - 1);
+
+		DrawItemCaption(&dc, pItem, rcCaption);
+
+		if (bSelected || m_pGrid->GetShowInplaceButtonsAlways()) DrawInplaceButtons(&dc, pItem, rcValue);
+	}
+
+	CXTPPropertyGridItem* pNext = pView->GetItem(lpDrawItemStruct->itemID + 1);
+	if (pNext && pNext->IsCategory() && pNext->IsVisible())
+	{
+		dc.FillSolidRect(pNext->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.bottom - 1, rc.Width(), 1, m_clrFace);
+	}
+
+
+
+	if (pItem->HasVisibleChilds())
+	{
+		CRgn rgn;
+		if (!pItem->IsCategory())
+		{
+			rgn.CreateRectRgnIndirect(&rcCaption);
+			dc.SelectClipRgn(&rgn);
+		}
+
+		DrawExpandButton(dc, pItem, rcCaption);
+
+		dc.SelectClipRgn(NULL);
+	}
+}
+
+void CXTPPropertyGridPaintManager::DrawExpandButton(CDC& dc, CXTPPropertyGridItem* pItem, CRect rcCaption)
+{
+	if (!pItem->IsExpandable())
+		return;
+
+	CRect rcSign(CPoint(XTP_PGI_EXPAND_BORDER / 2 - 5, rcCaption.CenterPoint().y - 4), CSize(9, 9));
+
+	if (pItem->GetIndent() > 0)
+		rcSign.OffsetRect((pItem->GetIndent() - (pItem->IsCategory() ? 0 : 1)) * XTP_PGI_EXPAND_BORDER, 0);
+
+
+	if (m_buttonsStyle == xtpGridButtonsThemed && m_themeTree.IsAppThemed())
+	{
+		m_themeTree.DrawThemeBackground(dc, TVP_GLYPH, pItem->IsExpanded() ? GLPS_OPENED : GLPS_CLOSED, &rcSign, 0);
+
+	}
+	else
+	{
+
+		CPoint pt = rcSign.CenterPoint();
+
+		if (!pItem->IsCategory()) dc.FillSolidRect(rcSign, m_pMetrics->m_clrBack);
+		dc.Draw3dRect(rcSign, m_pMetrics->m_clrFore, m_pMetrics->m_clrFore);
+		CXTPPenDC pen (dc, m_pMetrics->m_clrFore);
+
+		dc.MoveTo(pt.x - 2, pt.y);
+		dc.LineTo(pt.x + 3, pt.y);
+
+		if (!pItem->IsExpanded())
+		{
+			dc.MoveTo(pt.x, pt.y - 2);
+			dc.LineTo(pt.x, pt.y + 3);
+		}
+	}
+
+
+}
+
+void CXTPPropertyGridPaintManager::FillInplaceButton(CDC* pDC, CXTPPropertyGridInplaceButton* pButton)
+{
+	CRect rect(pButton->GetRect());
+	CPoint ptDots(rect.CenterPoint().x , rect.CenterPoint().y + 3);
+	COLORREF clrText = GetXtremeColor(pButton->GetEnabled() ? COLOR_BTNTEXT : COLOR_GRAYTEXT);
+
+	if (m_buttonsStyle == xtpGridButtonsThemed && m_themeButton.IsAppThemed() && m_themeCombo.IsAppThemed())
+	{
+		pDC->FillSolidRect(rect, m_pMetrics->m_clrBack);
+
+		if (pButton->GetID() != XTP_ID_PROPERTYGRID_COMBOBUTTON)
+		{
+			m_themeButton.DrawThemeBackground(*pDC, BP_PUSHBUTTON, !pButton->GetEnabled() ? PBS_DISABLED : pButton->IsPressed() && pButton->IsHot() ? PBS_PRESSED :
+				pButton->IsHot() ? PBS_HOT: pButton->IsFocused() ? PBS_DEFAULTED : PBS_NORMAL, rect, 0);
+		}
+		else
+		{
+			m_themeCombo.DrawThemeBackground(*pDC, CP_DROPDOWNBUTTON, !pButton->GetEnabled() ? CBXS_DISABLED :
+				pButton->IsPressed() && pButton->IsHot() ? CBXS_PRESSED: pButton->IsHot() ? CBXS_HOT : CBXS_NORMAL, rect, 0);
+		}
+	}
+	else
+	{
+		if (m_buttonsStyle == xtpGridButtonsOffice2007)
+		{
+			pDC->FillSolidRect(rect, pButton->IsPressed() && pButton->IsHot() ? RGB(255, 171, 63) :
+				pButton->IsHot() ? RGB(255, 231, 162) : m_clrFace);
+			COLORREF clrBorder = GetXtremeColor(pButton->IsPressed() && pButton->IsHot() ? RGB(251, 140, 60) :
+				pButton->IsHot() ? RGB(255, 189, 105) : m_clrShadow);
+			pDC->Draw3dRect(rect, clrBorder, clrBorder);
+		}
+		else if (m_buttonsStyle == xtpGridButtonsOfficeXP)
+		{
+			pDC->FillSolidRect(rect, GetXtremeColor(pButton->IsPressed() && pButton->IsHot() ? XPCOLOR_HIGHLIGHT_PUSHED :
+				pButton->IsHot() ? XPCOLOR_HIGHLIGHT : XPCOLOR_TOOLBAR_FACE));
+			COLORREF clrBorder = GetXtremeColor(pButton->IsPressed() && pButton->IsHot() ? XPCOLOR_HIGHLIGHT_PUSHED_BORDER :
+				pButton->IsHot() ? XPCOLOR_HIGHLIGHT_BORDER : COLOR_3DSHADOW);
+			pDC->Draw3dRect(rect, clrBorder, clrBorder);
+		}
+		else
+		{
+			pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
+
+			if (pButton->IsPressed() && pButton->IsHot())
+				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
+			else
+			{
+				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
+				rect.DeflateRect(1, 1);
+				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
+			}
+		}
+
+		if (pButton->GetID() == XTP_ID_PROPERTYGRID_COMBOBUTTON)
+		{
+			CPoint pt = rect.CenterPoint();
+			CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x -3, pt.y -1), CPoint(pt.x + 3, pt.y -1), CPoint(pt.x, pt.y +2), clrText);
+		}
+	}
+	BOOL bCustom = FALSE;
+
+	if (pButton->GetID() != XTP_ID_PROPERTYGRID_COMBOBUTTON)
+	{
+		CXTPImageManagerIcon* pIcon = pButton->GetImage();
+		if (pIcon)
+		{
+			CSize sz(pIcon->GetWidth(), pIcon->GetHeight());
+			CPoint pt((rect.left + rect.right - sz.cx) / 2, (rect.top + rect.bottom - sz.cy) / 2);
+			pIcon->Draw(pDC, pt, sz);
+			bCustom = TRUE;
+		}
+		else if (!pButton->GetCaption().IsEmpty())
+		{
+			CXTPFontDC font(pDC, GetItemFont(pButton->GetItem(), TRUE));
+			pDC->SetTextColor(clrText);
+			pDC->DrawText(pButton->GetCaption(), rect, DT_SINGLELINE | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+			bCustom = TRUE;
+		}
+	}
+
+	if (!bCustom && pButton->GetID() == XTP_ID_PROPERTYGRID_EXPANDBUTTON)
+	{
+		pDC->FillSolidRect(ptDots.x - 4, ptDots.y, 2, 2, clrText);
+		pDC->FillSolidRect(ptDots.x, ptDots.y, 2, 2, clrText);
+		pDC->FillSolidRect(ptDots.x + 4, ptDots.y, 2, 2, clrText);
+	}
+
+
+
+	if (pButton->IsFocused())
+	{
+		pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
+		pDC->SetBkColor(GetXtremeColor(COLOR_3DFACE));
+		rect.DeflateRect(2, 2);
+		pDC->DrawFocusRect(rect);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+//
+
+CXTPPropertyGridNativeXPTheme::CXTPPropertyGridNativeXPTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+	m_buttonsStyle = xtpGridButtonsThemed;
+}
+
+void CXTPPropertyGridNativeXPTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+	switch (systemTheme)
+	{
+		case xtpSystemThemeSilver:
+		case xtpSystemThemeRoyale:
+		case xtpSystemThemeBlue:
+			m_clrShadow.SetStandardValue(RGB(127, 157, 185));
+			break;
+
+		case xtpSystemThemeOlive:
+			m_clrShadow.SetStandardValue(RGB(164, 185, 127));
+			break;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridOffice2003Theme
+
+CXTPPropertyGridOffice2003Theme::CXTPPropertyGridOffice2003Theme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+	m_bLunaTheme = FALSE;
+	m_buttonsStyle = xtpGridButtonsThemed;
+}
+
+
+
+void CXTPPropertyGridOffice2003Theme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_bLunaTheme = FALSE;
+
+	if (!XTPColorManager()->IsLunaColorsDisabled())
+	{
+		XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+		switch (systemTheme)
+		{
+		case xtpSystemThemeRoyale:
+		case xtpSystemThemeAero:
+		case xtpSystemThemeBlue:
+			m_clrFace.SetStandardValue(RGB(221, 236, 254));
+			m_clrShadow.SetStandardValue(RGB(123, 164, 224));
+			m_pMetrics->m_clrHelpBack.SetStandardValue(m_clrFace);
+			m_pMetrics->m_clrLine.SetStandardValue(RGB(169, 199, 240));
+			m_pMetrics->m_clrCategoryFore.SetStandardValue(0);
+
+			m_bLunaTheme = TRUE;
+			break;
+
+		case xtpSystemThemeOlive:
+			m_clrFace.SetStandardValue(RGB(243, 242, 231));
+			m_clrShadow.SetStandardValue(RGB(188, 187, 177));
+			m_pMetrics->m_clrHelpBack.SetStandardValue(m_clrFace);
+			m_pMetrics->m_clrLine.SetStandardValue(RGB(197, 212, 159));
+			m_pMetrics->m_clrCategoryFore.SetStandardValue(0);
+
+			m_bLunaTheme = TRUE;
+			break;
+
+		case xtpSystemThemeSilver:
+			m_clrFace.SetStandardValue(RGB(238, 238, 244));
+			m_clrShadow.SetStandardValue(RGB(161, 160, 187));
+			m_pMetrics->m_clrHelpBack.SetStandardValue(m_clrFace);
+			m_pMetrics->m_clrLine.SetStandardValue(RGB(192, 192, 211));
+			m_pMetrics->m_clrCategoryFore.SetStandardValue(0);
+
+			m_bLunaTheme = TRUE;
+			break;
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridOffice2007Theme
+
+CXTPPropertyGridOffice2007Theme::CXTPPropertyGridOffice2007Theme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridOffice2003Theme(pGrid)
+{
+	m_buttonsStyle = xtpGridButtonsOffice2007;
+}
+
+void CXTPPropertyGridOffice2007Theme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_bLunaTheme = FALSE;
+
+	m_pMetrics->m_clrBack.SetCustomValue(RGB(255, 255, 255));
+	m_pMetrics->m_clrFore.SetCustomValue(RGB(0, 0, 0));
+
+	CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("TOOLBARBUTTONS22"));
+	if (pImage)
+	{
+		m_clrFace.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("Background")));
+		m_clrShadow.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("Shadow")));
+		m_pMetrics->m_clrHelpBack.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("HelpBack")));
+		m_pMetrics->m_clrHelpFore.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("HelpFore")));
+		m_pMetrics->m_clrLine.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("GridLine")));
+		m_pMetrics->m_clrCategoryFore.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("CategoryText")));
+		m_clrHighlightText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("HighlightText")));
+		m_clrHighlight.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("PropertyGrid"), _T("Highlight")));
+	}
+	else
+	{
+		m_clrFace.SetStandardValue(RGB(173, 209, 255));
+		m_clrShadow.SetStandardValue(RGB(101, 147, 207));
+		m_pMetrics->m_clrHelpBack.SetStandardValue(RGB(214, 232, 255));
+		m_pMetrics->m_clrHelpFore.SetStandardValue(RGB(0, 0, 0));
+		m_pMetrics->m_clrLine.SetStandardValue(RGB(214, 232, 255));
+		m_pMetrics->m_clrCategoryFore.SetStandardValue(RGB(21, 66, 139));
+		m_clrHighlightText.SetStandardValue(0);
+		m_clrHighlight.SetStandardValue(RGB(179, 200, 232));
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridCoolTheme
+
+CXTPPropertyGridCoolTheme::CXTPPropertyGridCoolTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+}
+
+void CXTPPropertyGridCoolTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_pMetrics->m_clrLine.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+}
+
+
+void CXTPPropertyGridCoolTheme::DrawItem(PDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+
+	ASSERT(pItem != NULL);
+	if (!pItem)
+		return;
+
+	CXTPWindowRect rcWindow(pView);
+	CRect rc = lpDrawItemStruct->rcItem;
+
+	CXTPBufferDC dc(lpDrawItemStruct->hDC, rc);
+	CXTPFontDC font(&dc, GetItemFont(pItem, TRUE));
+
+	dc.FillSolidRect(rc, GetItemBackColor(pItem, FALSE));
+	dc.SetBkMode(TRANSPARENT);
+
+
+	CRect rcCaption(rc.left, rc.top, rc.left + pView->GetDividerPos(), rc.bottom);
+
+	COLORREF clrLine = m_pMetrics->m_clrLine;
+	COLORREF clrShadow = GetXtremeColor(COLOR_3DSHADOW);
+
+	if (pItem->IsCategory())
+	{
+		dc.FillSolidRect(rc, clrLine);
+
+		font.SetFont(GetItemFont(pItem, FALSE));
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+
+		int nIndent = XTP_PGI_EXPAND_BORDER * (pItem->GetIndent() + 1);
+
+		if (lpDrawItemStruct->itemState & ODS_FOCUS)
+		{
+			dc.SetTextColor(m_clrHighlightText);
+			dc.FillSolidRect(CRect(nIndent, rc.top , rc.right, rc.bottom), m_clrHighlight);
+		}
+
+		CRect rcText(nIndent + 3, rc.top , rc.right, rc.bottom - 1);
+		dc.DrawText(pItem->GetCaption(), rcText, DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER);
+
+		dc.FillSolidRect((pItem->GetIndent() + (pItem->IsExpanded() ? 1 : 0)) * XTP_PGI_EXPAND_BORDER - 1, rc.bottom - 1, rc.Width(), 1, clrShadow);
+
+		CXTPPropertyGridItem* pCategory = pItem->GetParentItem();
+		while (pCategory != NULL)
+		{
+			if (pCategory->IsCategory())
+			{
+				dc.FillSolidRect(rc.left + pCategory->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.top, XTP_PGI_EXPAND_BORDER, rc.Height(), clrLine);
+				dc.FillSolidRect(rc.left + (pCategory->GetIndent() + 1) * XTP_PGI_EXPAND_BORDER - 1, rc.top, 1, rc.Height() + 2, clrShadow);
+			}
+			pCategory = pCategory->GetParentItem();
+		}
+	}
+	else
+	{
+		CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+		DrawItemValue(&dc, pItem, rcValue);
+
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+		font.SetFont(GetItemFont(pItem, FALSE));
+
+		BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+		BOOL bFocused = bSelected && CWnd::GetFocus() && ((CWnd::GetFocus() == pView) || (CWnd::GetFocus()->GetParent() == pView) || (CWnd::GetFocus()->GetOwner() == pView));
+		if (bFocused)
+		{
+			dc.SetTextColor(m_clrHighlightText);
+			dc.FillSolidRect(rcCaption, m_clrHighlight);
+		}
+		else if (bSelected && !m_pGrid->m_bHideSelection)
+		{
+			dc.FillSolidRect(rcCaption, clrLine);
+		}
+
+		CXTPPenDC pen(dc, clrLine);
+		dc.MoveTo(0, rc.bottom - 1);
+		dc.LineTo(rc.right, rc.bottom - 1);
+		dc.MoveTo(rcCaption.right, rc.top);
+		dc.LineTo(rcCaption.right, rc.bottom - 1);
+
+		CXTPPropertyGridItem* pCategory = pItem->GetParentItem();
+		while (pCategory != NULL)
+		{
+			if (pCategory->IsCategory())
+			{
+				dc.FillSolidRect(rc.left + pCategory->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.top, XTP_PGI_EXPAND_BORDER, rc.Height(), clrLine);
+				dc.FillSolidRect(rc.left + (pCategory->GetIndent() + 1) * XTP_PGI_EXPAND_BORDER - 1, rc.top, 1, rc.Height() + 2, clrShadow);
+			}
+			pCategory = pCategory->GetParentItem();
+		}
+
+		DrawItemCaption(&dc, pItem, rcCaption);
+
+		if (bSelected || m_pGrid->GetShowInplaceButtonsAlways()) DrawInplaceButtons(&dc, pItem, rcValue);
+	}
+
+	CXTPPropertyGridItem* pNext = (CXTPPropertyGridItem*)pView->GetItemDataPtr(lpDrawItemStruct->itemID + 1);
+	if (((ULONG_PTR)pNext == (ULONG_PTR)(-1)))
+		dc.FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, clrShadow);
+	else if (pNext && pNext->IsCategory() && pNext->IsVisible())
+	{
+		dc.FillSolidRect(pNext->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.bottom - 1, rc.Width(), 1, clrShadow);
+	}
+
+	CXTPPropertyGridItem* pPrev = pItem;
+	if (!pPrev)
+		return;
+
+	CXTPPropertyGridItem* pCategory = pPrev->GetParentItem();
+	while (pCategory != NULL)
+	{
+		if (pItem->HasChilds() && pItem->IsExpanded())
+			break;
+
+		if (pCategory->IsCategory() && pCategory->IsVisible() && pCategory->GetChilds()->GetAt(pCategory->GetChilds()->GetCount() - 1) == pPrev)
+		{
+			dc.FillSolidRect(pCategory->GetIndent() * XTP_PGI_EXPAND_BORDER, rc.bottom - 1, rc.Width(), 1, clrShadow);
+		}
+		else
+			break;
+		pPrev = pCategory;
+		pCategory = pPrev->GetParentItem();
+	}
+
+
+	if (pItem->HasVisibleChilds())
+	{
+		CRgn rgn;
+		if (!pItem->IsCategory())
+		{
+			rgn.CreateRectRgnIndirect(&rcCaption);
+			dc.SelectClipRgn(&rgn);
+		}
+
+		DrawExpandButton(dc, pItem, rcCaption);
+
+		dc.SelectClipRgn(NULL);
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridSimpleTheme
+
+CXTPPropertyGridSimpleTheme::CXTPPropertyGridSimpleTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+}
+
+void CXTPPropertyGridSimpleTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_pMetrics->m_clrLine.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+}
+
+
+
+void CXTPPropertyGridSimpleTheme::DrawItem(PDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+
+	ASSERT(pItem != NULL);
+	if (!pItem)
+		return;
+
+	CXTPWindowRect rcWindow(pView);
+	CRect rc = lpDrawItemStruct->rcItem;
+
+	CXTPBufferDC dc(lpDrawItemStruct->hDC, rc);
+	CXTPFontDC font(&dc, GetItemFont(pItem, FALSE));
+
+	dc.FillSolidRect(rc, GetItemBackColor(pItem, FALSE));
+	dc.SetBkMode(TRANSPARENT);
+
+
+	CRect rcCaption(rc.left, rc.top, rc.left + pView->GetDividerPos(), rc.bottom);
+
+	COLORREF clrLine = m_pMetrics->m_clrLine;
+
+	{
+		if (!pItem->IsCategory())
+		{
+			CXTPFontDC fontValue(&dc, GetItemFont(pItem, TRUE));
+			CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+			DrawItemValue(&dc, pItem, rcValue);
+		}
+
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+
+		BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+		BOOL bFocused = bSelected && CWnd::GetFocus() && ((CWnd::GetFocus() == pView) || (CWnd::GetFocus()->GetParent() == pView) || (CWnd::GetFocus()->GetOwner() == pView));
+		if (bFocused)
+		{
+			dc.SetTextColor(m_clrHighlightText);
+			dc.FillSolidRect(CRect(XTP_PGI_EXPAND_BORDER, rcCaption.top, rcCaption.right, rcCaption.bottom), m_clrHighlight);
+		}
+		else if (bSelected && !m_pGrid->m_bHideSelection)
+		{
+			dc.FillSolidRect(CRect(XTP_PGI_EXPAND_BORDER, rcCaption.top, rcCaption.right, rcCaption.bottom), clrLine);
+		}
+		dc.FillSolidRect(XTP_PGI_EXPAND_BORDER - 1, rc.top, 1, rc.Height(), clrLine);
+
+		CXTPPenDC pen(dc, clrLine);
+		dc.MoveTo(XTP_PGI_EXPAND_BORDER, rc.bottom - 1);
+		dc.LineTo(rc.right, rc.bottom - 1);
+		dc.MoveTo(rcCaption.right, rc.top);
+		dc.LineTo(rcCaption.right, rc.bottom - 1);
+
+
+		DrawItemCaption(&dc, pItem, rcCaption);
+
+		CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+		if (!pItem->IsCategory() && (bSelected || m_pGrid->GetShowInplaceButtonsAlways()))
+			DrawInplaceButtons(&dc, pItem, rcValue);
+
+	}
+
+	if (pView->GetCount() == (int)lpDrawItemStruct->itemID + 1)
+		dc.FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, clrLine);
+
+	if (pItem->HasVisibleChilds())
+	{
+		CRgn rgn;
+		rgn.CreateRectRgnIndirect(&rcCaption);
+		dc.SelectClipRgn(&rgn);
+
+		DrawExpandButton(dc, pItem, rcCaption);
+
+		dc.SelectClipRgn(NULL);
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridDelphiTheme
+
+CXTPPropertyGridDelphiTheme::CXTPPropertyGridDelphiTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+}
+
+
+void CXTPPropertyGridDelphiTheme::DrawItem(PDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPPropertyGridView* pView = &m_pGrid->GetGridView();
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+
+	ASSERT(pItem != NULL);
+	if (!pItem)
+		return;
+
+	CXTPWindowRect rcWindow(pView);
+	CRect rc = lpDrawItemStruct->rcItem;
+
+	CXTPBufferDC dc(lpDrawItemStruct->hDC, rc);
+	CXTPFontDC font(&dc, GetItemFont(pItem, FALSE));
+
+	dc.FillSolidRect(rc, GetItemBackColor(pItem, FALSE));
+	dc.SetBkMode(TRANSPARENT);
+
+
+	CRect rcCaption(rc.left, rc.top, rc.left + pView->GetDividerPos(), rc.bottom);
+
+	COLORREF clrFore = m_pMetrics->m_clrFore;
+	COLORREF clrShadow = GetXtremeColor(COLOR_3DSHADOW);
+	COLORREF clrLight = GetXtremeColor(COLOR_BTNHIGHLIGHT);
+
+	{
+		if (!pItem->IsCategory())
+		{
+			CXTPFontDC fontValue(&dc, GetItemFont(pItem, TRUE));
+
+			CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+			DrawItemValue(&dc, pItem, rcValue);
+		}
+
+		dc.SetTextColor(GetItemTextColor(pItem, FALSE));
+
+		dc.Draw3dRect(rcCaption.right - 1, rc.top, 1, rc.Height(), clrShadow, clrShadow);
+		dc.Draw3dRect(rcCaption.right, rc.top, 1, rc.Height(), clrLight, clrLight);
+
+		BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+		BOOL bFocused = bSelected && CWnd::GetFocus() && ((CWnd::GetFocus() == pView) || (CWnd::GetFocus()->GetParent() == pView) || (CWnd::GetFocus()->GetOwner() == pView));
+		if (bFocused || (bSelected && !m_pGrid->m_bHideSelection))
+		{
+			dc.Draw3dRect(rc, clrFore, clrLight);
+		}
+		else
+		{
+			for (int i = 0; i < rc.right; i += 2)
+				dc.SetPixel(i, rc.bottom - 1, clrShadow);
+		}
+
+
+		DrawItemCaption(&dc, pItem, rcCaption);
+
+		CRect rcValue(rcCaption.right, rc.top, rc.right, rc.bottom - 1);
+		if (!pItem->IsCategory() && (bSelected || m_pGrid->GetShowInplaceButtonsAlways()))
+			DrawInplaceButtons(&dc, pItem, rcValue);
+	}
+
+	if (pItem->HasVisibleChilds())
+	{
+		CRgn rgn;
+		rgn.CreateRectRgnIndirect(&rcCaption);
+		dc.SelectClipRgn(&rgn);
+
+		DrawExpandButton(dc, pItem, rcCaption);
+
+		dc.SelectClipRgn(NULL);
+	}
+}
+
+void CXTPPropertyGridDelphiTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_pMetrics->m_clrBack.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_pMetrics->m_clrFore.SetStandardValue(RGB(0, 0, 128));
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridWhidbeyTheme
+
+CXTPPropertyGridOfficeXPTheme::CXTPPropertyGridOfficeXPTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+	m_buttonsStyle = xtpGridButtonsOfficeXP;
+}
+
+void CXTPPropertyGridOfficeXPTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_pMetrics->m_clrCategoryFore.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_pMetrics->m_clrLine.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridWhidbeyTheme
+
+CXTPPropertyGridWhidbeyTheme::CXTPPropertyGridWhidbeyTheme(CXTPPropertyGrid* pGrid)
+	: CXTPPropertyGridPaintManager(pGrid)
+{
+	m_buttonsStyle = xtpGridButtonsThemed;
+}
+
+void CXTPPropertyGridWhidbeyTheme::DrawCategoryCaptionBackground(CDC* pDC, CRect rc)
+{
+	pDC->FillSolidRect(rc, m_pMetrics->m_clrLine);
+
+	XTPDrawHelpers()->GradientFill(pDC,
+		CRect(rc.left, rc.bottom - 2, rc.right, rc.bottom - 1), m_pMetrics->m_clrLine, GetXtremeColor(COLOR_3DHIGHLIGHT), TRUE);
+
+}
+
+void CXTPPropertyGridWhidbeyTheme::RefreshMetrics()
+{
+	CXTPPropertyGridPaintManager::RefreshMetrics();
+
+	m_pMetrics->m_clrLine.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
+	m_pMetrics->m_clrCategoryFore.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+	m_clrShadow.SetStandardValue(GetXtremeColor(XPCOLOR_STATICFRAME));
+}
+
+void CXTPPropertyGridWhidbeyTheme::DrawExpandButton(CDC& dc, CXTPPropertyGridItem* pItem, CRect rcCaption)
+{
+	if (!pItem->IsExpandable())
+		return;
+
+	CRect rcButton(CPoint(XTP_PGI_EXPAND_BORDER / 2 - 5, rcCaption.CenterPoint().y - 4), CSize(9, 9));
+
+	if (pItem->GetIndent() > 0)
+		rcButton.OffsetRect((pItem->GetIndent() - (pItem->IsCategory() ? 0 : 1)) * XTP_PGI_EXPAND_BORDER, 0);
+
+	CDC* pDC = &dc;
+
+	COLORREF clrButton = GetXtremeColor(COLOR_3DFACE);
+	COLORREF clrFrame = GetXtremeColor(COLOR_3DSHADOW);
+	pDC->FillSolidRect(rcButton.left + 1, rcButton.top + 1, 7, 7, clrButton);
+	pDC->FillSolidRect(rcButton.left + 1, rcButton.top, 9 - 2, 1, clrFrame);
+	pDC->FillSolidRect(rcButton.left + 1, rcButton.bottom - 1, 9 - 2, 1, clrFrame);
+	pDC->FillSolidRect(rcButton.left, rcButton.top + 1, 1, 9 - 2, clrFrame);
+	pDC->FillSolidRect(rcButton.right - 1, rcButton.top + 1, 1, 9 - 2, clrFrame);
+	pDC->FillSolidRect(rcButton.left + 1, rcButton.top + 1, 9 - 2, 3, 0xFFFFFF);
+	pDC->FillSolidRect(rcButton.left + 1, rcButton.top + 4, 9 - 4, 2, 0xFFFFFF);
+
+	pDC->FillSolidRect(rcButton.left + 2, rcButton.top + 4, 9 - 4, 1, 0);
+	if (!pItem->IsExpanded())
+		pDC->FillSolidRect(rcButton.left + 4, rcButton.top + 2, 1, 9 - 4, 0);
+}
+
+

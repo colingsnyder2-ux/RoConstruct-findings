@@ -1,159 +1,920 @@
-// roc 2010-06 00842f50  unit: CXTPShortcutManager  size: 535 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00842f50
-//
-// 00842f50  6aff                 push -1
-// 00842f52  688b6f9b00           push 0x9b6f8b
-// 00842f57  64a100000000         mov eax, dword ptr fs:[0]
-// 00842f5d  50                   push eax
-// 00842f5e  81ec24010000         sub esp, 0x124
-// 00842f64  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 00842f69  33c4                 xor eax, esp
-// 00842f6b  89842420010000       mov dword ptr [esp + 0x120], eax
-// 00842f72  53                   push ebx
-// 00842f73  55                   push ebp
-// 00842f74  56                   push esi
-// 00842f75  57                   push edi
-// 00842f76  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
-// 00842f7b  33c4                 xor eax, esp
-// 00842f7d  50                   push eax
-// 00842f7e  8d842438010000       lea eax, [esp + 0x138]
-// 00842f85  64a300000000         mov dword ptr fs:[0], eax
-// 00842f8b  8b9c244c010000       mov ebx, dword ptr [esp + 0x14c]
-// 00842f92  8d43a0               lea eax, [ebx - 0x60]
-// 00842f95  83f809               cmp eax, 9
-// 00842f98  7717                 ja 0x842fb1
-// 00842f9a  0fbe8c2448010000     movsx ecx, byte ptr [esp + 0x148]
-// 00842fa2  83c3d0               add ebx, -0x30
-// 00842fa5  33c0                 xor eax, eax
-// 00842fa7  3bcb                 cmp ecx, ebx
-// 00842fa9  0f94c0               sete al
-// 00842fac  e989010000           jmp 0x84313a
-// 00842fb1  6a02                 push 2
-// 00842fb3  53                   push ebx
-// 00842fb4  ff1588bb9e00         call dword ptr [0x9ebb88]
-// 00842fba  84c0                 test al, al
-// 00842fbc  0f848b000000         je 0x84304d
-// 00842fc2  8b942448010000       mov edx, dword ptr [esp + 0x148]
-// 00842fc9  52                   push edx
-// 00842fca  e8d1f5ffff           call 0x8425a0
-// 00842fcf  83c404               add esp, 4
-// 00842fd2  88442417             mov byte ptr [esp + 0x17], al
-// 00842fd6  389c2448010000       cmp byte ptr [esp + 0x148], bl
-// 00842fdd  0f8452010000         je 0x843135
-// 00842fe3  3ac3                 cmp al, bl
-// 00842fe5  0f844a010000         je 0x843135
-// 00842feb  8b350cbb9e00         mov esi, dword ptr [0x9ebb0c]
-// 00842ff1  6a00                 push 0
-// 00842ff3  6a00                 push 0
-// 00842ff5  ffd6                 call esi
-// 00842ff7  8be8                 mov ebp, eax
-// 00842ff9  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 00842ffd  83fd01               cmp ebp, 1
-// 00843000  764b                 jbe 0x84304d
-// 00843002  8d4c2420             lea ecx, [esp + 0x20]
-// 00843006  e855fdffff           call 0x842d60
-// 0084300b  6aff                 push -1
-// 0084300d  55                   push ebp
-// 0084300e  8d4c2428             lea ecx, [esp + 0x28]
-// 00843012  c784244801000000000000 mov dword ptr [esp + 0x148], 0
-// 0084301d  e8dee2f9ff           call 0x7e1300
-// 00843022  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 00843026  57                   push edi
-// 00843027  55                   push ebp
-// 00843028  ffd6                 call esi
-// 0084302a  8d442434             lea eax, [esp + 0x34]
-// 0084302e  50                   push eax
-// 0084302f  ff158cbb9e00         call dword ptr [0x9ebb8c]
-// 00843035  85c0                 test eax, eax
-// 00843037  751b                 jne 0x843054
-// 00843039  8d4c2420             lea ecx, [esp + 0x20]
-// 0084303d  c7842440010000ffffffff mov dword ptr [esp + 0x140], 0xffffffff
-// 00843048  e833fdffff           call 0x842d80
-// 0084304d  33c0                 xor eax, eax
-// 0084304f  e9e6000000           jmp 0x84313a
-// 00843054  33f6                 xor esi, esi
-// 00843056  85ed                 test ebp, ebp
-// 00843058  76df                 jbe 0x843039
-// 0084305a  8b2d10bb9e00         mov ebp, dword ptr [0x9ebb10]
-// 00843060  eb15                 jmp 0x843077
-// 00843062  eb0c                 jmp 0x843070
-// 00843064  8da42400000000       lea esp, [esp]
-// 0084306b  eb03                 jmp 0x843070
-// 0084306d  8d4900               lea ecx, [ecx]
-// 00843070  8b9c244c010000       mov ebx, dword ptr [esp + 0x14c]
-// 00843077  c744241800000000     mov dword ptr [esp + 0x18], 0
-// 0084307f  85f6                 test esi, esi
-// 00843081  0f8cdb000000         jl 0x843162
-// 00843087  3b742428             cmp esi, dword ptr [esp + 0x28]
-// 0084308b  0f8dd1000000         jge 0x843162
-// 00843091  8b0cb7               mov ecx, dword ptr [edi + esi*4]
-// 00843094  51                   push ecx
-// 00843095  6a00                 push 0
-// 00843097  8d542420             lea edx, [esp + 0x20]
-// 0084309b  52                   push edx
-// 0084309c  8d442440             lea eax, [esp + 0x40]
-// 008430a0  50                   push eax
-// 008430a1  6a00                 push 0
-// 008430a3  53                   push ebx
-// 008430a4  ffd5                 call ebp
-// 008430a6  83f801               cmp eax, 1
-// 008430a9  751c                 jne 0x8430c7
-// 008430ab  8b442418             mov eax, dword ptr [esp + 0x18]
-// 008430af  38842448010000       cmp byte ptr [esp + 0x148], al
-// 008430b6  7469                 je 0x843121
-// 008430b8  50                   push eax
-// 008430b9  e8e2f4ffff           call 0x8425a0
-// 008430be  83c404               add esp, 4
-// 008430c1  38442417             cmp byte ptr [esp + 0x17], al
-// 008430c5  745a                 je 0x843121
-// 008430c7  8a5c2444             mov bl, byte ptr [esp + 0x44]
-// 008430cb  c644244481           mov byte ptr [esp + 0x44], 0x81
-// 008430d0  8b0cb7               mov ecx, dword ptr [edi + esi*4]
-// 008430d3  51                   push ecx
-// 008430d4  8b8c2450010000       mov ecx, dword ptr [esp + 0x150]
-// 008430db  6a00                 push 0
-// 008430dd  8d542420             lea edx, [esp + 0x20]
-// 008430e1  52                   push edx
-// 008430e2  8d442440             lea eax, [esp + 0x40]
-// 008430e6  50                   push eax
-// 008430e7  6a00                 push 0
-// 008430e9  51                   push ecx
-// 008430ea  ffd5                 call ebp
-// 008430ec  83f801               cmp eax, 1
-// 008430ef  751c                 jne 0x84310d
-// 008430f1  8b442418             mov eax, dword ptr [esp + 0x18]
-// 008430f5  38842448010000       cmp byte ptr [esp + 0x148], al
-// 008430fc  7423                 je 0x843121
-// 008430fe  50                   push eax
-// 008430ff  e89cf4ffff           call 0x8425a0
-// 00843104  83c404               add esp, 4
-// 00843107  38442417             cmp byte ptr [esp + 0x17], al
-// 0084310b  7414                 je 0x843121
-// 0084310d  46                   inc esi
-// 0084310e  885c2444             mov byte ptr [esp + 0x44], bl
-// 00843112  3b74241c             cmp esi, dword ptr [esp + 0x1c]
-// 00843116  0f8254ffffff         jb 0x843070
-// 0084311c  e918ffffff           jmp 0x843039
-// 00843121  8d4c2420             lea ecx, [esp + 0x20]
-// 00843125  c7842440010000ffffffff mov dword ptr [esp + 0x140], 0xffffffff
-// 00843130  e84bfcffff           call 0x842d80
-// 00843135  b801000000           mov eax, 1
-// 0084313a  8b8c2438010000       mov ecx, dword ptr [esp + 0x138]
-// 00843141  64890d00000000       mov dword ptr fs:[0], ecx
-// 00843148  59                   pop ecx
-// 00843149  5f                   pop edi
-// 0084314a  5e                   pop esi
-// 0084314b  5d                   pop ebp
-// 0084314c  5b                   pop ebx
-// 0084314d  8b8c2420010000       mov ecx, dword ptr [esp + 0x120]
-// 00843154  33cc                 xor ecx, esp
-// 00843156  e87963f6ff           call 0x7a94d4
-// 0084315b  81c430010000         add esp, 0x130
-// 00843161  c3                   ret 
-// 00843162  e8e54af6ff           call 0x7a7c4c
-// copied from an identical function in another client (function ?CompareAccelKey@CXTPShortcutManager@@SAHDI@Z)
-
 // roc-cl: 30729
 // roc-lang: cpp
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPShortcutManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPShortcutManager.cpp : implementation of the CXTPShortcutManager class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPPropExchange.h"
+
+#include "XTPShortcutManager.h"
+#include "XTPCommandBars.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPShortcutManagerKeyNameText::CXTPShortcutManagerKeyNameText
+
+CXTPShortcutManager::CKeyNameText::CKeyNameText()
+{
+	static const struct
+	{
+		WORD    wKey;       // Virtual Key Code.
+		LPCTSTR szKeyName;  // Display Name (i.e "CTRL").
+	}
+	virtKeys[] =
+	{
+		{ _T('0'), _T("0") },
+		{ _T('1'), _T("1") },
+		{ _T('2'), _T("2") },
+		{ _T('3'), _T("3") },
+		{ _T('4'), _T("4") },
+		{ _T('5'), _T("5") },
+		{ _T('6'), _T("6") },
+		{ _T('7'), _T("7") },
+		{ _T('8'), _T("8") },
+		{ _T('9'), _T("9") },
+		{ _T('A'), _T("A") },
+		{ _T('B'), _T("B") },
+		{ _T('C'), _T("C") },
+		{ _T('D'), _T("D") },
+		{ _T('E'), _T("E") },
+		{ _T('F'), _T("F") },
+		{ _T('G'), _T("G") },
+		{ _T('H'), _T("H") },
+		{ _T('I'), _T("I") },
+		{ _T('J'), _T("J") },
+		{ _T('K'), _T("K") },
+		{ _T('L'), _T("L") },
+		{ _T('M'), _T("M") },
+		{ _T('N'), _T("N") },
+		{ _T('O'), _T("O") },
+		{ _T('P'), _T("P") },
+		{ _T('Q'), _T("Q") },
+		{ _T('R'), _T("R") },
+		{ _T('S'), _T("S") },
+		{ _T('T'), _T("T") },
+		{ _T('U'), _T("U") },
+		{ _T('V'), _T("V") },
+		{ _T('W'), _T("W") },
+		{ _T('X'), _T("X") },
+		{ _T('Y'), _T("Y") },
+		{ _T('Z'), _T("Z") },
+		{ VK_LBUTTON, _T("Left Button") },
+		{ VK_RBUTTON, _T("Right Button") },
+		{ VK_CANCEL, _T("Ctrl+Break") },
+		{ VK_MBUTTON, _T("Middle Button") },
+		{ VK_BACK, _T("Backspace") },
+		{ VK_TAB, _T("Tab") },
+		{ VK_CLEAR, _T("Clear") },
+		{ VK_RETURN, _T("Enter") },
+		{ VK_SHIFT, _T("Shift") },
+		{ VK_CONTROL, _T("Ctrl") },
+		{ VK_MENU, _T("Alt") },
+		{ VK_PAUSE, _T("Pause") },
+		{ VK_CAPITAL, _T("Caps Lock") },
+		{ VK_ESCAPE, _T("Esc") },
+		{ VK_SPACE, _T("Space") },
+		{ VK_PRIOR, _T("Page Up") },
+		{ VK_NEXT, _T("Page Down") },
+		{ VK_END, _T("End") },
+		{ VK_HOME, _T("Home") },
+		{ VK_LEFT, _T("Left Arrow") },
+		{ VK_UP, _T("Up Arrow") },
+		{ VK_RIGHT, _T("Right Arrow") },
+		{ VK_DOWN, _T("Down Arrow") },
+		{ VK_SELECT, _T("Select") },
+		{ VK_PRINT, _T("Print") },
+		{ VK_EXECUTE, _T("Execute") },
+		{ VK_SNAPSHOT, _T("Snapshot") },
+		{ VK_INSERT, _T("Ins") },
+		{ VK_DELETE, _T("Del") },
+		{ VK_HELP, _T("Help") },
+		{ VK_LWIN , _T("Left Windows") },
+		{ VK_RWIN, _T("Right Windows") },
+		{ VK_APPS, _T("Application") },
+		{ VK_MULTIPLY, _T("Num *") },
+		{ VK_ADD, _T("Num +") },
+		{ VK_SEPARATOR, _T("Separator") },
+		{ VK_SUBTRACT, _T("Num -") },
+		{ VK_DECIMAL, _T("Num .") },
+		{ VK_DIVIDE, _T("Num /") },
+		{ VK_F1, _T("F1") },
+		{ VK_F2, _T("F2") },
+		{ VK_F3, _T("F3") },
+		{ VK_F4, _T("F4") },
+		{ VK_F5, _T("F5") },
+		{ VK_F6, _T("F6") },
+		{ VK_F7, _T("F7") },
+		{ VK_F8, _T("F8") },
+		{ VK_F9, _T("F9") },
+		{ VK_F10, _T("F10") },
+		{ VK_F11, _T("F11") },
+		{ VK_F12, _T("F12") },
+		{ VK_NUMPAD0, _T("Num 0") },
+		{ VK_NUMPAD1, _T("Num 1") },
+		{ VK_NUMPAD2, _T("Num 2") },
+		{ VK_NUMPAD3, _T("Num 3") },
+		{ VK_NUMPAD4, _T("Num 4") },
+		{ VK_NUMPAD5, _T("Num 5") },
+		{ VK_NUMPAD6, _T("Num 6") },
+		{ VK_NUMPAD7, _T("Num 7") },
+		{ VK_NUMPAD8, _T("Num 8") },
+		{ VK_NUMPAD9, _T("Num 9") },
+		{ VK_NUMLOCK, _T("Num Lock") },
+		{ VK_SCROLL, _T("Scrl Lock") },
+		{ VK_ATTN, _T("Attn") },
+		{ VK_CRSEL, _T("Crsel") },
+		{ VK_EXSEL, _T("Exsel") },
+		{ VK_EREOF, _T("Ereof") },
+		{ VK_PLAY, _T("Play") },
+		{ VK_ZOOM, _T("Zoom") },
+		{ VK_NONAME, _T("No Name") },
+		{ VK_PA1, _T("Pa1") },
+		{ VK_OEM_CLEAR, _T("Oem Clear") },
+	};
+
+	for (int i = 0; i < _countof(virtKeys); i++)
+	{
+		SetAt(virtKeys[i].wKey, virtKeys[i].szKeyName);
+	}
+}
+
+CString CXTPShortcutManager::CKeyNameText::Translate(UINT nKey)
+{
+	CString strKeyNameText;
+
+	if (m_mapVirtualKeys.Lookup(nKey, strKeyNameText))
+	{
+		return strKeyNameText;
+	}
+
+	return _T("");
+}
+
+void CXTPShortcutManager::CKeyNameText::SetAt(UINT uiVirtKey, LPCTSTR strKeyNameText)
+{
+	m_mapVirtualKeys.SetAt(uiVirtKey, strKeyNameText);
+}
+
+
+#define SAFE_DESTROY_ACCELTABLE(hAccelTable) if (hAccelTable) {::DestroyAcceleratorTable (hAccelTable); hAccelTable = NULL;}
+
+CXTPShortcutManager::CXTPShortcutManager(CXTPCommandBars* pCommandBars)
+	: m_pCommandBars(pCommandBars)
+{
+	m_hAccelTable = NULL;
+	m_hOriginalAccelTable = NULL;
+
+	m_bAllowEscapeShortcut = FALSE;
+	m_bUseSystemKeyNameText = FALSE;
+
+	m_pKeyNameText = new CKeyNameText();
+
+	m_nDisableShortcuts = 0;
+
+}
+
+CXTPShortcutManager::~CXTPShortcutManager()
+{
+	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
+	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
+
+	delete m_pKeyNameText;
+
+}
+
+void CXTPShortcutManager::SetAccelerators(UINT nIDResource)
+{
+	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
+	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
+
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_ACCELERATOR);
+
+	if (hInst)
+	{
+		HACCEL hAccel = ::LoadAccelerators(hInst, lpszResourceName);
+
+		m_hOriginalAccelTable = CopyAccelTable(hAccel);
+		m_hAccelTable = CopyAccelTable(hAccel);
+	}
+}
+
+void CXTPShortcutManager::SetDefaultAccelerator(HACCEL hAccelTable)
+{
+	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
+	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
+
+	m_hAccelTable = hAccelTable;
+	m_hOriginalAccelTable = CopyAccelTable(hAccelTable);
+}
+
+void CXTPShortcutManager::CreateOriginalAccelTable()
+{
+	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
+	m_hOriginalAccelTable = CopyAccelTable(m_hAccelTable);
+}
+
+void CXTPShortcutManager::Reset()
+{
+	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
+	m_hAccelTable = CopyAccelTable(m_hOriginalAccelTable);
+}
+
+CString CXTPShortcutManager::Format(LPACCEL lpAccel, int* pPriority)
+{
+	CString str;
+	CKeyHelper helper (lpAccel, this);
+	helper.Format (str);
+
+	if (pPriority)
+	{
+		*pPriority = helper.Priority();
+	}
+
+	return str;
+}
+
+BOOL CXTPShortcutManager::OnPreviewEditKey(ACCEL hAccel)
+{
+	if ((hAccel.fVirt & FCONTROL) == 0
+		&& (hAccel.fVirt & FSHIFT) == 0
+		&& (hAccel.fVirt & FALT) == 0
+		&& (hAccel.fVirt & FVIRTKEY)
+		&& (hAccel.key == VK_ESCAPE) && !m_bAllowEscapeShortcut)
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTPShortcutManager::DisableShortcuts(BOOL bDisable)
+{
+	m_nDisableShortcuts += bDisable ? +1 : -1;
+}
+
+BOOL CXTPShortcutManager::TranslateAccelerator(HWND hWnd, LPMSG lpMsg)
+{
+	if (m_nDisableShortcuts > 0)
+		return FALSE;
+
+	HACCEL hAccel = GetDefaultAccelerator();
+
+	if (hAccel != NULL && ::TranslateAccelerator(hWnd, hAccel, lpMsg))
+		return TRUE;
+
+	return FALSE;
+}
+
+
+BOOL CXTPShortcutManager::FindDefaultAccelerator (UINT nCmd, CString& strShortcut)
+{
+	HACCEL hAccelTable = m_hAccelTable;
+
+	if (m_hAccelTable == NULL && m_hOriginalAccelTable == NULL)
+	{
+		CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, m_pCommandBars->GetSite());
+		hAccelTable = pFrame ? pFrame->m_hAccelTable : NULL;
+	}
+
+	if (!hAccelTable)
+		return FALSE;
+
+	ASSERT(hAccelTable);
+
+	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
+
+	LPACCEL lpAccel = new ACCEL[nAccelSize];
+	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
+
+	BOOL bFound = FALSE;
+	BOOL bEqual = FALSE;
+	CString strFirst = _T("");
+	int nFirstPriorety = 0;
+
+
+	for (int i = 0; i < nAccelSize; i++)
+	{
+		if (lpAccel[i].cmd == nCmd)
+		{
+			int nPriority = 0;
+			CString str = Format(&lpAccel[i], &nPriority);
+
+			if (str == strShortcut)
+				bEqual = TRUE;
+
+			if (strFirst.IsEmpty() || (nFirstPriorety < nPriority))
+			{
+				strFirst = str;
+				nFirstPriorety = nPriority;
+			}
+
+			bFound = TRUE;
+		}
+	}
+	delete[] lpAccel;
+
+	if (!bFound)
+		strShortcut = "";
+	else if (!bEqual)
+		strShortcut = strFirst;
+
+
+	return bFound;
+}
+
+CXTPShortcutManager::CKeyHelper::CKeyHelper(LPACCEL lpAccel, CXTPShortcutManager* pManager/*= NULL*/) :
+	m_pManager(pManager), m_lpAccel (lpAccel)
+{
+}
+
+CXTPShortcutManager::CKeyHelper::~CKeyHelper()
+{
+}
+
+int CXTPShortcutManager::CKeyHelper::Priority()
+{
+	if (m_lpAccel == NULL)
+		return 0;
+	if (m_lpAccel->fVirt & FCONTROL)
+		return 3;
+	if (m_lpAccel->fVirt & FALT)
+		return 2;
+	if (m_lpAccel->fVirt & FSHIFT)
+		return 1;
+	return 4;
+}
+
+void CXTPShortcutManager::CKeyHelper::Format (CString& str) const
+{
+	str.Empty ();
+
+	if (m_lpAccel == NULL)
+	{
+		ASSERT (FALSE);
+		return;
+	}
+
+	if (m_lpAccel->key != VK_CANCEL)
+	{
+		if (m_lpAccel->fVirt & FCONTROL)
+		{
+			AddVirtKeyStr (str, VK_CONTROL);
+		}
+
+		if (m_lpAccel->fVirt & FSHIFT)
+		{
+			AddVirtKeyStr (str, VK_SHIFT);
+		}
+
+		if (m_lpAccel->fVirt & FALT)
+		{
+			AddVirtKeyStr (str, VK_MENU);
+		}
+	}
+
+	if (m_lpAccel->key)
+	{
+		if (m_lpAccel->fVirt & FVIRTKEY)
+		{
+			AddVirtKeyStr (str, m_lpAccel->key, TRUE);
+		}
+		else if ((m_lpAccel->key >= 1 && m_lpAccel->key <= 26) && (m_lpAccel->fVirt == FNOINVERT))
+		{
+			AddVirtKeyStr(str, VK_CONTROL);
+			str += (char) ('A' + m_lpAccel->key - 1);
+		}
+		else if (m_lpAccel->key != VK_ESCAPE && m_lpAccel->key != VK_TAB)
+		{
+			str += (char) m_lpAccel->key;
+		}
+	}
+	else if (str.GetLength() > 0)
+	{
+		str = str.Left(str.GetLength() - 1);
+	}
+}
+
+void CXTPShortcutManager::CKeyHelper::AddVirtKeyStr (CString& str, UINT uiVirtKey, BOOL bLast) const
+{
+	ASSERT(m_pManager);
+	if (!m_pManager)
+		return;
+
+	CString strKey = m_pManager->GetKeyNameText(uiVirtKey);
+
+	if (!strKey.IsEmpty())
+	{
+		str += strKey;
+
+		if (!bLast)
+		{
+			str += '+';
+		}
+	}
+}
+
+CString CXTPShortcutManager::CKeyHelper::GetLocalKeyNameText(UINT uiVirtKey)
+{
+	#define BUFFER_LEN 50
+	TCHAR szBuffer[BUFFER_LEN + 1];
+	ZeroMemory(szBuffer, BUFFER_LEN);
+
+	if (uiVirtKey == VK_CANCEL)
+		return _T("");
+
+	UINT nScanCode = ::MapVirtualKeyEx (uiVirtKey, 0,
+		::GetKeyboardLayout (0)) << 16 | 0x1;
+
+	if (uiVirtKey >= VK_PRIOR && uiVirtKey <= VK_HELP)
+	{
+		nScanCode |= 0x01000000;
+	}
+
+	::GetKeyNameText (nScanCode, szBuffer, BUFFER_LEN);
+
+	CString strKey = szBuffer;
+
+	if (!strKey.IsEmpty())
+	{
+		strKey.MakeLower();
+
+		for (int i = 0; i < strKey.GetLength(); i++)
+		{
+			TCHAR c = strKey[i];
+			if (IsCharLower(c))
+			{
+				strKey.SetAt (i, CXTPShortcutManager::ToUpper(c));
+				break;
+			}
+		}
+	}
+
+	return strKey;
+}
+
+BOOL CXTPShortcutManager::CompareAccelKey(TCHAR chAccel, UINT wParam)
+{
+	if (wParam >= VK_NUMPAD0 && wParam <= VK_NUMPAD9)
+		return (UINT)chAccel == (wParam + '0' - VK_NUMPAD0);
+
+	TCHAR tchVirtualKey = (TCHAR)MapVirtualKey(wParam, 2);
+	if (tchVirtualKey == NULL)
+		return FALSE;
+
+	TCHAR chAccelUpper = ToUpper(chAccel);
+
+	if ((chAccel == (TCHAR)wParam) || (chAccelUpper == (TCHAR)wParam))
+		return TRUE;
+
+	UINT nLayoutCount = GetKeyboardLayoutList(0, 0);
+	if (nLayoutCount > 1)
+	{
+		CArray<HKL, HKL&> arrLayoutList;
+		arrLayoutList.SetSize(nLayoutCount);
+
+		GetKeyboardLayoutList(nLayoutCount, arrLayoutList.GetData());
+
+		BYTE keyState[256];
+		if (!GetKeyboardState (keyState))
+			return FALSE;
+
+		for (UINT i = 0; i < nLayoutCount; i++)
+		{
+			WORD chKey = 0;
+
+#ifdef _UNICODE
+			if (ToUnicodeEx((UINT)wParam, 0, keyState, (LPWSTR)&chKey, 1, 0, arrLayoutList[i]) == 1)
+#else
+			if (ToAsciiEx((UINT)wParam, 0, keyState, &chKey, 0, arrLayoutList[i]) == 1)
+#endif
+			{
+				if ((chAccel == (TCHAR)chKey) || (chAccelUpper == ToUpper((TCHAR)chKey)))
+					return TRUE;
+			}
+
+			BYTE ksShift = keyState[VK_SHIFT];
+			keyState[VK_SHIFT]= 0x81;
+
+#ifdef _UNICODE
+			if (ToUnicodeEx((UINT)wParam, 0, keyState, (LPWSTR)&chKey, 1, 0, arrLayoutList[i]) == 1)
+#else
+			if (ToAsciiEx((UINT)wParam, 0, keyState, &chKey, 0, arrLayoutList[i]) == 1)
+#endif
+			{
+				if ((chAccel == (TCHAR)chKey) || (chAccelUpper == ToUpper((TCHAR)chKey)))
+					return TRUE;
+			}
+
+			keyState[VK_SHIFT] = ksShift;
+		}
+	}
+
+	return FALSE;
+}
+
+void CXTPShortcutManager::SetKeyNameText(UINT uiVirtKey, LPCTSTR strKeyNameText)
+{
+	m_pKeyNameText->SetAt(uiVirtKey, strKeyNameText);
+}
+
+CString CXTPShortcutManager::GetKeyNameText(UINT uiVirtKey)
+{
+	CString strKey;
+
+	if (m_bUseSystemKeyNameText)
+	{
+		strKey = CKeyHelper::GetLocalKeyNameText(uiVirtKey);
+	}
+
+	if (strKey.IsEmpty())
+	{
+		strKey = m_pKeyNameText->Translate(uiVirtKey);
+	}
+
+	if (strKey.IsEmpty() && !m_bUseSystemKeyNameText)
+	{
+		strKey = CKeyHelper::GetLocalKeyNameText(uiVirtKey);
+	}
+
+	return strKey;
+}
+
+TCHAR CXTPShortcutManager::ToUpper(TCHAR vkTCHAR)
+{
+	TCHAR szChar[2] = {vkTCHAR, _T('\0') };
+
+	CharUpper(szChar);
+	return szChar[0];
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CKeyAssign
+
+CXTPShortcutManager::CKeyAssign::CKeyAssign(CXTPShortcutManager* pManager/*= NULL*/)
+	: m_keyHelper (&m_hAccel, pManager)
+{
+	m_bKeyDefined = FALSE;
+	m_bExtendedOnly = FALSE;
+	ResetKey ();
+}
+
+CXTPShortcutManager::CKeyAssign::~CKeyAssign()
+{
+}
+
+BOOL CXTPShortcutManager::CKeyAssign::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_LBUTTONDOWN ||
+		pMsg->message == WM_MBUTTONDOWN ||
+		pMsg->message == WM_RBUTTONDOWN)
+	{
+		SetFocus ();
+		return TRUE;
+	}
+
+	BOOL bPressed = pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN;
+
+	if (bPressed || pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
+	{
+		BOOL bControlPressed = ::GetKeyState(VK_CONTROL) & 0x8000;
+		BOOL bAltPressed = ::GetKeyState(VK_MENU) & 0x8000;
+
+		if (!bControlPressed && !bAltPressed && (pMsg->wParam == VK_TAB))
+		{
+			if (!m_bKeyDefined)
+				ResetKey();
+
+			return FALSE;
+		}
+
+		if (bPressed && !((1 << 30) & pMsg->lParam))
+		{
+			ResetKey();
+		}
+
+		if (m_bExtendedOnly)
+		{
+			if (bPressed)
+			{
+				SetAccelFlag (FSHIFT, GetKeyState(VK_SHIFT) < 0);
+				SetAccelFlag (FCONTROL, GetKeyState(VK_CONTROL) < 0);
+				SetAccelFlag (FALT, GetKeyState(VK_MENU) < 0);
+			}
+		}
+		else if (!m_bKeyDefined)
+		{
+			// read in the actual state because we were not tracking releases if there was a
+			// definition
+			SetAccelFlag (FSHIFT, ::GetKeyState(VK_SHIFT) & 0x8000);
+			SetAccelFlag (FCONTROL, bControlPressed);
+			SetAccelFlag (FALT, bAltPressed);
+
+			if (pMsg->wParam == VK_SHIFT
+					|| pMsg->wParam == VK_CONTROL
+					|| pMsg->wParam == VK_MENU
+					)
+			{
+				// all work is already done
+			}
+			else if (bPressed)
+			{
+				m_hAccel.key = (WORD)pMsg->wParam;
+				m_bKeyDefined = TRUE;
+				SetAccelFlag (FVIRTKEY, TRUE);
+			}
+		}
+
+		if (m_keyHelper.GetShortcutManager() && !m_keyHelper.GetShortcutManager()->OnPreviewEditKey(m_hAccel))
+		{
+			ResetKey();
+			return TRUE;
+		}
+
+		CString str;
+		m_keyHelper.Format (str);
+
+		SetWindowText (str);
+		return TRUE;
+	}
+
+	return CEdit::PreTranslateMessage(pMsg);
+}
+
+void CXTPShortcutManager::CKeyAssign::ResetKey ()
+{
+	memset (&m_hAccel, 0, sizeof(ACCEL));
+	m_bKeyDefined = FALSE;
+
+	if (m_hWnd != NULL)
+	{
+		SetWindowText (_T(""));
+	}
+}
+
+void CXTPShortcutManager::CKeyAssign::SetAccelFlag (BYTE bFlag, BOOL bSet)
+{
+	if (bSet) m_hAccel.fVirt |= bFlag;
+	else m_hAccel.fVirt &= ~bFlag;
+}
+
+BOOL CXTPShortcutManager::CKeyAssign::IsKeyDefined () const
+{
+	return m_bKeyDefined;
+}
+
+ACCEL* CXTPShortcutManager::CKeyAssign::GetAccel ()
+{
+	return &m_hAccel;
+}
+
+void CXTPShortcutManager::CKeyAssign::SetAccel(ACCEL& hAccel)
+{
+	m_hAccel = hAccel;
+
+	if (m_hWnd != NULL)
+	{
+		CString str;
+		m_keyHelper.Format (str);
+
+		SetWindowText (str);
+	}
+}
+
+#define REG_ENTRY_DATA  _T("Accelerators")
+
+void CXTPShortcutManager::UpdateAcellTable(LPACCEL lpAccel, int nSize)
+{
+	HACCEL hAccelNew = ::CreateAcceleratorTable(lpAccel, nSize);
+
+	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
+
+	m_hAccelTable = hAccelNew;
+}
+
+
+BOOL CXTPShortcutManager::GetShortcut(int ID, ACCEL* pAccel)
+{
+	HACCEL hAccelTable = GetDefaultAccelerator();
+
+	if (!hAccelTable)
+		return FALSE;
+
+	BOOL bResult = FALSE;
+
+	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
+
+	LPACCEL lpAccel = new ACCEL[nAccelSize];
+	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
+
+	for (int i = 0; i < nAccelSize; i++)
+	{
+		if (lpAccel[i].cmd == ID)
+		{
+			*pAccel = lpAccel[i];
+			bResult = TRUE;
+		}
+	}
+	delete[] lpAccel;
+
+	if ((pAccel->fVirt % 2) == 1)
+		pAccel->fVirt -= 1;
+
+	return bResult;
+}
+
+void CXTPShortcutManager::AddShortcut(long fVirt, long key, long cmd)
+{
+	HACCEL hAccelTable = m_hAccelTable;
+
+	ACCEL accel;
+	accel.fVirt = (BYTE)(fVirt | FVIRTKEY);
+	accel.key = (WORD)key;
+	accel.cmd = (WORD)cmd;
+
+	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
+
+	LPACCEL lpAccel = new ACCEL[nAccelSize + 1];
+	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
+
+	int nIndex = nAccelSize;
+
+	for (int i = 0; i < nAccelSize; i++)
+	{
+		if (CKeyHelper::EqualAccels(&lpAccel[i], &accel))
+		{
+			nIndex = i;
+			break;
+		}
+	}
+
+	lpAccel[nIndex] = accel;
+
+	UpdateAcellTable(lpAccel, nAccelSize + (nIndex == nAccelSize ? 1 : 0));
+
+	delete[] lpAccel;
+}
+
+HACCEL CXTPShortcutManager::CopyAccelTable(HACCEL hAccelTable)
+{
+	if (hAccelTable == NULL)
+		return NULL;
+
+	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
+	if (nAccelSize == 0)
+		return NULL;
+
+	LPACCEL lpAccel = new ACCEL[nAccelSize];
+	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
+
+	HACCEL hAccelNew = ::CreateAcceleratorTable(lpAccel, nAccelSize);
+	delete[] lpAccel;
+
+	return hAccelNew;
+}
+
+
+void CXTPShortcutManager::SerializeShortcuts(CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(&px);
+}
+
+void CXTPShortcutManager::SaveShortcuts(LPCTSTR lpszProfileName)
+{
+	if (!m_hOriginalAccelTable)
+		return;
+
+	HACCEL hAccelTable = m_hAccelTable;
+
+	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
+
+	LPACCEL lpAccel = new ACCEL[nAccelSize];
+	ASSERT (lpAccel != NULL);
+
+	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
+
+	AfxGetApp()->WriteProfileBinary(lpszProfileName, REG_ENTRY_DATA, (LPBYTE) lpAccel, nAccelSize * sizeof(ACCEL));
+
+	delete[] lpAccel;
+
+}
+
+void CXTPShortcutManager::LoadShortcuts(LPCTSTR lpszProfileName)
+{
+	if (!m_hOriginalAccelTable)
+		return;
+
+	UINT uiSize;
+	LPACCEL lpAccel = 0;
+	if (AfxGetApp()->GetProfileBinary(lpszProfileName, REG_ENTRY_DATA, (LPBYTE*) &lpAccel, &uiSize))
+	{
+		int nAccelSize = uiSize / sizeof(ACCEL);
+		ASSERT (lpAccel != NULL);
+
+		UpdateAcellTable(lpAccel, nAccelSize);
+
+		delete[] lpAccel;
+	}
+}
+
+void CXTPShortcutManager::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsStoring())
+	{
+		int nAccelSize = ::CopyAcceleratorTable (m_hAccelTable, NULL, 0);
+
+		LPACCEL lpAccel = new ACCEL[nAccelSize];
+		::CopyAcceleratorTable (m_hAccelTable, lpAccel, nAccelSize);
+
+		if (pPX->IsAllowBlobValues())
+		{
+			pPX->WriteCount(nAccelSize);
+			pPX->Write(_T("Data"), lpAccel, nAccelSize* sizeof(ACCEL));
+		}
+		else
+		{
+			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Accel")));
+			POSITION posEnum = pEnumerator->GetPosition(nAccelSize);
+
+			for (int i = 0; i < nAccelSize; i++)
+			{
+				CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
+				PX_UShort(&secItem, _T("Id"), (USHORT&)(lpAccel[i].cmd), 0);
+				PX_Byte(&secItem, _T("virt"), (lpAccel[i].fVirt), 0);
+				PX_UShort(&secItem, _T("key"), (USHORT&)(lpAccel[i].key), 0);
+			}
+		}
+
+		delete[] lpAccel;
+	}
+	else
+	{
+		if (pPX->IsAllowBlobValues())
+		{
+			int nAccelSize = (int)pPX->ReadCount();
+			LPACCEL lpAccel = new ACCEL[nAccelSize];
+			pPX->Read(_T("Data"), lpAccel, nAccelSize* sizeof(ACCEL));
+
+			UpdateAcellTable(lpAccel, nAccelSize);
+			delete[] lpAccel;
+		}
+		else
+		{
+			CArray<ACCEL, ACCEL&> accels;
+			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Accel")));
+			POSITION posEnum = pEnumerator->GetPosition(0);
+			while (posEnum)
+			{
+				ACCEL accel;
+				CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
+				PX_UShort(&secItem, _T("Id"), (USHORT&)(accel.cmd), 0);
+				PX_Byte(&secItem, _T("virt"), (accel.fVirt), 0);
+				PX_UShort(&secItem, _T("key"), (USHORT&)(accel.key), 0);
+				accels.Add(accel);
+			}
+			UpdateAcellTable(accels.GetData(), (int)accels.GetSize());
+		}
+
+	}
+}
+
+BOOL CXTPShortcutManager::OnBeforeAdd(LPACCEL pAccel)
+{
+
+	UNREFERENCED_PARAMETER(pAccel);
+	return FALSE;
+}
+
+BOOL CXTPShortcutManager::OnBeforeRemove(LPACCEL pAccel)
+{
+
+	UNREFERENCED_PARAMETER(pAccel);
+	return FALSE;
+}
+

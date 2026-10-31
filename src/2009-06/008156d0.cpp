@@ -1,164 +1,606 @@
-// roc 2009-06 008156d0  unit: CXTPRibbonControlTab  size: 451 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 008156d0
-//
-// 008156d0  6aff                 push -1
-// 008156d2  68b0268800           push 0x8826b0
-// 008156d7  64a100000000         mov eax, dword ptr fs:[0]
-// 008156dd  50                   push eax
-// 008156de  83ec10               sub esp, 0x10
-// 008156e1  53                   push ebx
-// 008156e2  55                   push ebp
-// 008156e3  56                   push esi
-// 008156e4  57                   push edi
-// 008156e5  a1304fa200           mov eax, dword ptr [0xa24f30]
-// 008156ea  33c4                 xor eax, esp
-// 008156ec  50                   push eax
-// 008156ed  8d442424             lea eax, [esp + 0x24]
-// 008156f1  64a300000000         mov dword ptr fs:[0], eax
-// 008156f7  8be9                 mov ebp, ecx
-// 008156f9  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 008156fd  8b01                 mov eax, dword ptr [ecx]
-// 008156ff  8b9094000000         mov edx, dword ptr [eax + 0x94]
-// 00815705  33ff                 xor edi, edi
-// 00815707  68f0339000           push 0x9033f0
-// 0081570c  397928               cmp dword ptr [ecx + 0x28], edi
-// 0081570f  0f85a1000000         jne 0x8157b6
-// 00815715  8bb5e0010000         mov esi, dword ptr [ebp + 0x1e0]
-// 0081571b  89742420             mov dword ptr [esp + 0x20], esi
-// 0081571f  ffd2                 call edx
-// 00815721  8bd8                 mov ebx, eax
-// 00815723  895c2414             mov dword ptr [esp + 0x14], ebx
-// 00815727  8b03                 mov eax, dword ptr [ebx]
-// 00815729  8b5004               mov edx, dword ptr [eax + 4]
-// 0081572c  57                   push edi
-// 0081572d  56                   push esi
-// 0081572e  8bcb                 mov ecx, ebx
-// 00815730  897c2434             mov dword ptr [esp + 0x34], edi
-// 00815734  ffd2                 call edx
-// 00815736  89442418             mov dword ptr [esp + 0x18], eax
-// 0081573a  85f6                 test esi, esi
-// 0081573c  7e6f                 jle 0x8157ad
-// 0081573e  85ff                 test edi, edi
-// 00815740  7c15                 jl 0x815757
-// 00815742  3bbde0010000         cmp edi, dword ptr [ebp + 0x1e0]
-// 00815748  7d0d                 jge 0x815757
-// 0081574a  8b85dc010000         mov eax, dword ptr [ebp + 0x1dc]
-// 00815750  8d04b8               lea eax, [eax + edi*4]
-// 00815753  8b00                 mov eax, dword ptr [eax]
-// 00815755  eb02                 jmp 0x815759
-// 00815757  33c0                 xor eax, eax
-// 00815759  89442434             mov dword ptr [esp + 0x34], eax
-// 0081575d  8b13                 mov edx, dword ptr [ebx]
-// 0081575f  8b5208               mov edx, dword ptr [edx + 8]
-// 00815762  8d442418             lea eax, [esp + 0x18]
-// 00815766  50                   push eax
-// 00815767  8bcb                 mov ecx, ebx
-// 00815769  ffd2                 call edx
-// 0081576b  8bf0                 mov esi, eax
-// 0081576d  89742420             mov dword ptr [esp + 0x20], esi
-// 00815771  c644242c01           mov byte ptr [esp + 0x2c], 1
-// 00815776  e8a5a1ffff           call 0x80f920
-// 0081577b  8b16                 mov edx, dword ptr [esi]
-// 0081577d  8b5264               mov edx, dword ptr [edx + 0x64]
-// 00815780  50                   push eax
-// 00815781  8d442438             lea eax, [esp + 0x38]
-// 00815785  50                   push eax
-// 00815786  8bce                 mov ecx, esi
-// 00815788  ffd2                 call edx
-// 0081578a  85c0                 test eax, eax
-// 0081578c  740c                 je 0x81579a
-// 0081578e  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 00815792  8b01                 mov eax, dword ptr [ecx]
-// 00815794  8b5064               mov edx, dword ptr [eax + 0x64]
-// 00815797  56                   push esi
-// 00815798  ffd2                 call edx
-// 0081579a  8bce                 mov ecx, esi
-// 0081579c  c644242c00           mov byte ptr [esp + 0x2c], 0
-// 008157a1  e80238f0ff           call 0x718fa8
-// 008157a6  47                   inc edi
-// 008157a7  3b7c241c             cmp edi, dword ptr [esp + 0x1c]
-// 008157ab  7c91                 jl 0x81573e
-// 008157ad  8b03                 mov eax, dword ptr [ebx]
-// 008157af  8bcb                 mov ecx, ebx
-// 008157b1  e9b0000000           jmp 0x815866
-// 008157b6  ffd2                 call edx
-// 008157b8  8bf8                 mov edi, eax
-// 008157ba  897c2420             mov dword ptr [esp + 0x20], edi
-// 008157be  8b07                 mov eax, dword ptr [edi]
-// 008157c0  8b5004               mov edx, dword ptr [eax + 4]
-// 008157c3  6a00                 push 0
-// 008157c5  6a00                 push 0
-// 008157c7  8bcf                 mov ecx, edi
-// 008157c9  c744243402000000     mov dword ptr [esp + 0x34], 2
-// 008157d1  ffd2                 call edx
-// 008157d3  8d9d84010000         lea ebx, [ebp + 0x184]
-// 008157d9  8bcb                 mov ecx, ebx
-// 008157db  89442414             mov dword ptr [esp + 0x14], eax
-// 008157df  e8dcf0fdff           call 0x7f48c0
-// 008157e4  837c241400           cmp dword ptr [esp + 0x14], 0
-// 008157e9  7477                 je 0x815862
-// 008157eb  eb03                 jmp 0x8157f0
-// 008157ed  8d4900               lea ecx, [ecx]
-// 008157f0  8b07                 mov eax, dword ptr [edi]
-// 008157f2  8b5008               mov edx, dword ptr [eax + 8]
-// 008157f5  8d4c2414             lea ecx, [esp + 0x14]
-// 008157f9  51                   push ecx
-// 008157fa  8bcf                 mov ecx, edi
-// 008157fc  ffd2                 call edx
-// 008157fe  8bf0                 mov esi, eax
-// 00815800  8974241c             mov dword ptr [esp + 0x1c], esi
-// 00815804  896e24               mov dword ptr [esi + 0x24], ebp
-// 00815807  c644242c03           mov byte ptr [esp + 0x2c], 3
-// 0081580c  c744243400000000     mov dword ptr [esp + 0x34], 0
-// 00815814  e807a1ffff           call 0x80f920
-// 00815819  8b16                 mov edx, dword ptr [esi]
-// 0081581b  8b5264               mov edx, dword ptr [edx + 0x64]
-// 0081581e  50                   push eax
-// 0081581f  8d442438             lea eax, [esp + 0x38]
-// 00815823  50                   push eax
-// 00815824  8bce                 mov ecx, esi
-// 00815826  ffd2                 call edx
-// 00815828  85c0                 test eax, eax
-// 0081582a  740c                 je 0x815838
-// 0081582c  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 00815830  8b01                 mov eax, dword ptr [ecx]
-// 00815832  8b5064               mov edx, dword ptr [eax + 0x64]
-// 00815835  56                   push esi
-// 00815836  ffd2                 call edx
-// 00815838  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 0081583c  85c9                 test ecx, ecx
-// 0081583e  744a                 je 0x81588a
-// 00815840  8b85e0010000         mov eax, dword ptr [ebp + 0x1e0]
-// 00815846  51                   push ecx
-// 00815847  50                   push eax
-// 00815848  8bcb                 mov ecx, ebx
-// 0081584a  e8e1f0fdff           call 0x7f4930
-// 0081584f  8bce                 mov ecx, esi
-// 00815851  c644242c02           mov byte ptr [esp + 0x2c], 2
-// 00815856  e84d37f0ff           call 0x718fa8
-// 0081585b  837c241400           cmp dword ptr [esp + 0x14], 0
-// 00815860  758e                 jne 0x8157f0
-// 00815862  8b07                 mov eax, dword ptr [edi]
-// 00815864  8bcf                 mov ecx, edi
-// 00815866  8b10                 mov edx, dword ptr [eax]
-// 00815868  6a01                 push 1
-// 0081586a  c7442430ffffffff     mov dword ptr [esp + 0x30], 0xffffffff
-// 00815872  ffd2                 call edx
-// 00815874  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00815878  64890d00000000       mov dword ptr fs:[0], ecx
-// 0081587f  59                   pop ecx
-// 00815880  5f                   pop edi
-// 00815881  5e                   pop esi
-// 00815882  5d                   pop ebp
-// 00815883  5b                   pop ebx
-// 00815884  83c41c               add esp, 0x1c
-// 00815887  c20400               ret 4
-// 0081588a  6a00                 push 0
-// 0081588c  6a06                 push 6
-// 0081588e  e80f3df0ff           call 0x7195a2
-// copied from an identical function in another client (function ?DoPropExchange@CXTPRibbonControlTab@@MAEXPAVCXTPPropExchange@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\Ribbon\XTPRibbonControlTab.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPImageManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+#include "Common/XTPPropExchange.h"
+
+#include "CommandBars/XTPCommandBars.h"
+#include "CommandBars/XTPMouseManager.h"
+
+#include "XTPRibbonControlTab.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonTab.h"
+#include "XTPRibbonTheme.h"
+#include "XTPRibbonGroups.h"
+#include "XTPRibbonGroup.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlTab, CXTPControl)
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPRibbonControlTab::CXTPRibbonControlTab()
+{
+	m_bAllowReorder = FALSE;
+	m_bFocused = FALSE;
+	m_bTemporary = TRUE;
+	SetFlags(xtpFlagNoMovable);
+}
+
+CXTPRibbonControlTab::~CXTPRibbonControlTab()
+{
+}
+
+CXTPRibbonTab* CXTPRibbonControlTab::FindTab(int nID) const
+{
+	for (int i = 0; i < GetItemCount(); i++)
+	{
+		CXTPRibbonTab* pTab = (CXTPRibbonTab*)GetItem(i);
+		if (pTab->GetID() == nID)
+			return pTab;
+	}
+	return NULL;
+}
+
+CXTPRibbonTab* CXTPRibbonControlTab::GetTab(int nIndex) const
+{
+	return (CXTPRibbonTab*)GetItem(nIndex);
+}
+
+void CXTPRibbonControlTab::Reposition()
+{
+	if (!m_pParent->GetSafeHwnd())
+		return;
+
+	m_pParent->OnRecalcLayout();
+}
+
+BOOL CXTPRibbonControlTab::IsMouseLocked() const
+{
+	return GetRibbonBar()->GetCommandBars()->GetMouseManager()->IsMouseLocked();
+}
+
+CXTPTabPaintManager* CXTPRibbonControlTab::GetPaintManager() const
+{
+	return GetRibbonBar()->GetTabPaintManager();
+}
+
+void CXTPRibbonControlTab::ShowPopupBar(BOOL bKeyboard)
+{
+	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
+
+	if (pRibbonBar->m_nPopuped == m_nIndex)
+	{
+		pRibbonBar->m_nPopuped = -1;
+		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
+	}
+
+	pRibbonBar->SetTrackingMode(TRUE, FALSE);
+	pRibbonBar->SetPopuped(m_nIndex, bKeyboard);
+}
+
+void CXTPRibbonControlTab::SetEnabled(BOOL /*bEnabled*/)
+{
+
+}
+
+CString CXTPRibbonControlTab::GetItemTooltip(const CXTPTabManagerItem* pItem) const
+{
+	CString strToolTip = CXTPTabManager::GetItemTooltip(pItem);
+	if (!strToolTip.IsEmpty())
+		return strToolTip;
+
+	return pItem->GetCaption();
+}
+
+void CXTPRibbonControlTab::SetSelectedItem(CXTPTabManagerItem* pItem)
+{
+	if (!m_pParent->GetSafeHwnd())
+	{
+		CXTPTabManager::SetSelectedItem(pItem);
+		return;
+	}
+
+	if (!IsFocused() && pItem && !GetRibbonBar()->IsRibbonMinimized())
+		m_pParent->GetCommandBars()->ClosePopups();
+
+	if (m_pSelected == pItem)
+		return;
+
+	if (m_pParent->GetCommandBars()->m_keyboardTips.nLevel > 1)
+		m_pParent->GetCommandBars()->HideKeyboardTips();
+
+	CXTPRibbonTab* pTab = (CXTPRibbonTab*)pItem;
+
+	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
+
+	if (pRibbonBar->OnTabChanging(pTab))
+		return;
+
+	pRibbonBar->LockRedraw();
+
+	pRibbonBar->RebuildControls(pTab);
+
+	CXTPTabManager::SetSelectedItem(pTab);
+
+	pRibbonBar->OnIdleUpdateCmdUI(0, 0);
+
+	pRibbonBar->UnlockRedraw();
+
+	pRibbonBar->OnTabChanged(pTab);
+
+	if (pRibbonBar->IsRibbonMinimized() && pTab)
+	{
+		ShowPopupBar(pRibbonBar->m_bKeyboardSelect);
+	}
+
+	NotifySite(CBN_XTP_EXECUTE);
+
+	if (pItem)
+	{
+		AccessibleNotifyWinEvent(EVENT_OBJECT_FOCUS , GetParent()->GetSafeHwnd(), GetID(), pItem->GetIndex() + 1);
+	}
+
+}
+
+
+BOOL CXTPRibbonControlTab::DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
+{
+	if (!pItem)
+		return GetPaintManager()->m_bShowIcons;
+
+	if (pItem->GetImageIndex() == -1 || GetPaintManager()->m_bShowIcons == FALSE)
+		return FALSE;
+
+	CXTPImageManagerIcon* pImage = GetImageManager()->GetImage(pItem->GetImageIndex(), szIcon.cx);
+
+	if (!pImage)
+		return FALSE;
+
+	if (!bDraw)
+	{
+		return TRUE;
+	}
+
+	pItem->DrawImage(pDC, CRect(pt, szIcon), pImage);
+
+	return TRUE;
+}
+
+void CXTPRibbonControlTab::RedrawControl(LPCRECT lpRect, BOOL bAnimate)
+{
+	m_pParent->Redraw(lpRect, bAnimate);
+}
+
+void CXTPRibbonControlTab::OnUnderlineActivate()
+{
+	SetFocused(TRUE);
+}
+
+
+BOOL CXTPRibbonControlTab::HeaderHasFocus() const
+{
+	return IsFocused() && m_pParent->IsTrackingMode();
+}
+
+BOOL  CXTPRibbonControlTab::OnSetSelected(int bSelected)
+{
+	if (bSelected == m_bSelected)
+		return FALSE;
+
+	if (IsKeyboardSelected(bSelected) && !GetRibbonBar()->IsRibbonMinimized())
+		m_pParent->SetPopuped(-1);
+
+	m_bSelected = bSelected;
+
+	m_pParent->OnControlSelected(bSelected, this);
+
+	if (IsKeyboardSelected(bSelected))
+	{
+		SetFocused(TRUE);
+	}
+
+	if (!bSelected)
+	{
+		SetFocused(FALSE);
+		PerformMouseMove(m_pParent->GetSafeHwnd(), CPoint(-1, -1));
+	}
+	else
+	{
+		AccessibleNotifyWinEvent(EVENT_OBJECT_FOCUS , GetParent()->GetSafeHwnd(), GetID(), GetCurSel() + 1);
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPRibbonControlTab::IsFocusable() const
+{
+	return TRUE;
+}
+
+
+BOOL CXTPRibbonControlTab::IsFocused() const
+{
+	return m_bFocused;
+}
+
+void CXTPRibbonControlTab::Draw(CDC* /*pDC*/)
+{
+
+}
+
+void CXTPRibbonControlTab::SetFocused(BOOL bFocused)
+{
+	if (m_bFocused == bFocused)
+		return;
+
+	m_bFocused = bFocused;
+
+	if (m_bFocused && GetSelectedItem() == NULL)
+	{
+		SetSelectedItem(FindNextFocusable(-1, +1));
+	}
+
+	RedrawParent();
+}
+
+BOOL CXTPRibbonControlTab::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
+{
+	if (!IsFocused())
+		return FALSE;
+
+	UINT nCharLayout(nChar);
+	CXTPDrawHelpers::KeyToLayout(m_pParent, nCharLayout);
+
+	if (nCharLayout == VK_UP || nCharLayout == VK_DOWN || nCharLayout == VK_LEFT || nCharLayout == VK_RIGHT)
+	{
+		m_pParent->HideKeyboardTips();
+	}
+
+	if (nCharLayout == VK_LEFT && FindNextFocusable(GetCurSel(), -1))
+	{
+		if (PerformKeyDown(m_pParent->GetSafeHwnd(), nChar))
+			return TRUE;
+	}
+
+	if (nCharLayout == VK_RIGHT && FindNextFocusable(GetCurSel(), +1))
+	{
+		if (PerformKeyDown(m_pParent->GetSafeHwnd(), nChar))
+			return TRUE;
+	}
+
+	if (nCharLayout == VK_UP)
+	{
+		m_pParent->SetSelected(m_pControls->GetNext(-1, +1), TRUE_KEYBOARD_PREV);
+		return TRUE;
+	}
+
+	if (nCharLayout == VK_DOWN)
+	{
+		m_pParent->SetSelected(m_pControls->GetNext(CXTPControl::GetIndex(), +1), TRUE_KEYBOARD_NEXT);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CXTPRibbonControlTab::OnClick(BOOL /*bKeyboard*/, CPoint /*pt*/)
+{
+	// Do Nothing
+}
+
+BOOL CXTPRibbonControlTab::OnSetPopup(BOOL bPopup)
+{
+	m_bPopup = bPopup;
+	if (bPopup)
+	{
+		ASSERT(GetSelectedItem());
+		CXTPRibbonTab* pSelectedTab = (CXTPRibbonTab*)GetSelectedItem();
+		if (!pSelectedTab || !GetRibbonBar()->IsRibbonMinimized())
+		{
+			m_bPopup = FALSE;
+			return FALSE;
+		}
+
+		if (m_pCommandBar)
+			m_pCommandBar->InternalRelease();
+
+		CXTPCommandBars* pCommandBars = GetRibbonBar()->GetCommandBars();
+		ASSERT(pCommandBars);
+
+		m_pCommandBar = new CXTPRibbonTabPopupToolBar(pSelectedTab);
+		m_pCommandBar->SetCommandBars(pCommandBars);
+
+		m_pCommandBar->EnableCustomization(FALSE);
+		m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
+	}
+	else if (m_pCommandBar)
+	{
+		ASSERT(m_pCommandBar);
+		m_pCommandBar->SetTrackingMode(FALSE);
+
+		if (GetRibbonBar()->IsRibbonMinimized())
+		{
+			SetSelectedItem(NULL);
+		}
+
+	}
+	RedrawParent();
+	return TRUE;
+}
+
+void CXTPRibbonControlTab::Copy(CXTPControl* pControl, BOOL /*bRecursive = FALSE*/)
+{
+	DeleteAllItems();
+
+	CXTPRibbonControlTab* pControlTab = (CXTPRibbonControlTab*)pControl;
+
+	for (int i = 0; i < pControlTab->GetItemCount(); i++)
+	{
+		CXTPRibbonTab* pTab = pControlTab->GetTab(i);
+
+		CXTPRibbonTab* pTabClone = (CXTPRibbonTab*)pTab->GetRuntimeClass()->CreateObject();
+
+		pTabClone->m_pRibbonBar = (CXTPRibbonBar*)GetParent();
+		pTabClone->m_pParent = (CXTPRibbonBar*)GetParent();
+
+		AddItem(i, pTabClone);
+
+		pTabClone->Copy(pTab);
+	}
+}
+
+void CXTPRibbonControlTab::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsStoring())
+	{
+		long nCount = (long)m_arrItems.GetSize();
+		int i;
+
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Tab")));
+		POSITION posEnum = pEnumerator->GetPosition(nCount, FALSE);
+
+		for (i = 0; i < nCount; i++)
+		{
+			CXTPRibbonTab* pTab = (CXTPRibbonTab*)GetItem(i);
+
+			CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
+			PX_Object(&secItem, pTab, RUNTIME_CLASS(CXTPRibbonTab));
+		}
+	}
+	else
+	{
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Tab")));
+		POSITION posEnum = pEnumerator->GetPosition(0, FALSE);
+
+		DeleteAllItems();
+
+		while (posEnum)
+		{
+			CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
+			secItem->m_pOwner = this;
+
+			CXTPRibbonTab* pTab = NULL;
+			PX_Object(&secItem, pTab, RUNTIME_CLASS(CXTPRibbonTab));
+
+			if (!pTab)
+				AfxThrowArchiveException(CArchiveException::badClass);
+
+			AddItem(GetItemCount(), pTab);
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+
+HRESULT CXTPRibbonControlTab::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+		return E_INVALIDARG;
+
+	*pChildCount = GetItemCount();
+
+	return S_OK;
+}
+HRESULT CXTPRibbonControlTab::GetAccessibleChild(VARIANT /*varChild*/, IDispatch* FAR* ppdispChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispChild = NULL;
+	return S_FALSE;
+}
+
+HRESULT CXTPRibbonControlTab::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::GetAccessibleName(varChild, pszName);
+
+	CXTPTabManagerItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	CString strCaption = pItem->GetCaption();
+	CXTPDrawHelpers::StripMnemonics(strCaption);
+
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_I4;
+	pvarRole->lVal = GetChildIndex(&varChild) == CHILDID_SELF ? ROLE_SYSTEM_PAGETABLIST : ROLE_SYSTEM_PAGETAB;
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::AccessibleSelect(long flagsSelect, VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::AccessibleSelect(flagsSelect, varChild);
+
+	SetCurSel(nIndex - 1);
+
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+	{
+		pvarState->vt = VT_I4;
+		pvarState->lVal = STATE_SYSTEM_FOCUSABLE;
+
+		if (!m_pParent->IsVisible() || !IsVisible())
+			pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+		return S_OK;
+	}
+
+	CXTPTabManagerItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE;
+
+	if (pItem->IsSelected())
+		pvarState->lVal |= STATE_SYSTEM_SELECTED | STATE_SYSTEM_FOCUSED;
+
+	if (!pItem->IsVisible())
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
+{
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+			return CXTPControl::GetAccessibleDefaultAction(varChild, pszDefaultAction);
+
+	*pszDefaultAction = SysAllocString(L"Switch");
+
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::AccessibleDoDefaultAction(VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::AccessibleDoDefaultAction(varChild);
+
+	CXTPTabManagerItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	pItem->Select();
+	return S_OK;
+}
+
+
+HRESULT CXTPRibbonControlTab::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_OK;
+
+	if (!IsVisible())
+		return S_OK;
+
+	CRect rcControl = GetRect();
+
+	if (nIndex != CHILDID_SELF)
+	{
+		rcControl = GetItem(nIndex - 1)->GetRect();
+	}
+
+	m_pParent->ClientToScreen(&rcControl);
+
+	*pxLeft = rcControl.left;
+	*pyTop = rcControl.top;
+	*pcxWidth = rcControl.Width();
+	*pcyHeight = rcControl.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPRibbonControlTab::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pParent).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = CHILDID_SELF;
+
+	CPoint pt(xLeft, yTop);
+	m_pParent->ScreenToClient(&pt);
+
+	if (!GetRect().PtInRect(pt))
+		return S_FALSE;
+
+	CXTPTabManagerItem* pItem = HitTest(pt);
+	if (pItem)
+	{
+		pvarID->lVal = pItem->GetIndex() + 1;
+	}
+
+	return S_OK;
+}

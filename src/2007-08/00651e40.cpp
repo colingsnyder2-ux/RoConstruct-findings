@@ -1,23 +1,5 @@
-// from server: 86% by colin
-struct XTP_REPORTRECORDITEM_DRAWARGS
-{
-    int m(void* p);
-};
-
-int XTP_REPORTRECORDITEM_DRAWARGS::m(void* p)
-{
-    int r;
-    if (*(int*)((char*)this + 0x2bc) != 0)
-    {
-        int* q = (int*)(*(int (__thiscall**)(void*))(*(int*)this + 0x18c))(this);
-        if ((*(int (__thiscall**)(void*))(*(int*)q + 0x15c))(q) != 0)
-            r = 1;
-        else
-            r = 0;
-    }
-    else
-    {
-        r = 0;
-    }
-    return (*(int (__thiscall**)(void*, int))(*(int*)p))(p, r);
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ecf91677ebbb6d45.cpp

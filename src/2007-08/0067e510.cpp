@@ -1,20 +1,5 @@
-// from server: 37% by colin
-extern "C" void* __cdecl func_0062fef6(unsigned int size);
-extern "C" void __cdecl func_006ca460(void* p);
-
-struct CXTPControlOleItems
-{
-    void* construct();
-};
-
-void* CXTPControlOleItems::construct()
-{
-    void* p = func_0062fef6(0x168);
-    if (p == 0)
-    {
-        func_006ca460(p);
-        *(void**)p = (void*)0x7ce244;
-        *(void**)((char*)p + 0x20) = (void*)0x7ce1e4;
-    }
-    return p;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_04d64fe43fb73b7d.cpp

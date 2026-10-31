@@ -1,37 +1,5 @@
-// from server: 7% by colin
-struct CXTSplitterWnd
-{
-    void* getRelated();
-    void* getOwner();
-    void* findChild(void*);
-    void* getParent();
-    void removeChild(void*, int);
-    void destroyChild(void*);
-    void doLayout(void*, int, int);
-};
-
-void* CXTSplitterWnd::getRelated() { return 0; }
-void* CXTSplitterWnd::getOwner() { return 0; }
-void* CXTSplitterWnd::findChild(void*) { return 0; }
-void* CXTSplitterWnd::getParent() { return 0; }
-void CXTSplitterWnd::removeChild(void*, int) {}
-void CXTSplitterWnd::destroyChild(void*) {}
-
-void CXTSplitterWnd::doLayout(void* p, int a, int b)
-{
-    void* child = p;
-    if (child == 0)
-    {
-        child = getRelated();
-    }
-    void* owner = getOwner();
-    if (findChild(owner) != 0)
-    {
-        void* parent = getParent();
-        removeChild(child, 1);
-    }
-    else
-    {
-        destroyChild(child);
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_5fa15bc5bd808c16.cpp

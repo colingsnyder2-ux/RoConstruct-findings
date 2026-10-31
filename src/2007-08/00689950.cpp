@@ -1,18 +1,5 @@
-// from server: 26% by colin
-struct CXTPControlTabWorkspace
-{
-    char pad[0x168];
-    int field_168;
-    void sub_00689630();
-    void sub_006ca4d0();
-    void func_00689950();
-};
-
-void CXTPControlTabWorkspace::func_00689950()
-{
-    *(int*)this = 0x7cfb24;
-    *(int*)((char*)this + 0x20) = 0x7cfac4;
-    field_168 = 0x7cfa34;
-    sub_00689630();
-    sub_006ca4d0();
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_ae7ff79e029656de.cpp

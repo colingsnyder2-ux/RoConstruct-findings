@@ -1,5 +1,5 @@
-// from server: 53% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 list_sp.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_cppunwind_23e21385f395070d.cpp

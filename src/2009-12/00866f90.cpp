@@ -1,113 +1,286 @@
-// roc 2009-12 00866f90  unit: CPropertyGridItemBrickColor  size: 341 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00866f90
-//
-// 00866f90  6aff                 push -1
-// 00866f92  68bbf19500           push 0x95f1bb
-// 00866f97  64a100000000         mov eax, dword ptr fs:[0]
-// 00866f9d  50                   push eax
-// 00866f9e  83ec14               sub esp, 0x14
-// 00866fa1  53                   push ebx
-// 00866fa2  56                   push esi
-// 00866fa3  a10052b600           mov eax, dword ptr [0xb65200]
-// 00866fa8  33c4                 xor eax, esp
-// 00866faa  50                   push eax
-// 00866fab  8d442420             lea eax, [esp + 0x20]
-// 00866faf  64a300000000         mov dword ptr fs:[0], eax
-// 00866fb5  8d4c2414             lea ecx, [esp + 0x14]
-// 00866fb9  ff1574de9800         call dword ptr [0x98de74]
-// 00866fbf  8d4c2410             lea ecx, [esp + 0x10]
-// 00866fc3  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 00866fcb  ff1574de9800         call dword ptr [0x98de74]
-// 00866fd1  8d4c240c             lea ecx, [esp + 0xc]
-// 00866fd5  ff1574de9800         call dword ptr [0x98de74]
-// 00866fdb  8b742430             mov esi, dword ptr [esp + 0x30]
-// 00866fdf  6a3b                 push 0x3b
-// 00866fe1  6a00                 push 0
-// 00866fe3  56                   push esi
-// 00866fe4  8d442420             lea eax, [esp + 0x20]
-// 00866fe8  50                   push eax
-// 00866fe9  c644243802           mov byte ptr [esp + 0x38], 2
-// 00866fee  e82bf40b00           call 0x92641e
-// 00866ff3  6a3b                 push 0x3b
-// 00866ff5  6a01                 push 1
-// 00866ff7  56                   push esi
-// 00866ff8  8d4c241c             lea ecx, [esp + 0x1c]
-// 00866ffc  51                   push ecx
-// 00866ffd  e81cf40b00           call 0x92641e
-// 00867002  6a3b                 push 0x3b
-// 00867004  6a02                 push 2
-// 00867006  56                   push esi
-// 00867007  8d542418             lea edx, [esp + 0x18]
-// 0086700b  52                   push edx
-// 0086700c  e80df40b00           call 0x92641e
-// 00867011  8d4c2414             lea ecx, [esp + 0x14]
-// 00867015  ff1580de9800         call dword ptr [0x98de80]
-// 0086701b  8b3598b79800         mov esi, dword ptr [0x98b798]
-// 00867021  50                   push eax
-// 00867022  ffd6                 call esi
-// 00867024  bbff000000           mov ebx, 0xff
-// 00867029  83c404               add esp, 4
-// 0086702c  3bc3                 cmp eax, ebx
-// 0086702e  7d16                 jge 0x867046
-// 00867030  8d4c2414             lea ecx, [esp + 0x14]
-// 00867034  ff1580de9800         call dword ptr [0x98de80]
-// 0086703a  50                   push eax
-// 0086703b  ffd6                 call esi
-// 0086703d  83c404               add esp, 4
-// 00867040  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00867044  eb04                 jmp 0x86704a
-// 00867046  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 0086704a  8d4c2410             lea ecx, [esp + 0x10]
-// 0086704e  ff1580de9800         call dword ptr [0x98de80]
-// 00867054  50                   push eax
-// 00867055  ffd6                 call esi
-// 00867057  83c404               add esp, 4
-// 0086705a  3bc3                 cmp eax, ebx
-// 0086705c  7d16                 jge 0x867074
-// 0086705e  8d4c2410             lea ecx, [esp + 0x10]
-// 00867062  ff1580de9800         call dword ptr [0x98de80]
-// 00867068  50                   push eax
-// 00867069  ffd6                 call esi
-// 0086706b  83c404               add esp, 4
-// 0086706e  89442418             mov dword ptr [esp + 0x18], eax
-// 00867072  eb04                 jmp 0x867078
-// 00867074  895c2418             mov dword ptr [esp + 0x18], ebx
-// 00867078  8d4c240c             lea ecx, [esp + 0xc]
-// 0086707c  ff1580de9800         call dword ptr [0x98de80]
-// 00867082  50                   push eax
-// 00867083  ffd6                 call esi
-// 00867085  83c404               add esp, 4
-// 00867088  3bc3                 cmp eax, ebx
-// 0086708a  7d12                 jge 0x86709e
-// 0086708c  8d4c240c             lea ecx, [esp + 0xc]
-// 00867090  ff1580de9800         call dword ptr [0x98de80]
-// 00867096  50                   push eax
-// 00867097  ffd6                 call esi
-// 00867099  83c404               add esp, 4
-// 0086709c  8bd8                 mov ebx, eax
-// 0086709e  8d4c240c             lea ecx, [esp + 0xc]
-// 008670a2  ff15c0de9800         call dword ptr [0x98dec0]
-// 008670a8  8d4c2410             lea ecx, [esp + 0x10]
-// 008670ac  ff15c0de9800         call dword ptr [0x98dec0]
-// 008670b2  8d4c2414             lea ecx, [esp + 0x14]
-// 008670b6  ff15c0de9800         call dword ptr [0x98dec0]
-// 008670bc  0fb64c2418           movzx ecx, byte ptr [esp + 0x18]
-// 008670c1  0fb654241c           movzx edx, byte ptr [esp + 0x1c]
-// 008670c6  0fb6c3               movzx eax, bl
-// 008670c9  c1e008               shl eax, 8
-// 008670cc  0bc1                 or eax, ecx
-// 008670ce  c1e008               shl eax, 8
-// 008670d1  0bc2                 or eax, edx
-// 008670d3  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 008670d7  64890d00000000       mov dword ptr fs:[0], ecx
-// 008670de  59                   pop ecx
-// 008670df  5e                   pop esi
-// 008670e0  5b                   pop ebx
-// 008670e1  83c420               add esp, 0x20
-// 008670e4  c3                   ret 
-// copied from an identical function in another client (function ?StringToRGB@CXTPPropertyGridItemColor@@SAKPBD@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\PropertyGrid\XTPPropertyGridItemColor.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPropertyGridItemColor.cpp : implementation of the CXTPPropertyGridItemColor class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridItemColor.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+
+#ifdef _XTP_INCLUDE_CONTROLS
+#include "Controls/XTColorDialog.h"
+#include "Controls/XTColorSelectorCtrl.h"
+#include "Controls/XTColorPopup.h"
+#include "Controls/XTNotify.h"
+#include "Controls/XTGlobal.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemColor
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemColor, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(LPCTSTR strCaption, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
+}
+
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(UINT nID, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(nID)
+{
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
+}
+
+CXTPPropertyGridItemColor::~CXTPPropertyGridItemColor()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+
+BOOL CXTPPropertyGridItemColor::OnDrawItemValue(CDC& dc, CRect rcValue)
+{
+	COLORREF clr = dc.GetTextColor();
+	CRect rcSample(rcValue.left - 2, rcValue.top + 1, rcValue.left + 18, rcValue.bottom - 1);
+	CXTPPenDC pen(dc, clr);
+	CXTPBrushDC brush(dc, m_clrValue);
+	dc.Rectangle(rcSample);
+
+	CRect rcText(rcValue);
+	rcText.left += 25;
+
+	dc.DrawText(m_strValue, rcText, DT_SINGLELINE | DT_VCENTER);
+
+	return TRUE;
+}
+
+CRect CXTPPropertyGridItemColor::GetValueRect()
+{
+	CRect rcValue(CXTPPropertyGridItem::GetValueRect());
+	rcValue.left += 25;
+	return rcValue;
+}
+
+COLORREF AFX_CDECL CXTPPropertyGridItemColor::StringToRGB(LPCTSTR str)
+{
+	CString strRed, strGreen, strBlue;
+
+	AfxExtractSubString(strRed, str, 0, ';');
+	AfxExtractSubString(strGreen, str, 1, ';');
+	AfxExtractSubString(strBlue, str, 2, ';');
+
+	return RGB(__min(_ttoi(strRed), 255), __min(_ttoi(strGreen), 255), __min(_ttoi(strBlue), 255));
+}
+
+CString AFX_CDECL CXTPPropertyGridItemColor::RGBToString(COLORREF clr)
+{
+	CString str;
+	str.Format(_T("%i; %i; %i"), GetRValue(clr), GetGValue(clr), GetBValue(clr));
+	return str;
+}
+
+void CXTPPropertyGridItemColor::SetValue(CString strValue)
+{
+	SetColor(StringToRGB(strValue));
+}
+
+void CXTPPropertyGridItemColor::SetColor(COLORREF clr)
+{
+	m_clrValue = clr;
+
+	if (m_pBindColor)
+	{
+		*m_pBindColor = clr;
+	}
+
+	CXTPPropertyGridItem::SetValue(RGBToString(clr));
+}
+
+void CXTPPropertyGridItemColor::BindToColor(COLORREF* pBindColor)
+{
+	m_pBindColor = pBindColor;
+	if (m_pBindColor)
+	{
+		*m_pBindColor = m_clrValue;
+	}
+}
+
+
+void CXTPPropertyGridItemColor::OnBeforeInsert()
+{
+	if (m_pBindColor && *m_pBindColor != m_clrValue)
+	{
+		SetColor(*m_pBindColor);
+	}
+}
+
+void CXTPPropertyGridItemColor::SetEditorStyle(XTPPropertyGridItemColorEditor editor)
+{
+	m_colorEditor = editor;
+
+	if (m_colorEditor == xtpGridItemColorPopup)
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasComboButton);
+	else
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasExpandButton);
+}
+
+XTPPropertyGridItemColorEditor CXTPPropertyGridItemColor::GetEditorStyle()
+{
+	return m_colorEditor;
+}
+
+
+void CXTPPropertyGridItemColor::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
+		return;
+
+	if (!OnRequestEdit())
+		return;
+
+	CWnd* pGrid = m_pGrid;
+
+#ifdef _XTP_INCLUDE_CONTROLS
+	if (m_colorEditor == xtpGridItemColorPopup)
+	{
+		class CPropertyGridItemColorColorPopup: public CXTColorPopup
+		{
+		public:
+			CPropertyGridItemColorColorPopup()
+				: CXTColorPopup(TRUE)
+			{
+				m_pItem = NULL;
+			}
+
+			BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+			{
+				if (message == CPN_XT_SELENDOK)
+				{
+					CString strValue = m_pItem->RGBToString((COLORREF)wParam);
+					if (m_pItem->OnAfterEdit(strValue))
+					{
+						m_pItem->OnValueChanged(strValue);
+					}
+					*pResult = 0;
+					return TRUE;
+				}
+				if (message == CPN_XT_SELENDCANCEL)
+				{
+					m_pItem->OnCancelEdit();
+				}
+				return CXTColorPopup::OnWndMsg(message, wParam, lParam, pResult);\
+			}
+
+			CXTPPropertyGridItemColor* m_pItem;
+		};
+
+
+		CPropertyGridItemColorColorPopup *pColorPopup = new CPropertyGridItemColorColorPopup();
+
+		CRect rcItem= GetItemRect();
+		m_pGrid->ClientToScreen(&rcItem);
+		rcItem.left = rcItem.right - 158; // small hack. need to add CPS_XT_LEFTALLIGN
+
+		COLORREF clrDefault = StringToRGB(m_strDefaultValue);
+		pColorPopup->Create(rcItem, m_pGrid, CPS_XT_USERCOLORS|CPS_XT_EXTENDED|CPS_XT_MORECOLORS|CPS_XT_SHOW3DSELECTION|CPS_XT_SHOWHEXVALUE, GetColor(), clrDefault);
+		pColorPopup->SetOwner(m_pGrid);
+		pColorPopup->SetFocus();
+		pColorPopup->AddListener(pColorPopup->GetSafeHwnd());
+		pColorPopup->m_pItem = this;
+	}
+	else if (m_colorEditor == xtpGridItemColorExtendedDialog)
+	{
+		InternalAddRef();
+
+		CXTColorDialog dlg(m_clrValue, m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
+	}
+	else
+#endif
+	{
+		InternalAddRef();
+
+		CColorDialog dlg(m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
+	}
+}
+
+
+

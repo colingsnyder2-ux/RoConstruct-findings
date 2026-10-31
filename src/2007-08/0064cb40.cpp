@@ -1,14 +1,5 @@
-// from server: 94% by colin
-struct CXTPImageManagerIconSet {
-    char pad[0x24];
-    int Find(int* p);
-    int Contains(int key);
-};
-
-extern "C" int __stdcall sub_634a60(void* container, int key, int* out);
-
-int CXTPImageManagerIconSet::Contains(int key) {
-    int result;
-    int found = sub_634a60((char*)this + 0x24, key, &result);
-    return (found == 0) ? 0 : result;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_d57fd5449bdc10f2.cpp

@@ -1,5 +1,5 @@
-// from server: 41% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O1 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/dlgcore.cpp
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_remainder_83a71f8df9e130b9.cpp

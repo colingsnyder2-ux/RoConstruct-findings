@@ -1,14 +1,5 @@
-// from server: 88% by colin
-struct CXTCaptionButton {
-    int method(int, int, int, int);
-    int helper();
-};
-
-int CXTCaptionButton::method(int a, int b, int c, int d) {
-    int result = ((int (__thiscall *)(CXTCaptionButton *))*(void **)(*(int *)this + 0x164))(this);
-    if (result == 0) {
-        CXTCaptionButton *obj = (CXTCaptionButton *)this->helper();
-        return ((int (__thiscall *)(CXTCaptionButton *))*(void **)(*(int *)obj + 0x28))(obj);
-    }
-    return result;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_cc0156a9117e05c2.cpp

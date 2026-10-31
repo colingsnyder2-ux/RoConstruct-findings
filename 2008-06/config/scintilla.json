@@ -8,17 +8,10 @@
    "mode": "recipe",
    "recipe": "scintilla-mfc-1.20-shared",
    "files": "recipe",
-   "flags": "/O2 /GS- /MD",
-   "direct": true
+   "flags": "/O2 /GS- /MD"
   }
  ],
  "test": "scintilla_ctrl",
- "test_includes": [
-  "tools/libs/scintilla-mfc-1.20",
-  "tools/libs/mfc-9.0-rtm/atlmfc/include"
- ],
- "test_defines": "WIN32 NDEBUG _MBCS _AFXDLL",
- "runtime_files": [
-  "tools/vc2008rtm/Windows/winsxs/x86_microsoft.vc90.mfc_1fc8b3b9a1e18e3b_9.0.21022.8_none_b81d038aaf540e86/mfc90.dll"
- ]
+ "test_includes": ["tools/libs/scintilla-mfc-1.20", "tools/libs/mfc-9.0-rtm/atlmfc/include"],
+ "test_defines": "WIN32 NDEBUG _MBCS _AFXDLL"
 }

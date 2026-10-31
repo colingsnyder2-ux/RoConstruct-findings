@@ -1,38 +1,264 @@
-// roc 2012-06 009b8e90  unit: PAVCXTPReportRecordItem::?$CArray  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 009b8e90
-//
-// 009b8e90  56                   push esi
-// 009b8e91  57                   push edi
-// 009b8e92  8bf9                 mov edi, ecx
-// 009b8e94  8b7728               mov esi, dword ptr [edi + 0x28]
-// 009b8e97  83ee01               sub esi, 1
-// 009b8e9a  781d                 js 0x9b8eb9
-// 009b8e9c  8d642400             lea esp, [esp]
-// 009b8ea0  85f6                 test esi, esi
-// 009b8ea2  7c37                 jl 0x9b8edb
-// 009b8ea4  3b7728               cmp esi, dword ptr [edi + 0x28]
-// 009b8ea7  7d32                 jge 0x9b8edb
-// 009b8ea9  8b4724               mov eax, dword ptr [edi + 0x24]
-// 009b8eac  8b0cb0               mov ecx, dword ptr [eax + esi*4]
-// 009b8eaf  e8d697fcff           call 0x98268a
-// 009b8eb4  83ee01               sub esi, 1
-// 009b8eb7  79e7                 jns 0x9b8ea0
-// 009b8eb9  6aff                 push -1
-// 009b8ebb  6a00                 push 0
-// 009b8ebd  8d4f20               lea ecx, [edi + 0x20]
-// 009b8ec0  e89bf3fdff           call 0x998260
-// 009b8ec5  8b4f3c               mov ecx, dword ptr [edi + 0x3c]
-// 009b8ec8  85c9                 test ecx, ecx
-// 009b8eca  740c                 je 0x9b8ed8
-// 009b8ecc  e8b997fcff           call 0x98268a
-// 009b8ed1  c7473c00000000       mov dword ptr [edi + 0x3c], 0
-// 009b8ed8  5f                   pop edi
-// 009b8ed9  5e                   pop esi
-// 009b8eda  c3                   ret 
-// 009b8edb  e8e094fcff           call 0x9823c0
-// copied from an identical function in another client (function ?RemoveAll@CXTPReportRecord@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRecord.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportRecord.cpp : implementation of the CXTPReportRecord class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPReportRecordItem.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportColumn.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecords.h"
+#include "Common/XTPPropExchange.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_SERIAL(CXTPReportRecord, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecord::CXTPReportRecord()
+	: m_bVisible(TRUE), m_bLocked(FALSE), m_pPreviewItem(NULL)
+{
+	m_pChildren = NULL;
+
+	m_bExpanded = FALSE;
+
+	m_bEditable = TRUE;
+
+	m_nIndex = -1;
+
+	m_pRecords = NULL;
+
+}
+
+CXTPReportRecord::~CXTPReportRecord()
+{
+	RemoveAll();
+
+	if (m_pChildren)
+	{
+		m_pChildren->InternalRelease();
+	}
+}
+
+void CXTPReportRecord::RemoveAll()
+{
+	for (int nItem = GetItemCount() - 1; nItem >= 0; nItem--)
+	{
+		CXTPReportRecordItem* pItem = m_arrItems.GetAt(nItem);
+		pItem->InternalRelease();
+	}
+	m_arrItems.RemoveAll();
+
+	CMDTARGET_RELEASE(m_pPreviewItem);
+}
+
+void CXTPReportRecord::Delete()
+{
+	ASSERT(m_pRecords);
+	if (m_pRecords) m_pRecords->RemoveAt(m_nIndex);
+}
+
+BOOL CXTPReportRecord::HasChildren() const
+{
+	return m_pChildren && (m_pChildren->GetCount() > 0);
+}
+
+CXTPReportRecords* CXTPReportRecord::GetChilds()
+{
+	if (m_pChildren == 0)
+	{
+		m_pChildren = new CXTPReportRecords(this);
+	}
+
+	return m_pChildren;
+}
+
+CXTPReportRecordItem* CXTPReportRecord::GetItem(CXTPReportColumn* pColumn) const
+{
+	if (this == NULL)
+		return NULL;
+
+	return GetItem(pColumn->GetItemIndex());
+}
+
+int CXTPReportRecord::IndexOf(const CXTPReportRecordItem* pItem) const
+{
+	for (int nItem = 0; nItem < GetItemCount(); nItem++)
+	{
+		if (GetItem(nItem) == pItem)
+			return nItem;
+	}
+	return -1;
+}
+
+CXTPReportRecordItem* CXTPReportRecord::AddItem(CXTPReportRecordItem* pItem)
+{
+	m_arrItems.Add(pItem);
+	pItem->m_pRecord = this;
+	return pItem;
+}
+
+CXTPReportRecordItemPreview* CXTPReportRecord::GetItemPreview() const
+{
+	return m_pPreviewItem;
+}
+
+void CXTPReportRecord::SetEditable(BOOL bEditable)
+{
+	m_bEditable = bEditable;
+}
+
+void CXTPReportRecord::SetPreviewItem(CXTPReportRecordItemPreview* pItemPreview)
+{
+	if (m_pPreviewItem != NULL)
+		m_pPreviewItem->InternalRelease();
+	m_pPreviewItem = pItemPreview;
+
+	m_pPreviewItem->m_pRecord = this;
+}
+
+BOOL CXTPReportRecord::IsFiltered() const
+{
+	return FALSE;
+}
+
+int CXTPReportRecord::GetIndex() const
+{
+	return m_nIndex;
+}
+
+void CXTPReportRecord::DoPropExchange(CXTPPropExchange* pPX)
+{
+	PX_Bool(pPX, _T("Locked"), m_bLocked);
+	PX_Bool(pPX, _T("Editable"), m_bEditable);
+
+	BOOL bPreview = m_pPreviewItem != NULL;
+	PX_Bool(pPX, _T("Preview"), bPreview);
+
+
+	int nCount = GetItemCount();
+
+	CXTPPropExchangeEnumeratorPtr pEnumItems(pPX->GetEnumerator(_T("Item")));
+
+	if (pPX->IsStoring())
+	{
+		POSITION posItem = pEnumItems->GetPosition((DWORD)nCount);
+
+		for (int i = 0; i < nCount; i++)
+		{
+			CXTPReportRecordItem* pItem = GetItem(i);
+			ASSERT(pItem);
+			if (!pItem)
+				AfxThrowArchiveException(CArchiveException::badClass);
+
+			CXTPPropExchangeSection secItem(pEnumItems->GetNext(posItem));
+			PX_Object(&secItem, pItem, RUNTIME_CLASS(CXTPReportRecordItem));
+		}
+	}
+	else
+	{
+		RemoveAll();
+
+		POSITION posItem = pEnumItems->GetPosition();
+
+		while (posItem)
+		{
+			CXTPReportRecordItem* pItem = NULL;
+
+			CXTPPropExchangeSection sec(pEnumItems->GetNext(posItem));
+			PX_Object(&sec, pItem, RUNTIME_CLASS(CXTPReportRecordItem));
+
+			if (!pItem)
+				AfxThrowArchiveException(CArchiveException::badClass);
+
+			AddItem(pItem);
+		}
+	}
+
+	//------------------------------------------------------------
+	if (bPreview)
+	{
+		CXTPPropExchangeSection secPreviewItem(pPX->GetSection(_T("PreviewItem")));
+
+		if (pPX->IsLoading())
+		{
+			CMDTARGET_RELEASE(m_pPreviewItem);
+		}
+
+		PX_Object(&secPreviewItem, m_pPreviewItem, RUNTIME_CLASS(CXTPReportRecordItemPreview));
+
+		if (m_pPreviewItem && pPX->IsLoading())
+		{
+			m_pPreviewItem->m_pRecord = this;
+		}
+	}
+
+	//------------------------------------------------------------
+	if (pPX->GetSchema() > _XTP_SCHEMA_1041)
+	{
+		BOOL bHasChildren = HasChildren();
+		PX_Bool(pPX, _T("HasChildren"), bHasChildren, FALSE);
+
+		if (bHasChildren)
+		{
+			CXTPPropExchangeSection secChildren(pPX->GetSection(_T("Children")));
+			GetChilds()->_DoPropExchange(&secChildren);
+		}
+		else if (m_pChildren)
+		{
+			m_pChildren->RemoveAll();
+		}
+	}
+}
+
+void CXTPReportRecord::TreeAddRef()
+{
+	InternalAddRef();
+	if (HasChildren())
+	{
+		for (int nChild = 0; nChild < GetChilds()->GetCount(); nChild++)
+		{
+			GetChilds()->GetAt(nChild)->TreeAddRef();
+		}
+	}
+}
+
+void CXTPReportRecord::TreeRelease()
+{
+	if (HasChildren())
+	{
+		for (int nChild = 0; nChild < GetChilds()->GetCount(); nChild++)
+		{
+			GetChilds()->GetAt(nChild)->TreeRelease();
+		}
+	}
+	InternalRelease();
+}
+

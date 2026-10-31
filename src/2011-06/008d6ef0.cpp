@@ -1,815 +1,1352 @@
-// roc 2011-06 008d6ef0  unit: CXTPTabPaintManager  size: 2792 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 008d6ef0
-//
-// 008d6ef0  6aff                 push -1
-// 008d6ef2  6892d4a000           push 0xa0d492
-// 008d6ef7  64a100000000         mov eax, dword ptr fs:[0]
-// 008d6efd  50                   push eax
-// 008d6efe  83ec60               sub esp, 0x60
-// 008d6f01  53                   push ebx
-// 008d6f02  55                   push ebp
-// 008d6f03  56                   push esi
-// 008d6f04  57                   push edi
-// 008d6f05  a12058c900           mov eax, dword ptr [0xc95820]
-// 008d6f0a  33c4                 xor eax, esp
-// 008d6f0c  50                   push eax
-// 008d6f0d  8d442474             lea eax, [esp + 0x74]
-// 008d6f11  64a300000000         mov dword ptr fs:[0], eax
-// 008d6f17  8bf1                 mov esi, ecx
-// 008d6f19  8b9c2488000000       mov ebx, dword ptr [esp + 0x88]
-// 008d6f20  8b7b60               mov edi, dword ptr [ebx + 0x60]
-// 008d6f23  8bcf                 mov ecx, edi
-// 008d6f25  897c2420             mov dword ptr [esp + 0x20], edi
-// 008d6f29  e822c5ffff           call 0x8d3450
-// 008d6f2e  8944242c             mov dword ptr [esp + 0x2c], eax
-// 008d6f32  8b07                 mov eax, dword ptr [edi]
-// 008d6f34  8b5048               mov edx, dword ptr [eax + 0x48]
-// 008d6f37  8bcf                 mov ecx, edi
-// 008d6f39  ffd2                 call edx
-// 008d6f3b  83f802               cmp eax, 2
-// 008d6f3e  7411                 je 0x8d6f51
-// 008d6f40  8b07                 mov eax, dword ptr [edi]
-// 008d6f42  8b5048               mov edx, dword ptr [eax + 0x48]
-// 008d6f45  8bcf                 mov ecx, edi
-// 008d6f47  ffd2                 call edx
-// 008d6f49  85c0                 test eax, eax
-// 008d6f4b  7404                 je 0x8d6f51
-// 008d6f4d  33c0                 xor eax, eax
-// 008d6f4f  eb05                 jmp 0x8d6f56
-// 008d6f51  b801000000           mov eax, 1
-// 008d6f56  33c9                 xor ecx, ecx
-// 008d6f58  85c0                 test eax, eax
-// 008d6f5a  0f94c1               sete cl
-// 008d6f5d  837c242c05           cmp dword ptr [esp + 0x2c], 5
-// 008d6f62  8be9                 mov ebp, ecx
-// 008d6f64  896c2418             mov dword ptr [esp + 0x18], ebp
-// 008d6f68  750d                 jne 0x8d6f77
-// 008d6f6a  33d2                 xor edx, edx
-// 008d6f6c  85ed                 test ebp, ebp
-// 008d6f6e  0f94c2               sete dl
-// 008d6f71  8bea                 mov ebp, edx
-// 008d6f73  89542418             mov dword ptr [esp + 0x18], edx
-// 008d6f77  8d442414             lea eax, [esp + 0x14]
-// 008d6f7b  50                   push eax
-// 008d6f7c  8bcb                 mov ecx, ebx
-// 008d6f7e  e83dc1ffff           call 0x8d30c0
-// 008d6f83  837e2800             cmp dword ptr [esi + 0x28], 0
-// 008d6f87  c744247c00000000     mov dword ptr [esp + 0x7c], 0
-// 008d6f8f  7422                 je 0x8d6fb3
-// 008d6f91  8b4b60               mov ecx, dword ptr [ebx + 0x60]
-// 008d6f94  395904               cmp dword ptr [ecx + 4], ebx
-// 008d6f97  751a                 jne 0x8d6fb3
-// 008d6f99  837f1c00             cmp dword ptr [edi + 0x1c], 0
-// 008d6f9d  7414                 je 0x8d6fb3
-// 008d6f9f  85ed                 test ebp, ebp
-// 008d6fa1  7408                 je 0x8d6fab
-// 008d6fa3  8d8624010000         lea eax, [esi + 0x124]
-// 008d6fa9  eb18                 jmp 0x8d6fc3
-// 008d6fab  8d8614010000         lea eax, [esi + 0x114]
-// 008d6fb1  eb10                 jmp 0x8d6fc3
-// 008d6fb3  8d861c010000         lea eax, [esi + 0x11c]
-// 008d6fb9  85ed                 test ebp, ebp
-// 008d6fbb  7506                 jne 0x8d6fc3
-// 008d6fbd  8d860c010000         lea eax, [esi + 0x10c]
-// 008d6fc3  8bac2484000000       mov ebp, dword ptr [esp + 0x84]
-// 008d6fca  50                   push eax
-// 008d6fcb  55                   push ebp
-// 008d6fcc  8d4c245c             lea ecx, [esp + 0x5c]
-// 008d6fd0  e84b61f8ff           call 0x85d120
-// 008d6fd5  8b868c000000         mov eax, dword ptr [esi + 0x8c]
-// 008d6fdb  8b9688000000         mov edx, dword ptr [esi + 0x88]
-// 008d6fe1  8d4c243c             lea ecx, [esp + 0x3c]
-// 008d6fe5  51                   push ecx
-// 008d6fe6  6a00                 push 0
-// 008d6fe8  89442448             mov dword ptr [esp + 0x48], eax
-// 008d6fec  53                   push ebx
-// 008d6fed  83ec08               sub esp, 8
-// 008d6ff0  8bc4                 mov eax, esp
-// 008d6ff2  89542450             mov dword ptr [esp + 0x50], edx
-// 008d6ff6  c70000000000         mov dword ptr [eax], 0
-// 008d6ffc  c7400400000000       mov dword ptr [eax + 4], 0
-// 008d7003  8b17                 mov edx, dword ptr [edi]
-// 008d7005  8b4244               mov eax, dword ptr [edx + 0x44]
-// 008d7008  8964243c             mov dword ptr [esp + 0x3c], esp
-// 008d700c  55                   push ebp
-// 008d700d  8bcf                 mov ecx, edi
-// 008d700f  c684249400000001     mov byte ptr [esp + 0x94], 1
-// 008d7017  ffd0                 call eax
-// 008d7019  837c242c03           cmp dword ptr [esp + 0x2c], 3
-// 008d701e  89442424             mov dword ptr [esp + 0x24], eax
-// 008d7022  750c                 jne 0x8d7030
-// 008d7024  8b4b60               mov ecx, dword ptr [ebx + 0x60]
-// 008d7027  395904               cmp dword ptr [ecx + 4], ebx
-// 008d702a  7404                 je 0x8d7030
-// 008d702c  33c0                 xor eax, eax
-// 008d702e  eb05                 jmp 0x8d7035
-// 008d7030  b801000000           mov eax, 1
-// 008d7035  89442428             mov dword ptr [esp + 0x28], eax
-// 008d7039  c744241c00000000     mov dword ptr [esp + 0x1c], 0
-// 008d7041  85c0                 test eax, eax
-// 008d7043  7471                 je 0x8d70b6
-// 008d7045  8b4374               mov eax, dword ptr [ebx + 0x74]
-// 008d7048  85c0                 test eax, eax
-// 008d704a  7e6a                 jle 0x8d70b6
-// 008d704c  33ed                 xor ebp, ebp
-// 008d704e  3bc5                 cmp eax, ebp
-// 008d7050  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 008d7054  7e60                 jle 0x8d70b6
-// 008d7056  85ed                 test ebp, ebp
-// 008d7058  0f8c98000000         jl 0x8d70f6
-// 008d705e  3b6b74               cmp ebp, dword ptr [ebx + 0x74]
-// 008d7061  0f8d8f000000         jge 0x8d70f6
-// 008d7067  8b5370               mov edx, dword ptr [ebx + 0x70]
-// 008d706a  8b0caa               mov ecx, dword ptr [edx + ebp*4]
-// 008d706d  8d04aa               lea eax, [edx + ebp*4]
-// 008d7070  8b4108               mov eax, dword ptr [ecx + 8]
-// 008d7073  83f802               cmp eax, 2
-// 008d7076  740d                 je 0x8d7085
-// 008d7078  83f801               cmp eax, 1
-// 008d707b  7527                 jne 0x8d70a4
-// 008d707d  8b4360               mov eax, dword ptr [ebx + 0x60]
-// 008d7080  395804               cmp dword ptr [eax + 4], ebx
-// 008d7083  751f                 jne 0x8d70a4
-// 008d7085  8b11                 mov edx, dword ptr [ecx]
-// 008d7087  8b5208               mov edx, dword ptr [edx + 8]
-// 008d708a  8d442444             lea eax, [esp + 0x44]
-// 008d708e  50                   push eax
-// 008d708f  ffd2                 call edx
-// 008d7091  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d7096  8b442448             mov eax, dword ptr [esp + 0x48]
-// 008d709a  7504                 jne 0x8d70a0
-// 008d709c  8b442444             mov eax, dword ptr [esp + 0x44]
-// 008d70a0  0144241c             add dword ptr [esp + 0x1c], eax
-// 008d70a4  45                   inc ebp
-// 008d70a5  3b6b74               cmp ebp, dword ptr [ebx + 0x74]
-// 008d70a8  7cac                 jl 0x8d7056
-// 008d70aa  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 008d70af  7e05                 jle 0x8d70b6
-// 008d70b1  8344241c03           add dword ptr [esp + 0x1c], 3
-// 008d70b6  83bc249c00000000     cmp dword ptr [esp + 0x9c], 0
-// 008d70be  0f8473060000         je 0x8d7737
-// 008d70c4  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 008d70c9  0f8e93010000         jle 0x8d7262
-// 008d70cf  8b8ee4000000         mov ecx, dword ptr [esi + 0xe4]
-// 008d70d5  8b01                 mov eax, dword ptr [ecx]
-// 008d70d7  8b942484000000       mov edx, dword ptr [esp + 0x84]
-// 008d70de  8b4008               mov eax, dword ptr [eax + 8]
-// 008d70e1  53                   push ebx
-// 008d70e2  52                   push edx
-// 008d70e3  ffd0                 call eax
-// 008d70e5  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d70ea  740f                 je 0x8d70fb
-// 008d70ec  83ac249800000003     sub dword ptr [esp + 0x98], 3
-// 008d70f4  eb0d                 jmp 0x8d7103
-// 008d70f6  e80f32f3ff           call 0x80a30a
-// 008d70fb  83ac249400000003     sub dword ptr [esp + 0x94], 3
-// 008d7103  8b4b74               mov ecx, dword ptr [ebx + 0x74]
-// 008d7106  83c1ff               add ecx, -1
-// 008d7109  898c249c000000       mov dword ptr [esp + 0x9c], ecx
-// 008d7110  0f884c010000         js 0x8d7262
-// 008d7116  85c9                 test ecx, ecx
-// 008d7118  7cdc                 jl 0x8d70f6
-// 008d711a  3b4b74               cmp ecx, dword ptr [ebx + 0x74]
-// 008d711d  7dd7                 jge 0x8d70f6
-// 008d711f  8b4370               mov eax, dword ptr [ebx + 0x70]
-// 008d7122  8d148d00000000       lea edx, [ecx*4]
-// 008d7129  8b2c10               mov ebp, dword ptr [eax + edx]
-// 008d712c  03c2                 add eax, edx
-// 008d712e  8b4508               mov eax, dword ptr [ebp + 8]
-// 008d7131  83f802               cmp eax, 2
-// 008d7134  7415                 je 0x8d714b
-// 008d7136  83f801               cmp eax, 1
-// 008d7139  0f8513010000         jne 0x8d7252
-// 008d713f  8b5360               mov edx, dword ptr [ebx + 0x60]
-// 008d7142  395a04               cmp dword ptr [edx + 4], ebx
-// 008d7145  0f8507010000         jne 0x8d7252
-// 008d714b  8b4500               mov eax, dword ptr [ebp]
-// 008d714e  8b5008               mov edx, dword ptr [eax + 8]
-// 008d7151  8d4c242c             lea ecx, [esp + 0x2c]
-// 008d7155  51                   push ecx
-// 008d7156  8bcd                 mov ecx, ebp
-// 008d7158  ffd2                 call edx
-// 008d715a  83ec10               sub esp, 0x10
-// 008d715d  837c242800           cmp dword ptr [esp + 0x28], 0
-// 008d7162  7557                 jne 0x8d71bb
-// 008d7164  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
-// 008d716b  8b8424a8000000       mov eax, dword ptr [esp + 0xa8]
-// 008d7172  8b7c2440             mov edi, dword ptr [esp + 0x40]
-// 008d7176  03c1                 add eax, ecx
-// 008d7178  99                   cdq 
-// 008d7179  2bc2                 sub eax, edx
-// 008d717b  8bc8                 mov ecx, eax
-// 008d717d  8bc7                 mov eax, edi
-// 008d717f  99                   cdq 
-// 008d7180  2bc2                 sub eax, edx
-// 008d7182  d1f9                 sar ecx, 1
-// 008d7184  d1f8                 sar eax, 1
-// 008d7186  8d1c08               lea ebx, [eax + ecx]
-// 008d7189  2bc7                 sub eax, edi
-// 008d718b  8bbc24a4000000       mov edi, dword ptr [esp + 0xa4]
-// 008d7192  03c1                 add eax, ecx
-// 008d7194  8bcc                 mov ecx, esp
-// 008d7196  8bd7                 mov edx, edi
-// 008d7198  2b54243c             sub edx, dword ptr [esp + 0x3c]
-// 008d719c  8911                 mov dword ptr [ecx], edx
-// 008d719e  894104               mov dword ptr [ecx + 4], eax
-// 008d71a1  897908               mov dword ptr [ecx + 8], edi
-// 008d71a4  89590c               mov dword ptr [ecx + 0xc], ebx
-// 008d71a7  8bcd                 mov ecx, ebp
-// 008d71a9  e872c0ffff           call 0x8d3220
-// 008d71ae  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 008d71b2  29942494000000       sub dword ptr [esp + 0x94], edx
-// 008d71b9  eb56                 jmp 0x8d7211
-// 008d71bb  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 008d71c2  8b8424a4000000       mov eax, dword ptr [esp + 0xa4]
-// 008d71c9  8b7c243c             mov edi, dword ptr [esp + 0x3c]
-// 008d71cd  8b9c24a8000000       mov ebx, dword ptr [esp + 0xa8]
-// 008d71d4  03c1                 add eax, ecx
-// 008d71d6  99                   cdq 
-// 008d71d7  2bc2                 sub eax, edx
-// 008d71d9  8bc8                 mov ecx, eax
-// 008d71db  8bc7                 mov eax, edi
-// 008d71dd  99                   cdq 
-// 008d71de  2bc2                 sub eax, edx
-// 008d71e0  d1f9                 sar ecx, 1
-// 008d71e2  d1f8                 sar eax, 1
-// 008d71e4  8bd1                 mov edx, ecx
-// 008d71e6  2bd0                 sub edx, eax
-// 008d71e8  03d7                 add edx, edi
-// 008d71ea  2bc8                 sub ecx, eax
-// 008d71ec  8bc4                 mov eax, esp
-// 008d71ee  8bfb                 mov edi, ebx
-// 008d71f0  2b7c2440             sub edi, dword ptr [esp + 0x40]
-// 008d71f4  8908                 mov dword ptr [eax], ecx
-// 008d71f6  897804               mov dword ptr [eax + 4], edi
-// 008d71f9  895008               mov dword ptr [eax + 8], edx
-// 008d71fc  8bcd                 mov ecx, ebp
-// 008d71fe  89580c               mov dword ptr [eax + 0xc], ebx
-// 008d7201  e81ac0ffff           call 0x8d3220
-// 008d7206  8b542430             mov edx, dword ptr [esp + 0x30]
-// 008d720a  29942498000000       sub dword ptr [esp + 0x98], edx
-// 008d7211  8b84249c000000       mov eax, dword ptr [esp + 0x9c]
-// 008d7218  8b8c2488000000       mov ecx, dword ptr [esp + 0x88]
-// 008d721f  3b4174               cmp eax, dword ptr [ecx + 0x74]
-// 008d7222  0f8dcefeffff         jge 0x8d70f6
-// 008d7228  8b4970               mov ecx, dword ptr [ecx + 0x70]
-// 008d722b  03c0                 add eax, eax
-// 008d722d  03c0                 add eax, eax
-// 008d722f  03c8                 add ecx, eax
-// 008d7231  8b842484000000       mov eax, dword ptr [esp + 0x84]
-// 008d7238  8b09                 mov ecx, dword ptr [ecx]
-// 008d723a  50                   push eax
-// 008d723b  e860c8ffff           call 0x8d3aa0
-// 008d7240  8b9c2488000000       mov ebx, dword ptr [esp + 0x88]
-// 008d7247  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 008d724e  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 008d7252  83e901               sub ecx, 1
-// 008d7255  898c249c000000       mov dword ptr [esp + 0x9c], ecx
-// 008d725c  0f89b4feffff         jns 0x8d7116
-// 008d7262  8b8ee4000000         mov ecx, dword ptr [esi + 0xe4]
-// 008d7268  8b11                 mov edx, dword ptr [ecx]
-// 008d726a  8b842484000000       mov eax, dword ptr [esp + 0x84]
-// 008d7271  8b5208               mov edx, dword ptr [edx + 8]
-// 008d7274  53                   push ebx
-// 008d7275  50                   push eax
-// 008d7276  ffd2                 call edx
-// 008d7278  8b84248c000000       mov eax, dword ptr [esp + 0x8c]
-// 008d727f  8b8c2490000000       mov ecx, dword ptr [esp + 0x90]
-// 008d7286  8b942494000000       mov edx, dword ptr [esp + 0x94]
-// 008d728d  8944242c             mov dword ptr [esp + 0x2c], eax
-// 008d7291  8b842498000000       mov eax, dword ptr [esp + 0x98]
-// 008d7298  89442438             mov dword ptr [esp + 0x38], eax
-// 008d729c  8b4320               mov eax, dword ptr [ebx + 0x20]
-// 008d729f  2b4324               sub eax, dword ptr [ebx + 0x24]
-// 008d72a2  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d72a7  894c2430             mov dword ptr [esp + 0x30], ecx
-// 008d72ab  89542434             mov dword ptr [esp + 0x34], edx
-// 008d72af  0f8440020000         je 0x8d74f5
-// 008d72b5  85c0                 test eax, eax
-// 008d72b7  7e18                 jle 0x8d72d1
-// 008d72b9  99                   cdq 
-// 008d72ba  2bc2                 sub eax, edx
-// 008d72bc  d1f8                 sar eax, 1
-// 008d72be  f7d8                 neg eax
-// 008d72c0  50                   push eax
-// 008d72c1  6a00                 push 0
-// 008d72c3  8d8c2494000000       lea ecx, [esp + 0x94]
-// 008d72ca  51                   push ecx
-// 008d72cb  ff15e41ba400         call dword ptr [0xa41be4]
-// 008d72d1  8b5670               mov edx, dword ptr [esi + 0x70]
-// 008d72d4  035660               add edx, dword ptr [esi + 0x60]
-// 008d72d7  8bcf                 mov ecx, edi
-// 008d72d9  01942490000000       add dword ptr [esp + 0x90], edx
-// 008d72e0  8b07                 mov eax, dword ptr [edi]
-// 008d72e2  8b5048               mov edx, dword ptr [eax + 0x48]
-// 008d72e5  ffd2                 call edx
-// 008d72e7  83f803               cmp eax, 3
-// 008d72ea  7508                 jne 0x8d72f4
-// 008d72ec  8b4664               mov eax, dword ptr [esi + 0x64]
-// 008d72ef  8b4e6c               mov ecx, dword ptr [esi + 0x6c]
-// 008d72f2  eb06                 jmp 0x8d72fa
-// 008d72f4  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 008d72f7  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 008d72fa  018c248c000000       add dword ptr [esp + 0x8c], ecx
-// 008d7301  29842494000000       sub dword ptr [esp + 0x94], eax
-// 008d7308  837c242400           cmp dword ptr [esp + 0x24], 0
-// 008d730d  7470                 je 0x8d737f
-// 008d730f  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
-// 008d7316  8b84248c000000       mov eax, dword ptr [esp + 0x8c]
-// 008d731d  8bac2490000000       mov ebp, dword ptr [esp + 0x90]
-// 008d7324  03c1                 add eax, ecx
-// 008d7326  99                   cdq 
-// 008d7327  2bc2                 sub eax, edx
-// 008d7329  8bc8                 mov ecx, eax
-// 008d732b  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008d732f  99                   cdq 
-// 008d7330  2bc2                 sub eax, edx
-// 008d7332  8b942498000000       mov edx, dword ptr [esp + 0x98]
-// 008d7339  d1f9                 sar ecx, 1
-// 008d733b  d1f8                 sar eax, 1
-// 008d733d  2bd5                 sub edx, ebp
-// 008d733f  2bc8                 sub ecx, eax
-// 008d7341  3b542440             cmp edx, dword ptr [esp + 0x40]
-// 008d7345  8d7dff               lea edi, [ebp - 1]
-// 008d7348  7e26                 jle 0x8d7370
-// 008d734a  8b442420             mov eax, dword ptr [esp + 0x20]
-// 008d734e  8b10                 mov edx, dword ptr [eax]
-// 008d7350  8b5244               mov edx, dword ptr [edx + 0x44]
-// 008d7353  8d6c243c             lea ebp, [esp + 0x3c]
-// 008d7357  55                   push ebp
-// 008d7358  6a01                 push 1
-// 008d735a  53                   push ebx
-// 008d735b  57                   push edi
-// 008d735c  51                   push ecx
-// 008d735d  8b8c2498000000       mov ecx, dword ptr [esp + 0x98]
-// 008d7364  51                   push ecx
-// 008d7365  8bc8                 mov ecx, eax
-// 008d7367  ffd2                 call edx
-// 008d7369  8bac2490000000       mov ebp, dword ptr [esp + 0x90]
-// 008d7370  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008d7374  8d4c2802             lea ecx, [eax + ebp + 2]
-// 008d7378  898c2490000000       mov dword ptr [esp + 0x90], ecx
-// 008d737f  837c242800           cmp dword ptr [esp + 0x28], 0
-// 008d7384  0f8449030000         je 0x8d76d3
-// 008d738a  8b942490000000       mov edx, dword ptr [esp + 0x90]
-// 008d7391  83c208               add edx, 8
-// 008d7394  39942498000000       cmp dword ptr [esp + 0x98], edx
-// 008d739b  0f8e32030000         jle 0x8d76d3
-// 008d73a1  8d442444             lea eax, [esp + 0x44]
-// 008d73a5  50                   push eax
-// 008d73a6  8d4c2418             lea ecx, [esp + 0x18]
-// 008d73aa  ff15a826a400         call dword ptr [0xa426a8]
-// 008d73b0  50                   push eax
-// 008d73b1  8d4c241c             lea ecx, [esp + 0x1c]
-// 008d73b5  ff15c82da400         call dword ptr [0xa42dc8]
-// 008d73bb  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008d73c2  8b5108               mov edx, dword ptr [ecx + 8]
-// 008d73c5  50                   push eax
-// 008d73c6  52                   push edx
-// 008d73c7  ff153801a400         call dword ptr [0xa40138]
-// 008d73cd  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 008d73d1  8b01                 mov eax, dword ptr [ecx]
-// 008d73d3  8bbc2494000000       mov edi, dword ptr [esp + 0x94]
-// 008d73da  8b5048               mov edx, dword ptr [eax + 0x48]
-// 008d73dd  2bbc248c000000       sub edi, dword ptr [esp + 0x8c]
-// 008d73e4  ffd2                 call edx
-// 008d73e6  33c9                 xor ecx, ecx
-// 008d73e8  83f803               cmp eax, 3
-// 008d73eb  0f94c1               sete cl
-// 008d73ee  8bac2498000000       mov ebp, dword ptr [esp + 0x98]
-// 008d73f5  8bc7                 mov eax, edi
-// 008d73f7  8b7e78               mov edi, dword ptr [esi + 0x78]
-// 008d73fa  83c7fc               add edi, -4
-// 008d73fd  2bc1                 sub eax, ecx
-// 008d73ff  2b442448             sub eax, dword ptr [esp + 0x48]
-// 008d7403  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
-// 008d740a  99                   cdq 
-// 008d740b  2bc2                 sub eax, edx
-// 008d740d  d1f8                 sar eax, 1
-// 008d740f  2bc8                 sub ecx, eax
-// 008d7411  8bc1                 mov eax, ecx
-// 008d7413  2b842490000000       sub eax, dword ptr [esp + 0x90]
-// 008d741a  33d2                 xor edx, edx
-// 008d741c  03c5                 add eax, ebp
-// 008d741e  85ff                 test edi, edi
-// 008d7420  0f9cc2               setl dl
-// 008d7423  898c248c000000       mov dword ptr [esp + 0x8c], ecx
-// 008d742a  89842494000000       mov dword ptr [esp + 0x94], eax
-// 008d7431  4a                   dec edx
-// 008d7432  23d7                 and edx, edi
-// 008d7434  8b7e68               mov edi, dword ptr [esi + 0x68]
-// 008d7437  03fa                 add edi, edx
-// 008d7439  2bef                 sub ebp, edi
-// 008d743b  83be9800000000       cmp dword ptr [esi + 0x98], 0
-// 008d7442  89ac2498000000       mov dword ptr [esp + 0x98], ebp
-// 008d7449  751a                 jne 0x8d7465
-// 008d744b  8d542414             lea edx, [esp + 0x14]
-// 008d744f  52                   push edx
-// 008d7450  8bce                 mov ecx, esi
-// 008d7452  e839e5ffff           call 0x8d5990
-// 008d7457  8b842494000000       mov eax, dword ptr [esp + 0x94]
-// 008d745e  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008d7465  83be9000000000       cmp dword ptr [esi + 0x90], 0
-// 008d746c  743c                 je 0x8d74aa
-// 008d746e  6820090000           push 0x920
-// 008d7473  83ec10               sub esp, 0x10
-// 008d7476  8bd4                 mov edx, esp
-// 008d7478  890a                 mov dword ptr [edx], ecx
-// 008d747a  8b8c24a4000000       mov ecx, dword ptr [esp + 0xa4]
-// 008d7481  894a04               mov dword ptr [edx + 4], ecx
-// 008d7484  894208               mov dword ptr [edx + 8], eax
-// 008d7487  8b8424ac000000       mov eax, dword ptr [esp + 0xac]
-// 008d748e  8d4c2428             lea ecx, [esp + 0x28]
-// 008d7492  89420c               mov dword ptr [edx + 0xc], eax
-// 008d7495  8b942498000000       mov edx, dword ptr [esp + 0x98]
-// 008d749c  51                   push ecx
-// 008d749d  52                   push edx
-// 008d749e  8bce                 mov ecx, esi
-// 008d74a0  e8cbecffff           call 0x8d6170
-// 008d74a5  e929020000           jmp 0x8d76d3
-// 008d74aa  8b8694000000         mov eax, dword ptr [esi + 0x94]
-// 008d74b0  8bac2484000000       mov ebp, dword ptr [esp + 0x84]
-// 008d74b7  8b7d00               mov edi, dword ptr [ebp]
-// 008d74ba  f7d8                 neg eax
-// 008d74bc  1bc0                 sbb eax, eax
-// 008d74be  2500800000           and eax, 0x8000
-// 008d74c3  0d20090000           or eax, 0x920
-// 008d74c8  50                   push eax
-// 008d74c9  8d842490000000       lea eax, [esp + 0x90]
-// 008d74d0  50                   push eax
-// 008d74d1  8d4c241c             lea ecx, [esp + 0x1c]
-// 008d74d5  83c770               add edi, 0x70
-// 008d74d8  ff15a826a400         call dword ptr [0xa426a8]
-// 008d74de  50                   push eax
-// 008d74df  8d4c2420             lea ecx, [esp + 0x20]
-// 008d74e3  ff15c82da400         call dword ptr [0xa42dc8]
-// 008d74e9  8b17                 mov edx, dword ptr [edi]
-// 008d74eb  50                   push eax
-// 008d74ec  8bcd                 mov ecx, ebp
-// 008d74ee  ffd2                 call edx
-// 008d74f0  e9de010000           jmp 0x8d76d3
-// 008d74f5  85c0                 test eax, eax
-// 008d74f7  7e18                 jle 0x8d7511
-// 008d74f9  99                   cdq 
-// 008d74fa  2bc2                 sub eax, edx
-// 008d74fc  d1f8                 sar eax, 1
-// 008d74fe  6a00                 push 0
-// 008d7500  f7d8                 neg eax
-// 008d7502  50                   push eax
-// 008d7503  8d842494000000       lea eax, [esp + 0x94]
-// 008d750a  50                   push eax
-// 008d750b  ff15e41ba400         call dword ptr [0xa41be4]
-// 008d7511  8b4e70               mov ecx, dword ptr [esi + 0x70]
-// 008d7514  034e60               add ecx, dword ptr [esi + 0x60]
-// 008d7517  018c248c000000       add dword ptr [esp + 0x8c], ecx
-// 008d751e  8b17                 mov edx, dword ptr [edi]
-// 008d7520  8b4248               mov eax, dword ptr [edx + 0x48]
-// 008d7523  8bcf                 mov ecx, edi
-// 008d7525  ffd0                 call eax
-// 008d7527  83f802               cmp eax, 2
-// 008d752a  7508                 jne 0x8d7534
-// 008d752c  8b4664               mov eax, dword ptr [esi + 0x64]
-// 008d752f  8b4e6c               mov ecx, dword ptr [esi + 0x6c]
-// 008d7532  eb06                 jmp 0x8d753a
-// 008d7534  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 008d7537  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 008d753a  29842498000000       sub dword ptr [esp + 0x98], eax
-// 008d7541  8b442424             mov eax, dword ptr [esp + 0x24]
-// 008d7545  018c2490000000       add dword ptr [esp + 0x90], ecx
-// 008d754c  85c0                 test eax, eax
-// 008d754e  7473                 je 0x8d75c3
-// 008d7550  8b8c2490000000       mov ecx, dword ptr [esp + 0x90]
-// 008d7557  8b942498000000       mov edx, dword ptr [esp + 0x98]
-// 008d755e  8bac2494000000       mov ebp, dword ptr [esp + 0x94]
-// 008d7565  8d0411               lea eax, [ecx + edx]
-// 008d7568  99                   cdq 
-// 008d7569  2bc2                 sub eax, edx
-// 008d756b  8bc8                 mov ecx, eax
-// 008d756d  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008d7571  99                   cdq 
-// 008d7572  2bc2                 sub eax, edx
-// 008d7574  d1f8                 sar eax, 1
-// 008d7576  d1f9                 sar ecx, 1
-// 008d7578  2bc8                 sub ecx, eax
-// 008d757a  8b84248c000000       mov eax, dword ptr [esp + 0x8c]
-// 008d7581  2be8                 sub ebp, eax
-// 008d7583  3b6c243c             cmp ebp, dword ptr [esp + 0x3c]
-// 008d7587  8d50ff               lea edx, [eax - 1]
-// 008d758a  7e22                 jle 0x8d75ae
-// 008d758c  8b07                 mov eax, dword ptr [edi]
-// 008d758e  8d6c243c             lea ebp, [esp + 0x3c]
-// 008d7592  55                   push ebp
-// 008d7593  6a01                 push 1
-// 008d7595  53                   push ebx
-// 008d7596  51                   push ecx
-// 008d7597  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
-// 008d759e  52                   push edx
-// 008d759f  8b5044               mov edx, dword ptr [eax + 0x44]
-// 008d75a2  51                   push ecx
-// 008d75a3  8bcf                 mov ecx, edi
-// 008d75a5  ffd2                 call edx
-// 008d75a7  8b84248c000000       mov eax, dword ptr [esp + 0x8c]
-// 008d75ae  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 008d75b2  8d4c0802             lea ecx, [eax + ecx + 2]
-// 008d75b6  8b442424             mov eax, dword ptr [esp + 0x24]
-// 008d75ba  898c248c000000       mov dword ptr [esp + 0x8c], ecx
-// 008d75c1  eb07                 jmp 0x8d75ca
-// 008d75c3  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
-// 008d75ca  837c242800           cmp dword ptr [esp + 0x28], 0
-// 008d75cf  0f84fe000000         je 0x8d76d3
-// 008d75d5  8b942494000000       mov edx, dword ptr [esp + 0x94]
-// 008d75dc  3bd1                 cmp edx, ecx
-// 008d75de  0f8eef000000         jle 0x8d76d3
-// 008d75e4  f7d8                 neg eax
-// 008d75e6  1bc0                 sbb eax, eax
-// 008d75e8  83e002               and eax, 2
-// 008d75eb  2b4678               sub eax, dword ptr [esi + 0x78]
-// 008d75ee  2b4668               sub eax, dword ptr [esi + 0x68]
-// 008d75f1  03d0                 add edx, eax
-// 008d75f3  83be9000000000       cmp dword ptr [esi + 0x90], 0
-// 008d75fa  89942494000000       mov dword ptr [esp + 0x94], edx
-// 008d7601  7450                 je 0x8d7653
-// 008d7603  8b8698000000         mov eax, dword ptr [esi + 0x98]
-// 008d7609  f7d8                 neg eax
-// 008d760b  1bc0                 sbb eax, eax
-// 008d760d  2500080000           and eax, 0x800
-// 008d7612  0b869c000000         or eax, dword ptr [esi + 0x9c]
-// 008d7618  83c820               or eax, 0x20
-// 008d761b  50                   push eax
-// 008d761c  83ec10               sub esp, 0x10
-// 008d761f  8bc4                 mov eax, esp
-// 008d7621  8908                 mov dword ptr [eax], ecx
-// 008d7623  8b8c24a4000000       mov ecx, dword ptr [esp + 0xa4]
-// 008d762a  894804               mov dword ptr [eax + 4], ecx
-// 008d762d  8b8c2498000000       mov ecx, dword ptr [esp + 0x98]
-// 008d7634  895008               mov dword ptr [eax + 8], edx
-// 008d7637  8b9424ac000000       mov edx, dword ptr [esp + 0xac]
-// 008d763e  89500c               mov dword ptr [eax + 0xc], edx
-// 008d7641  8d442428             lea eax, [esp + 0x28]
-// 008d7645  50                   push eax
-// 008d7646  51                   push ecx
-// 008d7647  8bce                 mov ecx, esi
-// 008d7649  e822ebffff           call 0x8d6170
-// 008d764e  e980000000           jmp 0x8d76d3
-// 008d7653  83bea000000000       cmp dword ptr [esi + 0xa0], 0
-// 008d765a  7415                 je 0x8d7671
-// 008d765c  8d542414             lea edx, [esp + 0x14]
-// 008d7660  52                   push edx
-// 008d7661  8bce                 mov ecx, esi
-// 008d7663  e828e3ffff           call 0x8d5990
-// 008d7668  83bea000000000       cmp dword ptr [esi + 0xa0], 0
-// 008d766f  750d                 jne 0x8d767e
-// 008d7671  83be9800000000       cmp dword ptr [esi + 0x98], 0
-// 008d7678  7504                 jne 0x8d767e
-// 008d767a  33c9                 xor ecx, ecx
-// 008d767c  eb05                 jmp 0x8d7683
-// 008d767e  b900080000           mov ecx, 0x800
-// 008d7683  8b8694000000         mov eax, dword ptr [esi + 0x94]
-// 008d7689  f7d8                 neg eax
-// 008d768b  1bc0                 sbb eax, eax
-// 008d768d  2500800000           and eax, 0x8000
-// 008d7692  0b869c000000         or eax, dword ptr [esi + 0x9c]
-// 008d7698  8d94248c000000       lea edx, [esp + 0x8c]
-// 008d769f  0bc1                 or eax, ecx
-// 008d76a1  8b8c2484000000       mov ecx, dword ptr [esp + 0x84]
-// 008d76a8  8b39                 mov edi, dword ptr [ecx]
-// 008d76aa  83c820               or eax, 0x20
-// 008d76ad  50                   push eax
-// 008d76ae  52                   push edx
-// 008d76af  8d4c241c             lea ecx, [esp + 0x1c]
-// 008d76b3  83c770               add edi, 0x70
-// 008d76b6  ff15a826a400         call dword ptr [0xa426a8]
-// 008d76bc  50                   push eax
-// 008d76bd  8d4c2420             lea ecx, [esp + 0x20]
-// 008d76c1  ff15c82da400         call dword ptr [0xa42dc8]
-// 008d76c7  8b8c2490000000       mov ecx, dword ptr [esp + 0x90]
-// 008d76ce  50                   push eax
-// 008d76cf  8b07                 mov eax, dword ptr [edi]
-// 008d76d1  ffd0                 call eax
-// 008d76d3  8b4b60               mov ecx, dword ptr [ebx + 0x60]
-// 008d76d6  395904               cmp dword ptr [ecx + 4], ebx
-// 008d76d9  753d                 jne 0x8d7718
-// 008d76db  8b11                 mov edx, dword ptr [ecx]
-// 008d76dd  8b4278               mov eax, dword ptr [edx + 0x78]
-// 008d76e0  ffd0                 call eax
-// 008d76e2  85c0                 test eax, eax
-// 008d76e4  7432                 je 0x8d7718
-// 008d76e6  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 008d76ea  8b16                 mov edx, dword ptr [esi]
-// 008d76ec  8b5274               mov edx, dword ptr [edx + 0x74]
-// 008d76ef  83ec10               sub esp, 0x10
-// 008d76f2  8bc4                 mov eax, esp
-// 008d76f4  8908                 mov dword ptr [eax], ecx
-// 008d76f6  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 008d76fa  894804               mov dword ptr [eax + 4], ecx
-// 008d76fd  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 008d7701  894808               mov dword ptr [eax + 8], ecx
-// 008d7704  8b4c2448             mov ecx, dword ptr [esp + 0x48]
-// 008d7708  89480c               mov dword ptr [eax + 0xc], ecx
-// 008d770b  8b842494000000       mov eax, dword ptr [esp + 0x94]
-// 008d7712  53                   push ebx
-// 008d7713  50                   push eax
-// 008d7714  8bce                 mov ecx, esi
-// 008d7716  ffd2                 call edx
-// 008d7718  8d4c2454             lea ecx, [esp + 0x54]
-// 008d771c  c644247c00           mov byte ptr [esp + 0x7c], 0
-// 008d7721  e87a5af8ff           call 0x85d1a0
-// 008d7726  8d4c2414             lea ecx, [esp + 0x14]
-// 008d772a  ff15082ea400         call dword ptr [0xa42e08]
-// 008d7730  33c0                 xor eax, eax
-// 008d7732  e98b020000           jmp 0x8d79c2
-// 008d7737  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 008d773b  83f802               cmp eax, 2
-// 008d773e  751a                 jne 0x8d775a
-// 008d7740  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
-// 008d7746  8b8ed0000000         mov ecx, dword ptr [esi + 0xd0]
-// 008d774c  8b96d8000000         mov edx, dword ptr [esi + 0xd8]
-// 008d7752  50                   push eax
-// 008d7753  51                   push ecx
-// 008d7754  52                   push edx
-// 008d7755  e945020000           jmp 0x8d799f
-// 008d775a  83f803               cmp eax, 3
-// 008d775d  0f85b4010000         jne 0x8d7917
-// 008d7763  837c242800           cmp dword ptr [esp + 0x28], 0
-// 008d7768  7526                 jne 0x8d7790
-// 008d776a  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d776f  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008d7773  7504                 jne 0x8d7779
-// 008d7775  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008d7779  8b8ed4000000         mov ecx, dword ptr [esi + 0xd4]
-// 008d777f  8b96d0000000         mov edx, dword ptr [esi + 0xd0]
-// 008d7785  51                   push ecx
-// 008d7786  52                   push edx
-// 008d7787  83c008               add eax, 8
-// 008d778a  50                   push eax
-// 008d778b  e90f020000           jmp 0x8d799f
-// 008d7790  837e2800             cmp dword ptr [esi + 0x28], 0
-// 008d7794  7414                 je 0x8d77aa
-// 008d7796  837f1c00             cmp dword ptr [edi + 0x1c], 0
-// 008d779a  740e                 je 0x8d77aa
-// 008d779c  8b442418             mov eax, dword ptr [esp + 0x18]
-// 008d77a0  50                   push eax
-// 008d77a1  8bce                 mov ecx, esi
-// 008d77a3  e858e0ffff           call 0x8d5800
-// 008d77a8  eb13                 jmp 0x8d77bd
-// 008d77aa  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d77af  8d861c010000         lea eax, [esi + 0x11c]
-// 008d77b5  7506                 jne 0x8d77bd
-// 008d77b7  8d860c010000         lea eax, [esi + 0x10c]
-// 008d77bd  8b8c2484000000       mov ecx, dword ptr [esp + 0x84]
-// 008d77c4  50                   push eax
-// 008d77c5  51                   push ecx
-// 008d77c6  8d4c246c             lea ecx, [esp + 0x6c]
-// 008d77ca  e85159f8ff           call 0x85d120
-// 008d77cf  8b475c               mov eax, dword ptr [edi + 0x5c]
-// 008d77d2  33d2                 xor edx, edx
-// 008d77d4  3bc2                 cmp eax, edx
-// 008d77d6  c644247c02           mov byte ptr [esp + 0x7c], 2
-// 008d77db  8994249c000000       mov dword ptr [esp + 0x9c], edx
-// 008d77e2  89942488000000       mov dword ptr [esp + 0x88], edx
-// 008d77e9  0f8ed0000000         jle 0x8d78bf
-// 008d77ef  eb07                 jmp 0x8d77f8
-// 008d77f1  8b942488000000       mov edx, dword ptr [esp + 0x88]
-// 008d77f8  33c9                 xor ecx, ecx
-// 008d77fa  3bd1                 cmp edx, ecx
-// 008d77fc  894c2444             mov dword ptr [esp + 0x44], ecx
-// 008d7800  894c2448             mov dword ptr [esp + 0x48], ecx
-// 008d7804  894c244c             mov dword ptr [esp + 0x4c], ecx
-// 008d7808  894c2450             mov dword ptr [esp + 0x50], ecx
-// 008d780c  7c1a                 jl 0x8d7828
-// 008d780e  3bd0                 cmp edx, eax
-// 008d7810  7d16                 jge 0x8d7828
-// 008d7812  8b442420             mov eax, dword ptr [esp + 0x20]
-// 008d7816  3b505c               cmp edx, dword ptr [eax + 0x5c]
-// 008d7819  0f8dd7f8ffff         jge 0x8d70f6
-// 008d781f  8b4058               mov eax, dword ptr [eax + 0x58]
-// 008d7822  8b0c90               mov ecx, dword ptr [eax + edx*4]
-// 008d7825  8d0490               lea eax, [eax + edx*4]
-// 008d7828  8d542428             lea edx, [esp + 0x28]
-// 008d782c  52                   push edx
-// 008d782d  e88eb8ffff           call 0x8d30c0
-// 008d7832  8be8                 mov ebp, eax
-// 008d7834  8b8698000000         mov eax, dword ptr [esi + 0x98]
-// 008d783a  8b9c2484000000       mov ebx, dword ptr [esp + 0x84]
-// 008d7841  8b3b                 mov edi, dword ptr [ebx]
-// 008d7843  f7d8                 neg eax
-// 008d7845  1bc0                 sbb eax, eax
-// 008d7847  2500080000           and eax, 0x800
-// 008d784c  0d20050000           or eax, 0x520
-// 008d7851  50                   push eax
-// 008d7852  8d442448             lea eax, [esp + 0x48]
-// 008d7856  50                   push eax
-// 008d7857  8bcd                 mov ecx, ebp
-// 008d7859  c684248400000003     mov byte ptr [esp + 0x84], 3
-// 008d7861  83c770               add edi, 0x70
-// 008d7864  ff15a826a400         call dword ptr [0xa426a8]
-// 008d786a  50                   push eax
-// 008d786b  8bcd                 mov ecx, ebp
-// 008d786d  ff15c82da400         call dword ptr [0xa42dc8]
-// 008d7873  8b17                 mov edx, dword ptr [edi]
-// 008d7875  50                   push eax
-// 008d7876  8bcb                 mov ecx, ebx
-// 008d7878  ffd2                 call edx
-// 008d787a  8d4c2428             lea ecx, [esp + 0x28]
-// 008d787e  c644247c02           mov byte ptr [esp + 0x7c], 2
-// 008d7883  ff15082ea400         call dword ptr [0xa42e08]
-// 008d7889  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 008d788d  2b442444             sub eax, dword ptr [esp + 0x44]
-// 008d7891  3984249c000000       cmp dword ptr [esp + 0x9c], eax
-// 008d7898  7f07                 jg 0x8d78a1
-// 008d789a  8984249c000000       mov dword ptr [esp + 0x9c], eax
-// 008d78a1  8b8c2488000000       mov ecx, dword ptr [esp + 0x88]
-// 008d78a8  8b442420             mov eax, dword ptr [esp + 0x20]
-// 008d78ac  8b405c               mov eax, dword ptr [eax + 0x5c]
-// 008d78af  41                   inc ecx
-// 008d78b0  3bc8                 cmp ecx, eax
-// 008d78b2  898c2488000000       mov dword ptr [esp + 0x88], ecx
-// 008d78b9  0f8c32ffffff         jl 0x8d77f1
-// 008d78bf  837c242400           cmp dword ptr [esp + 0x24], 0
-// 008d78c4  7504                 jne 0x8d78ca
-// 008d78c6  33c0                 xor eax, eax
-// 008d78c8  eb0f                 jmp 0x8d78d9
-// 008d78ca  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d78cf  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008d78d3  7504                 jne 0x8d78d9
-// 008d78d5  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008d78d9  8b8ed4000000         mov ecx, dword ptr [esi + 0xd4]
-// 008d78df  8b96d0000000         mov edx, dword ptr [esi + 0xd0]
-// 008d78e5  51                   push ecx
-// 008d78e6  8b4e78               mov ecx, dword ptr [esi + 0x78]
-// 008d78e9  034e70               add ecx, dword ptr [esi + 0x70]
-// 008d78ec  52                   push edx
-// 008d78ed  03c8                 add ecx, eax
-// 008d78ef  038c24a4000000       add ecx, dword ptr [esp + 0xa4]
-// 008d78f6  034c2424             add ecx, dword ptr [esp + 0x24]
-// 008d78fa  51                   push ecx
-// 008d78fb  8bce                 mov ecx, esi
-// 008d78fd  e85ee0ffff           call 0x8d5960
-// 008d7902  8d4c2464             lea ecx, [esp + 0x64]
-// 008d7906  8bf0                 mov esi, eax
-// 008d7908  c644247c01           mov byte ptr [esp + 0x7c], 1
-// 008d790d  e88e58f8ff           call 0x85d1a0
-// 008d7912  e991000000           jmp 0x8d79a8
-// 008d7917  8b8698000000         mov eax, dword ptr [esi + 0x98]
-// 008d791d  8bbc2484000000       mov edi, dword ptr [esp + 0x84]
-// 008d7924  8b1f                 mov ebx, dword ptr [edi]
-// 008d7926  f7d8                 neg eax
-// 008d7928  1bc0                 sbb eax, eax
-// 008d792a  2500080000           and eax, 0x800
-// 008d792f  0d20050000           or eax, 0x520
-// 008d7934  50                   push eax
-// 008d7935  8d942490000000       lea edx, [esp + 0x90]
-// 008d793c  52                   push edx
-// 008d793d  8d4c241c             lea ecx, [esp + 0x1c]
-// 008d7941  83c370               add ebx, 0x70
-// 008d7944  ff15a826a400         call dword ptr [0xa426a8]
-// 008d794a  50                   push eax
-// 008d794b  8d4c2420             lea ecx, [esp + 0x20]
-// 008d794f  ff15c82da400         call dword ptr [0xa42dc8]
-// 008d7955  50                   push eax
-// 008d7956  8b03                 mov eax, dword ptr [ebx]
-// 008d7958  8bcf                 mov ecx, edi
-// 008d795a  ffd0                 call eax
-// 008d795c  837c242400           cmp dword ptr [esp + 0x24], 0
-// 008d7961  7504                 jne 0x8d7967
-// 008d7963  33c0                 xor eax, eax
-// 008d7965  eb0f                 jmp 0x8d7976
-// 008d7967  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008d796c  8b442440             mov eax, dword ptr [esp + 0x40]
-// 008d7970  7504                 jne 0x8d7976
-// 008d7972  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 008d7976  8b8ed4000000         mov ecx, dword ptr [esi + 0xd4]
-// 008d797c  8b96d0000000         mov edx, dword ptr [esi + 0xd0]
-// 008d7982  51                   push ecx
-// 008d7983  8b4e78               mov ecx, dword ptr [esi + 0x78]
-// 008d7986  034e70               add ecx, dword ptr [esi + 0x70]
-// 008d7989  52                   push edx
-// 008d798a  2b8c2494000000       sub ecx, dword ptr [esp + 0x94]
-// 008d7991  03c8                 add ecx, eax
-// 008d7993  038c249c000000       add ecx, dword ptr [esp + 0x9c]
-// 008d799a  034c2424             add ecx, dword ptr [esp + 0x24]
-// 008d799e  51                   push ecx
-// 008d799f  8bce                 mov ecx, esi
-// 008d79a1  e8badfffff           call 0x8d5960
-// 008d79a6  8bf0                 mov esi, eax
-// 008d79a8  8d4c2454             lea ecx, [esp + 0x54]
-// 008d79ac  c644247c00           mov byte ptr [esp + 0x7c], 0
-// 008d79b1  e8ea57f8ff           call 0x85d1a0
-// 008d79b6  8d4c2414             lea ecx, [esp + 0x14]
-// 008d79ba  ff15082ea400         call dword ptr [0xa42e08]
-// 008d79c0  8bc6                 mov eax, esi
-// 008d79c2  8b4c2474             mov ecx, dword ptr [esp + 0x74]
-// 008d79c6  64890d00000000       mov dword ptr fs:[0], ecx
-// 008d79cd  59                   pop ecx
-// 008d79ce  5f                   pop edi
-// 008d79cf  5e                   pop esi
-// 008d79d0  5d                   pop ebp
-// 008d79d1  5b                   pop ebx
-// 008d79d2  83c46c               add esp, 0x6c
-// 008d79d5  c21c00               ret 0x1c
-// copied from an identical function in another client (function ?DrawSingleButtonIconAndText@CXTPTabPaintManager@@UAEHPAVCDC@@PAVCXTPTabManagerItem@@VCRect@@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\TabManager\XTPTabPaintManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "XTPTabPaintManager.h"
+#include "XTPTabManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "XTPTabPaintManager.inl"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// CXTPTabPaintManager
+
+
+CXTPTabPaintManager::CXTPTabPaintManager()
+{
+	m_bUseStandardFont = TRUE;
+
+	m_pColorSet = NULL;
+	m_pAppearanceSet = NULL;
+
+	SetAppearance(xtpTabAppearancePropertyPage);
+
+	m_bHotTracking = FALSE;
+	m_bBoldNormal = m_bBoldSelected = FALSE;
+	m_bShowIcons = TRUE;
+	m_bSelectOnButtonDown = TRUE;
+
+	m_bDisableLunaColors = FALSE;
+	m_bOneNoteColors = FALSE;
+
+	m_tabPosition = xtpTabPositionTop;
+	m_tabLayout = xtpTabLayoutAutoSize;
+
+	m_clientFrame = xtpTabFrameBorder;
+	m_bStaticFrame = FALSE;
+
+	m_bInvertGradient = FALSE;
+	m_bFillBackground = TRUE;
+	m_bDrawFocusRect = TRUE;
+
+	m_rcClientMargin.SetRect(0, 0, 0, 0);
+	m_rcControlMargin.SetRect(0, 0, 0, 0);
+	m_rcButtonMargin.SetRect(0, 0, 0, 0);
+
+	m_nButtonExtraLength = 0;
+	m_szIcon = CSize(16, 16);
+
+	m_nFixedTabWidth = 70;
+	m_nMinTabWidth = m_nMaxTabWidth = 0;
+
+
+	m_bDrawTextEndEllipsis = TRUE;
+	m_bDrawTextPathEllipsis = FALSE;
+	m_bDrawTextNoPrefix = TRUE;
+	m_bDrawTextHidePrefix = FALSE;
+
+	m_bMultiRowFixedSelection = FALSE;
+	m_bMultiRowJustified = TRUE;
+
+	m_toolBehaviour = xtpTabToolTipShrinkedOnly;
+	m_bSelectOnDragOver = TRUE;
+	m_nItemColor = 0;
+
+	m_bClearTypeTextQuality = FALSE;
+	m_bRotateImageOnVerticalDraw = FALSE;
+
+	m_rcButtonTextPadding.SetRect(6, 0, 6, 0);
+
+	m_bClipHeader = TRUE;
+
+	m_nDrawTextFormat = DT_LEFT | DT_VCENTER;
+
+	m_szNavigateButton = CSize(14, 15);
+
+	EnableAutomation();
+
+
+
+	RefreshMetrics();
+}
+
+CXTPTabPaintManager::~CXTPTabPaintManager()
+{
+	delete m_pColorSet;
+	delete m_pAppearanceSet;
+
+}
+
+CXTPTabPaintManager::CColorSet* CXTPTabPaintManager::SetColor(XTPTabColorStyle tabColor)
+{
+	CColorSet* pColorSet = NULL;
+
+	m_tabColor = tabColor;
+	if (tabColor == xtpTabColorVisualStudio) pColorSet = new CColorSetVisualStudio();
+	else if (tabColor == xtpTabColorOffice2003) pColorSet = new CColorSetOffice2003();
+	else if (tabColor == xtpTabColorWinXP) pColorSet = new CColorSetWinXP();
+	else if (tabColor == xtpTabColorWhidbey) pColorSet = new CColorSetWhidbey();
+	else if (tabColor == xtpTabColorOffice2007) pColorSet = new CColorSetOffice2007();
+	else pColorSet = new CColorSetDefault();
+
+	return SetColorSet(pColorSet);
+}
+CXTPTabPaintManager::CColorSet* CXTPTabPaintManager::SetColorSet(CColorSet* pColorSet)
+{
+	if (pColorSet)
+	{
+		if (m_pColorSet) delete m_pColorSet;
+		m_pColorSet = pColorSet;
+
+		pColorSet->m_pPaintManager = this;
+		pColorSet->RefreshMetrics();
+	}
+	OnPropertyChanged();
+
+	return pColorSet;
+}
+
+CXTPTabPaintManager::CAppearanceSet* CXTPTabPaintManager::SetAppearance(XTPTabAppearanceStyle tabAppearance)
+{
+	CAppearanceSet* pAppearanceSet = NULL;
+
+	m_tabAppearance = tabAppearance;
+	if (tabAppearance == xtpTabAppearanceVisualStudio) pAppearanceSet = new CAppearanceSetVisualStudio();
+	else if (tabAppearance == xtpTabAppearanceExcel) pAppearanceSet = new CAppearanceSetExcel();
+	else if (tabAppearance == xtpTabAppearancePropertyPageFlat) pAppearanceSet = new CAppearanceSetPropertyPageFlat();
+	else if (tabAppearance == xtpTabAppearanceFlat) pAppearanceSet = new CAppearanceSetFlat();
+	else if (tabAppearance == xtpTabAppearanceStateButtons) pAppearanceSet = new CAppearanceSetStateButtons();
+	else if (tabAppearance == xtpTabAppearancePropertyPageSelected) pAppearanceSet = new CAppearanceSetPropertyPageSelected();
+	else if (tabAppearance == xtpTabAppearancePropertyPage2003) pAppearanceSet = new CAppearanceSetPropertyPage2003();
+	else if (tabAppearance == xtpTabAppearanceVisio) pAppearanceSet = new CAppearanceSetVisio();
+	else if (tabAppearance == xtpTabAppearanceVisualStudio2005) pAppearanceSet = new CAppearanceSetVisualStudio2005();
+	else if (tabAppearance == xtpTabAppearancePropertyPage2007) pAppearanceSet = new CAppearanceSetPropertyPage2007();
+	else pAppearanceSet = new CAppearanceSetPropertyPage();
+
+	return SetAppearanceSet(pAppearanceSet);
+
+}
+CXTPTabPaintManager::CAppearanceSet* CXTPTabPaintManager::SetAppearanceSet(CAppearanceSet* pAppearanceSet)
+{
+	if (pAppearanceSet)
+	{
+		if (m_pAppearanceSet) delete m_pAppearanceSet;
+		m_pAppearanceSet = pAppearanceSet;
+
+		pAppearanceSet->m_pPaintManager = this;
+		pAppearanceSet->RefreshMetrics();
+
+		SetColor(pAppearanceSet->GetDefaultColorSet());
+	}
+	OnPropertyChanged();
+
+	return pAppearanceSet;
+
+}
+
+
+void CXTPTabPaintManager::SetFontIndirect(LOGFONT* pLogFont, BOOL bUseStandardFont /*= FALSE*/)
+{
+	m_bUseStandardFont = bUseStandardFont;
+
+	if (!pLogFont)
+		return;
+
+	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	{
+		pLogFont->lfQuality = 5;
+	}
+
+	m_fntNormal.DeleteObject();
+	m_fntBold.DeleteObject();
+	m_fntVerticalNormal.DeleteObject();
+	m_fntVerticalBold.DeleteObject();
+
+	pLogFont->lfWeight = m_bBoldNormal ? FW_BOLD : FW_NORMAL;
+	VERIFY(m_fntNormal.CreateFontIndirect(pLogFont));
+
+	pLogFont->lfWeight = FW_BOLD;
+	VERIFY(m_fntBold.CreateFontIndirect(pLogFont));
+
+	STRCPY_S(pLogFont->lfFaceName, LF_FACESIZE, CXTPDrawHelpers::GetVerticalFontName(FALSE));
+	pLogFont->lfOrientation = 900;
+	pLogFont->lfEscapement = 2700;
+	pLogFont->lfHeight = pLogFont->lfHeight < 0 ? __min(-11, pLogFont->lfHeight) : pLogFont->lfHeight;
+	pLogFont->lfWeight = m_bBoldNormal ? FW_BOLD : FW_NORMAL;
+	VERIFY(m_fntVerticalNormal.CreateFontIndirect(pLogFont));
+
+	pLogFont->lfWeight = FW_BOLD;
+	VERIFY(m_fntVerticalBold.CreateFontIndirect(pLogFont));
+}
+
+void CXTPTabPaintManager::RefreshMetrics()
+{
+	if (m_bUseStandardFont)
+	{
+		LOGFONT lfIcon;
+		VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+
+		SetFontIndirect(&lfIcon, TRUE);
+	}
+
+	m_pColorSet->RefreshMetrics();
+	m_pAppearanceSet->RefreshMetrics();
+}
+
+void CXTPTabPaintManager::DisableLunaColors(BOOL bDisableLunaColors)
+{
+	m_bDisableLunaColors = bDisableLunaColors;
+	RefreshMetrics();
+	OnPropertyChanged();
+}
+BOOL CXTPTabPaintManager::IsLunaColorsDisabled() const
+{
+	return m_bDisableLunaColors || XTPColorManager()->IsLunaColorsDisabled();
+}
+
+COLORREF CXTPTabPaintManager::GetOneNoteColor(XTPTabOneNoteColor tabColor)
+{
+	const COLORREF clrTable[] =
+	{
+		RGB(138, 168, 228), // xtpTabColorBlue    : Blue tab color used when OneNote colors enabled.
+		RGB(255, 219, 117), // xtpTabColorYellow  : Yellow tab color used when OneNote colors enabled.
+		RGB(189, 205, 159), // xtpTabColorGreen   : Green tab color used when OneNote colors enabled.
+		RGB(240, 158, 159), // xtpTabColorRed     : Red tab color used when OneNote colors enabled.
+		RGB(186, 166, 225), // xtpTabColorPurple  : Purple tab color used when OneNote colors enabled.
+		RGB(154, 191, 180), // xtpTabColorCyan    : Cyan tab color used when OneNote colors enabled.
+		RGB(247, 182, 131), // xtpTabColorOrange  : Orange tab color used when OneNote colors enabled.
+		RGB(216, 171, 192)  // xtpTabColorMagenta : Magenta tab color used when OneNote colors enabled.
+	};
+
+	return clrTable[tabColor-xtpTabColorBlue];
+}
+
+void CXTPTabPaintManager::SetOneNoteColors(BOOL bOneNoteColors /* = TRUE */)
+{
+	m_bOneNoteColors = bOneNoteColors;
+	RefreshMetrics();
+}
+
+void CXTPTabPaintManager::DrawNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	FillNavigateButton(pDC, pButton, rc);
+
+	COLORREF clr = pDC->GetTextColor();
+	CXTPPenDC pen(*pDC, clr);
+
+	if (pButton->IsEnabled())
+	{
+		CXTPBrushDC brush(*pDC, clr);
+		pButton->DrawEntry(pDC, rc);
+	}
+	else
+	{
+		CBrush* pOldBrush = (CBrush*)pDC->SelectStockObject(NULL_BRUSH);
+		pButton->DrawEntry(pDC, rc);
+		pDC->SelectObject(pOldBrush);
+	}
+
+}
+
+void CXTPTabPaintManager::FillNavigateButton(CDC* pDC, CXTPTabManagerNavigateButton* pButton, CRect& rc)
+{
+	m_pColorSet->FillNavigateButton(pDC, pButton, rc);
+}
+
+void CXTPTabPaintManager::DrawTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
+{
+	m_pAppearanceSet->DrawTabControl(pTabManager, pDC, rcClient);
+}
+
+void CXTPTabPaintManager::DrawRowItems(CXTPTabManager* pTabManager, CDC* pDC, const CRect& rcClipBox, int nItemRow)
+{
+	CXTPTabManagerItem* pSelected = NULL;
+
+	CXTPTabManager::ROW_ITEMS* pRowItems = pTabManager->m_pRowIndexer->GetRowItems();
+
+	if (!pRowItems)
+		return;
+
+	if (nItemRow >= pTabManager->GetRowCount())
+		return;
+
+	int nFirstItem = pRowItems[nItemRow].nFirstItem;
+	int nLastItem = pRowItems[nItemRow].nLastItem;
+	BOOL bDrawRow = TRUE;
+
+	if (m_pAppearanceSet->m_bButtonsReverseZOrder)
+	{
+		bDrawRow = FALSE;
+
+		for (int i = nFirstItem; i <= nLastItem; i++)
+		{
+			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+			if (!pItem)
+				return;
+
+			if (pItem->m_nItemRow != nItemRow)
+				break;
+
+			if (pItem->IsSelected())
+			{
+				nFirstItem = i;
+				bDrawRow = TRUE;
+				break;
+			}
+
+			if (pItem->IsVisible() && CRect().IntersectRect(rcClipBox, m_pAppearanceSet->GetButtonDrawRect(pItem)))
+			{
+				m_pAppearanceSet->DrawSingleButton(pDC, pItem);
+			}
+		}
+	}
+
+	if (bDrawRow)
+	{
+		for (int i = nLastItem; i >= nFirstItem; i--)
+		{
+			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+			if (!pItem)
+				return;
+
+			if (pItem->m_nItemRow != nItemRow)
+				break;
+
+			if (pItem->IsVisible() && CRect().IntersectRect(rcClipBox, m_pAppearanceSet->GetButtonDrawRect(pItem)))
+			{
+				if (pItem->IsSelected())
+					pSelected = pItem;
+				else
+					m_pAppearanceSet->DrawSingleButton(pDC, pItem);
+			}
+		}
+	}
+
+
+	if (pSelected)
+	{
+		m_pAppearanceSet->DrawSingleButton(pDC, pSelected);
+	}
+
+
+}
+
+void CXTPTabPaintManager::DrawTabControlEx(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
+{
+	if (pTabManager->IsDrawStaticFrame())
+	{
+		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
+		CAppearanceSet::DeflateRectEx(rcClient, CRect(1, 1, 1, 1), pTabManager->GetPosition());
+		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrControlFace, GetColorSet()->m_clrControlFace);
+		CAppearanceSet::DeflateRectEx(rcClient, CRect(1, 0, 1, 1), pTabManager->GetPosition());
+	}
+
+	if (m_bFillBackground)
+	{
+		pDC->FillSolidRect(rcClient, GetColorSet()->m_clrControlFace);
+	}
+
+	CAppearanceSet::DeflateRectEx(rcClient, m_rcControlMargin, pTabManager->GetPosition());
+
+	pDC->SetBkMode(TRANSPARENT);
+
+
+	if (m_bFillBackground)
+	{
+		m_pAppearanceSet->FillTabControl(pTabManager, pDC, rcClient);
+	}
+
+	int i;
+
+	CRect rcClipBox;
+	pDC->GetClipBox(rcClipBox);
+
+	if (m_bClipHeader)
+		rcClipBox.IntersectRect(rcClipBox, pTabManager->m_rcHeaderRect);
+
+	if (!rcClipBox.IsRectEmpty())
+	{
+		CRgn rgn;
+		if (m_bClipHeader)
+		{
+			CRect rcClipBoxViewport(rcClipBox);
+			rcClipBoxViewport.OffsetRect(-pDC->GetWindowOrg());
+
+			rgn.CreateRectRgnIndirect(rcClipBoxViewport);
+			pDC->SelectClipRgn(&rgn);
+
+			m_pColorSet->SelectClipRgn(pDC, rcClient, pTabManager);
+		}
+
+		int nRowCont = pTabManager->GetRowCount();
+
+		for (int j = nRowCont - 1; j >= 0; j--)
+		{
+			DrawRowItems(pTabManager, pDC, rcClipBox, j);
+		}
+
+		if (m_bClipHeader)
+		{
+			pDC->SelectClipRgn(NULL);
+		}
+	}
+
+	for (i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
+		pTabManager->GetNavigateButton(i)->Draw(pDC);
+
+}
+int CXTPTabPaintManager::_GetButtonLength(int nValue, int nMin, int nMax)
+{
+	nValue += m_rcButtonMargin.left +  m_rcButtonMargin.right;
+	if (nMin > 0) nValue = max(nMin, nValue);
+	if (nMax > 0) nValue = min(nMax, nValue);
+	return nValue;
+}
+
+void CXTPTabPaintManager::StripMnemonics(CString& strClear)
+{
+	CXTPDrawHelpers::StripMnemonics(strClear);
+}
+
+int CXTPTabPaintManager::GetPrefixTextExtent(CDC* pDC, const CString& str, UINT uFormat)
+{
+	if (uFormat & DT_NOPREFIX)
+		return pDC->GetTextExtent(str).cx;
+
+	CString strClear = str;
+	StripMnemonics(strClear);
+
+	return pDC->GetTextExtent(strClear).cx;
+}
+
+void CXTPTabPaintManager::DrawTextPathEllipsis(CDC* pDC, const CString& strItem, CRect rcItem, UINT uFormat)
+{
+	if (strItem.Find(_T('\\')) != -1)
+	{
+		pDC->DrawText(strItem, rcItem, uFormat | DT_PATH_ELLIPSIS);
+		return;
+	}
+
+	LPCTSTR strEllipsis = _T("...");
+	int cxEllipsis = pDC->GetTextExtent(strEllipsis, 3).cx;
+	int cxItem = GetPrefixTextExtent(pDC, strItem, uFormat);
+
+	if (cxItem <= rcItem.Width())
+	{
+		pDC->DrawText(strItem, rcItem, uFormat);
+		return;
+	}
+	if (rcItem.Width() <= cxEllipsis)
+	{
+		pDC->DrawText(strEllipsis, 3, rcItem, uFormat);
+		return;
+	}
+	int nWidth = rcItem.Width() - cxEllipsis;
+
+	int nResultLength = strItem.GetLength() * nWidth / cxItem;
+	CString strResultLeft = strItem.Left(nResultLength - nResultLength / 2);
+	CString strResultRight = strItem.Right(nResultLength / 2);
+
+	while (GetPrefixTextExtent(pDC, strResultLeft, uFormat) + GetPrefixTextExtent(pDC, strResultRight, uFormat) < nWidth)
+	{
+		nResultLength++;
+		strResultLeft = strItem.Left(nResultLength - nResultLength / 2);
+		strResultRight = strItem.Right(nResultLength / 2);
+	}
+
+	while (GetPrefixTextExtent(pDC, strResultLeft, uFormat) + GetPrefixTextExtent(pDC, strResultRight, uFormat) > nWidth)
+	{
+		nResultLength--;
+		strResultLeft = strItem.Left(nResultLength - nResultLength / 2);
+		strResultRight = strItem.Right(nResultLength / 2);
+	}
+
+	pDC->DrawText(strResultLeft + strEllipsis + strResultRight, rcItem, uFormat);
+}
+
+void CXTPTabPaintManager::DrawFocusRect(CDC* pDC, CXTPTabManagerItem* /*pItem*/, CRect rcItem)
+{
+	if (!m_bDrawFocusRect)
+		return;
+
+	rcItem.DeflateRect(3, 3, 3, 3);
+	pDC->SetTextColor(0);
+	pDC->SetBkColor(0xFFFFFF);
+	pDC->DrawFocusRect(rcItem);
+}
+
+int CXTPTabPaintManager::DrawSingleButtonIconAndText(CDC* pDC, CXTPTabManagerItem* pItem, CRect rcItem, BOOL bDraw)
+{
+	CXTPTabManager* pManager = pItem->GetTabManager();
+
+	XTPTabLayoutStyle layout = pManager->GetLayout();
+
+	BOOL bVertical = !pManager->IsHorizontalPosition();
+	if (layout == xtpTabLayoutRotated) bVertical = !bVertical;
+
+	CString strItem = pItem->GetCaption();
+	CXTPFontDC fnt(pDC, m_bBoldSelected && pItem->IsSelected() && pManager->IsActive() ? GetBoldFont(bVertical) : GetFont(bVertical));
+
+
+	CSize szIcon(m_szIcon);
+	BOOL bDrawIcon = pManager->DrawIcon(pDC, 0, pItem, FALSE, szIcon);
+	BOOL bDrawText = layout != xtpTabLayoutCompressed || pItem->IsSelected();
+
+	int nNavigateButtonsLength = 0;
+	if (bDrawText && pItem->GetNavigateButtons()->GetSize() > 0)
+	{
+		nNavigateButtonsLength = 0;
+		for (int i = 0; i < (int)pItem->GetNavigateButtons()->GetSize(); i++)
+		{
+			CXTPTabManagerNavigateButton* pButton = pItem->GetNavigateButtons()->GetAt(i);
+			if ((pButton->GetFlags() == xtpTabNavigateButtonAlways) ||
+				((pButton->GetFlags() == xtpTabNavigateButtonAutomatic) && pItem->IsSelected()))
+			{
+				CSize sz = pButton->GetSize();
+				nNavigateButtonsLength += bVertical ? sz.cy : sz.cx;
+			}
+		}
+
+		if (nNavigateButtonsLength > 0) nNavigateButtonsLength += 3;
+	}
+
+
+	if (bDraw)
+	{
+		if (nNavigateButtonsLength > 0)
+		{
+			m_pColorSet->SetTextColor(pDC, pItem);
+
+			if (bVertical) rcItem.bottom -= 3; else rcItem.right -= 3;
+
+			for (int i = (int)pItem->GetNavigateButtons()->GetSize() - 1; i >= 0; i--)
+			{
+				CXTPTabManagerNavigateButton* pButton = pItem->GetNavigateButtons()->GetAt(i);
+				if ((pButton->GetFlags() == xtpTabNavigateButtonAlways) ||
+					((pButton->GetFlags() == xtpTabNavigateButtonAutomatic) && pItem->IsSelected()))
+				{
+					CSize szButton = pButton->GetSize();
+					if (!bVertical)
+					{
+						pButton->SetRect(CRect(rcItem.right - szButton.cx,
+							rcItem.CenterPoint().y + szButton.cy / 2 - szButton.cy, rcItem.right,
+							rcItem.CenterPoint().y + szButton.cy / 2));
+						rcItem.right -= szButton.cx;
+					}
+					else
+					{
+						pButton->SetRect(CRect(rcItem.CenterPoint().x - szButton.cx / 2,
+							rcItem.bottom - szButton.cy, rcItem.CenterPoint().x - szButton.cx / 2 + szButton.cx, rcItem.bottom));
+						rcItem.bottom -= szButton.cy;
+					}
+					pItem->GetNavigateButtons()->GetAt(i)->Draw(pDC);
+				}
+			}
+		}
+
+		m_pColorSet->SetTextColor(pDC, pItem);
+
+		CRect rcFocus(rcItem);
+
+		if (bVertical)
+		{
+			int nAvailLength = pItem->GetButtonLength() - pItem->GetContentLength();
+			if (nAvailLength > 0)
+			{
+				rcItem.DeflateRect(0, nAvailLength / 2);
+			}
+
+			rcItem.top += m_rcButtonTextPadding.left + m_rcButtonMargin.left;
+			if (pManager->GetPosition() == xtpTabPositionRight)
+				rcItem.DeflateRect(m_rcButtonMargin.bottom, 0, m_rcButtonMargin.top, 0);
+			else
+				rcItem.DeflateRect(m_rcButtonMargin.top, 0, m_rcButtonMargin.bottom, 0);
+
+			if (bDrawIcon)
+			{
+				CPoint pt(rcItem.CenterPoint().x - szIcon.cx/2, rcItem.top - 1);
+				if (rcItem.Height() > szIcon.cy) pManager->DrawIcon(pDC, pt, pItem, TRUE, szIcon);
+				rcItem.top += szIcon.cy + 2;
+			}
+			if (bDrawText && rcItem.bottom > rcItem.top + 8)
+			{
+				CSize szText = pDC->GetTextExtent(strItem);
+				rcItem.left = rcItem.right - (rcItem.Width() - szText.cy - (pManager->GetPosition() == xtpTabPositionRight ? 1 : 0)) / 2;
+				rcItem.right = rcItem.left + rcItem.Height();
+				rcItem.bottom -= m_rcButtonMargin.right + max(0, m_rcButtonTextPadding.right - 4);
+
+				if (!m_bDrawTextNoPrefix)
+					StripMnemonics(strItem);
+
+				if (m_bDrawTextPathEllipsis)
+				{
+					DrawTextPathEllipsis(pDC, strItem, rcItem, DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
+				}
+				else
+				{
+					pDC->DrawText(strItem, &rcItem, DT_SINGLELINE | DT_NOCLIP |
+						DT_NOPREFIX | (m_bDrawTextEndEllipsis ? DT_END_ELLIPSIS : 0));
+				}
+			}
+
+		}
+		else
+		{
+			int nAvailLength = pItem->GetButtonLength() - pItem->GetContentLength();
+			if (nAvailLength > 0)
+			{
+				rcItem.DeflateRect(nAvailLength / 2, 0);
+			}
+
+			rcItem.left += m_rcButtonTextPadding.left + m_rcButtonMargin.left;
+
+			if (pManager->GetPosition() == xtpTabPositionBottom)
+				rcItem.DeflateRect(0, m_rcButtonMargin.bottom, 0, m_rcButtonMargin.top);
+			else
+				rcItem.DeflateRect(0, m_rcButtonMargin.top, 0, m_rcButtonMargin.bottom);
+
+			if (bDrawIcon)
+			{
+				CPoint pt(rcItem.left - 1, rcItem.CenterPoint().y - szIcon.cy/2);
+				if (rcItem.Width() > szIcon.cx) pManager->DrawIcon(pDC, pt, pItem, TRUE, szIcon);
+				rcItem.left += szIcon.cx + 2;
+			}
+
+			if (bDrawText && rcItem.right > rcItem.left)
+			{
+				rcItem.right -= m_rcButtonTextPadding.right + m_rcButtonMargin.right - (bDrawIcon ? 2 : 0);
+				if (m_bDrawTextPathEllipsis)
+				{
+					DrawTextPathEllipsis(pDC, strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+				}
+				else
+				{
+					if (m_bDrawTextHidePrefix)
+						StripMnemonics(strItem);
+
+					pDC->DrawText(strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat |
+						(m_bDrawTextHidePrefix || m_bDrawTextNoPrefix ? DT_NOPREFIX : 0) | (m_bDrawTextEndEllipsis ? DT_END_ELLIPSIS : 0));
+				}
+			}
+		}
+
+		if (pItem->IsFocused())
+		{
+			DrawFocusRect(pDC, pItem, rcFocus);
+		}
+		return 0;
+	}
+	else
+	{
+		if (layout == xtpTabLayoutFixed)
+		{
+			return _GetButtonLength(m_nFixedTabWidth, m_nMinTabWidth, m_nMaxTabWidth);
+		}
+
+		if (layout == xtpTabLayoutCompressed)
+		{
+			if (!bDrawText)
+				return _GetButtonLength(8 + (bVertical ? szIcon.cy : szIcon.cx), m_nMinTabWidth, m_nMaxTabWidth) ;
+
+			CXTPFontDC fntItems(pDC, m_bBoldSelected && pManager->IsActive() ? GetBoldFont(bVertical) : GetFont(bVertical));
+
+			int nLength = 0;
+
+			for (int i = 0; i < pManager->GetItemCount(); i++)
+			{
+				CRect rcItemText(0, 0, 0, 0);
+				pDC->DrawText(pManager->GetItem(i)->GetCaption(), rcItemText, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+				nLength = max(nLength, rcItemText.Width());
+			}
+			return _GetButtonLength(nNavigateButtonsLength + nLength + m_rcButtonTextPadding.left + m_rcButtonTextPadding.right +
+				(!bDrawIcon ? 0: bVertical ? szIcon.cy : szIcon.cx), m_nMinTabWidth, m_nMaxTabWidth);
+		}
+
+		pDC->DrawText(strItem, rcItem, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+		return _GetButtonLength(nNavigateButtonsLength + rcItem.Width() + m_rcButtonTextPadding.left + m_rcButtonTextPadding.right +
+			(!bDrawIcon ? 0: bVertical ? szIcon.cy : szIcon.cx), m_nMinTabWidth, m_nMaxTabWidth);
+	}
+}
+
+
+void CXTPTabPaintManager::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
+{
+	if (pTabManager->IsDrawStaticFrame())
+		CAppearanceSet::DeflateRectEx(rcClient, CRect(2, 1, 2, 2), pTabManager->GetPosition());
+
+	if (pTabManager->GetItemCount() > 0)
+	{
+		m_pAppearanceSet->AdjustClientRect(pTabManager, rcClient);
+	}
+}
+
+CRect CXTPTabPaintManager::RepositionNavigateButtons(CXTPTabManager* pTabManager, CRect rcClient)
+{
+	CRect rcNavigateButtons = m_pAppearanceSet->GetHeaderRect(rcClient, pTabManager);
+
+	if (pTabManager->IsHorizontalPosition())
+		rcNavigateButtons.right -= 1;
+	else
+		rcNavigateButtons.bottom -= 1;
+
+	for (int i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
+		pTabManager->GetNavigateButton(i)->Reposition(rcNavigateButtons);
+
+	return rcNavigateButtons;
+}
+
+void CXTPTabPaintManager::RepositionTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
+{
+	pTabManager->m_rcHeaderRect.SetRectEmpty();
+	pTabManager->m_rcClient = pTabManager->m_rcControl = rcClient;
+
+	pTabManager->m_pRowIndexer->CreateIndexer(1);
+
+	for (int i = 0; i < pTabManager->GetItemCount(); i++)
+	{
+		pTabManager->GetItem(i)->m_nItemRow = 0;
+	}
+
+	m_pAppearanceSet->RepositionTabControl(pTabManager, pDC, rcClient);
+	AdjustClientRect(pTabManager, pTabManager->m_rcClient);
+}
+
+
+
+BOOL CXTPTabPaintManager::_CreateMultiRowIndexerBestFit(CXTPTabManager* pTabManager, int nWidth, int nRow, int nTotalLength)
+{
+	const int nRowCount = pTabManager->GetRowCount();
+	const int nLengthPerRow = !m_bMultiRowJustified ? nWidth : min(nTotalLength / (nRowCount - nRow), nWidth);
+
+	CXTPTabManager::ROW_ITEMS* pRowItems = pTabManager->m_pRowIndexer->GetRowItems();
+	int x = 0;
+
+	for (int i = pRowItems[nRow].nLastItem; i < pTabManager->GetItemCount(); i++)
+	{
+		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+		int nLength = pItem->GetButtonLength();
+
+		if (x + nLength > nLengthPerRow && x != 0 && nLength > 0)
+		{
+			if (nRow == nRowCount - 1)
+				return FALSE;
+
+			pRowItems[nRow + 1].nFirstItem = pRowItems[nRow + 1].nLastItem = i;
+
+			if (_CreateMultiRowIndexerBestFit(pTabManager, nWidth, nRow + 1, nTotalLength - x))
+				return TRUE;
+
+			if (x + nLength > nWidth)
+				return FALSE;
+		}
+		pRowItems[nRow].nLastItem = i;
+		pItem->m_nItemRow = nRow;
+		x += nLength;
+	}
+	return TRUE;
+}
+
+void CXTPTabPaintManager::CreateMultiRowIndexer(CXTPTabManager* pTabManager, CDC* pDC, int nWidth)
+{
+	int x = 0;
+	int nRowCount = 1;
+	int i;
+	int nTotalLength = 0;
+	int nItemCount = pTabManager->GetItemCount();
+	CXTPTabManagerItem* pSelectedItem = 0;
+
+	for (i = 0; i < nItemCount; i++)
+	{
+		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+		if (pItem->IsSelected())
+		{
+			pSelectedItem = pItem;
+		}
+
+		int nLength = pItem->m_nContentLength = pItem->m_nButtonLength =
+			pItem->IsVisible() ? m_pAppearanceSet->GetButtonLength(pDC, pItem) : 0;
+
+		if (x + nLength > nWidth && x != 0)
+		{
+			x = 0;
+			nRowCount++;
+		}
+		x += nLength;
+		nTotalLength += nLength;
+	}
+
+	CXTPTabManager::ROW_ITEMS* pRowItems = pTabManager->m_pRowIndexer->CreateIndexer(nRowCount);
+
+	if (nRowCount == 1)
+		return;
+
+	pRowItems[0].nFirstItem = pRowItems[0].nLastItem = 0;
+	VERIFY(_CreateMultiRowIndexerBestFit(pTabManager, nWidth, 0, nTotalLength));
+
+	if (!m_bMultiRowFixedSelection && pSelectedItem)
+	{
+		int nSelectedRow = pSelectedItem->GetItemRow();
+
+		CXTPTabManager::ROW_ITEMS selectedRow = pRowItems[nSelectedRow];
+		pRowItems[nSelectedRow] = pRowItems[0];
+		pRowItems[0] = selectedRow;
+	}
+}
+
+void CXTPTabPaintManager::RepositionTabControlMultiRow(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
+{
+
+	pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+	pTabManager->m_nHeaderOffset = 0;
+
+	if (pTabManager->GetItemCount() == 0)
+		return;
+
+	CRect rcHeaderMargin = m_pAppearanceSet->GetHeaderMargin();
+	int nButtonHeight = m_pAppearanceSet->GetButtonHeight(pTabManager);
+
+	if (pTabManager->IsHorizontalPosition())
+	{
+		int nWidth = pTabManager->m_rcHeaderRect.Width() - (rcHeaderMargin.left + rcHeaderMargin.right);
+		CreateMultiRowIndexer(pTabManager, pDC, nWidth);
+
+		int nRowCount = pTabManager->GetRowCount();
+		int nTop = 0;
+
+		if (pTabManager->GetPosition() == xtpTabPositionBottom)
+		{
+			nTop = rcClient.bottom - (nButtonHeight * nRowCount + m_pAppearanceSet->m_nRowMargin * (nRowCount - 1))
+				- rcHeaderMargin.top;
+		}
+		else
+		{
+			nTop = rcClient.top +  (nButtonHeight * (nRowCount - 1) + m_pAppearanceSet->m_nRowMargin * (nRowCount - 1))
+				+ rcHeaderMargin.top;
+		}
+
+		int nBottom = nTop + nButtonHeight;
+
+		int nOffset = pTabManager->GetPosition() == xtpTabPositionBottom ?
+			nButtonHeight + m_pAppearanceSet->m_nRowMargin: -(nButtonHeight + m_pAppearanceSet->m_nRowMargin);
+
+
+		CXTPTabManager::ROW_ITEMS* pRowItems = pTabManager->m_pRowIndexer->GetRowItems();
+		int i;
+
+		BOOL bSizeToFit = nRowCount > 1 && m_bMultiRowJustified;
+
+		for (int nRow = 0; nRow < nRowCount; nRow++)
+		{
+			int nTotalLength = 0;
+
+			int nItemInRow = pRowItems[nRow].nLastItem - pRowItems[nRow].nFirstItem + 1;
+			int nFirstItem = pRowItems[nRow].nFirstItem;
+
+			if (bSizeToFit)
+			{
+				for (i = 0; i < nItemInRow; i++)
+				{
+					nTotalLength += pTabManager->GetItem(nFirstItem + i)->GetButtonLength();
+				}
+			}
+
+			int nTotalWidth = nWidth;
+
+			int x = pTabManager->m_rcHeaderRect.left + rcHeaderMargin.left;
+
+			for (i = 0; i < nItemInRow; i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(nFirstItem + i);
+				ASSERT(pItem);
+				if (!pItem)
+					continue;
+				int nButtonLength = pItem->m_nButtonLength;
+
+				if (bSizeToFit)
+				{
+					int nLength = nButtonLength + (nTotalWidth - nTotalLength) / (nItemInRow - i);
+					nTotalWidth -= nLength;
+					nTotalLength -= nButtonLength;
+
+					pItem->m_nButtonLength = nButtonLength = nLength;
+				}
+
+				pItem->SetRect(CRect(x, nTop, x + nButtonLength, nBottom));
+				pItem->m_nItemRow = nRow;
+
+
+				x += nButtonLength;
+			}
+			nTop += nOffset;
+			nBottom += nOffset;
+		}
+	}
+	else
+	{
+		int nWidth = pTabManager->m_rcHeaderRect.Height() - (rcHeaderMargin.left + rcHeaderMargin.right);
+		CreateMultiRowIndexer(pTabManager, pDC, nWidth);
+
+
+		int nRowCount = pTabManager->GetRowCount();
+		int nLeft = 0;
+
+		if (pTabManager->GetPosition() == xtpTabPositionRight)
+		{
+			nLeft = rcClient.right - (nButtonHeight * nRowCount + m_pAppearanceSet->m_nRowMargin * (nRowCount - 1))
+				- rcHeaderMargin.top;
+		}
+		else
+		{
+			nLeft = rcClient.left +  (nButtonHeight * (nRowCount - 1) + m_pAppearanceSet->m_nRowMargin * (nRowCount - 1))
+				+ rcHeaderMargin.top;
+		}
+
+		int nRight = nLeft + nButtonHeight;
+
+		int nOffset = pTabManager->GetPosition() == xtpTabPositionRight ?
+			nButtonHeight + m_pAppearanceSet->m_nRowMargin: -(nButtonHeight + m_pAppearanceSet->m_nRowMargin);
+
+
+		CXTPTabManager::ROW_ITEMS* pRowItems = pTabManager->m_pRowIndexer->GetRowItems();
+		int i;
+
+		BOOL bSizeToFit = nRowCount > 1 && m_bMultiRowJustified;
+
+		for (int nRow = 0; nRow < nRowCount; nRow++)
+		{
+			int nTotalLength = 0;
+
+			int nItemInRow = pRowItems[nRow].nLastItem - pRowItems[nRow].nFirstItem + 1;
+			int nFirstItem = pRowItems[nRow].nFirstItem;
+
+			if (bSizeToFit)
+			{
+				for (i = 0; i < nItemInRow; i++)
+				{
+					nTotalLength += pTabManager->GetItem(nFirstItem + i)->GetButtonLength();
+				}
+			}
+
+			int nTotalWidth = nWidth;
+
+			int y = pTabManager->m_rcHeaderRect.top + rcHeaderMargin.left;
+
+			for (i = 0; i < nItemInRow; i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(nFirstItem + i);
+				ASSERT(pItem);
+				if (!pItem)
+					continue;
+				int nButtonLength = pItem->m_nButtonLength;
+
+				if (bSizeToFit)
+				{
+					int nLength = nButtonLength + (nTotalWidth - nTotalLength) / (nItemInRow - i);
+					nTotalWidth -= nLength;
+					nTotalLength -= nButtonLength;
+
+					pItem->m_nButtonLength = nButtonLength = nLength;
+				}
+
+				pItem->SetRect(CRect(nLeft, y, nRight, y + nButtonLength));
+				pItem->m_nItemRow = nRow;
+
+
+				y += nButtonLength;
+			}
+			nLeft += nOffset;
+			nRight += nOffset;
+		}
+	}
+	pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+}
+
+void CXTPTabPaintManager::RepositionTabControlEx(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
+{
+	if (pTabManager->IsDrawStaticFrame())
+	{
+		CAppearanceSet::DeflateRectEx(rcClient, CRect(2, 1, 2, 2), pTabManager->GetPosition());
+	}
+
+	CAppearanceSet::DeflateRectEx(rcClient, m_rcControlMargin, pTabManager->GetPosition());
+
+	if (pTabManager->GetLayout() == xtpTabLayoutMultiRow)
+	{
+		RepositionTabControlMultiRow(pTabManager, pDC, rcClient);
+		return;
+	}
+
+	int i;
+
+	for (i = 0; i < pTabManager->GetItemCount(); i++)
+	{
+		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+		pItem->m_nButtonLength = pItem->m_nContentLength =
+			pItem->IsVisible() ? m_pAppearanceSet->GetButtonLength(pDC, pItem) : 0;
+
+		if (pItem->IsVisible())
+			pItem->m_nButtonLength += m_nButtonExtraLength;
+	}
+
+	pTabManager->m_rcHeaderRect = m_pAppearanceSet->GetHeaderRect(rcClient, pTabManager);
+
+	if (pTabManager->GetItemCount() == 0)
+	{
+		RepositionNavigateButtons(pTabManager, rcClient);
+		return;
+	}
+
+	CRect rcHeaderMargin = m_pAppearanceSet->GetHeaderMargin();
+	int nButtonHeight = m_pAppearanceSet->GetButtonHeight(pTabManager);
+
+
+	if (pTabManager->IsHorizontalPosition())
+	{
+		int nTop = rcClient.top + rcHeaderMargin.top;
+
+		if (pTabManager->GetPosition() == xtpTabPositionBottom)
+		{
+			nTop = rcClient.bottom - nButtonHeight - rcHeaderMargin.top;
+		}
+
+		int nBottom = nTop + nButtonHeight;
+
+
+		if (pTabManager->GetLayout() == xtpTabLayoutSizeToFit)
+		{
+			int nWidth = rcClient.Width() - (rcHeaderMargin.right + rcHeaderMargin.left);
+
+			for (i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
+				pTabManager->GetNavigateButton(i)->AdjustWidth(nWidth);
+
+			SizeToFit(pTabManager, nWidth);
+		}
+
+		pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+
+		if (pTabManager->m_nHeaderOffset < 0)
+		{
+			int nLength = pTabManager->GetItemsLength();
+			int nNavigateButtonsWidth = pTabManager->m_rcHeaderRect.Width() - rcHeaderMargin.left - rcHeaderMargin.right;
+
+			if (nLength + pTabManager->m_nHeaderOffset < nNavigateButtonsWidth)
+			{
+				pTabManager->m_nHeaderOffset = min(0, nNavigateButtonsWidth - nLength);
+				pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+			}
+		}
+
+		int x = pTabManager->m_rcHeaderRect.left + rcHeaderMargin.left + pTabManager->GetHeaderOffset();
+
+		if (pTabManager->GetLayout() == xtpTabLayoutRotated)
+		{
+			if (pTabManager->GetPosition() == xtpTabPositionTop)
+			{
+				nBottom = pTabManager->m_rcHeaderRect.bottom - rcHeaderMargin.bottom;
+			}
+			else
+			{
+				nTop = pTabManager->m_rcHeaderRect.top + rcHeaderMargin.bottom;
+
+			}
+
+			for (i = 0; i < pTabManager->GetItemCount(); i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+				if (pTabManager->GetPosition() == xtpTabPositionTop)
+				{
+					pItem->SetRect(CRect(x, nBottom - pItem->m_nButtonLength, x + nButtonHeight, nBottom));
+				}
+				else
+				{
+					pItem->SetRect(CRect(x, nTop, x + nButtonHeight, nTop + pItem->m_nButtonLength));
+
+				}
+				x += nButtonHeight;
+			}
+		}
+		else
+		{
+
+			for (i = 0; i < pTabManager->GetItemCount(); i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+				pItem->SetRect(CRect(x, nTop, x + pItem->m_nButtonLength, nBottom));
+				x += pItem->m_nButtonLength;
+			}
+		}
+
+	}
+	else
+	{
+		int nLeft = rcClient.left + rcHeaderMargin.top;
+
+		if (pTabManager->GetPosition() == xtpTabPositionRight)
+		{
+			nLeft = rcClient.right - nButtonHeight - rcHeaderMargin.top;
+		}
+
+		int nRight = nLeft + nButtonHeight;
+
+		if (pTabManager->GetLayout() == xtpTabLayoutSizeToFit)
+		{
+			int nWidth = rcClient.Height() - (rcHeaderMargin.right + rcHeaderMargin.left);
+
+			for (i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
+				pTabManager->GetNavigateButton(i)->AdjustWidth(nWidth);
+
+			SizeToFit(pTabManager, nWidth);
+		}
+
+		pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+
+		if (pTabManager->m_nHeaderOffset < 0)
+		{
+			int nLength = pTabManager->GetItemsLength();
+			int nNavigateButtonsWidth = pTabManager->m_rcHeaderRect.Height() - rcHeaderMargin.left - rcHeaderMargin.right;
+
+			if (nLength + pTabManager->m_nHeaderOffset < nNavigateButtonsWidth)
+			{
+				pTabManager->m_nHeaderOffset = min(0, nNavigateButtonsWidth - nLength);
+				pTabManager->m_rcHeaderRect = RepositionNavigateButtons(pTabManager, rcClient);
+			}
+		}
+
+		int y = pTabManager->m_rcHeaderRect.top + rcHeaderMargin.left + pTabManager->GetHeaderOffset();
+
+		if (pTabManager->GetLayout() == xtpTabLayoutRotated)
+		{
+			if (pTabManager->GetPosition() == xtpTabPositionLeft)
+			{
+				nRight = pTabManager->m_rcHeaderRect.right - rcHeaderMargin.bottom;
+			}
+			else
+			{
+				nLeft = pTabManager->m_rcHeaderRect.left + rcHeaderMargin.bottom;
+
+			}
+
+			for (i = 0; i < pTabManager->GetItemCount(); i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+				if (pTabManager->GetPosition() == xtpTabPositionLeft)
+				{
+					pItem->SetRect(CRect(nRight - pItem->m_nButtonLength, y, nRight, y + nButtonHeight));
+				}
+				else
+				{
+					pItem->SetRect(CRect(nLeft, y, nLeft + pItem->m_nButtonLength, y + nButtonHeight));
+
+				}
+				y += nButtonHeight;
+			}
+		}
+		else
+		{
+			for (i = 0; i < pTabManager->GetItemCount(); i++)
+			{
+				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+
+				pItem->SetRect(CRect(nLeft, y, nRight, y + pItem->m_nButtonLength));
+				y += pItem->m_nButtonLength;
+			}
+		}
+	}
+}
+
+void CXTPTabPaintManager::EnsureVisible(CXTPTabManager* pTabManager, CXTPTabManagerItem* pItem)
+{
+	CRect rcHeader = pTabManager->m_rcHeaderRect;
+	CRect rcItem = pItem->GetRect();
+
+	if (rcHeader.IsRectEmpty() || rcItem.IsRectEmpty())
+		return;
+
+	if (GetLayout() == xtpTabLayoutSizeToFit)
+		return;
+
+	if (pTabManager->IsHorizontalPosition())
+	{
+		if (rcItem.left < rcHeader.left)
+		{
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.left + rcHeader.left + m_pAppearanceSet->GetHeaderMargin().left);
+		}
+		else if (rcItem.right > rcHeader.right)
+		{
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.right + rcHeader.right);
+		}
+
+	}
+	else
+	{
+		if (rcItem.top < rcHeader.top)
+		{
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.top + rcHeader.top + m_pAppearanceSet->GetHeaderMargin().left);
+		}
+		else if (rcItem.bottom > rcHeader.bottom)
+		{
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.bottom + rcHeader.bottom);
+		}
+
+	}
+
+}
+
+int _cdecl CXTPTabPaintManager::_SizeToFitCompare(const void *arg1, const void *arg2)
+{
+	int nLength1 = (*((CXTPTabManagerItem**)arg1))->GetButtonLength();
+	int nLength2 = (*((CXTPTabManagerItem**)arg2))->GetButtonLength();
+
+	return nLength1 - nLength2;
+};
+
+void CXTPTabPaintManager::SizeToFit(CXTPTabManager* pTabManager, int nWidth)
+{
+	int nLength = pTabManager->GetItemsLength();
+	int nCount = pTabManager->GetItemCount();
+	if (nCount == 0)
+		return;
+
+	if (nWidth < nLength)
+	{
+		if (nCount == 1)
+			pTabManager->GetItem(0)->m_nButtonLength = nWidth;
+		else
+		{
+			CXTPTabManagerItem** pItems = new CXTPTabManagerItem*[nCount];
+			if (!pItems)
+				return;
+
+			for (int c = 0; c < nCount; c++)
+			{
+				pItems[c] = pTabManager->GetItem(c);
+			}
+
+			qsort(pItems, nCount, sizeof(CXTPTabManagerItem*), _SizeToFitCompare);
+
+			for (int i = 0; i < nCount; i++)
+			{
+				int nButtonLength = pItems[i]->m_nButtonLength;
+
+				if (nButtonLength * (nCount - i) >= nWidth)
+				{
+					for (int j = i; j < nCount; j++)
+					{
+						nButtonLength = nWidth / (nCount - j);
+						pItems[j]->m_nButtonLength = nButtonLength;
+						nWidth -= nButtonLength;
+					}
+
+					break;
+				}
+
+				nWidth -= nButtonLength;
+			}
+
+			delete[] pItems;
+		}
+	}
+}
+
+XTPTabAppearanceStyle CXTPTabPaintManager::GetAppearance() const
+{
+	return m_tabAppearance;
+}
+
+XTPTabColorStyle CXTPTabPaintManager::GetColor() const
+{
+	return m_tabColor;
+}
+
+void CXTPTabPaintManager::SetPosition(XTPTabPosition tabPosition)
+{
+	m_tabPosition = tabPosition;
+	OnPropertyChanged();
+
+}
+
+void CXTPTabPaintManager::SetLayout(XTPTabLayoutStyle tabLayout)
+{
+	m_tabLayout = tabLayout;
+	OnPropertyChanged();
+}
+
+XTPTabPosition CXTPTabPaintManager::GetPosition() const
+{
+	return m_tabPosition;
+}
+
+XTPTabLayoutStyle CXTPTabPaintManager::GetLayout() const
+{
+	return m_tabLayout;
+}
+
+
+void CXTPTabPaintManager::OnPropertyChanged()
+{
+	for (int i = 0; i < m_arrObservers.GetSize(); i++)
+	{
+		m_arrObservers[i]->OnPropertyChanged();
+	}
+}
+
+
+void CXTPTabPaintManager::AddObserver(CXTPTabManagerAtom* pObserver)
+{
+	for (int i = 0; i < m_arrObservers.GetSize(); i++)
+	{
+		if (m_arrObservers[i] == pObserver)
+			return;
+	}
+	m_arrObservers.Add(pObserver);
+}
+
+//////////////////////////////////////////////////////////////////////////
+

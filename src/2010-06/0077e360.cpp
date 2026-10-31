@@ -1,47 +1,89 @@
 // from server: 100% by auto
-// roc 2010-06 0077e360  unit: seg_00770000  size: 81 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0077e360
-//
-// 0077e360  56                   push esi
-// 0077e361  8b742408             mov esi, dword ptr [esp + 8]
-// 0077e365  833e00               cmp dword ptr [esi], 0
-// 0077e368  753f                 jne 0x77e3a9
-// 0077e36a  8b560c               mov edx, dword ptr [esi + 0xc]
-// 0077e36d  8b4610               mov eax, dword ptr [esi + 0x10]
-// 0077e370  8d4c2408             lea ecx, [esp + 8]
-// 0077e374  51                   push ecx
-// 0077e375  52                   push edx
-// 0077e376  50                   push eax
-// 0077e377  8b4608               mov eax, dword ptr [esi + 8]
-// 0077e37a  ffd0                 call eax
-// 0077e37c  83c40c               add esp, 0xc
-// 0077e37f  85c0                 test eax, eax
-// 0077e381  741a                 je 0x77e39d
-// 0077e383  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0077e387  85c9                 test ecx, ecx
-// 0077e389  7412                 je 0x77e39d
-// 0077e38b  49                   dec ecx
-// 0077e38c  894604               mov dword ptr [esi + 4], eax
-// 0077e38f  890e                 mov dword ptr [esi], ecx
-// 0077e391  0fb610               movzx edx, byte ptr [eax]
-// 0077e394  40                   inc eax
-// 0077e395  894604               mov dword ptr [esi + 4], eax
-// 0077e398  83faff               cmp edx, -1
-// 0077e39b  7505                 jne 0x77e3a2
-// 0077e39d  83c8ff               or eax, 0xffffffff
-// 0077e3a0  5e                   pop esi
-// 0077e3a1  c3                   ret 
-// 0077e3a2  41                   inc ecx
-// 0077e3a3  48                   dec eax
-// 0077e3a4  890e                 mov dword ptr [esi], ecx
-// 0077e3a6  894604               mov dword ptr [esi + 4], eax
-// 0077e3a9  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0077e3ac  0fb601               movzx eax, byte ptr [ecx]
-// 0077e3af  5e                   pop esi
-// 0077e3b0  c3                   ret 
-// library lua-5.1.4/lzio.c (function _luaZ_lookahead)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lzio.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+** $Id: lzio.c,v 1.31.1.1 2007/12/27 13:02:25 roberto Exp $
+** a generic input stream interface
+** See Copyright Notice in lua.h
+*/
+
+
+#include <string.h>
+
+#define lzio_c
+#define LUA_CORE
+
+#include "lua.h"
+
+#include "llimits.h"
+#include "lmem.h"
+#include "lstate.h"
+#include "lzio.h"
+
+
+int luaZ_fill (ZIO *z) {
+  size_t size;
+  lua_State *L = z->L;
+  const char *buff;
+  lua_unlock(L);
+  buff = z->reader(L, z->data, &size);
+  lua_lock(L);
+  if (buff == NULL || size == 0) return EOZ;
+  z->n = size - 1;
+  z->p = buff;
+  return char2int(*(z->p++));
+}
+
+
+int luaZ_lookahead (ZIO *z) {
+  if (z->n == 0) {
+    if (luaZ_fill(z) == EOZ)
+      return EOZ;
+    else {
+      z->n++;  /* luaZ_fill removed first byte; put back it */
+      z->p--;
+    }
+  }
+  return char2int(*z->p);
+}
+
+
+void luaZ_init (lua_State *L, ZIO *z, lua_Reader reader, void *data) {
+  z->L = L;
+  z->reader = reader;
+  z->data = data;
+  z->n = 0;
+  z->p = NULL;
+}
+
+
+/* --------------------------------------------------------------- read --- */
+size_t luaZ_read (ZIO *z, void *b, size_t n) {
+  while (n) {
+    size_t m;
+    if (luaZ_lookahead(z) == EOZ)
+      return n;  /* return number of missing bytes */
+    m = (n <= z->n) ? n : z->n;  /* min. between n and z->n */
+    memcpy(b, z->p, m);
+    z->n -= m;
+    z->p += m;
+    b = (char *)b + m;
+    n -= m;
+  }
+  return 0;
+}
+
+/* ------------------------------------------------------------------------ */
+char *luaZ_openspace (lua_State *L, Mbuffer *buff, size_t n) {
+  if (n > buff->buffsize) {
+    if (n < LUA_MINBUFFER) n = LUA_MINBUFFER;
+    luaZ_resizebuffer(L, buff, n);
+  }
+  return buff->buffer;
+}
+
+

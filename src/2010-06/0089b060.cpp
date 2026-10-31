@@ -1,140 +1,796 @@
-// roc 2010-06 0089b060  unit: CXTPScrollBase  size: 318 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0089b060
-//
-// 0089b060  8b442404             mov eax, dword ptr [esp + 4]
-// 0089b064  8b10                 mov edx, dword ptr [eax]
-// 0089b066  53                   push ebx
-// 0089b067  55                   push ebp
-// 0089b068  56                   push esi
-// 0089b069  8b742414             mov esi, dword ptr [esp + 0x14]
-// 0089b06d  837e5800             cmp dword ptr [esi + 0x58], 0
-// 0089b071  895644               mov dword ptr [esi + 0x44], edx
-// 0089b074  8b5004               mov edx, dword ptr [eax + 4]
-// 0089b077  895648               mov dword ptr [esi + 0x48], edx
-// 0089b07a  8b5008               mov edx, dword ptr [eax + 8]
-// 0089b07d  89564c               mov dword ptr [esi + 0x4c], edx
-// 0089b080  8b500c               mov edx, dword ptr [eax + 0xc]
-// 0089b083  57                   push edi
-// 0089b084  895650               mov dword ptr [esi + 0x50], edx
-// 0089b087  c7463800000000       mov dword ptr [esi + 0x38], 0
-// 0089b08e  7423                 je 0x89b0b3
-// 0089b090  8b5004               mov edx, dword ptr [eax + 4]
-// 0089b093  895610               mov dword ptr [esi + 0x10], edx
-// 0089b096  8b500c               mov edx, dword ptr [eax + 0xc]
-// 0089b099  895614               mov dword ptr [esi + 0x14], edx
-// 0089b09c  8b10                 mov edx, dword ptr [eax]
-// 0089b09e  895618               mov dword ptr [esi + 0x18], edx
-// 0089b0a1  8b4008               mov eax, dword ptr [eax + 8]
-// 0089b0a4  89461c               mov dword ptr [esi + 0x1c], eax
-// 0089b0a7  8b11                 mov edx, dword ptr [ecx]
-// 0089b0a9  8b4224               mov eax, dword ptr [edx + 0x24]
-// 0089b0ac  ffd0                 call eax
-// 0089b0ae  8b480c               mov ecx, dword ptr [eax + 0xc]
-// 0089b0b1  eb21                 jmp 0x89b0d4
-// 0089b0b3  8b10                 mov edx, dword ptr [eax]
-// 0089b0b5  895610               mov dword ptr [esi + 0x10], edx
-// 0089b0b8  8b5008               mov edx, dword ptr [eax + 8]
-// 0089b0bb  895614               mov dword ptr [esi + 0x14], edx
-// 0089b0be  8b5004               mov edx, dword ptr [eax + 4]
-// 0089b0c1  895618               mov dword ptr [esi + 0x18], edx
-// 0089b0c4  8b400c               mov eax, dword ptr [eax + 0xc]
-// 0089b0c7  89461c               mov dword ptr [esi + 0x1c], eax
-// 0089b0ca  8b11                 mov edx, dword ptr [ecx]
-// 0089b0cc  8b4224               mov eax, dword ptr [edx + 0x24]
-// 0089b0cf  ffd0                 call eax
-// 0089b0d1  8b4804               mov ecx, dword ptr [eax + 4]
-// 0089b0d4  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0089b0d8  8b5e14               mov ebx, dword ptr [esi + 0x14]
-// 0089b0db  894e20               mov dword ptr [esi + 0x20], ecx
-// 0089b0de  8b5014               mov edx, dword ptr [eax + 0x14]
-// 0089b0e1  8b7e20               mov edi, dword ptr [esi + 0x20]
-// 0089b0e4  89560c               mov dword ptr [esi + 0xc], edx
-// 0089b0e7  8b4810               mov ecx, dword ptr [eax + 0x10]
-// 0089b0ea  894e08               mov dword ptr [esi + 8], ecx
-// 0089b0ed  8b5008               mov edx, dword ptr [eax + 8]
-// 0089b0f0  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 0089b0f3  8916                 mov dword ptr [esi], edx
-// 0089b0f5  8b400c               mov eax, dword ptr [eax + 0xc]
-// 0089b0f8  894604               mov dword ptr [esi + 4], eax
-// 0089b0fb  2bc2                 sub eax, edx
-// 0089b0fd  40                   inc eax
-// 0089b0fe  8be8                 mov ebp, eax
-// 0089b100  8bc3                 mov eax, ebx
-// 0089b102  2bc1                 sub eax, ecx
-// 0089b104  99                   cdq 
-// 0089b105  2bc2                 sub eax, edx
-// 0089b107  d1f8                 sar eax, 1
-// 0089b109  3bc7                 cmp eax, edi
-// 0089b10b  7d02                 jge 0x89b10f
-// 0089b10d  8bf8                 mov edi, eax
-// 0089b10f  8b5608               mov edx, dword ptr [esi + 8]
-// 0089b112  8bc3                 mov eax, ebx
-// 0089b114  8b1dc8a29e00         mov ebx, dword ptr [0x9ea2c8]
-// 0089b11a  03cf                 add ecx, edi
-// 0089b11c  2bc7                 sub eax, edi
-// 0089b11e  894e24               mov dword ptr [esi + 0x24], ecx
-// 0089b121  894628               mov dword ptr [esi + 0x28], eax
-// 0089b124  85d2                 test edx, edx
-// 0089b126  741e                 je 0x89b146
-// 0089b128  85ed                 test ebp, ebp
-// 0089b12a  741a                 je 0x89b146
-// 0089b12c  55                   push ebp
-// 0089b12d  52                   push edx
-// 0089b12e  2bc1                 sub eax, ecx
-// 0089b130  50                   push eax
-// 0089b131  ffd3                 call ebx
-// 0089b133  8bc8                 mov ecx, eax
-// 0089b135  8b4620               mov eax, dword ptr [esi + 0x20]
-// 0089b138  99                   cdq 
-// 0089b139  2bc2                 sub eax, edx
-// 0089b13b  d1f8                 sar eax, 1
-// 0089b13d  3bc1                 cmp eax, ecx
-// 0089b13f  7f02                 jg 0x89b143
-// 0089b141  8bc1                 mov eax, ecx
-// 0089b143  894620               mov dword ptr [esi + 0x20], eax
-// 0089b146  8b4610               mov eax, dword ptr [esi + 0x10]
-// 0089b149  8b5608               mov edx, dword ptr [esi + 8]
-// 0089b14c  8d0c38               lea ecx, [eax + edi]
-// 0089b14f  8b4614               mov eax, dword ptr [esi + 0x14]
-// 0089b152  2b4620               sub eax, dword ptr [esi + 0x20]
-// 0089b155  894e40               mov dword ptr [esi + 0x40], ecx
-// 0089b158  2bc1                 sub eax, ecx
-// 0089b15a  2bc7                 sub eax, edi
-// 0089b15c  89463c               mov dword ptr [esi + 0x3c], eax
-// 0089b15f  85d2                 test edx, edx
-// 0089b161  7505                 jne 0x89b168
-// 0089b163  ba01000000           mov edx, 1
-// 0089b168  2bea                 sub ebp, edx
-// 0089b16a  741f                 je 0x89b18b
-// 0089b16c  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 0089b16f  2b0e                 sub ecx, dword ptr [esi]
-// 0089b171  55                   push ebp
-// 0089b172  50                   push eax
-// 0089b173  51                   push ecx
-// 0089b174  ffd3                 call ebx
-// 0089b176  034640               add eax, dword ptr [esi + 0x40]
-// 0089b179  5f                   pop edi
-// 0089b17a  8bd0                 mov edx, eax
-// 0089b17c  035620               add edx, dword ptr [esi + 0x20]
-// 0089b17f  894634               mov dword ptr [esi + 0x34], eax
-// 0089b182  895630               mov dword ptr [esi + 0x30], edx
-// 0089b185  5e                   pop esi
-// 0089b186  5d                   pop ebp
-// 0089b187  5b                   pop ebx
-// 0089b188  c20c00               ret 0xc
-// 0089b18b  49                   dec ecx
-// 0089b18c  8bd1                 mov edx, ecx
-// 0089b18e  035620               add edx, dword ptr [esi + 0x20]
-// 0089b191  5f                   pop edi
-// 0089b192  894e34               mov dword ptr [esi + 0x34], ecx
-// 0089b195  895630               mov dword ptr [esi + 0x30], edx
-// 0089b198  5e                   pop esi
-// 0089b199  5d                   pop ebp
-// 0089b19a  5b                   pop ebx
-// 0089b19b  c20c00               ret 0xc
-// library xtp-11.2.2/Source\CommandBars\XTPScrollBar.cpp (function ?CalcScrollBarInfo@CXTPScrollBase@@MAEXPAUtagRECT@@PAUSCROLLBARPOSINFO@1@PAUtagSCROLLINFO@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/CommandBars/XTPScrollBar.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPScrollBar.cpp : implementation of the CXTPScrollBar class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+#include "XTPControlGallery.h"
+#include "XTPScrollBar.h"
+#include "XTPMouseManager.h"
+
+//////////////////////////////////////////////////////////////////////////
+//  CXTPScrollBase
+
+
+CXTPScrollBase::CXTPScrollBase()
+{
+	ZeroMemory(&m_spi, sizeof(m_spi));
+	m_spi.fVert = TRUE;
+
+	m_pSBTrack = NULL;
+
+	m_scrollBarStyle = xtpScrollStyleDefault;
+
+	m_bAnimation = FALSE;
+	m_nTimerElapse = 0;
+}
+
+CXTPScrollBase::~CXTPScrollBase()
+{
+
+}
+
+void CXTPScrollBase::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, SCROLLINFO* pSI)
+{
+	int cpx;
+	DWORD dwRange;
+	int denom;
+	BOOL fVert = pSBInfo->fVert;
+
+	pSBInfo->rc = *lprc;
+	pSBInfo->pxPopup = 0;
+
+	if (fVert)
+	{
+		pSBInfo->pxTop = lprc->top;
+		pSBInfo->pxBottom = lprc->bottom;
+		pSBInfo->pxLeft = lprc->left;
+		pSBInfo->pxRight = lprc->right;
+		pSBInfo->cpxThumb = GetGalleryPaintManager()->m_cyVScroll;
+	}
+	else
+	{
+		pSBInfo->pxTop = lprc->left;
+		pSBInfo->pxBottom = lprc->right;
+		pSBInfo->pxLeft = lprc->top;
+		pSBInfo->pxRight = lprc->bottom;
+		pSBInfo->cpxThumb = GetGalleryPaintManager()->m_cxHScroll;
+	}
+
+	pSBInfo->pos = pSI->nPos;
+	pSBInfo->page = pSI->nPage;
+	pSBInfo->posMin = pSI->nMin;
+	pSBInfo->posMax = pSI->nMax;
+
+	dwRange = ((DWORD)(pSBInfo->posMax - pSBInfo->posMin)) + 1;
+
+	cpx = min((pSBInfo->pxBottom - pSBInfo->pxTop) / 2, pSBInfo->cpxThumb);
+
+	pSBInfo->pxUpArrow  = pSBInfo->pxTop    + cpx;
+	pSBInfo->pxDownArrow = pSBInfo->pxBottom - cpx;
+
+	if ((pSBInfo->page != 0) && (dwRange != 0))
+	{
+		int i = MulDiv(pSBInfo->pxDownArrow - pSBInfo->pxUpArrow,
+			pSBInfo->page, dwRange);
+
+		pSBInfo->cpxThumb = max(pSBInfo->cpxThumb / 2, i);
+	}
+
+	pSBInfo->pxMin = pSBInfo->pxTop + cpx;
+	pSBInfo->cpx = pSBInfo->pxBottom - cpx - pSBInfo->cpxThumb - pSBInfo->pxMin;
+
+	denom = dwRange - (pSBInfo->page ? pSBInfo->page : 1);
+	if (denom)
+		pSBInfo->pxThumbTop = MulDiv(pSBInfo->pos - pSBInfo->posMin,
+		pSBInfo->cpx, denom) + pSBInfo->pxMin;
+	else
+		pSBInfo->pxThumbTop = pSBInfo->pxMin - 1;
+
+	pSBInfo->pxThumbBottom = pSBInfo->pxThumbTop + pSBInfo->cpxThumb;
+}
+
+void CXTPScrollBase::SetupScrollInfo()
+{
+	CRect rc = GetScrollBarRect();
+
+	SCROLLINFO si;
+	GetScrollInfo(&si);
+
+	CalcScrollBarInfo(&rc, &m_spi, &si);
+}
+
+int CXTPScrollBase::HitTestScrollBar(POINT pt)
+{
+	int px = m_spi.fVert ? pt.y : pt.x;
+
+	if (!::PtInRect(&m_spi.rc, pt))
+		return HTNOWHERE;
+
+	if (px < m_spi.pxUpArrow)
+		return XTP_HTSCROLLUP;
+
+	if (m_spi.pxPopup > 0 && px > m_spi.pxPopup)
+		return XTP_HTSCROLLPOPUP;
+
+	if (px >= m_spi.pxDownArrow)
+		return XTP_HTSCROLLDOWN;
+
+	if (px < m_spi.pxThumbTop)
+		return XTP_HTSCROLLUPPAGE;
+
+	if (px < m_spi.pxThumbBottom)
+		return XTP_HTSCROLLTHUMB;
+
+	if (px < m_spi.pxDownArrow)
+		return XTP_HTSCROLLDOWNPAGE;
+
+	return HTERROR;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Scrolling
+
+void CXTPScrollBase::EndScroll(BOOL fCancel)
+{
+	SCROLLBARTRACKINFO* pSBTrack = m_pSBTrack;
+
+	if (pSBTrack)
+	{
+		pSBTrack->cmdSB = 0;
+		ReleaseCapture();
+
+		if (pSBTrack->bTrackThumb)
+		{
+			if (fCancel)
+			{
+				pSBTrack->posOld = pSBTrack->pSBInfo->pos;
+			}
+
+			DoScroll(SB_THUMBPOSITION, pSBTrack->posOld);
+
+			RedrawScrollBar();
+		}
+		else
+		{
+
+			if (pSBTrack->hTimerSB != 0)
+			{
+				::KillTimer(pSBTrack->hWndTrack, pSBTrack->hTimerSB);
+				pSBTrack->hTimerSB = 0;
+			}
+		}
+
+
+		DoScroll(SB_ENDSCROLL, 0);
+	}
+}
+
+int SBPosFromPx(CXTPScrollBase::SCROLLBARPOSINFO*  pSBInfo, int px)
+{
+	if (px < pSBInfo->pxMin)
+	{
+		return pSBInfo->posMin;
+	}
+
+	if (px >= pSBInfo->pxMin + pSBInfo->cpx)
+	{
+		return (pSBInfo->posMax - (pSBInfo->page ? pSBInfo->page - 1 : 0));
+	}
+
+	if (pSBInfo->cpx)
+		return (pSBInfo->posMin + MulDiv(pSBInfo->posMax - pSBInfo->posMin -
+		(pSBInfo->page ? pSBInfo->page - 1 : 0),
+		px - pSBInfo->pxMin, pSBInfo->cpx));
+	else
+		return (pSBInfo->posMin - 1);
+}
+
+
+void CXTPScrollBase::MoveThumb(int px)
+{
+	SCROLLBARTRACKINFO* pSBTrack = m_pSBTrack;
+
+	if ((pSBTrack == NULL) || (px == pSBTrack->pxOld))
+		return;
+
+	SCROLLBARPOSINFO* pSBInfo = m_pSBTrack->pSBInfo;
+
+pxReCalc:
+
+	pSBTrack->posNew = SBPosFromPx(pSBInfo, px);
+
+	if (pSBTrack->posNew != pSBTrack->posOld)
+	{
+		DoScroll(SB_THUMBTRACK, pSBTrack->posNew);
+
+		pSBTrack->posOld = pSBTrack->posNew;
+
+		if (px >= pSBInfo->pxMin + pSBInfo->cpx)
+		{
+			px = pSBInfo->pxMin + pSBInfo->cpx;
+			goto pxReCalc;
+		}
+
+	}
+
+	pSBInfo->pxThumbTop = px;
+	pSBInfo->pxThumbBottom = pSBInfo->pxThumbTop + pSBInfo->cpxThumb;
+	pSBTrack->pxOld = px;
+
+	RedrawScrollBar();
+}
+
+void CXTPScrollBase::TrackThumb(UINT message, CPoint pt)
+{
+	SCROLLBARTRACKINFO* pSBTrack = m_pSBTrack;
+	if (!pSBTrack)
+		return;
+
+	SCROLLBARPOSINFO* pSBInfo = pSBTrack->pSBInfo;
+
+	if (HIBYTE(message) != HIBYTE(WM_MOUSEFIRST))
+		return;
+
+	if (pSBInfo == NULL)
+		return;
+
+	int px;
+
+	if (!PtInRect(&pSBTrack->rcTrack, pt))
+		px = pSBInfo->pxStart;
+	else
+	{
+		px = (pSBTrack->pSBInfo->fVert ? pt.y : pt.x) + pSBTrack->dpxThumb;
+		if (px < pSBInfo->pxMin)
+			px = pSBInfo->pxMin;
+		else if (px >= pSBInfo->pxMin + pSBInfo->cpx)
+			px = pSBInfo->pxMin + pSBInfo->cpx;
+	}
+
+	MoveThumb(px);
+
+	if (message == WM_LBUTTONUP || GetKeyState(VK_LBUTTON) >= 0)
+	{
+		EndScroll(FALSE);
+	}
+}
+
+void CXTPScrollBase::TrackBox(UINT message, CPoint point)
+{
+	SCROLLBARTRACKINFO* pSBTrack = m_pSBTrack;
+
+	if (pSBTrack == NULL)
+		return;
+
+	if (message != WM_NULL && HIBYTE(message) != HIBYTE(WM_MOUSEFIRST))
+		return;
+
+	if ((pSBTrack->cmdSB == SB_PAGEUP || pSBTrack->cmdSB == SB_PAGEDOWN))
+	{
+		int* pLength = (int *)&pSBTrack->rcTrack;
+
+		if (pSBTrack->pSBInfo->fVert)
+			pLength++;
+
+		if (pSBTrack->cmdSB == SB_PAGEUP)
+			pLength[2] = pSBTrack->pSBInfo->pxThumbTop;
+		else
+			pLength[0] = pSBTrack->pSBInfo->pxThumbBottom;
+	}
+
+	BOOL fHit = PtInRect(&pSBTrack->rcTrack, point);
+
+	BOOL fHitChanged = fHit != (BOOL)pSBTrack->fHitOld;
+
+	if (fHitChanged)
+	{
+		pSBTrack->fHitOld = fHit;
+		RedrawScrollBar();
+	}
+
+	int cmsTimer = GetDoubleClickTime() / 10;
+
+	switch (message)
+	{
+	case WM_LBUTTONUP:
+		EndScroll(FALSE);
+		break;
+
+	case WM_LBUTTONDOWN:
+		pSBTrack->hTimerSB = 0;
+		cmsTimer = GetDoubleClickTime() * 4 / 5;
+
+		/*
+		*** FALL THRU **
+		*/
+
+	case WM_MOUSEMOVE:
+		if (fHit && fHitChanged)
+		{
+			pSBTrack->hTimerSB = SetTimer(m_pSBTrack->hWndTrack, IDSYS_SCROLL, m_nTimerElapse = cmsTimer, NULL);
+
+			DoScroll(pSBTrack->cmdSB, 0);
+		}
+	}
+}
+
+void CXTPScrollBase::DoAnimate()
+{
+
+}
+void CXTPScrollBase::ContScroll()
+{
+	SCROLLBARTRACKINFO* pSBTrack = m_pSBTrack;
+	ASSERT(pSBTrack);
+
+	if (pSBTrack == NULL)
+		return;
+
+	CPoint pt;
+	GetCursorPos(&pt);
+
+	ScreenToClient(m_pSBTrack->hWndTrack, &pt);
+
+	TrackBox(WM_NULL, pt);
+
+	if (pSBTrack->fHitOld)
+	{
+		pSBTrack->hTimerSB = SetTimer(m_pSBTrack->hWndTrack, IDSYS_SCROLL, m_nTimerElapse = GetDoubleClickTime() / 10, NULL);
+
+		DoScroll(pSBTrack->cmdSB, 0);
+	}
+}
+
+void CXTPScrollBase::CalcTrackDragRect(SCROLLBARTRACKINFO* pSBTrack) const
+{
+
+	int     cx;
+	int     cy;
+	LPINT   pwX, pwY;
+
+	pwX = pwY = (LPINT)&pSBTrack->rcTrack;
+
+	if (pSBTrack->pSBInfo->fVert)
+	{
+		cy = GetSystemMetrics(SM_CYVTHUMB);
+		pwY++;
+	}
+	else
+	{
+		cy = GetSystemMetrics(SM_CXHTHUMB);
+		pwX++;
+	}
+
+	cx = (pSBTrack->pSBInfo->pxRight - pSBTrack->pSBInfo->pxLeft) * 8;
+	cy *= 2;
+
+	*(pwX + 0) = pSBTrack->pSBInfo->pxLeft - cx;
+	*(pwY + 0) = pSBTrack->pSBInfo->pxTop - cy;
+	*(pwX + 2) = pSBTrack->pSBInfo->pxRight + cx;
+	*(pwY + 2) = pSBTrack->pSBInfo->pxBottom + cy;
+}
+
+void CXTPScrollBase::PerformTrackInit(HWND hWnd, CPoint point, SCROLLBARPOSINFO* pSBInfo, BOOL bDirect)
+{
+
+	int px = m_spi.fVert ? point.y : point.x;
+
+	SCROLLBARTRACKINFO* pSBTrack = new SCROLLBARTRACKINFO;
+	memset(pSBTrack, 0, sizeof(SCROLLBARTRACKINFO));
+
+	pSBTrack->cmdSB = (UINT)-1;
+	pSBTrack->bTrackThumb = FALSE;
+	pSBTrack->pSBInfo = pSBInfo;
+	pSBTrack->hWndTrack = hWnd;
+
+	m_pSBTrack = pSBTrack;
+
+	CXTPMouseManager* pMouseManager = XTPMouseManager();
+
+	RECT rcSB;
+	LPINT pwX = (LPINT)&rcSB;
+	LPINT pwY = pwX + 1;
+	if (!pSBInfo->fVert)
+		pwX = pwY--;
+
+	*(pwX + 0) = pSBInfo->pxLeft;
+	*(pwY + 0) = pSBInfo->pxTop;
+	*(pwX + 2) = pSBInfo->pxRight;
+	*(pwY + 2) = pSBInfo->pxBottom;
+
+
+	if (px < pSBInfo->pxUpArrow)
+	{
+		pSBInfo->ht = XTP_HTSCROLLUP;
+		pSBTrack->cmdSB = SB_LINEUP;
+		*(pwY + 2) = pSBInfo->pxUpArrow;
+
+	}
+	else if (px >= pSBInfo->pxDownArrow)
+	{
+		pSBInfo->ht = XTP_HTSCROLLDOWN;
+		pSBTrack->cmdSB = SB_LINEDOWN;
+		*(pwY + 0) = pSBInfo->pxDownArrow;
+	}
+	else if (px < pSBInfo->pxThumbTop)
+	{
+		pSBInfo->ht = XTP_HTSCROLLUPPAGE;
+		pSBTrack->cmdSB = SB_PAGEUP;
+		*(pwY + 0) = pSBInfo->pxUpArrow;
+		*(pwY + 2) = pSBInfo->pxThumbTop;
+	}
+	else if (px < pSBInfo->pxThumbBottom)
+	{
+		pSBInfo->ht = XTP_HTSCROLLTHUMB;
+DoThumbPos:
+
+		if (pSBInfo->pxDownArrow - pSBInfo->pxUpArrow <= pSBInfo->cpxThumb)
+		{
+			delete m_pSBTrack;
+			m_pSBTrack = NULL;
+			return;
+		}
+
+		pSBTrack->cmdSB = SB_THUMBPOSITION;
+		CalcTrackDragRect(pSBTrack);
+
+		pSBTrack->pxOld = pSBInfo->pxStart = pSBInfo->pxThumbTop;
+		pSBTrack->posNew = pSBTrack->posOld = pSBInfo->pos;
+		pSBTrack->dpxThumb = pSBInfo->pxStart - px;
+
+		pSBTrack->bTrackThumb = TRUE;
+
+		::SetCapture(hWnd);
+
+		DoScroll(SB_THUMBTRACK, pSBTrack->posOld);
+
+	}
+	else if (px < pSBInfo->pxDownArrow)
+	{
+		pSBInfo->ht = XTP_HTSCROLLDOWNPAGE;
+		pSBTrack->cmdSB = SB_PAGEDOWN;
+		*(pwY + 0) = pSBInfo->pxThumbBottom;
+		*(pwY + 2) = pSBInfo->pxDownArrow;
+	}
+
+	if ((bDirect && pSBTrack->cmdSB != SB_LINEUP && pSBTrack->cmdSB != SB_LINEDOWN))
+	{
+		if (pSBTrack->cmdSB != SB_THUMBPOSITION)
+		{
+			goto DoThumbPos;
+		}
+		pSBTrack->dpxThumb = -(pSBInfo->cpxThumb / 2);
+	}
+
+	::SetCapture(hWnd);
+
+	if (pSBTrack->cmdSB != SB_THUMBPOSITION)
+	{
+		CopyRect(&pSBTrack->rcTrack, &rcSB);
+	}
+
+	if (!pSBTrack->bTrackThumb)
+	{
+		TrackBox(WM_LBUTTONDOWN, point);
+	}
+	else
+	{
+		TrackThumb(WM_LBUTTONDOWN, point);
+		RedrawScrollBar();
+	}
+
+	pMouseManager->LockMouseMove();
+
+	while (::GetCapture() == hWnd)
+	{
+			MSG msg;
+
+			if (!::GetMessage(&msg, NULL, 0, 0))
+			{
+				AfxPostQuitMessage((int)msg.wParam);
+				break;
+			}
+
+			if (!IsWindow(hWnd))
+				break;
+
+			UINT cmd = msg.message;
+
+			if (cmd == WM_TIMER && msg.wParam == IDSYS_SCROLL)
+			{
+				ContScroll();
+			}
+			else if (cmd == WM_TIMER && msg.wParam == IDSYS_ANIMATE)
+			{
+				DoAnimate();
+			}
+			else if (cmd >= WM_MOUSEFIRST && cmd <= WM_MOUSELAST)
+			{
+				CPoint ptScreen = msg.pt;
+
+				ScreenToClient(hWnd, &ptScreen);
+
+				if (!pSBTrack->bTrackThumb)
+				{
+					TrackBox(cmd, ptScreen);
+				}
+				else
+				{
+					TrackThumb(cmd, ptScreen);
+				}
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+	}
+	pMouseManager->UnlockMouseMove();
+
+	if (pSBTrack->hTimerSB != 0)
+	{
+		::KillTimer(hWnd, pSBTrack->hTimerSB);
+	}
+
+	delete m_pSBTrack;
+	m_pSBTrack = NULL;
+
+	if (IsWindow(hWnd))
+	{
+		GetCursorPos(&point);
+		ScreenToClient(hWnd, &point);
+		m_spi.ht = HitTestScrollBar(point);
+
+		RedrawScrollBar();
+	}
+
+	while (IsWindow(hWnd) && m_bAnimation)
+	{
+		MSG msg;
+
+		if (!::GetMessage(&msg, NULL, 0, 0))
+		{
+			AfxPostQuitMessage((int)msg.wParam);
+			break;
+		}
+
+		UINT cmd = msg.message;
+
+		if (cmd == WM_TIMER && msg.wParam == IDSYS_ANIMATE)
+		{
+			DoAnimate();
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+}
+
+XTPScrollBarStyle CXTPScrollBase::GetScrollBarStyle() const
+{
+	if (m_scrollBarStyle != xtpScrollStyleDefault)
+		return m_scrollBarStyle;
+
+	switch (GetGalleryPaintManager()->GetPaintManager()->BaseTheme())
+	{
+		case xtpThemeOffice2000:
+			return xtpScrollStyleFlat;
+
+		case xtpThemeOffice2007:
+		case xtpThemeRibbon:
+			return xtpScrollStyleOffice2007Light;
+	}
+
+	return xtpScrollStyleSystem;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPScrollBar
+
+CXTPScrollBar::CXTPScrollBar()
+{
+	m_pCommandBars = 0;
+}
+
+CXTPScrollBar::~CXTPScrollBar()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPScrollBar, CScrollBar)
+	//{{AFX_MSG_MAP(CXTPStatusBar)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_ENABLE()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONDBLCLK()
+	ON_MESSAGE(SBM_SETSCROLLINFO, OnSetScrollInfo)
+	ON_MESSAGE(SBM_GETSCROLLINFO, OnGetScrollInfo)
+	ON_WM_SETFOCUS()
+	ON_WM_CONTEXTMENU()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+CRect CXTPScrollBar::GetScrollBarRect()
+{
+	return CXTPClientRect(this);
+}
+
+void CXTPScrollBar::GetScrollInfo(SCROLLINFO* psi)
+{
+	psi->cbSize = sizeof(SCROLLINFO);
+
+	psi->fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+	::GetScrollInfo(m_hWnd, SB_CTL, psi);
+}
+
+BOOL CXTPScrollBar::IsScrollBarEnabled() const
+{
+	return IsWindowEnabled();
+}
+
+CWnd* CXTPScrollBar::GetParentWindow() const
+{
+	return GetParent();
+}
+
+CXTPControlGalleryPaintManager* CXTPScrollBar::GetGalleryPaintManager() const
+{
+	if (m_pCommandBars)
+		return m_pCommandBars->GetPaintManager()->GetGalleryPaintManager();
+
+	return XTPPaintManager()->GetGalleryPaintManager();
+}
+
+void CXTPScrollBar::OnPaint()
+{
+	CPaintDC dcPaint(this); // device context for painting
+	CXTPBufferDC dc(dcPaint);
+
+	OnDraw(&dc);
+}
+
+LRESULT CXTPScrollBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC) OnDraw(pDC);
+	return 1;
+}
+
+void CXTPScrollBar::OnDraw(CDC* pDC)
+{
+	DefWindowProc(WM_PAINT, (WPARAM)pDC->GetSafeHdc(), 0);
+
+	m_spi.fVert = GetStyle() & SBS_VERT;
+
+	if (!m_pSBTrack || !m_pSBTrack->bTrackThumb)
+		SetupScrollInfo();
+
+	GetGalleryPaintManager()->DrawScrollBar(pDC, this);
+}
+
+void CXTPScrollBar::DoScroll(int cmd, int pos)
+{
+	GetParent()->SendMessage((UINT)(m_spi.fVert ? WM_VSCROLL : WM_HSCROLL),
+		MAKELONG(cmd, pos), (LPARAM)m_hWnd);
+}
+
+void CXTPScrollBar::RedrawScrollBar()
+{
+	Invalidate(FALSE);
+}
+
+
+void CXTPScrollBar::OnEnable(BOOL bEnable)
+{
+	CScrollBar::OnEnable(bEnable);
+	Invalidate(FALSE);
+}
+
+void CXTPScrollBar::OnMouseLeave()
+{
+	OnMouseMove(0, CPoint(-1, -1));
+}
+
+void CXTPScrollBar::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	int ht = HitTestScrollBar(point);
+
+	if (ht != m_spi.ht)
+	{
+		m_spi.ht = ht;
+		Invalidate(FALSE);
+
+		if (m_spi.ht != HTNOWHERE)
+		{
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
+			_TrackMouseEvent(&tme);
+		}
+	}
+}
+
+
+void CXTPScrollBar::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	PerformTrackInit(m_hWnd, point, &m_spi, (GetKeyState(VK_SHIFT) < 0) ? TRUE : FALSE);
+}
+
+void CXTPScrollBar::OnContextMenu(CWnd* pWnd, CPoint pos)
+{
+	CScrollBar::OnContextMenu(pWnd, pos);
+	Invalidate(FALSE);
+}
+
+void CXTPScrollBar::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	OnLButtonDown(nFlags, point);
+}
+
+LRESULT CXTPScrollBar::OnSetScrollInfo(WPARAM wParam, LPARAM lParam)
+{
+	LRESULT bResult = DefWindowProc(SBM_SETSCROLLINFO, FALSE, lParam);
+
+	if (wParam)
+	{
+		Invalidate(FALSE);
+		UpdateWindow();
+	}
+
+	return bResult;
+}
+
+LRESULT CXTPScrollBar::OnGetScrollInfo(WPARAM wParam, LPARAM lParam)
+{
+	LRESULT bResult = DefWindowProc(SBM_GETSCROLLINFO, wParam, lParam);
+
+	LPSCROLLINFO lpsi = (LPSCROLLINFO)lParam;
+
+	if (lpsi && (lpsi->fMask & SIF_TRACKPOS) && m_pSBTrack)
+	{
+		lpsi->nTrackPos = m_pSBTrack->posNew;
+	}
+
+	return bResult;
+}
+
+
+void CXTPScrollBar::OnSetFocus(CWnd* pOldWnd)
+{
+	pOldWnd;
+}

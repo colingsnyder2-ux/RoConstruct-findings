@@ -1,30 +1,5 @@
-// from server: 20% by colin
-struct Descriptor {
-    void* vtable;
-    char pad[4];
-    Descriptor(const char* name, int attributes);
-};
-
-struct EnumDescriptor;
-
-struct Item : Descriptor {
-    const EnumDescriptor& owner;
-    const int value;
-    const unsigned int index;
-    Item(const char* name, int attributes, int value, unsigned int index, const EnumDescriptor& owner);
-};
-
-struct EnumDescriptor {
-    void* vtable;
-    void* field4;
-    void* field8;
-    bool convertToValue(unsigned int index, void* value) const;
-};
-
-Item::Item(const char* name, int attributes, int value, unsigned int index, const EnumDescriptor& owner)
-    : Descriptor(name, attributes)
-    , owner(owner)
-    , value(value)
-    , index(index)
-{
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_netview_cppunwind_f58482066765dddc.cpp

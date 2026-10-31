@@ -13,10 +13,7 @@
    "files": "App/util/*.cpp App/v8kernel/*.cpp",
    "direct": true,
    "extra_defines": "BOOST_ALL_NO_LIB",
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
-   "extra_includes": [
-    "tools/openrbx/3rdparty/fmod/api/inc"
-   ]
+   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
   },
   {
    "name": "upstream",
@@ -50,8 +47,5 @@
   "tools/openrbx/3rdparty/boost_1_34_1",
   "tools/openrbx/3rdparty/g3d/source/include"
  ],
- "test_defines": "WIN32 NDEBUG _LIB _MBCS BOOST_ALL_NO_LIB",
- "import_dlls": [
-  "fmodex.dll"
- ]
+ "test_defines": "WIN32 NDEBUG _LIB _MBCS BOOST_ALL_NO_LIB"
 }

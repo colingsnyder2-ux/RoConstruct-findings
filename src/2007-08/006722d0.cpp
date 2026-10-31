@@ -1,17 +1,5 @@
-// from server: 45% by colin
-struct CXTPControlPopupColor {
-    char pad[0x1fc];
-    void sub_670500();
-    void sub_738334();
-    CXTPControlPopupColor* construct();
-};
-
-CXTPControlPopupColor* CXTPControlPopupColor::construct() {
-    sub_670500();
-    *(int*)((char*)this + 0x00) = 0x7cb8e4;
-    *(int*)((char*)this + 0x20) = 0x7cb884;
-    *(int*)((char*)this + 0xf8) = 4;
-    *(int*)((char*)this + 0x178) = -1;
-    sub_738334();
-    return this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_624cf8ddd6a5df79.cpp

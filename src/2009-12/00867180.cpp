@@ -1,41 +1,286 @@
-// roc 2009-12 00867180  unit: CXTPPropertyGridItemColor  size: 106 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00867180
-//
-// 00867180  6aff                 push -1
-// 00867182  6899e39500           push 0x95e399
-// 00867187  64a100000000         mov eax, dword ptr fs:[0]
-// 0086718d  50                   push eax
-// 0086718e  56                   push esi
-// 0086718f  57                   push edi
-// 00867190  a10052b600           mov eax, dword ptr [0xb65200]
-// 00867195  33c4                 xor eax, esp
-// 00867197  50                   push eax
-// 00867198  8d44240c             lea eax, [esp + 0xc]
-// 0086719c  64a300000000         mov dword ptr fs:[0], eax
-// 008671a2  8bf1                 mov esi, ecx
-// 008671a4  8b3e                 mov edi, dword ptr [esi]
-// 008671a6  8d4c241c             lea ecx, [esp + 0x1c]
-// 008671aa  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 008671b2  ff1580de9800         call dword ptr [0x98de80]
-// 008671b8  50                   push eax
-// 008671b9  e8d2fdffff           call 0x866f90
-// 008671be  83c404               add esp, 4
-// 008671c1  50                   push eax
-// 008671c2  8b87e4000000         mov eax, dword ptr [edi + 0xe4]
-// 008671c8  8bce                 mov ecx, esi
-// 008671ca  ffd0                 call eax
-// 008671cc  8d4c241c             lea ecx, [esp + 0x1c]
-// 008671d0  ff15c0de9800         call dword ptr [0x98dec0]
-// 008671d6  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 008671da  64890d00000000       mov dword ptr fs:[0], ecx
-// 008671e1  59                   pop ecx
-// 008671e2  5f                   pop edi
-// 008671e3  5e                   pop esi
-// 008671e4  83c40c               add esp, 0xc
-// 008671e7  c20400               ret 4
-// copied from an identical function in another client (function ?SetValue@CXTPPropertyGridItemColor@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\PropertyGrid\XTPPropertyGridItemColor.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPPropertyGridItemColor.cpp : implementation of the CXTPPropertyGridItemColor class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridItemColor.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+
+#ifdef _XTP_INCLUDE_CONTROLS
+#include "Controls/XTColorDialog.h"
+#include "Controls/XTColorSelectorCtrl.h"
+#include "Controls/XTColorPopup.h"
+#include "Controls/XTNotify.h"
+#include "Controls/XTGlobal.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemColor
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemColor, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(LPCTSTR strCaption, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
+}
+
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(UINT nID, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(nID)
+{
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
+}
+
+CXTPPropertyGridItemColor::~CXTPPropertyGridItemColor()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+
+BOOL CXTPPropertyGridItemColor::OnDrawItemValue(CDC& dc, CRect rcValue)
+{
+	COLORREF clr = dc.GetTextColor();
+	CRect rcSample(rcValue.left - 2, rcValue.top + 1, rcValue.left + 18, rcValue.bottom - 1);
+	CXTPPenDC pen(dc, clr);
+	CXTPBrushDC brush(dc, m_clrValue);
+	dc.Rectangle(rcSample);
+
+	CRect rcText(rcValue);
+	rcText.left += 25;
+
+	dc.DrawText(m_strValue, rcText, DT_SINGLELINE | DT_VCENTER);
+
+	return TRUE;
+}
+
+CRect CXTPPropertyGridItemColor::GetValueRect()
+{
+	CRect rcValue(CXTPPropertyGridItem::GetValueRect());
+	rcValue.left += 25;
+	return rcValue;
+}
+
+COLORREF AFX_CDECL CXTPPropertyGridItemColor::StringToRGB(LPCTSTR str)
+{
+	CString strRed, strGreen, strBlue;
+
+	AfxExtractSubString(strRed, str, 0, ';');
+	AfxExtractSubString(strGreen, str, 1, ';');
+	AfxExtractSubString(strBlue, str, 2, ';');
+
+	return RGB(__min(_ttoi(strRed), 255), __min(_ttoi(strGreen), 255), __min(_ttoi(strBlue), 255));
+}
+
+CString AFX_CDECL CXTPPropertyGridItemColor::RGBToString(COLORREF clr)
+{
+	CString str;
+	str.Format(_T("%i; %i; %i"), GetRValue(clr), GetGValue(clr), GetBValue(clr));
+	return str;
+}
+
+void CXTPPropertyGridItemColor::SetValue(CString strValue)
+{
+	SetColor(StringToRGB(strValue));
+}
+
+void CXTPPropertyGridItemColor::SetColor(COLORREF clr)
+{
+	m_clrValue = clr;
+
+	if (m_pBindColor)
+	{
+		*m_pBindColor = clr;
+	}
+
+	CXTPPropertyGridItem::SetValue(RGBToString(clr));
+}
+
+void CXTPPropertyGridItemColor::BindToColor(COLORREF* pBindColor)
+{
+	m_pBindColor = pBindColor;
+	if (m_pBindColor)
+	{
+		*m_pBindColor = m_clrValue;
+	}
+}
+
+
+void CXTPPropertyGridItemColor::OnBeforeInsert()
+{
+	if (m_pBindColor && *m_pBindColor != m_clrValue)
+	{
+		SetColor(*m_pBindColor);
+	}
+}
+
+void CXTPPropertyGridItemColor::SetEditorStyle(XTPPropertyGridItemColorEditor editor)
+{
+	m_colorEditor = editor;
+
+	if (m_colorEditor == xtpGridItemColorPopup)
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasComboButton);
+	else
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasExpandButton);
+}
+
+XTPPropertyGridItemColorEditor CXTPPropertyGridItemColor::GetEditorStyle()
+{
+	return m_colorEditor;
+}
+
+
+void CXTPPropertyGridItemColor::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
+		return;
+
+	if (!OnRequestEdit())
+		return;
+
+	CWnd* pGrid = m_pGrid;
+
+#ifdef _XTP_INCLUDE_CONTROLS
+	if (m_colorEditor == xtpGridItemColorPopup)
+	{
+		class CPropertyGridItemColorColorPopup: public CXTColorPopup
+		{
+		public:
+			CPropertyGridItemColorColorPopup()
+				: CXTColorPopup(TRUE)
+			{
+				m_pItem = NULL;
+			}
+
+			BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+			{
+				if (message == CPN_XT_SELENDOK)
+				{
+					CString strValue = m_pItem->RGBToString((COLORREF)wParam);
+					if (m_pItem->OnAfterEdit(strValue))
+					{
+						m_pItem->OnValueChanged(strValue);
+					}
+					*pResult = 0;
+					return TRUE;
+				}
+				if (message == CPN_XT_SELENDCANCEL)
+				{
+					m_pItem->OnCancelEdit();
+				}
+				return CXTColorPopup::OnWndMsg(message, wParam, lParam, pResult);\
+			}
+
+			CXTPPropertyGridItemColor* m_pItem;
+		};
+
+
+		CPropertyGridItemColorColorPopup *pColorPopup = new CPropertyGridItemColorColorPopup();
+
+		CRect rcItem= GetItemRect();
+		m_pGrid->ClientToScreen(&rcItem);
+		rcItem.left = rcItem.right - 158; // small hack. need to add CPS_XT_LEFTALLIGN
+
+		COLORREF clrDefault = StringToRGB(m_strDefaultValue);
+		pColorPopup->Create(rcItem, m_pGrid, CPS_XT_USERCOLORS|CPS_XT_EXTENDED|CPS_XT_MORECOLORS|CPS_XT_SHOW3DSELECTION|CPS_XT_SHOWHEXVALUE, GetColor(), clrDefault);
+		pColorPopup->SetOwner(m_pGrid);
+		pColorPopup->SetFocus();
+		pColorPopup->AddListener(pColorPopup->GetSafeHwnd());
+		pColorPopup->m_pItem = this;
+	}
+	else if (m_colorEditor == xtpGridItemColorExtendedDialog)
+	{
+		InternalAddRef();
+
+		CXTColorDialog dlg(m_clrValue, m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
+	}
+	else
+#endif
+	{
+		InternalAddRef();
+
+		CColorDialog dlg(m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
+	}
+}
+
+
+

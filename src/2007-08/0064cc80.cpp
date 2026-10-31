@@ -1,21 +1,5 @@
-// from server: 27% by colin
-struct CXTPImageManagerIconSet {
-    void sub_64CB90();
-    void sub_64ACD0();
-    void sub_64ACA0();
-    void sub_63069A();
-    void func();
-};
-
-extern "C" int __stdcall FreeLibrary(void*);
-
-void CXTPImageManagerIconSet::func() {
-    sub_64CB90();
-    void* p = *(void**)((char*)this + 0x58);
-    if (p != 0) {
-        FreeLibrary(p);
-    }
-    sub_64ACD0();
-    sub_64ACA0();
-    sub_63069A();
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_d57fd5449bdc10f2.cpp

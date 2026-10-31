@@ -1,27 +1,5 @@
-// from server: 76% by colin
-struct CXTPRibbonBarControlQuickAccessPopup
-{
-    char pad[0x1ec];
-    int field_1ec;
-    int field_1f0;
-    int field_1f4;
-    int field_1f8;
-    char pad2[0x248 - 0x1fc];
-    int field_248;
-    void sub_67a2d0();
-    CXTPRibbonBarControlQuickAccessPopup* init(int arg);
-};
-
-CXTPRibbonBarControlQuickAccessPopup* CXTPRibbonBarControlQuickAccessPopup::init(int arg)
-{
-    sub_67a2d0();
-    field_1ec = 3;
-    field_1f0 = 3;
-    field_1f4 = 3;
-    field_1f8 = 3;
-    field_248 = arg;
-    *(int*)this = 0x7d4f64;
-    *(int*)((char*)this + 0x54) = 0x7d4f54;
-    *(int*)((char*)this + 0x5c) = 0x7d4ef4;
-    return this;
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS /MD /EHsc
+// roc-lib: xtp-11.2.2-vc8 roc_espeon_aug2007_xtp1113_strlen_modules_e769aa09a1b4e397.cpp

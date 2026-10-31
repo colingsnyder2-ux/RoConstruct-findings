@@ -1,58 +1,231 @@
-// roc 2012-06 00a79340  unit: CXTWindowMap  size: 104 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a79340
-//
-// 00a79340  53                   push ebx
-// 00a79341  8b5c2408             mov ebx, dword ptr [esp + 8]
-// 00a79345  55                   push ebp
-// 00a79346  56                   push esi
-// 00a79347  57                   push edi
-// 00a79348  8b7b04               mov edi, dword ptr [ebx + 4]
-// 00a7934b  57                   push edi
-// 00a7934c  8be9                 mov ebp, ecx
-// 00a7934e  e85dffffff           call 0xa792b0
-// 00a79353  8bf0                 mov esi, eax
-// 00a79355  85f6                 test esi, esi
-// 00a79357  7448                 je 0xa793a1
-// 00a79359  3bf3                 cmp esi, ebx
-// 00a7935b  7531                 jne 0xa7938e
-// 00a7935d  8b5e0c               mov ebx, dword ptr [esi + 0xc]
-// 00a79360  57                   push edi
-// 00a79361  8bcd                 mov ecx, ebp
-// 00a79363  85db                 test ebx, ebx
-// 00a79365  740e                 je 0xa79375
-// 00a79367  e8d2050200           call 0xa9993e
-// 00a7936c  5f                   pop edi
-// 00a7936d  5e                   pop esi
-// 00a7936e  5d                   pop ebp
-// 00a7936f  8918                 mov dword ptr [eax], ebx
-// 00a79371  5b                   pop ebx
-// 00a79372  c20400               ret 4
-// 00a79375  e8aa0a0200           call 0xa99e24
-// 00a7937a  8b4608               mov eax, dword ptr [esi + 8]
-// 00a7937d  50                   push eax
-// 00a7937e  6afc                 push -4
-// 00a79380  57                   push edi
-// 00a79381  ff15943ab200         call dword ptr [0xb23a94]
-// 00a79387  5f                   pop edi
-// 00a79388  5e                   pop esi
-// 00a79389  5d                   pop ebp
-// 00a7938a  5b                   pop ebx
-// 00a7938b  c20400               ret 4
-// 00a7938e  395e0c               cmp dword ptr [esi + 0xc], ebx
-// 00a79391  7408                 je 0xa7939b
-// 00a79393  8b760c               mov esi, dword ptr [esi + 0xc]
-// 00a79396  395e0c               cmp dword ptr [esi + 0xc], ebx
-// 00a79399  75f8                 jne 0xa79393
-// 00a7939b  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
-// 00a7939e  894e0c               mov dword ptr [esi + 0xc], ecx
-// 00a793a1  5f                   pop edi
-// 00a793a2  5e                   pop esi
-// 00a793a3  5d                   pop ebp
-// 00a793a4  5b                   pop ebx
-// 00a793a5  c20400               ret 4
-// copied from an identical function in another client (function ?Remove@CXTWindowMap@@QAEXPAVCXTWndHook@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTWndHook.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTWndHook.cpp : implementation of the CXTWndHook class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "XTWndHook.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTWndHook implementation
+/////////////////////////////////////////////////////////////////////////////
+CXTWndHook::CXTWndHook()
+{
+	m_pNextHook = NULL;
+	m_pOldWndProc = NULL;
+	m_hWnd = NULL;
+}
+
+CXTWndHook::~CXTWndHook()
+{
+	if (IsWindowHooked())
+	{
+		HookWindow((HWND)NULL);
+	}
+}
+
+CXTWindowMap CXTWindowMap::m_mapHooks;
+
+IMPLEMENT_DYNAMIC(CXTWndHook, CObject)
+
+BOOL CXTWndHook::HookWindow(HWND hWnd)
+{
+	ASSERT_VALID(this);
+
+	// Hook the window
+	if (hWnd)
+	{
+		ASSERT(m_hWnd == NULL);
+		ASSERT(::IsWindow(hWnd));
+		CXTWindowMap::m_mapHooks.Add(hWnd, this);
+	}
+
+	// Unhook the window
+	else if (m_hWnd)
+	{
+		CXTWindowMap::m_mapHooks.Remove(this);
+		m_pOldWndProc = NULL;
+	}
+
+	m_hWnd = hWnd;
+	return TRUE;
+}
+
+LRESULT CXTWndHook::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return m_pNextHook ? m_pNextHook->WindowProc(message, wParam, lParam) :
+		::CallWindowProc(m_pOldWndProc, m_hWnd, message, wParam, lParam);
+}
+
+LRESULT CXTWndHook::Default()
+{
+	// MFC stores current MSG in thread state
+	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
+	// Note: must explicitly call CXTWndHook::WindowProc to avoid infinite
+	// recursion on virtual function
+	return CXTWndHook::WindowProc(curMsg.message, curMsg.wParam, curMsg.lParam);
+}
+////////////////////////////////////////////////////////////////
+// CXTWindowMap implementation
+////////////////////////////////////////////////////////////////
+CXTWindowMap::CXTWindowMap()
+{
+
+}
+
+CXTWindowMap::~CXTWindowMap()
+{
+
+}
+
+LRESULT CALLBACK CXTWindowMap::HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// Set up MFC message state just in case anyone wants it
+	// This is just like AfxCallWindowProc, but we can't use that because
+	// a CXTWndHook is not a CWnd.
+	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
+	MSG  oldMsg = curMsg;
+	curMsg.hwnd = hWnd;
+	curMsg.message = message;
+	curMsg.wParam = wParam;
+	curMsg.lParam = lParam;
+
+	// Get hook object for this window. Get from hook map
+	CXTWndHook* pXTWndHook = m_mapHooks.Lookup(hWnd);
+	ASSERT(pXTWndHook);
+	if (!pXTWndHook)
+		return 0;
+
+	LRESULT lResult;
+
+	// Window is being destroyed: unhook all hooks (for this window)
+	// and pass message to original window proc
+	if (message == WM_NCDESTROY)
+	{
+		WNDPROC wndproc = pXTWndHook->m_pOldWndProc;
+		m_mapHooks.RemoveAll(hWnd);
+		lResult = ::CallWindowProc(wndproc, hWnd, message, wParam, lParam);
+
+	}
+
+	// pass to message hook
+	else
+	{
+		lResult = pXTWndHook->WindowProc(message, wParam, lParam);
+	}
+
+	curMsg = oldMsg;
+	return lResult;
+}
+
+void CXTWindowMap::Add(HWND hWnd, CXTWndHook* pXTWndHook)
+{
+	ASSERT(hWnd && ::IsWindow(hWnd));
+
+	// Add to front of list
+	pXTWndHook->m_pNextHook = Lookup(hWnd);
+	SetAt(hWnd, pXTWndHook);
+
+	// If this is the first hook added, subclass the window
+	if (pXTWndHook->m_pNextHook == NULL)
+	{
+		pXTWndHook->m_pOldWndProc = (WNDPROC)GetWindowLongPtr(
+			hWnd, GWLP_WNDPROC);
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)HookWndProc);
+	}
+
+	// just copy wndproc from next hook
+	else
+	{
+		pXTWndHook->m_pOldWndProc = pXTWndHook->m_pNextHook->m_pOldWndProc;
+	}
+
+	ASSERT(pXTWndHook->m_pOldWndProc);
+}
+
+void CXTWindowMap::Remove(CXTWndHook* pUnHook)
+{
+	HWND hWnd = pUnHook->m_hWnd;
+	ASSERT(hWnd && ::IsWindow(hWnd));
+
+	CXTWndHook* pHook = Lookup(hWnd);
+	ASSERT(pHook);
+	if (!pHook)
+		return;
+
+	if (pHook == pUnHook)
+	{
+		// hook to remove is the one in the hash table: replace w/next
+		if (pHook->m_pNextHook)
+		{
+			SetAt(hWnd, pHook->m_pNextHook);
+		}
+
+		// This is the last hook for this window: restore wnd proc
+		else
+		{
+			RemoveKey(hWnd);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pHook->m_pOldWndProc);
+		}
+	}
+	else
+	{
+		// Hook to remove is in the middle: just remove from linked list
+		while (pHook->m_pNextHook != pUnHook)
+		{
+			pHook = pHook->m_pNextHook;
+		}
+
+		ASSERT(pHook && pHook->m_pNextHook == pUnHook);
+		pHook->m_pNextHook = pUnHook->m_pNextHook;
+	}
+}
+
+void CXTWindowMap::RemoveAll(HWND hWnd)
+{
+	CXTWndHook* pXTWndHook;
+	while ((pXTWndHook = Lookup(hWnd)) != NULL)
+	{
+		pXTWndHook->HookWindow((HWND)NULL);
+	}
+}
+
+CXTWndHook* CXTWindowMap::Lookup(HWND hWnd)
+{
+	CXTWndHook* pFound = NULL;
+	if (!CMapPtrToPtr::Lookup(hWnd, (void*&)pFound))
+		return NULL;
+	ASSERT_KINDOF(CXTWndHook, pFound);
+	return pFound;
+}
+
+IMPLEMENT_DYNAMIC(CXTWindowMap, CMapPtrToPtr)
